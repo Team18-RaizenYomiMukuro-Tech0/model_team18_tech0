@@ -25,6 +25,3 @@ hive/
 roster.json
 roster.json.*.bak
 roster-backups/
-
-# 旧案件の退避（ローカルのみ）
-.keihi-archive/
