@@ -22,7 +22,7 @@
 
 ## 収集の仕掛け
 
-- **随時**: `.claude/settings.json` の PostToolUse hook が `scripts/collect-mistake.py` を呼ぶ。Bash の失敗だけを拾い、マスクして追記する。作業は止めない。
+- **随時**: `.claude/settings.json` の PostToolUseFailure hook が `scripts/collect-mistake.py` を呼ぶ。Bash の失敗だけを拾い、マスクして追記する。作業は止めない。
 - **CI/デプロイ**（後付け）: Actions/Vercel/Render の失敗ステップから同 jsonl に追記する（CI 導入後）。
 
 ## 週1要約の回し方

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Claude Code PostToolUse hook: Bash の失敗を 01_ナレッジ/_inbox/mistakes.jsonl に記録する。
+"""Claude Code PostToolUseFailure hook: Bash の失敗を 01_ナレッジ/_inbox/mistakes.jsonl に記録する。
+
+- 失敗したツール呼び出しは PostToolUse ではなく PostToolUseFailure で届く。
+- 出力の文字列では判定しない（成功したコマンドの出力に「No such file」等が含まれると誤検知するため）。
 
 - 秘匿情報（APIキー・トークン・DB資格情報・ユーザー名パス）はマスクしてから書く。
 - 何があっても作業を止めない（常に exit 0。例外は握りつぶす）。
@@ -46,32 +49,25 @@ def main():
     tr = data.get("tool_response") or data.get("toolResponse") or {}
     command = ti.get("command") if isinstance(ti, dict) else str(ti)
 
+    event = data.get("hook_event_name") or ""
     exit_code = None
-    is_error = False
     err_text = ""
     if isinstance(tr, dict):
         for k in ("exit_code", "exitCode", "returncode", "code"):
             if isinstance(tr.get(k), int):
                 exit_code = tr[k]
-        is_error = bool(tr.get("is_error") or tr.get("isError"))
         err_text = tr.get("stderr") or tr.get("error") or tr.get("stdout") or tr.get("output") or ""
-        if isinstance(err_text, (dict, list)):
-            err_text = json.dumps(err_text, ensure_ascii=False)
-    else:
+    elif tr:
         err_text = str(tr)
-    if exit_code is None and isinstance(data.get("exit_code"), int):
-        exit_code = data["exit_code"]
-
-    failed = is_error or (exit_code is not None and exit_code != 0)
-    if not failed:
-        # 終了コードが取れない版向けの控えめなフォールバック（明確なエラー痕跡があるときだけ）
-        markers = ("command not found", "fatal:", "Traceback (most recent call last)",
-                   "npm ERR!", "No such file or directory", "Permission denied",
-                   "ModuleNotFoundError", "SyntaxError", "build failed", "Build failed")
-        if any(m in str(err_text) for m in markers):
-            failed = True
-    if not failed:
+    if event == "PostToolUseFailure":
+        failed = True
+        err_text = data.get("error") or err_text
+    else:
+        failed = exit_code is not None and exit_code != 0
+    if not failed or data.get("is_interrupt"):
         return
+    if isinstance(err_text, (dict, list)):
+        err_text = json.dumps(err_text, ensure_ascii=False)
 
     proj = os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     rec = {
