@@ -21,7 +21,7 @@ PR のレビュー・承認・マージの決まり。メンバー全員の Clau
 1. **5文書を変えている**: `02_プロジェクト/*/` の 要求・要件・仕様・設計・テスト設計。
 2. **5文書を変える必要があるのに変えていない**: 実装が仕様と食い違う、仕様に書かれていない動きを足している。
 3. **PM に確認すべき内容を含む**: I/F 契約の変更、受入基準の変更、新しいライブラリ・外部サービスの追加、スコープの増減。
-4. **ルールそのものを変える**: `CLAUDE.md`・`.claude/agents/`・`00_ルール/`・`.github/ISSUE_TEMPLATE/`・`.github/pull_request_template.md`・`.github/CODEOWNERS`・`.github/labeler.yml`・`.github/workflows/`（`.github/workflows/dashboard-*.yml` を除く。例外の中身も、`permissions` に `write`（`write-all` を含む）がある・`permissions` の指定がないジョブがある・`pull_request_target` を使う・`secrets.GITHUB_TOKEN` 以外のシークレットを参照する（`secrets: inherit` を含む）ものは対象）。
+4. **ルールそのものを変える**: `CLAUDE.md`・`.claude/agents/`・`00_ルール/`・`.github/ISSUE_TEMPLATE/`・`.github/pull_request_template.md`・`.github/CODEOWNERS`・`.github/labeler.yml`・`scripts/scheduled/`（レビュー・週1要約の実行スクリプトと指示文。ルーチンが main のものを毎回読む）・`01_ナレッジ/weekly-digest-prompt.md`（週1要約の指示文）・`.github/workflows/`（`.github/workflows/dashboard-*.yml` を除く。例外の中身も、`permissions` に `write`（`write-all` を含む）がある・`permissions` の指定がないジョブがある・`pull_request_target` を使う・`secrets.GITHUB_TOKEN` 以外のシークレットを参照する（`secrets: inherit` を含む）ものは対象）。
 5. **秘匿情報の疑い**: `.env`、キー・パスワードらしき文字列。
 
 ## 4. Claude が承認してよい条件
@@ -37,7 +37,7 @@ PR のレビュー・承認・マージの決まり。メンバー全員の Clau
 ## 5. 自分でマージしてよい範囲
 `main` は承認なしでも PR 経由ならマージできる設定になっている（メンバー全員）。ただし自分でマージしてよいのは、開発に影響しない作業だけ。
 
-- してよい: ダッシュボード、`.github/workflows/dashboard-*.yml`（`permissions` は読み取りのみで、`secrets.GITHUB_TOKEN` 以外のシークレットを使わない。上の §3-4 の条件に当たらないもの）、`01_ナレッジ/`、5文書以外の資料
+- してよい: ダッシュボード、`.github/workflows/dashboard-*.yml`（`permissions` は読み取りのみで、`secrets.GITHUB_TOKEN` 以外のシークレットを使わない。上の §3-4 の条件に当たらないもの）、`01_ナレッジ/`（`weekly-digest-prompt.md` を除く）、5文書以外の資料
 - してはいけない: 3. に当てはまるもの全部（必ず他のメンバーの承認を待つ）
 
 ## 6. ラベル
