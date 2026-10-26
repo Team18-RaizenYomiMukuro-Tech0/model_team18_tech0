@@ -1,0 +1,30 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+out/
+*.tsbuildinfo
+
+# munder のハーネス設定（台帳・roster・セッション）。チームリポ直下に作る（章16.4）
+.munder/
+
+# ナレッジ自動収集の生ログ（秘匿情報を含みうる。要約済みだけコミットする）
+01_ナレッジ/_inbox/
+
+# 検証の生データ（実データ・コミット禁止）
+02_プロジェクト/*/evidence/raw/
+
+# Munder Difflin アプリが書き出す実行時ファイル（コミットしない）
+hive/
+roster.json
+roster.json.*.bak
+roster-backups/
+
+# 旧案件の退避（ローカルのみ）
+.keihi-archive/
