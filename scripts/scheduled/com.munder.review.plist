@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- 雛形。&lt;REPO&gt; をこのリポジトリの絶対パスに置換して ~/Library/LaunchAgents/com.munder.review.plist へ置く（手順: 01_ナレッジ/定期実行の導入手順.md） -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.munder.review</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>&lt;REPO&gt;/scripts/scheduled/run-review.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>&lt;REPO&gt;</string>
+  <key>StartInterval</key>
+  <integer>3600</integer>
+  <key>StandardOutPath</key>
+  <string>/tmp/com.munder.review.out</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/com.munder.review.err</string>
+</dict>
+</plist>
