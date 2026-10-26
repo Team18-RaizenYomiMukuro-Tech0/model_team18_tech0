@@ -67,7 +67,7 @@ jobs:
              then "`permissions:` の指定がないジョブがあります（既定の権限になります）" else empty end),
             (if ([.permissions] + [(.jobs // {})[] | .permissions] | map(select(. != null)) | map(haswrite) | any)
              then "`write` / `write-all` の権限があります" else empty end),
-            # ${{ ... }} の式の中で secrets を参照している（secrets.GITHUB_TOKEN だけは除く）。
+            # 式（二重波括弧の中）で secrets を参照している（secrets.GITHUB_TOKEN だけは除く）。
             # secrets[...] や toJSON(secrets) のような形も含める。式の外の文字列（name: など）は見ない
             (if ([.. | strings | match("\\$\\{\\{(.*?)\\}\\}"; "g") | .captures[0].string
                   | select(test("(?i)\\bsecrets\\b(?!\\s*\\.\\s*github_token\\b)"))] | length > 0)
