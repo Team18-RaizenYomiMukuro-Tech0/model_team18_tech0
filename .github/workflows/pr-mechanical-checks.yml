@@ -1,6 +1,6 @@
 # PR の機械判定（PRレビュー規定 §3-1/§3-4、§4 の一部を決定的に調べる）。
 #  - labeler: 規定のパスに当たる変更があれば needs-human を付ける
-#  - dashboard-workflow-guard: 例外の dashboard-*.yml に write 権限などがあれば needs-human を付ける
+#  - dashboard-workflow-guard: 例外の dashboard-*.yml に write 権限・シークレット参照などがあれば needs-human を付ける
 #  - template-check: 「対応する文書の ID」の記入と、チェック欄がすべて [x] かを調べる
 # トリガーは pull_request（pull_request_target は使わない: 外部 PR のコードに書き込み権限を渡さないため）。
 name: PR 機械チェック
@@ -52,6 +52,7 @@ jobs:
           #  - pull_request_target を使っている
           #  - permissions の指定がないジョブがある（トップにも無い＝既定の権限になる）
           #  - write / write-all がある
+          #  - secrets を参照している（secrets.GITHUB_TOKEN を除く）／ secrets: を指定している
           cat > "$RUNNER_TEMP/guard.jq" <<'JQ'
           def haswrite:
             if type == "string" then . == "write-all"
@@ -65,7 +66,15 @@ jobs:
             (if (.permissions == null) and ([(.jobs // {})[] | select(.permissions == null)] | length > 0)
              then "`permissions:` の指定がないジョブがあります（既定の権限になります）" else empty end),
             (if ([.permissions] + [(.jobs // {})[] | .permissions] | map(select(. != null)) | map(haswrite) | any)
-             then "`write` / `write-all` の権限があります" else empty end)
+             then "`write` / `write-all` の権限があります" else empty end),
+            # ${{ ... }} の式の中で secrets を参照している（secrets.GITHUB_TOKEN だけは除く）。
+            # secrets[...] や toJSON(secrets) のような形も含める。式の外の文字列（name: など）は見ない
+            (if ([.. | strings | match("\\$\\{\\{(.*?)\\}\\}"; "g") | .captures[0].string
+                  | select(test("(?i)\\bsecrets\\b(?!\\s*\\.\\s*github_token\\b)"))] | length > 0)
+             then "`secrets` を参照しています（`secrets.GITHUB_TOKEN` 以外）" else empty end),
+            # `secrets: inherit` や `secrets:` の指定（呼び出す workflow へシークレットを渡す）
+            (if ([.. | objects | select(has("secrets"))] | length > 0)
+             then "`secrets:`（`secrets: inherit` など）を指定しています" else empty end)
           ] | .[]
           JQ
 
@@ -96,7 +105,7 @@ jobs:
           if [ -n "$problems" ]; then
             # ラベルが付けられなければ、このジョブを失敗にして気づけるようにする
             gh api -X POST "repos/$REPO/issues/$PR_NUMBER/labels" -f 'labels[]=needs-human' >/dev/null
-            body="$(printf '%s\n**dashboard-*.yml の権限チェック: 人のレビューが必要です（`needs-human` を付けました）**\n\n%b\n規定 §5: `dashboard-*.yml` は `permissions` を読み取りのみにし、`pull_request_target` を使わない場合だけ例外です。' "$marker" "$problems")"
+            body="$(printf '%s\n**dashboard-*.yml の権限チェック: 人のレビューが必要です（`needs-human` を付けました）**\n\n%b\n規定 §5: `dashboard-*.yml` は `permissions` を読み取りのみにし、`pull_request_target` とシークレット（`secrets.GITHUB_TOKEN` 以外）を使わない場合だけ例外です。' "$marker" "$problems")"
             { if [ -n "$existing" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body"
               else gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$body"; fi; } >/dev/null || echo "::warning::コメントを投稿できませんでした"
           elif [ -n "$existing" ]; then
