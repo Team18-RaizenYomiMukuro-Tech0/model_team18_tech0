@@ -1,0 +1,9 @@
+name: t
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  j:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
