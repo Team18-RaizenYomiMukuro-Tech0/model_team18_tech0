@@ -1,0 +1,11 @@
+name: t
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  j:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ok
+        env:
+          K: ${{ secrets.API_KEY }}
