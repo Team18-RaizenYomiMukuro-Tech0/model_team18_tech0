@@ -17,6 +17,9 @@ needs-human:
           - '.github/pull_request_template.md'
           - '.github/CODEOWNERS'
           - '.github/labeler.yml'
+          # §3-4 レビューや要約の動き方を決める指示文（ルーチンは main のこれらを毎回読む）
+          - 'scripts/scheduled/**'
+          - '01_ナレッジ/weekly-digest-prompt.md'
   # 上と別の条件（トップの項目は OR）。§3-4 .github/workflows/ の変更。ただし dashboard-*.yml だけは例外
   # （その中身の権限は pr-mechanical-checks.yml の dashboard-workflow-guard が別に調べる）
   - changed-files:
