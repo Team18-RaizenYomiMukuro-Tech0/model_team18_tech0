@@ -1,0 +1,191 @@
+# PR の機械判定（PRレビュー規定 §3-1/§3-4、§4 の一部を決定的に調べる）。
+#  - labeler: 規定のパスに当たる変更があれば needs-human を付ける
+#  - dashboard-workflow-guard: 例外の dashboard-*.yml に write 権限・シークレット参照などがあれば needs-human を付ける
+#  - template-check: 「対応する文書の ID」の記入と、チェック欄がすべて [x] かを調べる
+# トリガーは pull_request（pull_request_target は使わない: 外部 PR のコードに書き込み権限を渡さないため）。
+name: PR 機械チェック
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+
+concurrency:
+  group: pr-mechanical-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  labeler:
+    name: 要人判断パスのラベル
+    # edited（本文の編集）ではパスは変わらない
+    if: github.event.action != 'edited'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          configuration-path: .github/labeler.yml
+          # 人や Claude が付けた needs-human を勝手に外さない
+          sync-labels: false
+
+  dashboard-workflow-guard:
+    name: dashboard-*.yml の権限
+    # dashboard-*.yml は labeler の例外（規定 §5）。例外の悪用を防ぐため、中身の権限をここで調べる
+    if: github.event.action != 'edited'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: dashboard-*.yml を調べる
+        run: |
+          # 問題があれば行を返す（なければ何も出さない）。
+          #  - pull_request_target を使っている
+          #  - permissions の指定がないジョブがある（トップにも無い＝既定の権限になる）
+          #  - write / write-all がある
+          #  - secrets を参照している（secrets.GITHUB_TOKEN を除く）／ secrets: を指定している
+          cat > "$RUNNER_TEMP/guard.jq" <<'JQ'
+          def haswrite:
+            if type == "string" then . == "write-all"
+            elif type == "object" then (to_entries | map(.value == "write") | any)
+            else false end;
+          [
+            (if (((.on | type) == "string") and (.on == "pull_request_target"))
+                or (((.on | type) == "array") and ((.on | index("pull_request_target")) != null))
+                or (((.on | type) == "object") and (.on | has("pull_request_target")))
+             then "`pull_request_target` を使っています" else empty end),
+            (if (.permissions == null) and ([(.jobs // {})[] | select(.permissions == null)] | length > 0)
+             then "`permissions:` の指定がないジョブがあります（既定の権限になります）" else empty end),
+            (if ([.permissions] + [(.jobs // {})[] | .permissions] | map(select(. != null)) | map(haswrite) | any)
+             then "`write` / `write-all` の権限があります" else empty end),
+            # 式（二重波括弧の中）で secrets を参照している（secrets.GITHUB_TOKEN だけは除く）。
+            # secrets[...] や toJSON(secrets) のような形も含める。式の外の文字列（name: など）は見ない
+            (if ([.. | strings | match("\\$\\{\\{(.*?)\\}\\}"; "g") | .captures[0].string
+                  | select(test("(?i)\\bsecrets\\b(?!\\s*\\.\\s*github_token\\b)"))] | length > 0)
+             then "`secrets` を参照しています（`secrets.GITHUB_TOKEN` 以外）" else empty end),
+            # `secrets: inherit` や `secrets:` の指定（呼び出す workflow へシークレットを渡す）
+            (if ([.. | objects | select(has("secrets"))] | length > 0)
+             then "`secrets:`（`secrets: inherit` など）を指定しています" else empty end)
+          ] | .[]
+          JQ
+
+          problems=""
+          while IFS=$'\t' read -r status path prev; do
+            [ -z "$path" ] && continue
+            case "$path" in .github/workflows/dashboard-*.yml) ;; *) continue ;; esac
+            [ "$status" = "removed" ] && continue
+            # dashboard-*.yml への改名で labeler の例外に入り込むのを防ぐ
+            if [ "$status" = "renamed" ]; then
+              case "$prev" in .github/workflows/dashboard-*.yml) ;; *) problems="${problems}- \`$path\`: dashboard-*.yml 以外（\`$prev\`）からの改名です\n" ;; esac
+            fi
+            tmp="$(mktemp)"
+            gh api -H "Accept: application/vnd.github.raw" "repos/$HEAD_REPO/contents/$path?ref=$HEAD_SHA" > "$tmp"
+            if ! json="$(yq -o=json '.' "$tmp")"; then
+              problems="${problems}- \`$path\`: YAML として読めません\n"
+              continue
+            fi
+            while IFS= read -r msg; do
+              [ -n "$msg" ] && problems="${problems}- \`$path\`: ${msg}\n"
+            done < <(printf '%s' "$json" | jq -r -f "$RUNNER_TEMP/guard.jq")
+          done < <(gh api "repos/$REPO/pulls/$PR_NUMBER/files" --paginate \
+                     --jq '.[] | [.status, .filename, (.previous_filename // "")] | @tsv')
+
+          marker='<!-- dashboard-workflow-guard -->'
+          existing="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n1)"
+          if [ -n "$problems" ]; then
+            # ラベルが付けられなければ、このジョブを失敗にして気づけるようにする
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/labels" -f 'labels[]=needs-human' >/dev/null
+            body="$(printf '%s\n**dashboard-*.yml の権限チェック: 人のレビューが必要です（`needs-human` を付けました）**\n\n%b\n規定 §5: `dashboard-*.yml` は `permissions` を読み取りのみにし、`pull_request_target` とシークレット（`secrets.GITHUB_TOKEN` 以外）を使わない場合だけ例外です。' "$marker" "$problems")"
+            { if [ -n "$existing" ]; then gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body"
+              else gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$body"; fi; } >/dev/null || echo "::warning::コメントを投稿できませんでした"
+          elif [ -n "$existing" ]; then
+            gh api -X DELETE "repos/$REPO/issues/comments/$existing" >/dev/null || true
+          fi
+
+  template-check:
+    name: テンプレート記入
+    # Draft（作業中）は調べない。Draft を解除（ready_for_review）したときに調べる
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      # 本文は信頼できない入力。スクリプトに直接埋め込まず環境変数で渡す
+      PR_BODY: ${{ github.event.pull_request.body }}
+    steps:
+      - name: 本文を調べる
+        id: check
+        run: |
+          problems=""
+          body="$(printf '%s' "$PR_BODY" | tr -d '\r')"
+
+          # 「## 対応する文書の ID」の節（次の ## まで）
+          id_section="$(printf '%s\n' "$body" | awk '/^## 対応する文書の ID/{f=1;next} /^## /{f=0} f')"
+          # テンプレートのままの見出し行と例文（全角括弧の注記）を除いて、中身が残るか
+          id_filled="$(printf '%s\n' "$id_section" \
+            | sed -E 's/（[^）]*）//g; s/^[[:space:]]*-?[[:space:]]*要件 \/ 仕様 \/ テスト[[:space:]]*[:：]?//' \
+            | tr -d '[:space:]')"
+          if [ -z "$id_filled" ]; then
+            problems="${problems}- 「対応する文書の ID」が未記入です（例: F-01, I-02。Week 0 は「環境構築 章13」）。\n"
+          fi
+
+          # 「## チェック」の節（次の ## まで）のチェック欄
+          check_section="$(printf '%s\n' "$body" | awk '/^## チェック/{f=1;next} /^## /{f=0} f')"
+          total="$(printf '%s\n' "$check_section" | grep -cE '^[[:space:]]*- \[[ xX]\]' || true)"
+          unchecked="$(printf '%s\n' "$check_section" | grep -E '^[[:space:]]*- \[ \]' || true)"
+          if [ "$total" -eq 0 ]; then
+            problems="${problems}- 「チェック」欄が見つかりません（テンプレートの節を消していませんか）。\n"
+          elif [ -n "$unchecked" ]; then
+            problems="${problems}- 未チェックの項目があります:\n"
+            while IFS= read -r line; do
+              [ -n "$line" ] && problems="${problems}  ${line}\n"
+            done <<< "$unchecked"
+          fi
+
+          {
+            echo "failed=$([ -n "$problems" ] && echo true || echo false)"
+            echo "problems<<EOF_PROBLEMS"
+            printf '%b' "$problems"
+            echo "EOF_PROBLEMS"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 不足をコメントする（満たしたら前のコメントを消す）
+        # フォークからの PR などでトークンが読み取り専用でも、チェック結果自体は失敗として残す
+        continue-on-error: true
+        env:
+          FAILED: ${{ steps.check.outputs.failed }}
+          PROBLEMS: ${{ steps.check.outputs.problems }}
+        run: |
+          marker='<!-- pr-mechanical-check -->'
+          existing="$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n1)"
+          if [ "$FAILED" = "true" ]; then
+            body="$(printf '%s\n**PR 機械チェック: 不足があります**\n\n%s\n\nPR 本文（PR テンプレート）を直すと、このチェックは自動でやり直されます。' "$marker" "$PROBLEMS")"
+            if [ -n "$existing" ]; then
+              gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body" >/dev/null
+            else
+              gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$body" >/dev/null
+            fi
+          elif [ -n "$existing" ]; then
+            gh api -X DELETE "repos/$REPO/issues/comments/$existing" >/dev/null
+          fi
+
+      - name: 不足があれば失敗にする
+        if: steps.check.outputs.failed == 'true'
+        run: |
+          echo "::error::PR テンプレートの記入に不足があります。PR のコメントを見てください。"
+          exit 1
