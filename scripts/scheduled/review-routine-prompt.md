@@ -20,14 +20,14 @@
 `gh api "repos/{owner}/{repo}/pulls?state=open&per_page=50"` で open の PR を取り、次を満たすものだけを候補にする。
 - 作者が `Hiroki0023`・`re-ji-tech0`・`matsuki24335` のどれか。それ以外の人の PR は読まない・何もしない。
 - 作者が自分（§1 のログイン）ではない。
-- draft ではない。
+- draft ではない（作業中の PR は Draft で出す決まり。Draft が解除されたら対象になる）。
 - ラベルが次のどれかに当てはまる。
   - `ai-review:doing` は付いていない（付いていれば担当中なので飛ばす）。
   - かつ、`ai-approved` / `needs-human` のどちらも付いていない（未レビュー）。
   - または、`ai-approved` / `needs-human` が付いているが、**そのラベルを付けた時刻より後に新しい commit がある**（再レビュー対象。規定 §2-5）。
     - ラベルを付けた時刻: `gh api "repos/{owner}/{repo}/issues/{番号}/events"` の `event` が `labeled` で、`label.name` が該当するものの最新の `created_at`。
     - 最終 commit の時刻: `gh api "repos/{owner}/{repo}/pulls/{番号}/commits"` の最後の要素の `commit.committer.date`。
-- PR が `pull_request` イベントで起動された場合（起動時の文脈にその PR 番号がある場合）は、その PR を最優先にする。
+- PR が `pull_request` イベント（`opened`（Draft でないとき）または `ready_for_review`）で起動された場合（起動時の文脈にその PR 番号がある場合）は、その PR を最優先にする。push（synchronize）では起動しない。承認後などの新しい push は、毎朝 8:00 の定時実行が、上の「ラベルより後に新しい commit がある」判定で拾う。
 - 候補は多くても **5件まで**。残りは次の起動に任せる。
 
 候補が0件なら「対象 PR なし」と報告して終了する。
