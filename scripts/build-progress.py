@@ -4,7 +4,8 @@
 GitHub の Issue とマイルストーンを API で読み、担当者ごとの進み具合を HTML 1枚にする。
   - 数えるのは Issue だけ（完了＝閉じた Issue）。PR は Issue にぶら下げて表示するだけで数えない
   - 期限・遅延はマイルストーン（段階）の due_on（日本時間の日付）
-  - 表示名は munder/progress-names.json（アカウント名 → 表示名）。無い人はアカウント名のまま
+  - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
+    それ以外のアカウントや担当なしの Issue は「担当未定」1枠にまとめる（数えはする）
 
 使い方:
   GITHUB_TOKEN=... GITHUB_REPOSITORY=owner/repo python scripts/build-progress.py --out _site
@@ -23,7 +24,7 @@ import urllib.request
 JST = dt.timezone(dt.timedelta(hours=9))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)", re.I)
-NO_ASSIGNEE = "（担当なし）"
+NO_ASSIGNEE = "担当未定"
 NO_MILESTONE = "段階なし"
 
 
@@ -79,7 +80,7 @@ def build_model(issues, milestones, names, today):
         d = due.get(ms["number"]) if ms else None
         done = i["state"] == "closed"
         late = (today - d).days if (d and not done and today > d) else 0
-        logins = [a["login"] for a in i.get("assignees") or []] or [None]
+        logins = [a["login"] for a in i.get("assignees") or [] if a["login"] in names] or [None]
         rows.append({"number": i["number"], "title": i["title"], "url": i["html_url"], "done": done,
                      "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late,
                      "assignees": logins, "prs": linked.get(i["number"], [])})
@@ -87,7 +88,7 @@ def build_model(issues, milestones, names, today):
     for r in rows:
         for login in r["assignees"]:
             key = login or NO_ASSIGNEE
-            p = people.setdefault(key, {"name": names.get(login, login) if login else NO_ASSIGNEE,
+            p = people.setdefault(key, {"name": names[login] if login else NO_ASSIGNEE,
                                         "login": login, "rows": []})
             p["rows"].append(r)
     order = sorted(people.values(), key=lambda p: (p["login"] is None, p["name"]))
@@ -173,12 +174,13 @@ CSS = """
 .st.set{background:var(--m1);color:#12091F;border:var(--bw1) solid var(--line)}
 .pr{font-size:var(--fs-xs);font-weight:800}
 .stg2 li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s3);align-items:center}.stg2 .bar{grid-column:1/-1}.sn{font-weight:800}.sv{font-size:var(--fs-xs);color:var(--csub)}
+.sample{display:inline-block;margin-left:var(--s3);padding:0 14px;border:var(--bw2) solid var(--btxt);border-radius:var(--rp);background:var(--m1);color:#12091F;font:800 var(--fs-m)/1.8 var(--body);vertical-align:middle;-webkit-text-stroke:0}.sample-note{margin:var(--s3) 0 0;font-weight:800;font-size:var(--fs-s)}
 .note{font-size:var(--fs-s);color:var(--sub)}
 @media(max-width:480px){.ph{flex-wrap:wrap}.num{margin-left:0;text-align:left;width:100%}}
 """
 
 
-def page(body, updated):
+def page(body, updated, sample=False):
     return f"""<!doctype html>
 <html lang="ja">
 <head>
@@ -198,9 +200,10 @@ def page(body, updated):
 <body>
 <header class="kb-band"><div class="kb-in">
 <div class="kb-nav"><a href="hub.html">← 開発ハブ</a><button id="tg" class="tg" type="button" aria-pressed="false" aria-label="ダークモード" hidden><span class="ic" aria-hidden="true">☀️</span><span>ダークモード</span></button></div>
-<h1>進捗</h1>
+<h1>進捗{'<span class="sample">サンプル</span>' if sample else ''}</h1>
 <p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
 <ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
+{'<p class="sample-note">ダミーデータの表示例です。実際の Issue ではありません。</p>' if sample else ''}
 </div></header>
 <main class="kb"><div class="pg">
 {body}
@@ -212,11 +215,11 @@ def page(body, updated):
 """
 
 
-def render(model, updated):
+def render(model, updated, sample=False):
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body, updated)
+        return page(body, updated, sample)
     pc = pct(model["done"], model["total"])
     late = sum(1 for p in model["people"] for r in p["rows"] if r["late"])
     parts = [f'<div class="sum"><div><b>{pc}%</b><span>全体の完了</span></div>'
@@ -230,7 +233,7 @@ def render(model, updated):
         parts += [render_person(p) for p in model["people"]]
     else:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
-    return page("\n".join(parts), updated)
+    return page("\n".join(parts), updated, sample)
 
 
 def error_page(msg, updated):
@@ -261,7 +264,7 @@ def main():
             token = os.environ.get("GITHUB_TOKEN")
             issues = api_get(repo, "issues?state=all", token)
             milestones = api_get(repo, "milestones?state=all", token)
-        text = render(build_model(issues, milestones, load_names(a.names), today), updated)
+        text = render(build_model(issues, milestones, load_names(a.names), today), updated, sample=bool(a.data))
     except Exception as ex:  # 公開全体を止めない
         print(f"warning: 進捗を作れませんでした: {type(ex).__name__}", file=sys.stderr)
         text = error_page(type(ex).__name__, updated)

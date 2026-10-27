@@ -101,15 +101,11 @@
   },
   {
    "number": 7,
-   "title": "外部の協力者の確認依頼",
+   "title": "担当がまだ決まっていない作業",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/7",
    "milestone": null,
-   "assignees": [
-    {
-     "login": "guest-dev"
-    }
-   ]
+   "assignees": []
   },
   {
    "number": 8,
