@@ -33,7 +33,7 @@
 <div class="kb-nav"><a href="../hub.html">← 開発ハブ</a><button id="tg" class="tg" type="button" aria-pressed="false" aria-label="ダークモード" hidden><span class="ic" aria-hidden="true">☀️</span><span>ダークモード</span></button></div>
 <h1>講義：この開発の仕組み</h1>
 <p class="lead">目的：開発の仕組みを理解して、活用できる。</p>
-<ul class="meta"><li>所要時間 約45分</li><li>読み手: re-ji・matsuki</li><li>更新: 2026-10-27</li></ul>
+<ul class="meta"><li>所要時間 約45分</li><li>読み手: レージ・りゅうちゃん</li><li>更新: 2026-10-27</li></ul>
 </div></header>
 <main class="kb">
 <p class="legend">札の見方：<span class="st live">動いている</span> main にマージ済みで使える　<span class="st plan">予定</span> まだない（カード番号つき）　<span class="st unk">未確認</span> 動作を確かめていない</p>
@@ -44,7 +44,7 @@
 <h2 class="chap" id="c1"><span class="no">1</span>考え方<span class="time">4分</span></h2>
 <p class="aim"><b>ねらい</b>3つの仕組みで、AI のぶれを抑える。</p>
 <h3 class="sub">仕組み</h3>
-<div class="tbl"><table><thead><tr><th>#</th><th>仕組み</th><th>どこで動くか</th></tr></thead><tbody><tr><td data-label="#">①</td><td data-label="仕組み">Munder Difflin と、スタッフ6人（AI）が役割分担して動く</td><td data-label="どこで動くか">Munder Difflin（りじちょー・Takahiro・Mi-rin・Terao・Kurosu・yamapi）</td></tr><tr><td data-label="#">②</td><td data-label="仕組み">決まりを <code>.md</code> に書き、毎回読ませる</td><td data-label="どこで動くか"><code>CLAUDE.md</code>、<code>.claude/agents/</code>、<code>00_ルール/</code></td></tr><tr><td data-label="#">③</td><td data-label="仕組み">作業の単位と確認を GitHub に残す</td><td data-label="どこで動くか">Issue（作業と完了条件）、PR（変更と証拠）</td></tr></tbody></table></div><ul><li>体制は、人間3名（PM・re-ji・matsuki）と AI スタッフ6名。人が決め、AI が提案・実装・確認する。</li><li>例：<code>CLAUDE.md</code> に「書いていないことは作らず『仕様に書かれていません』と報告して止まる」とある。AI は想像で補わない。</li></ul>
+<div class="tbl"><table><thead><tr><th>#</th><th>仕組み</th><th>どこで動くか</th></tr></thead><tbody><tr><td data-label="#">①</td><td data-label="仕組み">Munder Difflin と、スタッフ6人（AI）が役割分担して動く</td><td data-label="どこで動くか">Munder Difflin（りじちょー・Takahiro・Mi-rin・Terao・Kurosu・yamapi）</td></tr><tr><td data-label="#">②</td><td data-label="仕組み">決まりを <code>.md</code> に書き、毎回読ませる</td><td data-label="どこで動くか"><code>CLAUDE.md</code>、<code>.claude/agents/</code>、<code>00_ルール/</code></td></tr><tr><td data-label="#">③</td><td data-label="仕組み">作業の単位と確認を GitHub に残す</td><td data-label="どこで動くか">Issue（作業と完了条件）、PR（変更と証拠）</td></tr></tbody></table></div><ul><li>体制は、人間3名（PM・レージ・りゅうちゃん）と AI スタッフ6名。人が決め、AI が提案・実装・確認する。</li><li>例：<code>CLAUDE.md</code> に「書いていないことは作らず『仕様に書かれていません』と報告して止まる」とある。AI は想像で補わない。</li></ul>
 <h3 class="sub">あなたがやること</h3>
 <ul><li>決めるのは人。「Aで」「決定」「OK、進めて」と、はっきり書く。</li><li>ルールを変えたいときは、<code>.md</code> を直す PR を出す。</li></ul>
 <p class="stat"><b>状態</b><span class="st live">動いている</span></p>
@@ -95,9 +95,9 @@
 <h2 class="chap" id="c6"><span class="no">6</span>AI レビュー<span class="time">6分</span></h2>
 <p class="aim"><b>ねらい</b>レビュアーの負担を減らし、開発のスピードを上げる。AI が先に見て、人は重要なものだけ見る。</p>
 <h3 class="sub">仕組み</h3>
-<ul><li>規定：<code>00_ルール/PRレビュー規定.md</code>。AI は完了条件の表を1行ずつ判定し、○／×／確認できない を書く。そろえば <code>ai-approved</code>。</li><li>AI が承認せず人に回す（<code>needs-human</code>）：Issue が紐づかない PR／5文書の変更／PM に確認すべき内容／<code>CLAUDE.md</code>・<code>00_ルール/</code> などルールの変更／秘匿情報の疑い。</li><li>起動は Draft でない PR を作ったときと、毎朝 8:00（JST）。作業中の PR は Draft で出す。</li><li>マージ：<code>ai-approved</code> が付いたら作成者がマージしてよい。<code>needs-human</code> は他のメンバーの承認を待つ。</li></ul><div class="need"><p class="nh"><span class="st plan">予定</span><span class="st set">要設定</span></p><p><b>自動レビューにはセットアップが必要。</b> 手順は <a href="../setup.html#c7"><a href="../setup.html#c7"><code>docs/setup.html</code> 7章</a></a>のオプション（AI レビューの定期実行）と <code>01_ナレッジ/レビュールーチンの設定手順.md</code>。設定しないと自動では動かない。</p></div>
+<ul><li>規定：<code>00_ルール/PRレビュー規定.md</code>。AI は完了条件の表を1行ずつ判定し、○／×／確認できない を書く。そろえば <code>ai-approved</code>。</li><li>AI が承認せず人に回す（<code>needs-human</code>）：Issue が紐づかない PR／5文書の変更／PM に確認すべき内容／<code>CLAUDE.md</code>・<code>00_ルール/</code> などルールの変更／秘匿情報の疑い。</li><li>起動は Draft でない PR を作ったときと、毎朝 8:00（JST）。作業中の PR は Draft で出す。</li><li>マージ：<code>ai-approved</code> が付いたら作成者がマージしてよい。<code>needs-human</code> は他のメンバーの承認を待つ。</li></ul><div class="need"><p class="nh"><span class="st plan">予定</span><span class="st set">要設定</span></p><p><b>自動レビューにはセットアップが必要。</b> 手順は <a href="../setup.html#c6"><code>docs/setup.html</code> 6章</a>のオプション（AI レビューの定期実行）と <code>01_ナレッジ/レビュールーチンの設定手順.md</code>。設定しないと自動では動かない。</p></div>
 <h3 class="sub">あなたがやること</h3>
-<ul><li>PR には Issue を紐づけ、完了条件ごとの証拠（テストは出力、画面はスクリーンショット）を貼る。</li><li>自動レビューを使うなら、セットアップ（7章オプション）を済ませる。</li></ul>
+<ul><li>PR には Issue を紐づけ、完了条件ごとの証拠（テストは出力、画面はスクリーンショット）を貼る。</li><li>自動レビューを使うなら、セットアップ（6章オプション）を済ませる。</li></ul>
 <p class="stat"><b>状態</b>規定・機械チェック<span class="st live">動いている</span>／AI レビューの自動起動<span class="st plan">予定 M80-8</span>（本番稼働は<span class="st unk">未確認</span>）／複数エージェントのレビューは<span class="st plan">予定</span>（カード未起票）</p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は PM 1人にレビューが集中した</p></div><div class="after"><span class="k">今回</span><p>今回は AI が先に判定し、人は重要なものに絞る。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>00_ルール/PRレビュー規定.md</code>、<code>01_ナレッジ/レビュールーチンの設定手順.md</code>、<code>docs/setup.html</code>、<code>hive/tasks.json</code>（M80-8）</p></section>
@@ -107,7 +107,7 @@
 <h3 class="sub">仕組み</h3>
 <div class="tbl"><table><thead><tr><th>段</th><th>何が動くか</th><th>ファイル・ツール</th></tr></thead><tbody><tr><td data-label="段">① 随時の記録</td><td data-label="何が動くか">失敗した Bash を hook が自動で追記（マスク後）</td><td data-label="ファイル・ツール"><code>.claude/settings.json</code>、<code>01_ナレッジ/_inbox/mistakes.jsonl</code></td></tr><tr><td data-label="段">② 週1要約</td><td data-label="何が動くか">毎週月曜 09:00。同じ意味のミスを「型」にまとめる</td><td data-label="ファイル・ツール"><code>scripts/weekly-digest.py</code>、Mac は launchd／Windows はタスクスケジューラ</td></tr><tr><td data-label="段">③ ルールへ</td><td data-label="何が動くか">2回以上の型を <code>CLAUDE.md</code>「よくあるミス」に載せる（PR・<code>needs-human</code>）</td><td data-label="ファイル・ツール"><code>CLAUDE.md</code>、<code>01_ナレッジ/mistakes/</code></td></tr></tbody></table></div><ul><li>記録は PC の中だけ（<code>_inbox/</code> は git の管理外）。</li></ul>
 <h3 class="sub">あなたがやること</h3>
-<ul><li>① は自動。失敗を手で書き残さなくてよい。</li><li>② は各自の PC で定期実行を登録する（<a href="../setup.html#c7"><code>docs/setup.html</code> 7章</a>オプション）。</li><li>週1の PR が来たら、内容を見てマージ（<code>CLAUDE.md</code> を変えるので人が見る）。</li><li>使いどころ：<code>mistakes/</code> を読めばノウハウ集、案件の終わりの振り返りの材料、新しい人の学習材料になる。</li></ul>
+<ul><li>① は自動。失敗を手で書き残さなくてよい。</li><li>② は各自の PC で定期実行を登録する（<a href="../setup.html#c6"><code>docs/setup.html</code> 6章</a>オプション）。</li><li>週1の PR が来たら、内容を見てマージ（<code>CLAUDE.md</code> を変えるので人が見る）。</li><li>使いどころ：<code>mistakes/</code> を読めばノウハウ集、案件の終わりの振り返りの材料、新しい人の学習材料になる。</li></ul>
 <p class="stat"><b>状態</b>記録・型へのまとめ<span class="st live">動いている</span>／launchd 経由・本番モードの定期実行は<span class="st unk">未確認</span>（M80-8）／Windows は実機で<span class="st unk">未確認</span></p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は週1の自動ナレッジ化が動かなかった</p></div><div class="after"><span class="k">今回</span><p>今回は記録から <code>CLAUDE.md</code> まで1本につないだ。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>01_ナレッジ/自動吸い上げ設計.md</code>、<code>01_ナレッジ/定期実行の導入手順.md</code>、<code>01_ナレッジ/定期実行の導入手順_Windows.md</code>、PR #3・#4・#19</p></section>
@@ -121,7 +121,7 @@
 <p class="stat"><b>状態</b><span class="st live">動いている</span></p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は PR だけで追って分かりにくかった</p></div><div class="after"><span class="k">今回</span><p>今回は Issue に集めて、ハブの <code>design-change</code> 一覧で見る。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>00_ルール/Issue作成規定.md</code> §4、<code>00_ルール/PRレビュー規定.md</code> §4、PR #18</p></section>
-<nav class="xlink" aria-label="関連ページ"><a class="btn" href="../setup.html">セットアップガイド（約30分） →</a><span>手を動かす手順はこちら</span></nav>
+<nav class="xlink" aria-label="関連ページ"><a class="btn" href="../setup.html">セットアップガイド（約31分） →</a><span>手を動かす手順はこちら</span></nav>
 </main>
 <footer class="kb-foot"><a href="../hub.html">← 開発ハブに戻る</a></footer>
 <script src="kb.js" defer></script>
