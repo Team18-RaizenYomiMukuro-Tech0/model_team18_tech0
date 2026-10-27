@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>セットアップガイド</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --muted: #5f6b7a;
+    --line: #dfe3e8; --accent: #2f6fed; --warn: #b45309; --warn-bg: #fef3c7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.65; }
+  a { color: var(--accent); }
+  header, main, footer { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 24px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 16px; }
+  .start { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; }
+  .start h2 { font-size: 1.05rem; margin: 0 0 6px; }
+  .start ul { margin: 0; padding-left: 1.2em; }
+  .cols { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
+  .col { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+  .col > h2 { font-size: 1.05rem; margin: 0 0 2px; }
+  .freq { color: var(--muted); font-size: .8rem; margin: 0 0 10px; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; overflow-wrap: anywhere; }
+  .card h3 { font-size: .92rem; margin: 0 0 2px; }
+  .card p { margin: 2px 0; font-size: .85rem; color: var(--muted); }
+  .card.todo { border-style: dashed; }
+  .badge { display: inline-block; font-size: .72rem; padding: 0 8px; border-radius: 10px;
+    background: var(--warn-bg); color: var(--warn); }
+  .ver { font-size: .78rem; color: var(--muted); }
+  .empty { color: var(--muted); font-size: .85rem; }
+  footer { padding: 20px 16px 32px; color: var(--muted); font-size: .82rem; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14171c; --card: #1d2229; --text: #e6e9ed; --muted: #9aa5b1; --line: #323a44;
+      --accent: #7aa7ff; --warn: #fbbf24; --warn-bg: #3b2f10; }
+  }
+
+  main.doc { max-width: 880px; padding-bottom: 8px; }
+  section.sec { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  section.sec h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  section.sec h3 { font-size: .95rem; margin: 14px 0 4px; }
+  .time { color: var(--muted); font-size: .8rem; }
+  ol.steps, ul.plain { padding-left: 1.3em; margin: 6px 0; }
+  ol.steps li, ul.plain li { margin-bottom: 6px; }
+  .unk { background: var(--warn-bg); color: var(--warn); font-size: .75rem; padding: 0 6px; border-radius: 8px; white-space: nowrap; }
+  .note { border-left: 4px solid var(--warn); background: var(--warn-bg); padding: 8px 12px; border-radius: 4px; margin: 10px 0; font-size: .9rem; }
+  .tblwrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--bg); }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; margin: 8px 0; padding: 0; list-style: none; }
+  .flow li { flex: 1 1 140px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: .85rem; position: relative; }
+  .flow li b { display: block; }
+  code { font-size: .85em; overflow-wrap: anywhere; }
+  .back { margin: 0 0 12px; font-size: .9rem; }
+</style>
+</head>
+<body>
+<header>
+  <p class="back"><a href="hub.html">← 開発ハブへ戻る</a></p>
+  <h1>🛠 セットアップガイド</h1>
+  <p class="lead">自分の PC で開発を始めるためのガイド。Windows / Mac どちらも対象。①動かす（約30分）→②仕組みを知る（10分）→③なぜこうしたか（5分）の順に読む。</p>
+</header>
+<main class="doc">
+
+<section class="sec" aria-labelledby="s1">
+  <h2 id="s1">① 動かす <span class="time">目安30分</span></h2>
+  <p>公式情報で確認できなかった所には <span class="unk">未確認</span> を付けた。推測で手順は書いていない。</p>
+  <ol class="steps">
+    <li><b>(a) Claude のアカウント／プランを確認する。</b> Claude Code を使うので、Claude のアカウントとプランが必要。どのプランが要るかは <span class="unk">未確認</span>（PM に聞く）。</li>
+    <li><b>(b) Git と GitHub。</b>
+      <ul class="plain">
+        <li>GitHub の Organization <code>Team18-RaizenYomiMukuro-Tech0</code> の招待メールを承認する。</li>
+        <li>リポジトリ <code>model_team18_tech0</code> を、自分の任意のフォルダへクローンする（置き場所は各自で決めてよい）。</li>
+      </ul></li>
+    <li><b>(c) Munder Difflin を入れる。</b>
+      <ul class="plain">
+        <li>入手先: <a href="https://munderdiffl.in/">munderdiffl.in</a>。無料版（Classic）で可。</li>
+        <li>版は <b>0.5.7</b> を使う（PM 指定）。ただし公式 README は 0.5.6、GitHub Releases の最新は v0.5.5 の表記で、<b>0.5.7 の配布は公式情報で確認できていない</b> <span class="unk">未確認</span>。</li>
+        <li>Claude Code が入っていなければ、アプリ内から導入・サインインできる（公式 README: 0.5.3 以降、足りない CLI はエージェントの端末にカードで出て、Install を押すと実行される。サインインはアプリ内）。</li>
+        <li>公式の <a href="https://munderdiffl.in/blog/how-to-install-and-use-munder-difflin/">install guide</a> に各手順と対処がある。</li>
+      </ul></li>
+    <li><b>(d) スタッフ6人を作る。</b>
+      <ul class="plain">
+        <li>作業フォルダ（cwd）は<b>必ず自分のクローン <code>model_team18_tech0</code></b> にする。</li>
+        <li>口調の設定 <code>questCast</code> は、名前やアバターからは<b>自動で決まらない</b>。6人それぞれに明示して選ぶ（rijicho / takahiro / mirin / terao / kurosu / yamapi）。設定画面での場所は <span class="unk">未確認</span>。変更後は「Restart &amp; Continue」で反映する（<a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/munder/cast-mapping.md">munder/cast-mapping.md</a> の記述）。</li>
+        <li>モデル: りじちょー = Opus 最新、他の5人 = Sonnet 最新（<a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/CLAUDE.md">CLAUDE.md の表</a>。画面でのモデルの選び方は <span class="unk">未確認</span>）。</li>
+      </ul>
+      <div class="tblwrap"><table>
+        <tr><th>スタッフ</th><th>questCast</th><th>モデル</th></tr>
+        <tr><td>Rijicho（りじちょー）</td><td>rijicho</td><td>Opus 最新</td></tr>
+        <tr><td>Takahiro</td><td>takahiro</td><td>Sonnet 最新</td></tr>
+        <tr><td>Mi-rin</td><td>mirin</td><td>Sonnet 最新</td></tr>
+        <tr><td>Terao</td><td>terao</td><td>Sonnet 最新</td></tr>
+        <tr><td>Kurosu</td><td>kurosu</td><td>Sonnet 最新</td></tr>
+        <tr><td>yamapi</td><td>yamapi</td><td>Sonnet 最新</td></tr>
+      </table></div></li>
+    <li><b>(e) 週1要約・失敗吸い上げ hook を入れる。</b> 既存の手順に従う（ここには写さない）:
+      <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順.md">Mac</a> / <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順_Windows.md">Windows</a>。</li>
+    <li><b>(f) 結果を返す。</b> 上の手順の確認チェックリストの結果（○／×だけ）を、GitHub に Issue <code>導入確認: &lt;GitHub名&gt; (&lt;OS&gt;)</code> として1つ作って貼る。ログ全文・ユーザー名入りのパスは貼らない。</li>
+  </ol>
+</section>
+
+<section class="sec" aria-labelledby="s2">
+  <h2 id="s2">② 仕組みを知る <span class="time">10分</span></h2>
+  <h3>1日の流れ</h3>
+  <ol class="flow">
+    <li><b>① Issue を選ぶ</b>完了条件を読む。担当は PM が決める</li>
+    <li><b>② ブランチ</b>作業用のブランチを切る。AI スタッフが実装を手伝う</li>
+    <li><b>③ PR</b>PR テンプレートに証拠（テスト出力・画面）を書く</li>
+    <li><b>④ AI レビュー</b>機械が先に見る。決まりに外れていれば指摘が付く</li>
+    <li><b>⑤ 人のレビュー・マージ</b>人が見て、人がマージする</li>
+    <li><b>⑥ 週1要約</b>決定と学びがナレッジに戻る</li>
+  </ol>
+  <h3>AI スタッフ6人の担当と、人が決めること</h3>
+  <div class="tblwrap"><table>
+    <tr><th>AI スタッフ</th><th>担当</th></tr>
+    <tr><td>Rijicho（りじちょー）</td><td>窓口。5文書の壁打ち・完成度の補佐、スタッフへの割り振り、成果物のレビュー。提案はするが決断はしない</td></tr>
+    <tr><td>Takahiro</td><td>アーキテクチャ設計</td></tr>
+    <tr><td>Mi-rin</td><td>画面・フロントエンド</td></tr>
+    <tr><td>Terao</td><td>API・DB</td></tr>
+    <tr><td>Kurosu</td><td>テスト設計どおりの検証と証拠</td></tr>
+    <tr><td>yamapi</td><td>決定・学びの記録（ナレッジ）</td></tr>
+  </table></div>
+  <div class="tblwrap"><table>
+    <tr><th>人が決めること</th></tr>
+    <tr><td>案の採否（「Aで」など本人の回答で決める）／実装開始の承認（PM が「OK、進めて」）／担当の割り振りと期限（PM）／PR のマージ／セキュリティ発展・実データ・外部公開は運営に相談して承認を得てから</td></tr>
+  </table></div>
+  <div class="note"><b>注意:</b> <code>hive/</code>（スタッフの記憶・ボード）は <code>.gitignore</code> の対象で、<b>PC ごとに別</b>。3人で共有されるのは GitHub 上の Issue・PR・文書だけ。スタッフに話した内容は、Issue や PR に書かないと他の人に届かない。</div>
+</section>
+
+<section class="sec" aria-labelledby="s3">
+  <h2 id="s3">③ なぜこうしたか <span class="time">5分</span></h2>
+  <div class="tblwrap"><table>
+    <tr><th>前回の困りごと</th><th>今回の対策</th><th>どこにあるか</th></tr>
+    <tr><td>.md が読まれない</td><td>5文書を HTML にして、ハブから開ける</td><td><a href="hub.html">開発ハブ</a>の 📚 5文書</td></tr>
+    <tr><td>完成形が見えず、AI 案どおりになる</td><td>画面が関わる仕様は、モックを見て人が選ぶ（試行）</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/V字フロー規定.md">V字フロー規定</a>、<a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/docs/mock/README.md">docs/mock/</a></td></tr>
+    <tr><td>Issue の完了が判定しにくい</td><td>完了条件を、テストか画面で1行ずつ書く</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a> §2</td></tr>
+    <tr><td>設計変更のあと、担当が不明</td><td><code>design-change</code> ラベルと担当ルール</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a> §4</td></tr>
+    <tr><td>決定の記録が散らばる</td><td>記録先を2か所にする</td><td>ハブの 🙋 4列目と、案件の <code>ADR.md</code></td></tr>
+  </table></div>
+</section>
+
+</main>
+<footer>
+  ⚠️ このサイトには実データ・秘匿値（API キー・パスワード等）を載せません。
+</footer>
+</body>
+</html>
