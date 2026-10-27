@@ -3,121 +3,62 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>開発ハブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rampart+One&text=%E9%9B%B7%E7%A6%85%E9%BB%84%E6%B3%89%E8%BB%80&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --muted: #5f6b7a;
-    --line: #dfe3e8; --accent: #2f6fed; --warn: #b45309; --warn-bg: #fef3c7;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-    font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.65; }
-  a { color: var(--accent); }
-  header, main, footer { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
-  header { padding-top: 24px; }
-  h1 { font-size: 1.5rem; margin: 0 0 4px; }
-  .lead { color: var(--muted); margin: 0 0 16px; }
-  .start { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; }
-  .start h2 { font-size: 1.05rem; margin: 0 0 6px; }
-  .start ul { margin: 0; padding-left: 1.2em; }
-  .cols { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: start; }
-  .col { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
-  .col > h2 { font-size: 1.05rem; margin: 0 0 2px; }
-  .freq { color: var(--muted); font-size: .8rem; margin: 0 0 10px; }
-  .card { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; overflow-wrap: anywhere; }
-  .card h3 { font-size: .92rem; margin: 0 0 2px; }
-  .card p { margin: 2px 0; font-size: .85rem; color: var(--muted); }
-  .card.todo { border-style: dashed; }
-  .badge { display: inline-block; font-size: .72rem; padding: 0 8px; border-radius: 10px;
-    background: var(--warn-bg); color: var(--warn); }
-  .ver { font-size: .78rem; color: var(--muted); }
-  .empty { color: var(--muted); font-size: .85rem; }
-  footer { padding: 20px 16px 32px; color: var(--muted); font-size: .82rem; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #14171c; --card: #1d2229; --text: #e6e9ed; --muted: #9aa5b1; --line: #323a44;
-      --accent: #7aa7ff; --warn: #fbbf24; --warn-bg: #3b2f10; }
-  }
+*{box-sizing:border-box}
+:root{color-scheme:light;--bg:#FFF9DB;--ink:#2A1B3D;--mut:#54476B;--card:#FFFFFF;--hero:#FF69B4;--yellow:#FFD700;--pink:#FF69B4;--teal:#40E0D0;--dot:rgba(42,27,61,.10);--head:"Rampart One","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;--body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
+body{margin:0;color:var(--ink);font:500 16px/1.75 var(--body);background-color:var(--bg);background-image:radial-gradient(var(--dot) 1.2px,transparent 1.4px),repeating-linear-gradient(0deg,transparent 0 31px,rgba(42,27,61,.05) 31px 32px);background-size:10px 10px,100% 32px}
+.band{position:relative;overflow:hidden;background-color:var(--ink);color:#fff;background-image:radial-gradient(rgba(255,255,255,.12) 1.4px,transparent 1.6px);background-size:9px 9px;padding:18px 16px 22px}
+.band::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;background:linear-gradient(90deg,var(--yellow) 0 33.3%,var(--pink) 0 66.6%,var(--teal) 0)}
+.in,.wrap{max-width:1040px;margin:0 auto}
+.hero{display:flex;gap:16px;align-items:stretch}
+.vert{writing-mode:vertical-rl;font:800 1.1rem/1 var(--body);letter-spacing:.3em;border-left:3px solid #fff;padding-left:10px;white-space:nowrap}
+.names{display:flex;flex-wrap:wrap;gap:4px 28px;align-items:flex-end;flex:1;margin:0}
+.names span{font:400 clamp(2.6rem,9vw,5.6rem)/1.05 var(--head);color:transparent;-webkit-text-stroke:2px #fff;paint-order:stroke fill;letter-spacing:.02em;position:relative}
+.names span::before{content:"";position:absolute;left:0;top:-4px;width:.35em;height:.35em;border-radius:50%;border:2px solid var(--ink);background:var(--m)}
+.names span:nth-child(1){--m:var(--yellow)}.names span:nth-child(2){--m:var(--pink)}.names span:nth-child(3){--m:var(--teal)}
+.sub{margin:6px 0 12px;font-size:.9rem}
+.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0;padding:0;list-style:none}
+.stg{border:3px solid #fff;border-radius:10px;padding:3px 8px;text-align:center;line-height:1.35;background:#fff;color:var(--ink)}
+.stg b{display:block;font:800 1rem/1.4 var(--body)}.stg small{font-size:.8rem;color:var(--mut)}
+.wrap{padding:22px 16px 8px}.sec{margin:0 0 26px}
+.sec h2{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:2px 14px;font:800 1.3rem/1.6 var(--body);background:var(--card);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.mk{display:inline-flex;gap:3px}.mk i{width:9px;height:9px;border-radius:50%;border:2px solid var(--ink)}.mk i:nth-child(1){background:var(--yellow)}.mk i:nth-child(2){background:var(--pink)}.mk i:nth-child(3){background:var(--teal)}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:12px}.sechead h2{margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:10px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;min-height:132px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.card h3{margin:0;font:800 1.02rem/1.5 var(--body)}.card p{margin:0;font-size:.9rem;color:var(--mut)}.card .go{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px;padding-top:6px}
+.btn{display:inline-block;padding:2px 14px;border:2px solid var(--ink);border-radius:999px;background:var(--ink);color:#fff;font:800 .9rem/1.6 var(--body);text-decoration:none}
+.btn:hover{background:var(--hero);color:var(--ink)}.btn:focus-visible,a:focus-visible{outline:3px solid var(--hero);outline-offset:2px}
+.btn:focus-visible{box-shadow:0 0 0 2px var(--ink)}
+.badge{align-self:flex-start;padding:0 10px;border:2px solid var(--ink);border-radius:999px;font:800 .8rem/1.6 var(--body);background:#fff}
+.today .card{background:var(--hero);box-shadow:6px 6px 0 var(--ink);min-height:150px}.today .card p{color:var(--ink)}
+.today .btn:hover{background:#fff;color:var(--ink)}.today .btn:focus-visible{outline-color:var(--ink)}
+.today h2{font-size:1.45rem}
+footer{max-width:1040px;margin:0 auto;padding:6px 16px 28px;font-size:.85rem;color:var(--mut)}
+@media(prefers-reduced-motion:no-preference){.btn{transition:background-color .15s,transform .15s}.btn:hover{transform:translateY(-1px)}}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.stages{grid-template-columns:1fr 1fr}.vert{font-size:.9rem}}
 </style>
 </head>
 <body>
-<header>
-  <h1>🧭 開発ハブ</h1>
-  <p class="lead">開発で迷ったら、まずここ。毎日見る場所から、たまに見る場所まで、列ごとにまとめています。</p>
-  <section class="start" aria-labelledby="start">
-    <h2 id="start">🚀 開発の始め方（初回だけ）</h2>
-    <ul>
-      <li><a href="setup.html"><b>セットアップガイド</b>（初めての人はここから）</a></li>
-      <li>環境の導入手順：
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順.md">Mac</a> /
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順_Windows.md">Windows</a></li>
-      <li><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a></li>
-      <li><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/PRレビュー規定.md">PRレビュー規定</a></li>
-    </ul>
-  </section>
-</header>
-
-<main>
-  <div class="cols">
-
-    <section class="col" aria-labelledby="c1">
-      <h2 id="c1">🔥 毎日</h2>
-      <p class="freq">毎日見る</p>
-      <div class="card todo"><h3>開発の全体像</h3><p>仮リンク（あとで作成）</p><p><a href="#">全体像（準備中）</a></p></div>
-      <div class="card todo"><h3>進捗</h3><p>仮リンク（あとで作成）</p><p><a href="#">進捗（準備中）</a></p></div>
-      <div class="card"><h3>自分の担当 Issue</h3>
-        <p><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=is%3Aopen+assignee%3A%40me">is:open assignee:@me</a></p></div>
-      <div class="card"><h3>レビュー依頼されている PR</h3>
-        <p><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pulls?q=is%3Apr+is%3Aopen+review-requested%3A%40me">is:pr is:open review-requested:@me</a></p></div>
-    </section>
-
-    <section class="col" aria-labelledby="c2">
-      <h2 id="c2">🎨 完成イメージ</h2>
-      <p class="freq">仕様が動くたびに見る</p>
-      <div class="card"><h3>モック</h3><p><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/docs/mock/README.md">docs/mock/（作り方と置き場）</a></p></div>
-      <div class="card todo"><h3>主要フロー図</h3><p class="empty">置き場のみ。未作成</p></div>
-      <div class="card todo"><h3>画面遷移図</h3><p class="empty">置き場のみ。未作成</p></div>
-      <div class="card todo"><h3>ER図</h3><p class="empty">置き場のみ。未作成</p></div>
-      <div class="card"><h3>今週の変更点</h3>
-        <p><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=label%3Adesign-change">label:design-change の Issue</a></p></div>
-    </section>
-
-    <section class="col" aria-labelledby="c3">
-      <h2 id="c3">📚 5文書</h2>
-      <p class="freq">要求 → 要件 → 仕様 → 設計 → テスト設計</p>
-      <div class="card"><h3>① <a href="docs5/_template/youkyu.html">要求</a></h3><p><span class="badge">作業中・未確定</span></p><p class="ver">版（コミットID）：—</p></div>
-      <div class="card"><h3>② <a href="docs5/_template/youken.html">要件</a></h3><p><span class="badge">作業中・未確定</span></p><p class="ver">版（コミットID）：—</p></div>
-      <div class="card"><h3>③ <a href="docs5/_template/shiyou.html">仕様</a></h3><p><span class="badge">作業中・未確定</span></p><p class="ver">版（コミットID）：—</p></div>
-      <div class="card"><h3>④ <a href="docs5/_template/sekkei.html">設計</a></h3><p><span class="badge">作業中・未確定</span></p><p class="ver">版（コミットID）：—</p></div>
-      <div class="card"><h3>⑤ <a href="docs5/_template/test.html">テスト設計</a></h3><p><span class="badge">作業中・未確定</span></p><p class="ver">版（コミットID）：—</p></div>
-      <p class="empty"><a href="docs5/index.html">一覧</a>。HTML はビルド時に生成（案件フォルダが決まるまで <code>_template</code>）</p>
-    </section>
-
-    <section class="col" aria-labelledby="c4">
-      <h2 id="c4">🙋 決めること・決めたこと</h2>
-      <p class="freq">論点が出たら見る</p>
-      <div class="card"><h3>決めること（案A / 案B）</h3>
-        <p class="empty">論点ごとに案A・案Bのモックを並べて見比べる欄。いまは空です。</p></div>
-      <div class="card"><h3>決めたこと</h3>
-        <p class="empty">決定（誰が・なぜ・本人回答）を残す欄。いまは空です。</p></div>
-    </section>
-
-    <section class="col" aria-labelledby="c5">
-      <h2 id="c5">💡 ルール・運用＋ナレッジシェア</h2>
-      <p class="freq">困ったとき・たまに見る</p>
-      <div class="card"><h3>ルール</h3><p>
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/作業ルール.md">作業ルール</a> /
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/V字フロー規定.md">V字フロー規定</a></p></div>
-      <div class="card"><h3>ナレッジ</h3><p>
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/index.md">ナレッジ一覧</a> /
-        <a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/README.md">README</a></p></div>
-    </section>
-
-  </div>
+<header class="band"><div class="in">
+<div class="hero"><div class="vert" aria-hidden="true">開発ハブ</div>
+<h1 class="names" aria-label="開発ハブ（雷禅・黄泉・軀）"><span aria-hidden="true">雷禅</span><span aria-hidden="true">黄泉</span><span aria-hidden="true">軀</span></h1></div>
+<p class="sub">開発ハブ ― 4つのステージで進めます</p>
+<ol class="stages"><li class="stg"><b>STAGE 1</b><small>W1</small></li><li class="stg"><b>STAGE 2</b><small>W2</small></li><li class="stg"><b>STAGE 3</b><small>W3</small></li><li class="stg"><b>STAGE 4</b><small>W4</small></li></ol>
+</div></header>
+<main class="wrap">
+<section class="sec today"><h2><span aria-hidden="true">🔥</span>今日やること<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><div class="grid"><div class="card"><h3>自分の担当 Issue</h3><p>担当になっている、終わっていない Issue</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=is%3Aopen+assignee%3A%40me">一覧を開く →</a></span></div><div class="card"><h3>レビュー待ちの PR</h3><p>自分にレビューが求められている PR</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pulls?q=is%3Apr+is%3Aopen+review-requested%3A%40me">一覧を開く →</a></span></div><div class="card"><h3>今週の変更点</h3><p>design-change ラベルの Issue</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=label%3Adesign-change">一覧を開く →</a></span></div></div></section>
+<section class="sec "><h2><span aria-hidden="true">📅</span>毎日<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><div class="grid"><div class="card"><h3>開発の全体像</h3><p>準備中</p><span class="go"><span class="badge">準備中</span></span></div><div class="card"><h3>進捗</h3><p>準備中</p><span class="go"><span class="badge">準備中</span></span></div><div class="card"><h3>節目の記録</h3><p>準備中</p><span class="go"><span class="badge">準備中</span></span></div></div></section>
+<section class="sec "><div class="sechead"><h2><span aria-hidden="true">📚</span>節目で開く<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><a class="btn" href="docs5/index.html">5文書の一覧 →</a><span class="note" style="font-size:.85rem;color:var(--mut)">要求 → 要件 → 仕様 → 設計 → テスト設計の順。HTML はビルド時に生成（案件フォルダが決まるまで <code>_template</code>）</span></div><div class="grid"><div class="card"><h3>① 要求</h3><span class="badge">作業中・未確定</span><p>版（コミットID）：—</p><span class="go"><a class="btn" href="docs5/_template/youkyu.html">開く →</a></span></div><div class="card"><h3>② 要件</h3><span class="badge">作業中・未確定</span><p>版（コミットID）：—</p><span class="go"><a class="btn" href="docs5/_template/youken.html">開く →</a></span></div><div class="card"><h3>③ 仕様</h3><span class="badge">作業中・未確定</span><p>版（コミットID）：—</p><span class="go"><a class="btn" href="docs5/_template/shiyou.html">開く →</a></span></div><div class="card"><h3>④ 設計</h3><span class="badge">作業中・未確定</span><p>版（コミットID）：—</p><span class="go"><a class="btn" href="docs5/_template/sekkei.html">開く →</a></span></div><div class="card"><h3>⑤ テスト設計</h3><span class="badge">作業中・未確定</span><p>版（コミットID）：—</p><span class="go"><a class="btn" href="docs5/_template/test.html">開く →</a></span></div><div class="card"><h3>完成イメージ</h3><p>モックの置き場。主要フロー図・画面遷移図・ER図は置き場のみ（未作成）</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/docs/mock/README.md">モック置き場 →</a></span></div></div></section>
+<section class="sec "><h2><span aria-hidden="true">🚀</span>最初だけ<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><div class="grid"><div class="card"><h3>セットアップガイド</h3><p>初めての人はここから</p><span class="go"><a class="btn" href="setup.html">開く →</a></span></div><div class="card"><h3>環境の導入手順</h3><p>週1要約などの定期実行</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順.md">Mac</a><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/定期実行の導入手順_Windows.md">Windows</a></span></div><div class="card"><h3>作成・レビューの決まり</h3><p>Issue と PR の書き方</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/PRレビュー規定.md">PRレビュー規定</a></span></div></div></section>
+<section class="sec "><h2><span aria-hidden="true">💡</span>ナレッジ<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><div class="grid"><div class="card"><h3>ルール・運用</h3><p>作業の決まり</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/作業ルール.md">作業ルール</a><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/V字フロー規定.md">V字フロー規定</a></span></div><div class="card"><h3>ナレッジ</h3><p>学びと決定の記録</p><span class="go"><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/index.md">ナレッジ一覧</a><a class="btn" href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/01_ナレッジ/README.md">README</a></span></div><div class="card"><h3>決めること・決めたこと</h3><p>案A/案Bのモックを見比べる欄と、決定（誰が・なぜ・本人回答）の欄。いまは空です</p><span class="go"><span class="badge">準備中</span></span></div></div></section>
 </main>
-
-<footer>
-  ⚠️ このサイトには実データ・秘匿値（API キー・パスワード等）を載せません。架空データだけを使います。
-</footer>
+<footer>⚠️ このサイトには実データ・秘匿値（API キー・パスワード等）を載せません。架空データだけを使います。</footer>
 </body>
 </html>
