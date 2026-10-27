@@ -8,7 +8,7 @@
    "milestone": {
     "number": 1,
     "title": "1 5文書",
-    "due_on": "2026-10-30T14:59:59Z"
+    "due_on": "2026-10-31T14:59:59Z"
    },
    "assignees": [
     {
@@ -24,7 +24,7 @@
    "milestone": {
     "number": 1,
     "title": "1 5文書",
-    "due_on": "2026-10-30T14:59:59Z"
+    "due_on": "2026-10-31T14:59:59Z"
    },
    "assignees": [
     {
@@ -40,7 +40,7 @@
    "milestone": {
     "number": 1,
     "title": "1 5文書",
-    "due_on": "2026-10-30T14:59:59Z"
+    "due_on": "2026-10-31T14:59:59Z"
    },
    "assignees": [
     {
@@ -55,8 +55,8 @@
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/4",
    "milestone": {
     "number": 2,
-    "title": "2 設計・テスト設計",
-    "due_on": "2026-11-06T14:59:59Z"
+    "title": "2 実装①",
+    "due_on": "2026-11-07T14:59:59Z"
    },
    "assignees": [
     {
@@ -74,8 +74,8 @@
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/5",
    "milestone": {
     "number": 2,
-    "title": "2 設計・テスト設計",
-    "due_on": "2026-11-06T14:59:59Z"
+    "title": "2 実装①",
+    "due_on": "2026-11-07T14:59:59Z"
    },
    "assignees": [
     {
@@ -90,8 +90,8 @@
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/6",
    "milestone": {
     "number": 3,
-    "title": "3 実装",
-    "due_on": "2026-11-20T14:59:59Z"
+    "title": "3 実装②",
+    "due_on": "2026-11-14T14:59:59Z"
    },
    "assignees": [
     {
@@ -114,8 +114,8 @@
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/8",
    "milestone": {
     "number": 3,
-    "title": "3 実装",
-    "due_on": "2026-11-20T14:59:59Z"
+    "title": "3 実装②",
+    "due_on": "2026-11-14T14:59:59Z"
    },
    "assignees": []
   },
@@ -127,7 +127,7 @@
    "milestone": {
     "number": 4,
     "title": "4 評価・受入",
-    "due_on": null
+    "due_on": "2026-11-21T14:59:59Z"
    },
    "assignees": [
     {
@@ -175,22 +175,22 @@
   {
    "number": 1,
    "title": "1 5文書",
-   "due_on": "2026-10-30T14:59:59Z"
+   "due_on": "2026-10-31T14:59:59Z"
   },
   {
    "number": 2,
-   "title": "2 設計・テスト設計",
-   "due_on": "2026-11-06T14:59:59Z"
+   "title": "2 実装①",
+   "due_on": "2026-11-07T14:59:59Z"
   },
   {
    "number": 3,
-   "title": "3 実装",
-   "due_on": "2026-11-20T14:59:59Z"
+   "title": "3 実装②",
+   "due_on": "2026-11-14T14:59:59Z"
   },
   {
    "number": 4,
    "title": "4 評価・受入",
-   "due_on": null
+   "due_on": "2026-11-21T14:59:59Z"
   }
  ]
 }

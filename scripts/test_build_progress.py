@@ -23,10 +23,10 @@ class T(unittest.TestCase):
 
     def test_late_uses_milestone_due_jst(self):
         rows = {r["number"]: r for p in model()["people"] for r in p["rows"]}
-        self.assertEqual(rows[3]["late"], 6)  # 期限 10/30(JST)、今日 11/5 → 6日
+        self.assertEqual(rows[3]["late"], 5)  # 期限 10/31(JST)、今日 11/5 → 5日
         self.assertEqual(rows[5]["late"], 0)  # 期限 11/7
         self.assertEqual(rows[1]["late"], 0)  # 完了は遅延にしない
-        self.assertEqual(rows[9]["late"], 0)  # 期限なし
+        self.assertEqual(rows[9]["late"], 0)  # 期限 11/21
 
     def test_names_and_fallback(self):
         names = [p["name"] for p in model()["people"]]
