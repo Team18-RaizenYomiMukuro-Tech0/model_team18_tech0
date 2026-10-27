@@ -15,7 +15,6 @@ needs-human:
           - '00_ルール/**'
           - '.github/ISSUE_TEMPLATE/**'
           - '.github/pull_request_template.md'
-          - '.github/CODEOWNERS'
           - '.github/labeler.yml'
           # §3-4 レビューや要約の動き方を決める指示文（ルーチンは main のこれらを毎回読む）
           - 'scripts/scheduled/**'
