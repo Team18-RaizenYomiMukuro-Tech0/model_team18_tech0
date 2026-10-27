@@ -109,13 +109,14 @@
   <h2 id="s2">② 仕組みを知る <span class="time">10分</span></h2>
   <h3>1日の流れ</h3>
   <ol class="flow">
-    <li><b>① Issue を選ぶ</b>完了条件を読む。担当は PM が決める</li>
+    <li><b>① Issue を選ぶ</b>完了条件を読む</li>
     <li><b>② ブランチ</b>作業用のブランチを切る。AI スタッフが実装を手伝う</li>
     <li><b>③ PR</b>PR テンプレートに証拠（テスト出力・画面）を書く</li>
-    <li><b>④ AI レビュー</b>機械が先に見る。決まりに外れていれば指摘が付く</li>
-    <li><b>⑤ 人のレビュー・マージ</b>人が見て、人がマージする</li>
-    <li><b>⑥ 週1要約</b>決定と学びがナレッジに戻る</li>
+    <li><b>④ AI レビュー</b>Draft でない PR を作ったときと、毎朝 8:00（日本時間）に動く。Draft では動かない。Issue のない PR は AI が承認しない。5文書やルールの変更は <code>needs-human</code> で人に回る（PRレビュー規定 §2〜§4）</li>
+    <li><b>⑤ 人のレビュー・マージ</b>AI 承認（<code>ai-approved</code>）が付けば、作成者がマージしてよい。<code>needs-human</code> の PR は他メンバーの承認を待つ。開発に影響しない作業（ダッシュボード・01_ナレッジ等）は自分でマージ可（PRレビュー規定 §3〜§5）</li>
+    <li><b>⑥ 週1要約</b>失敗の吸い上げ（<code>mistakes.jsonl</code>）を要約して、CLAUDE.md の「よくあるミス」を更新する</li>
   </ol>
+  <p>スタッフは、5文書に書いていないこと・未決のことは作らない。「仕様に書かれていません」と報告して止まる（CLAUDE.md 追記）。</p>
   <h3>AI スタッフ6人の担当と、人が決めること</h3>
   <div class="tblwrap"><table>
     <tr><th>AI スタッフ</th><th>担当</th></tr>
@@ -124,13 +125,13 @@
     <tr><td>Mi-rin</td><td>画面・フロントエンド</td></tr>
     <tr><td>Terao</td><td>API・DB</td></tr>
     <tr><td>Kurosu</td><td>テスト設計どおりの検証と証拠</td></tr>
-    <tr><td>yamapi</td><td>決定・学びの記録（ナレッジ）</td></tr>
+    <tr><td>yamapi</td><td>決定と学びをナレッジに返す</td></tr>
   </table></div>
   <div class="tblwrap"><table>
     <tr><th>人が決めること</th></tr>
-    <tr><td>案の採否（「Aで」など本人の回答で決める）／実装開始の承認（PM が「OK、進めて」）／担当の割り振りと期限（PM）／PR のマージ／セキュリティ発展・実データ・外部公開は運営に相談して承認を得てから</td></tr>
+    <tr><td>案の採否（「Aで」など本人の回答で決める）／実装開始の承認（PM が「OK、進めて」）／設計変更で増えた Issue の担当と期限（PM。Issue作成規定 §4）／運営に相談して承認を得てから進めること: 認証・認可、実データ、外部公開、追加の外部サービス、SCA・SAST・CSPM・DAST・手動IDOR、GitHub 基線</td></tr>
   </table></div>
-  <div class="note"><b>注意:</b> <code>hive/</code>（スタッフの記憶・ボード）は <code>.gitignore</code> の対象で、<b>PC ごとに別</b>。3人で共有されるのは GitHub 上の Issue・PR・文書だけ。スタッフに話した内容は、Issue や PR に書かないと他の人に届かない。</div>
+  <div class="note"><b>注意:</b> <code>hive/</code>（スタッフの記憶・ボード）は <code>.gitignore</code> の対象で、<b>PC ごとに別</b>。GitHub の Org メンバー3人（PM・re-ji・matsuki）で共有されるのは GitHub 上の Issue・PR・文書だけ。スタッフに話した内容は、Issue や PR に書かないと他の人に届かない。</div>
 </section>
 
 <section class="sec" aria-labelledby="s3">
@@ -141,8 +142,9 @@
     <tr><td>完成形が見えず、AI 案どおりになる</td><td>画面が関わる仕様は、モックを見て人が選ぶ（試行）</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/V字フロー規定.md">V字フロー規定</a>、<a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/docs/mock/README.md">docs/mock/</a></td></tr>
     <tr><td>Issue の完了が判定しにくい</td><td>完了条件を、テストか画面で1行ずつ書く</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a> §2</td></tr>
     <tr><td>設計変更のあと、担当が不明</td><td><code>design-change</code> ラベルと担当ルール</td><td><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/00_ルール/Issue作成規定.md">Issue作成規定</a> §4</td></tr>
-    <tr><td>決定の記録が散らばる</td><td>記録先を2か所にする</td><td>ハブの 🙋 4列目と、案件の <code>ADR.md</code></td></tr>
   </table></div>
+  <h3>今回の追加の工夫</h3>
+  <p>決定の記録: 決定の本文は <code>ADR.md</code>。ハブ4列目（🙋）は、論点と決めたことの一覧（ADR の ID へのリンク）。</p>
 </section>
 
 </main>
