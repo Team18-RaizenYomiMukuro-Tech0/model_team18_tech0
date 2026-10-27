@@ -17,7 +17,7 @@
 - マージ後に作業ブランチを自動削除
 - Secret scanning と push protection、Dependabot alerts を有効化
 - Actions の `GITHUB_TOKEN` は読み取りのみ。外部からの PR でワークフローを動かすときは毎回承認が必要
-- ラベル: `needs-human`・`ai-review:doing`・`ai-approved`
+- ラベル: `needs-human`・`ai-review:doing`・`ai-approved`・`design-change`
 
 ## メンバーと権限
 - Organization: `Team18-RaizenYomiMukuro-Tech0`（Free）。管理者は `Hiroki0023`
