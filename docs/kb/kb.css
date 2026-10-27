@@ -116,3 +116,18 @@ td{border:0;padding:2px 0}td::before{content:attr(data-label);display:block;font
 .fig .l1{fill:var(--r1);font:800 13px var(--body)}.fig .l2{fill:var(--r2);font:800 13px var(--body)}
 .lg i{display:inline-block;width:30px;margin-right:6px;vertical-align:middle;border-top:3px solid var(--kac)}.lg i.r1{border-top:3px dashed var(--r1)}.lg i.r2{border-top:3px dashed var(--r2)}
 @media(max-width:700px){#f2 .t{font-size:17px}#f2 .l1,#f2 .l2{font-size:17px}}
+
+/* 講義ページ専用の部品（ねらい・状態・ハイライト枠・要設定枠・前回の反省） */
+.aim{margin:var(--s3) 0 var(--s2);padding:var(--s2) var(--s3);background:var(--tint);color:var(--ctext);border:var(--bw1) solid var(--line);border-left:8px solid var(--kac);border-radius:var(--r1);font-weight:800}
+.aim b{display:inline-block;margin-right:var(--s2);padding:0 10px;border-radius:var(--rp);background:var(--btn);color:var(--btext);font-size:var(--fs-xs);line-height:1.9}
+.stat{margin:var(--s3) 0 var(--s2);padding:var(--s2) var(--s3);border:var(--bw1) dashed var(--kac);border-radius:var(--r1)}.stat b{margin-right:var(--s2)}
+.ba.mini{margin-top:var(--s3)}.ba.mini p{margin:0}
+.st.set{background:var(--m1);color:#12091F;border:var(--bw1) solid #12091F;margin-left:6px}
+.need{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-left:12px solid var(--m1);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);margin:var(--s3) 0}.need p{margin:0}.need .nh{margin-bottom:var(--s2)}
+.hl{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh2,5px 5px 0 var(--kac));padding:var(--s3) var(--s4);margin:var(--s3) 0}
+.hl .h{display:inline-block;margin-bottom:var(--s2);padding:0 12px;border-radius:var(--rp);background:var(--hero);color:var(--onhero);font-size:var(--fs-xs);line-height:1.9}
+.chain{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:stretch;gap:var(--s2)}
+.chain li{flex:1 1 200px;position:relative;padding:var(--s2) var(--s3);border:var(--bw1) solid var(--line);border-radius:var(--r1);background:var(--tint);font-weight:800}
+.chain li+li::before{content:"→";position:absolute;left:-17px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--kac)}
+.toc li.sum{list-style:none;margin-left:-1.4em;font-weight:800}
+@media(max-width:700px){.chain li{flex-basis:100%}.chain li+li::before{content:"↓";left:50%;top:-16px;transform:translateX(-50%)}.chain{gap:22px}}
