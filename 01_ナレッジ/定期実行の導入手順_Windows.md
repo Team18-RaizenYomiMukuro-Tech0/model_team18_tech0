@@ -99,3 +99,23 @@ Mac 版と同じ（[[定期実行の導入手順]] の「許可ツール」の�
 - Windows 実機で、`run-digest.ps1`・`register-digest-task.ps1`・タスクの実行・hook・pre-commit のどれも動かしていない。PowerShell の構文チェックもこの作業環境では実行できなかった（読み合わせのみ）。
 - Windows 版 `claude` が Bash ツールを Git Bash で動かす前提のパス表記（`/` 区切り）。
 - hook を Git Bash で動かす前提（PowerShell が既定になっている環境では `for ... do` の書き方が動かない）。
+
+## 動作確認チェックリスト
+導入が終わったら、上から順に実行して「結果」を ○／× で記録する。**Windows 実機での確認はまだ誰もしていない**ので、このチェックリストの結果が最初の実機の証拠になる。× が付いた行は、§7 のつまずき表を見てから、それでも直らなければ PM に見せる。
+
+| # | 確認すること | コマンド（PowerShell・`<REPO>` で実行） | 期待する表示 | 結果 |
+| --- | --- | --- | --- | --- |
+| 1 | Git が入っている | `git --version` | `git version 2.` で始まる | |
+| 2 | Python が入っている | `python --version`（通らなければ `py --version`） | `Python 3.` で始まる（ストアが開く・何も出ないは ×） | |
+| 3 | GitHub CLI にログイン済み | `gh auth status` | `Logged in to github.com` を含む | |
+| 4 | Claude Code が入っている | `claude --version` | バージョン番号が出る | |
+| 5 | pre-commit が有効 | `git config core.hooksPath` | `.githooks` | |
+| 6 | pre-commit が `.env` を止める | `New-Item .env -Value 'X=1' ; git add -f .env ; git commit -m test` のあと、必ず `git restore --staged .env ; Remove-Item .env` | コミットが失敗し `[pre-commit] .env ファイルはコミットできません` が出る（コミットは作られない） | |
+| 7 | 週1要約の試し実行（`-DryRun`）が成功 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\run-digest.ps1 -DryRun` のあと、§3 のログ表示コマンド | ログに `digest start` が出て、エラーで終わっていない（`今週は記録なし` で終わるのも ○） | |
+| 8 | タスクが登録済み | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\register-digest-task.ps1 -Action Status` | `NextRunTime` が次の月曜 09:00、`状態: Ready` | |
+| 9 | hook の記録スクリプトが動く（単体） | `'{"tool_name":"Bash","hook_event_name":"PostToolUseFailure","tool_input":{"command":"ls nope"},"error":"test"}' \| python scripts\collect-mistake.py` のあと `Get-Content 01_ナレッジ\_inbox\mistakes.jsonl -Tail 1 -Encoding UTF8` | `"command": "ls nope"` を含む1行が出る。確認後、その行は消してよい（試し記録が週1要約に混ざらないように） | |
+| 10 | hook が Claude Code の失敗を記録する | Claude Code をこのリポジトリで起動し、「`git nope` を実行して」と頼む（失敗するコマンド）。そのあと #9 の `Get-Content` を実行 | `"command": "git nope"`（または同等の失敗コマンド）を含む行が増えている | |
+
+- #9 と #10 の両方が ○ なら、`.claude/settings.json` の hook（`python3` → `python` → `py` の探索）が動いている。#9 だけ ○ で #10 が × なら、Claude Code が hook を Git Bash で動かしていない可能性があるので、そのまま PM に報告する。
+- #8 は登録していない人は ×（先に §4）。
+- 結果の返し方（案。PM が決めるまでは仮にチャット）: 表の「結果」列を ○／× にした表を、PM が決めた先（GitHub の Issue か、チームのチャット）に貼って返す。× の行は、出力を貼る。貼る前に、ユーザー名を含むパスやキー・トークンが映っていないか確認し、映っていたら消す。
