@@ -9,6 +9,8 @@ updated: 2026-10-27
 
 # 定期実行の導入手順（Windows）
 
+この手順で入れるのは**週1要約**だけ。**AI レビューは Windows の登録が要らない**（claude.ai の画面で作る。[[レビュールーチンの設定手順]]）。
+
 Windows の PC で、Mac と同じ3つの自動化を使えるようにする手順。**Windows 実機では動かしていない（未検証）**。うまくいかないところが出たら、画面とログ（秘匿値を消したもの）を PM に見せてほしい。
 
 | 自動化 | Windows での扱い |
@@ -53,8 +55,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\run-digest
 Get-ChildItem $env:LOCALAPPDATA\munder-scheduled | Sort-Object LastWriteTime -Descending | Select-Object -First 3
 Get-Content (Get-ChildItem $env:LOCALAPPDATA\munder-scheduled\digest-*.log | Sort-Object LastWriteTime -Descending | Select-Object -First 1) -Encoding UTF8
 ```
-- ファイル・git・gh は一切変更しない（許可は `Read/Glob/Grep` のみ）。出力は画面ではなくログに出る。
-- 「今週は記録なし」と出て終わるのは正常（`_inbox/mistakes.jsonl` が空か無い）。試すだけなら、Claude Code で `git nope` のような失敗するコマンドを1回走らせると記録が作られる。
+- ファイルは変更しない。git は `git fetch origin main` だけ行う（許可は `Read/Glob/Grep` のみ）。出力は画面ではなくログに出る。
+- 「今週は記録なし」と出て終わるのは正常だが、**そのときは claude まで試されていない**（記録が空だと claude を起動する前に終わる。ログインや許可ツールは試されない）。claude まで通すには、Claude Code をこのリポジトリで起動し「`git nope` を実行して」と頼んで `01_ナレッジ\_inbox\mistakes.jsonl` に記録を作り、もう一度 `-DryRun` を実行する。ログに「今週は記録なし」が出ず claude の報告が出れば合格。
 - ログが想定どおりなら次へ進む。
 
 ## 4. 登録・状態確認・解除
@@ -71,6 +73,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\register-d
 ```
 - タスク名は `MunderDigest`。管理者権限は要らない（自分のユーザーのタスクとして、ログオン中だけ動く設定）。
 - PC が月曜 09:00 に起きていなかったときは、起きたあとに1回走る（`StartWhenAvailable`）。
+- 入れ直すときは `-Action Register` をもう一度実行する（同名のタスクは上書きされる）。
 - タスクスケジューラの画面（「タスク スケジューラ」アプリ → タスク スケジューラ ライブラリ）でも `MunderDigest` が見える。
 
 ## 5. 許可ツールと限界
@@ -92,7 +95,7 @@ Mac 版と同じ（[[定期実行の導入手順]] の「許可ツール」の�
 | 日本語が文字化けする | 文字コード | ログは `Get-Content ... -Encoding UTF8` で開く。メモ帳で開くときは UTF-8 を選ぶ |
 | フォルダ名に日本語・空白があるパス | クローン先が `C:\Users\山田 太郎\...` など | 動かないときは `C:\work\model_team18_tech0` のような半角英数字だけのパスに clone し直す（見立て・未検証） |
 | `locked: ... (already running)` で終わる | 前回の実行が途中で止まりロックが残った | 走っていないことを確認して `Remove-Item -Recurse $env:LOCALAPPDATA\munder-scheduled\digest.lock` |
-| タスクは登録できたが走らない | スリープ中／ログオフ中 | ログオン中でないと走らない。`-Action Status` の `LastTaskResult` を見る（0 が成功） |
+| タスクは登録できたが走らない | スリープ中／ログオフ中 | ログオン中でないと走らない。ログオフ中・シャットダウン中の分は、次にログオンしたときに1回走る設定（`StartWhenAvailable`）。実機では未確認。`-Action Status` の `LastTaskResult` を見る（0 が成功） |
 | 改行コードの警告（`LF will be replaced by CRLF`） | Git の自動変換 | 警告だけなら無視してよい。`.sh` が動かないときは `git config core.autocrlf input` にしてから clone し直す |
 
 ## 未検証の点（まとめ）
@@ -110,8 +113,8 @@ Mac 版と同じ（[[定期実行の導入手順]] の「許可ツール」の�
 | 3 | GitHub CLI にログイン済み | `gh auth status` | `Logged in to github.com` を含む | |
 | 4 | Claude Code が入っている | `claude --version` | バージョン番号が出る | |
 | 5 | pre-commit が有効 | `git config core.hooksPath` | `.githooks` | |
-| 6 | pre-commit が `.env` を止める | `New-Item .env -Value 'X=1' ; git add -f .env ; git commit -m test` のあと、必ず `git restore --staged .env ; Remove-Item .env` | コミットが失敗し `[pre-commit] .env ファイルはコミットできません` が出る（コミットは作られない） | |
-| 7 | 週1要約の試し実行（`-DryRun`）が成功 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\run-digest.ps1 -DryRun` のあと、§3 のログ表示コマンド | ログに `digest start` が出て、エラーで終わっていない（`今週は記録なし` で終わるのも ○） | |
+| 6 | pre-commit が `.env` を止める（**#5 が ○ のときだけ実行する**） | `New-Item .env -Value 'X=1' ; git add -f .env ; git commit -m test` のあと、必ず `git restore --staged .env ; Remove-Item .env` | コミットが失敗し `[pre-commit] .env ファイルはコミットできません` が出る。**#5 が × のまま実行すると、`.env` を含む `test` コミットが本当にできてしまう。** できたときは、`git reset --soft HEAD~1` で戻し、`git restore --staged .env ; Remove-Item .env` を実行する（push はしない） | |
+| 7 | 週1要約の試し実行（`-DryRun`）が成功 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\run-digest.ps1 -DryRun` のあと、§3 のログ表示コマンド | ログに `digest start` が出て、エラーで終わっていない。**`今週は記録なし` で終わったときは claude まで試されていない**（記録が空だと claude を起動する前に終わる）。claude まで試すには §3 の手順で記録を1行作ってから、もう一度実行する | |
 | 8 | タスクが登録済み | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\register-digest-task.ps1 -Action Status` | `NextRunTime` が次の月曜 09:00、`状態: Ready` | |
 | 9 | hook の記録スクリプトが動く（単体） | `'{"tool_name":"Bash","hook_event_name":"PostToolUseFailure","tool_input":{"command":"ls nope"},"error":"test"}' \| python scripts\collect-mistake.py` のあと `Get-Content 01_ナレッジ\_inbox\mistakes.jsonl -Tail 1 -Encoding UTF8` | `"command": "ls nope"` を含む1行が出る。確認後、その行は消してよい（試し記録が週1要約に混ざらないように） | |
 | 10 | hook が Claude Code の失敗を記録する | Claude Code をこのリポジトリで起動し、「`git nope` を実行して」と頼む（失敗するコマンド）。そのあと #9 の `Get-Content` を実行 | `"command": "git nope"`（または同等の失敗コマンド）を含む行が増えている | |
