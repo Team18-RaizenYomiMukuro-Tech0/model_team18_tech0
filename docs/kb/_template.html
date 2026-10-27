@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>記事の題（書式の見本）</title>
+<script>(function(){try{var t=localStorage.getItem("hub-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kb.css">
+</head>
+<body>
+<!-- ===== 書式の見本。本文はすべてダミー。新しい記事は このファイルを複製して本文を差し替える ===== -->
+<header class="kb-band"><div class="kb-in">
+<div class="kb-nav"><a href="../hub.html">← 開発ハブ</a><button id="tg" class="tg" type="button" aria-pressed="false" aria-label="ダークモード" hidden><span class="ic" aria-hidden="true">☀️</span><span>ダークモード</span></button></div>
+<h1>記事の題がここに入ります</h1>
+<p class="lead">この記事で分かること・できるようになることを、1〜2文で書きます（ダミー文）。</p>
+<ul class="meta"><li>所要時間 約30分</li><li>対象: 参加メンバー</li><li>更新: 2026-10-27</li></ul>
+</div></header>
+
+<main class="kb">
+<details class="toc" id="toc"><summary>目次（全4章・約40分）</summary>
+<ol><li><a href="#c1">章の見出しの見本</a><span class="t">約5分</span></li><li><a href="#c2">要点と前後比較</a><span class="t">約10分</span></li><li><a href="#c3">手順とチェック</a><span class="t">約15分</span></li><li><a href="#c4">流れ図と出典</a><span class="t">約10分</span></li></ol></details>
+
+<h2 class="chap" id="c1"><span class="no">1</span>章の見出しの見本<span class="time">約5分</span></h2>
+<p>ここに本文が入ります。ダミーの文です。ダミーの文です。ダミーの文です。ダミーの文です。<code>コードや用語</code>はこのように書きます。リンクは<a href="#c2">このように</a>下線付きです。</p>
+<p><span class="st live">動いている</span> すでに使える仕組みの札の見本です。　<span class="st plan">予定</span> まだない仕組みは、必ずこの札をつけます。</p>
+<h3 class="sub">小見出しの見本</h3>
+<p>小見出しの下の本文です（ダミー）。</p>
+
+<h2 class="chap" id="c2"><span class="no">2</span>要点と前後比較<span class="time">約10分</span></h2>
+<div class="point"><b class="h">要点</b><p>この章で覚えておくことを、短く書く枠の見本です（ダミー）。</p><p>2つめの段落も置けます（ダミー）。</p></div>
+<div class="ba">
+<div class="before"><span class="k">前</span><ul><li>変える前の状態の例（ダミー）</li><li>項目は短く書きます</li></ul></div>
+<div class="after"><span class="k">後</span><ul><li>変えたあとの状態の例（ダミー）</li><li>スマホでは縦に並びます</li></ul></div>
+</div>
+<div class="trap"><b class="h">ハマりどころ</b><p>つまずきやすい点と、その直し方を書く札の見本です（ダミー）。</p></div>
+
+<h2 class="chap" id="c3"><span class="no">3</span>手順とチェック<span class="time">約15分</span></h2>
+<ol class="steps">
+<li><b>最初の手順の題（ダミー）</b><p>手順の説明です。1手順につき1つの操作にします。</p></li>
+<li><b>次の手順の題（ダミー）</b><p>コマンドは <code>git clone ...</code> のようにコピペできる形で書きます。</p></li>
+<li><b>最後の手順の題（ダミー）</b><p>終わったかどうかの確認方法も書きます。</p></li>
+</ol>
+<ul class="check">
+<li><label><input type="checkbox"><span>できたかの確認項目 その1（ダミー）</span></label></li>
+<li><label><input type="checkbox" checked><span>できたかの確認項目 その2（チェック済みの見た目）</span></label></li>
+<li><label><input type="checkbox"><span>できたかの確認項目 その3（ダミー）</span></label></li>
+</ul>
+
+<h2 class="chap" id="c4"><span class="no">4</span>流れ図と出典<span class="time">約10分</span></h2>
+<figure class="fig">
+<svg viewBox="0 0 420 210" role="img" aria-labelledby="fg-t fg-d"><title id="fg-t">流れ図の見本</title><desc id="fg-d">4つの箱が輪になってつながる。要求、実装、レビュー、ルールの更新の順で、最後は最初に戻る。（ダミー）</desc>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" class="a"/></marker></defs>
+<rect class="n hot" x="20" y="20" width="140" height="56" rx="12"/><text class="t" x="90" y="53" text-anchor="middle">① 要求</text>
+<rect class="n" x="260" y="20" width="140" height="56" rx="12"/><text class="t" x="330" y="53" text-anchor="middle">② 実装</text>
+<rect class="n" x="260" y="134" width="140" height="56" rx="12"/><text class="t" x="330" y="167" text-anchor="middle">③ レビュー</text>
+<rect class="n" x="20" y="134" width="140" height="56" rx="12"/><text class="t" x="90" y="167" text-anchor="middle">④ ルール更新</text>
+<path class="e" d="M160,48 L254,48" marker-end="url(#ar)"/><path class="e" d="M330,76 L330,128" marker-end="url(#ar)"/><path class="e" d="M260,162 L166,162" marker-end="url(#ar)"/><path class="e" d="M90,134 L90,82" marker-end="url(#ar)"/>
+</svg>
+<figcaption>図の見本: 色は変数（--kac など）なのでライト／ダークで自動で切り替わります。図には必ず title と desc を付けます。</figcaption>
+</figure>
+
+<section class="src"><h2>出典</h2><ul><li>出典の名前（ダミー）— 使った範囲を一言で</li><li>リポジトリ内の文書（ダミー）</li></ul></section>
+</main>
+<footer class="kb-foot">開発ハブの記事書式（kb.css）。本文はダミーです。</footer>
+<script>(function(){var b=document.getElementById("tg"),r=document.documentElement;if(!b)return;function cur(){var a=r.getAttribute("data-theme");if(a==="light"||a==="dark")return a;try{return window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){return"light"}}function show(){var d=cur()==="dark";b.setAttribute("aria-pressed",d?"true":"false");b.setAttribute("aria-label","ダークモード（"+(d?"オン":"オフ")+"）");b.querySelector(".ic").textContent=d?"🌙":"☀️"}b.hidden=false;show();b.addEventListener("click",function(){var n=cur()==="dark"?"light":"dark";r.setAttribute("data-theme",n);try{localStorage.setItem("hub-theme",n)}catch(e){}show()});try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",show)}catch(e){}})();
+(function(){try{if(window.matchMedia("(min-width: 701px)").matches){document.getElementById("toc").open=true}}catch(e){}})();</script>
+</body>
+</html>
