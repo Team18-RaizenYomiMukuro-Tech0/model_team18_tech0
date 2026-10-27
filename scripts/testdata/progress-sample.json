@@ -1,0 +1,200 @@
+{
+ "issues": [
+  {
+   "number": 1,
+   "title": "要求定義を統合する",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/1",
+   "milestone": {
+    "number": 1,
+    "title": "1 5文書",
+    "due_on": "2026-10-30T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "Hiroki0023"
+    }
+   ]
+  },
+  {
+   "number": 2,
+   "title": "要件の機能一覧を埋める",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/2",
+   "milestone": {
+    "number": 1,
+    "title": "1 5文書",
+    "due_on": "2026-10-30T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "re-ji-tech0"
+    }
+   ]
+  },
+  {
+   "number": 3,
+   "title": "仕様のデータ項目を確定する",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/3",
+   "milestone": {
+    "number": 1,
+    "title": "1 5文書",
+    "due_on": "2026-10-30T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "matsuki24335"
+    }
+   ]
+  },
+  {
+   "number": 4,
+   "title": "設計: 画面遷移図",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/4",
+   "milestone": {
+    "number": 2,
+    "title": "2 設計・テスト設計",
+    "due_on": "2026-11-06T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "re-ji-tech0"
+    },
+    {
+     "login": "matsuki24335"
+    }
+   ]
+  },
+  {
+   "number": 5,
+   "title": "テスト設計の期待結果",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/5",
+   "milestone": {
+    "number": 2,
+    "title": "2 設計・テスト設計",
+    "due_on": "2026-11-06T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "Hiroki0023"
+    }
+   ]
+  },
+  {
+   "number": 6,
+   "title": "API の実装",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/6",
+   "milestone": {
+    "number": 3,
+    "title": "3 実装",
+    "due_on": "2026-11-20T14:59:59Z"
+   },
+   "assignees": [
+    {
+     "login": "re-ji-tech0"
+    }
+   ]
+  },
+  {
+   "number": 7,
+   "title": "外部の協力者の確認依頼",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/7",
+   "milestone": null,
+   "assignees": [
+    {
+     "login": "guest-dev"
+    }
+   ]
+  },
+  {
+   "number": 8,
+   "title": "担当を決める",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/8",
+   "milestone": {
+    "number": 3,
+    "title": "3 実装",
+    "due_on": "2026-11-20T14:59:59Z"
+   },
+   "assignees": []
+  },
+  {
+   "number": 9,
+   "title": "受入の観点を整える",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/9",
+   "milestone": {
+    "number": 4,
+    "title": "4 評価・受入",
+    "due_on": null
+   },
+   "assignees": [
+    {
+     "login": "Hiroki0023"
+    }
+   ]
+  },
+  {
+   "number": 20,
+   "title": "feat: 仕様の項目を追加",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/20",
+   "milestone": null,
+   "assignees": [],
+   "pull_request": {
+    "merged_at": "2026-10-29T01:00:00Z"
+   },
+   "body": "Closes #3"
+  },
+  {
+   "number": 21,
+   "title": "feat: API の骨組み",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/21",
+   "milestone": null,
+   "assignees": [],
+   "pull_request": {
+    "merged_at": null
+   }
+  },
+  {
+   "number": 22,
+   "title": "試しに閉じた PR",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/22",
+   "milestone": null,
+   "assignees": [],
+   "pull_request": {
+    "merged_at": null
+   },
+   "body": "Closes #5"
+  }
+ ],
+ "milestones": [
+  {
+   "number": 1,
+   "title": "1 5文書",
+   "due_on": "2026-10-30T14:59:59Z"
+  },
+  {
+   "number": 2,
+   "title": "2 設計・テスト設計",
+   "due_on": "2026-11-06T14:59:59Z"
+  },
+  {
+   "number": 3,
+   "title": "3 実装",
+   "due_on": "2026-11-20T14:59:59Z"
+  },
+  {
+   "number": 4,
+   "title": "4 評価・受入",
+   "due_on": null
+  }
+ ]
+}
