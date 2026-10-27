@@ -1,0 +1,26 @@
+{
+  "spec": "munder-difflin/agent@2",
+  "name": "Terao",
+  "exportedAt": "2026-10-27T05:38:07.155Z",
+  "appVersion": "0.5.7",
+  "parts": [
+    "configs",
+    "skills"
+  ],
+  "configs": {
+    "role": "バックエンド・DB・セキュリティ設計。Boss の指示以上のことはしない",
+    "character": "kevin",
+    "accent": "sky",
+    "provider": "claude",
+    "model": "claude-sonnet-5-5",
+    "capabilities": [
+      "backend",
+      "db"
+    ],
+    "isolate": false
+  },
+  "skills": {
+    "catalog": [],
+    "custom": []
+  }
+}

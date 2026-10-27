@@ -1,0 +1,26 @@
+{
+  "spec": "munder-difflin/agent@2",
+  "name": "Kurosu",
+  "exportedAt": "2026-10-27T05:37:58.145Z",
+  "appVersion": "0.5.7",
+  "parts": [
+    "configs",
+    "skills"
+  ],
+  "configs": {
+    "role": "テスト。Boss の指示以上のことはしない",
+    "character": "angela",
+    "accent": "coral",
+    "provider": "claude",
+    "model": "claude-sonnet-5-5",
+    "capabilities": [
+      "testing",
+      "qa"
+    ],
+    "isolate": false
+  },
+  "skills": {
+    "catalog": [],
+    "custom": []
+  }
+}
