@@ -1,0 +1,26 @@
+{
+  "spec": "munder-difflin/agent@2",
+  "name": "Mi-rin",
+  "exportedAt": "2026-10-27T05:38:01.146Z",
+  "appVersion": "0.5.7",
+  "parts": [
+    "configs",
+    "skills"
+  ],
+  "configs": {
+    "role": "フロントエンド・デザイン。Boss の指示以上のことはしない",
+    "character": "kelly",
+    "accent": "coral",
+    "provider": "claude",
+    "model": "claude-sonnet-5-5",
+    "capabilities": [
+      "frontend",
+      "design"
+    ],
+    "isolate": false
+  },
+  "skills": {
+    "catalog": [],
+    "custom": []
+  }
+}
