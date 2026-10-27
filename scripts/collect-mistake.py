@@ -21,6 +21,10 @@ def mask(text):
         s = s.replace(home, "~")
     s = re.sub(r"/Users/[^/\s]+", "/Users/<user>", s)
     s = re.sub(r"/home/[^/\s]+", "/home/<user>", s)
+    # Windows のユーザーフォルダ: C:\Users\名前 / C:/Users/名前 / Git Bash の /c/Users/名前 / WSL の /mnt/c/Users/名前
+    # 名前に空白があっても、次の区切り（\ か /）まで伏せる。区切りが無ければ空白までを伏せる
+    s = re.sub(r"(?i)\b([A-Z]):[\\/]+Users[\\/]+(?:[^\\/:\"'<>|*?\r\n]+(?=[\\/])|[^\\/\s\"']+)", r"\1:/Users/<user>", s)
+    s = re.sub(r"(?i)(?<![\w.\-/])((?:/mnt)?/[a-z])/Users/(?:[^/:\"'<>|*?\r\n]+(?=/)|[^/\s\"']+)", r"\1/Users/<user>", s)
     # KEY=VALUE / KEY: VALUE 形式の秘匿値
     s = re.sub(
         r"(?i)\b([A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|API[_-]?KEY|PASSWD|PASS|PRIVATE[_-]?KEY)[A-Z0-9_]*)\s*[=:]\s*([^\s'\"]+)",
