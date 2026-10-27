@@ -5,7 +5,7 @@
   生成先: <out>/docs5/<案件フォルダ>/{youkyu,youken,shiyou,sekkei,test}.html と <out>/docs5/index.html
 
 各ページの機能:
-  - 先頭に「この文書で決まったこと」欄（.md に該当の節があれば抜き出し、なければ「未記入」）
+  - 先頭に「この文書で決まったこと」欄（.md に該当の節があるときだけ抜き出して出す。節がなければ枠ごと省略）
   - R/F/N/SP/DATA/D/AC/U/I/S/A の ID を、定義のある文書の表の行へのアンカーにして、文書間でリンク
   - ```mermaid のコードブロックは図として表示
   - ページ下に元の .md へのリンクと生成元コミット ID
@@ -80,7 +80,6 @@ pre code{background:none;padding:0}
 pre.mermaid{background:none;text-align:center}
 .decided{background:var(--decided);border:1px solid var(--decided-line);border-radius:8px;padding:.6rem 1rem;margin:1rem 0}
 .decided>h2{font-size:1rem;margin:.2rem 0 .4rem;border:0;padding:0}
-.decided .empty{color:var(--muted);font-weight:700;margin:.2rem 0}
 footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
 ul.projects{list-style:none;padding:0}
 ul.projects li{margin:.4rem 0}
@@ -258,11 +257,13 @@ def build_project(project, out_root, repo, commit):
         else:
             decided_md, rest = extract_decided(text)
             decided_html = render(decided_md) if decided_md else ""
-            if not re.sub(r"<[^>]+>|\s", "", decided_html):
-                decided_html = '<p class="empty">未記入</p>'
-            # 先頭の h1 を先に出し、その直後に「決まったこと」欄を置く
+            # 節が無い（または中身が空の）文書では枠ごと出さない。ある場合は先頭の h1 の直後に置く
+            has_decided = bool(re.sub(r"<[^>]+>|\s", "", decided_html))
             main_html = render(rest)
-            decided_box = f'<section class="decided" aria-label="この文書で決まったこと"><h2>この文書で決まったこと</h2>{decided_html}</section>'
+            decided_box = (
+                f'<section class="decided" aria-label="この文書で決まったこと"><h2>この文書で決まったこと</h2>{decided_html}</section>'
+                if has_decided else ""
+            )
             m = re.match(r"\s*(<h1>.*?</h1>)(.*)", main_html, re.S)
             main_html = (m.group(1) + decided_box + m.group(2)) if m else decided_box + main_html
             body = link_ids(main_html, key, defined)

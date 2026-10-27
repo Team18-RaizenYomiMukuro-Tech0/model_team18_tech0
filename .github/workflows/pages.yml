@@ -2,7 +2,7 @@
 #  - docs/ の手書きページをそのままコピーし、5文書（02_プロジェクト/*/ の .md）を scripts/build-docs5.py で HTML にして docs5/ に置く
 #  - 5文書の HTML はビルド時に生成するだけで、コミットしない（書くのは .md だけ）
 #  - main への push と手動実行で公開する。PR では「ビルドが通るか」だけ確かめ、公開はしない
-# 前提: リポジトリ設定 Pages の Source を「GitHub Actions」にしておく（PR では設定しない。マージ後に PM が行う）。
+# 前提: リポジトリ設定 Pages の Source を「GitHub Actions」にしておく（PR では設定しない。マージ後に god が行う）。
 name: Pages 公開
 
 on:
