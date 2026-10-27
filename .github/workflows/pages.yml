@@ -1,0 +1,75 @@
+# GitHub Pages への自動公開。
+#  - docs/ の手書きページをそのままコピーし、5文書（02_プロジェクト/*/ の .md）を scripts/build-docs5.py で HTML にして docs5/ に置く
+#  - 5文書の HTML はビルド時に生成するだけで、コミットしない（書くのは .md だけ）
+#  - main への push と手動実行で公開する。PR では「ビルドが通るか」だけ確かめ、公開はしない
+# 前提: リポジトリ設定 Pages の Source を「GitHub Actions」にしておく（PR では設定しない。マージ後に god が行う）。
+name: Pages 公開
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "02_プロジェクト/**"
+      - "scripts/build-docs5.py"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "02_プロジェクト/**"
+      - "scripts/build-docs5.py"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+# 公開は1本ずつ。実行中の公開は止めない（途中で切ると公開が中途半端になるため）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: 5文書を HTML にする
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: 依存を入れる（markdown だけ）
+        run: python -m pip install markdown==3.7
+
+      - name: サイトを組み立てる
+        run: |
+          mkdir -p _site
+          # 手書きの静的ページ。docs/ がまだ無くてもビルドは通る
+          if [ -d docs ]; then cp -R docs/. _site/; fi
+          python scripts/build-docs5.py --out _site
+          # Jekyll による処理を止める（アンダースコア始まりの案件フォルダ _template を公開するため）
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    name: 公開する
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
