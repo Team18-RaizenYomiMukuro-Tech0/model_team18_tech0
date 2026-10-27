@@ -40,7 +40,10 @@
 <p class="legend">各章は「ねらい → 仕組み → あなたがやること → 状態」の順。章末に「前回の反省 → 今回」を1行。</p>
 <div class="point"><b class="h">3行サマリー</b><ul><li>AI の出来はぶれる。だから「うまく頼む」より、ぶれても大丈夫な仕組みを先に作る。</li><li>仕組みは3つ。Munder Difflin とスタッフ6人／毎回読ませる <code>.md</code> のルール／GitHub の Issue と PR。</li><li>人は4か所（案の採否・実装開始・AI レビュー後のレビュー・マージ）で決める。あとは仕組みが回す。</li></ul></div>
 <details class="toc" id="toc"><summary>目次（全8章・約45分）</summary>
-<ol start="1"><li><a href="#c1">考え方</a><span class="t">4分</span></li><li><a href="#c2">流れ図</a><span class="t">6分</span></li><li><a href="#c3">5文書</a><span class="t">6分</span></li><li><a href="#c4">Issue</a><span class="t">7分</span></li><li><a href="#c5">進捗</a><span class="t">5分</span></li><li><a href="#c6">AI レビュー</a><span class="t">6分</span></li><li><a href="#c7">失敗の吸い上げ</a><span class="t">6分</span></li><li><a href="#c8">設計変更後のルール</a><span class="t">5分</span></li><li class="sum">合計<span class="t">45分</span></li></ol></details>
+<ol start="1"><li class="why-li"><a href="#md-map">この仕組みを Munder Difflin で回す</a></li><li><a href="#c1">考え方</a><span class="t">4分</span></li><li><a href="#c2">流れ図</a><span class="t">6分</span></li><li><a href="#c3">5文書</a><span class="t">6分</span></li><li><a href="#c4">Issue</a><span class="t">7分</span></li><li><a href="#c5">進捗</a><span class="t">5分</span></li><li><a href="#c6">AI レビュー</a><span class="t">6分</span></li><li><a href="#c7">失敗の吸い上げ</a><span class="t">6分</span></li><li><a href="#c8">設計変更後のルール</a><span class="t">5分</span></li><li class="sum">合計<span class="t">45分</span></li></ol></details>
+<h2 class="chap" id="md-map">この仕組みを Munder Difflin で回す</h2>
+<div class="tbl"><table><thead><tr><th>講義の仕組み</th><th>Munder Difflin で担うもの</th></tr></thead><tbody><tr><td data-label="講義の仕組み">5文書の壁打ち(<a href="#c3">3章</a>)</td><td data-label="Munder Difflin で担うもの">りじちょー。「○○はどうしますか」と一問ずつ聞き、決めるのは人</td></tr><tr><td data-label="講義の仕組み">Issue → 実装 → PR(<a href="#c4">4章</a>)</td><td data-label="Munder Difflin で担うもの">りじちょーが振り、Takahiro(設計)・Mi-rin(画面)・Terao(API・DB)が作る</td></tr><tr><td data-label="講義の仕組み">書く役と確かめる役を分ける(<a href="#c1">1章</a>)</td><td data-label="Munder Difflin で担うもの">Kurosu が、テスト設計どおりに検証して証拠を残す</td></tr><tr><td data-label="講義の仕組み">人が決めること(<a href="#c2">2章</a>)</td><td data-label="Munder Difflin で担うもの">人にしか進められないものは ASK ME にまとまる</td></tr><tr><td data-label="講義の仕組み">進み具合を見る(<a href="#c5">5章</a>)</td><td data-label="Munder Difflin で担うもの">Tasks と Inbox。その先は GitHub と開発ハブ(<a href="../setup.html#why">セットアップガイド冒頭</a>の④)</td></tr><tr><td data-label="講義の仕組み">失敗の吸い上げ(<a href="#c7">7章</a>)</td><td data-label="Munder Difflin で担うもの">yamapi が決定と学びをナレッジに返す。ブレーカーと予算が繰り返しと使いすぎを止める</td></tr></tbody></table></div>
+
 <h2 class="chap" id="c1"><span class="no">1</span>考え方<span class="time">4分</span></h2>
 <p class="aim"><b>ねらい</b>3つの仕組みで、AI のぶれを抑える。</p>
 <h3 class="sub">仕組み</h3>
@@ -95,10 +98,10 @@
 <h2 class="chap" id="c6"><span class="no">6</span>AI レビュー<span class="time">6分</span></h2>
 <p class="aim"><b>ねらい</b>レビュアーの負担を減らし、開発のスピードを上げる。AI が先に見て、人は重要なものだけ見る。</p>
 <h3 class="sub">仕組み</h3>
-<ul><li>規定：<code>00_ルール/PRレビュー規定.md</code>。AI は完了条件の表を1行ずつ判定し、○／×／確認できない を書く。そろえば <code>ai-approved</code>。</li><li>AI が承認せず人に回す（<code>needs-human</code>）：Issue が紐づかない PR／5文書の変更／PM に確認すべき内容／<code>CLAUDE.md</code>・<code>00_ルール/</code> などルールの変更／秘匿情報の疑い。</li><li>起動は Draft でない PR を作ったときと、毎朝 8:00（JST）。作業中の PR は Draft で出す。</li><li>マージ：<code>ai-approved</code> が付いたら作成者がマージしてよい。<code>needs-human</code> は他のメンバーの承認を待つ。</li></ul><div class="need"><p class="nh"><span class="st live">動いている</span><span class="st set">要設定</span></p><p><b>自動レビューにはセットアップが必要。</b> 手順は <a href="../setup.html#c6"><code>docs/setup.html</code> 6章</a>のオプション（AI レビューの定期実行）と <code>01_ナレッジ/レビュールーチンの設定手順.md</code>。設定しないと自動では動かない。</p></div>
+<ul><li>規定：<code>00_ルール/PRレビュー規定.md</code>。AI は完了条件の表を1行ずつ判定し、○／×／確認できない を書く。そろえば <code>ai-approved</code>。</li><li>AI が承認せず人に回す（<code>needs-human</code>）：Issue が紐づかない PR／5文書の変更／PM に確認すべき内容／<code>CLAUDE.md</code>・<code>00_ルール/</code> などルールの変更／秘匿情報の疑い。</li><li>起動は Draft でない PR を作ったときと、毎朝 8:00（JST）。作業中の PR は Draft で出す。</li><li>マージ：<code>ai-approved</code> が付いたら作成者がマージしてよい。<code>needs-human</code> は他のメンバーの承認を待つ。</li></ul><div class="need"><p class="nh"><span class="st live">動いている</span><span class="st set">要設定</span></p><p><b>自動レビューにはセットアップが必要。</b> 手順は <a href="../setup.html#c6"><code>docs/setup.html</code> 付録A</a>のオプション（AI レビューの定期実行）と <code>01_ナレッジ/レビュールーチンの設定手順.md</code>。設定しないと自動では動かない。</p></div>
 <h3 class="sub">あなたがやること</h3>
-<ul><li>PR には Issue を紐づけ、完了条件ごとの証拠（テストは出力、画面はスクリーンショット）を貼る。</li><li>自動レビューを使うなら、セットアップ（6章オプション）を済ませる。</li></ul>
-<p class="stat"><b>状態</b>規定・機械チェック<span class="st live">動いている</span>／AI レビューの自動起動<span class="st live">動いている</span>（試験 PR で PR 作成の2秒後に起動を確認。自分の分は <code>docs/setup.html</code> 6章で設定。ラベル・承認の付与は<span class="st unk">未確認</span>）／複数エージェントのレビューは<span class="st plan">予定</span></p>
+<ul><li>PR には Issue を紐づけ、完了条件ごとの証拠（テストは出力、画面はスクリーンショット）を貼る。</li><li>自動レビューを使うなら、セットアップ（付録Aのオプション）を済ませる。</li></ul>
+<p class="stat"><b>状態</b>規定・機械チェック<span class="st live">動いている</span>／AI レビューの自動起動<span class="st live">動いている</span>（試験 PR で PR 作成の2秒後に起動を確認。自分の分は <code>docs/setup.html</code> 付録Aで設定。ラベル・承認の付与は<span class="st unk">未確認</span>）／複数エージェントのレビューは<span class="st plan">予定</span></p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は PM 1人にレビューが集中した</p></div><div class="after"><span class="k">今回</span><p>今回は AI が先に判定し、人は重要なものに絞る。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>00_ルール/PRレビュー規定.md</code>、<code>01_ナレッジ/レビュールーチンの設定手順.md</code>、<code>docs/setup.html</code>（PR #4・#13）</p></section>
 
@@ -107,7 +110,7 @@
 <h3 class="sub">仕組み</h3>
 <div class="tbl"><table><thead><tr><th>段</th><th>何が動くか</th><th>ファイル・ツール</th></tr></thead><tbody><tr><td data-label="段">① 随時の記録</td><td data-label="何が動くか">失敗した Bash を hook が自動で追記（マスク後）</td><td data-label="ファイル・ツール"><code>.claude/settings.json</code>、<code>01_ナレッジ/_inbox/mistakes.jsonl</code></td></tr><tr><td data-label="段">② 週1要約</td><td data-label="何が動くか">毎週月曜 09:00。同じ意味のミスを「型」にまとめる</td><td data-label="ファイル・ツール"><code>scripts/weekly-digest.py</code>、Mac は launchd／Windows はタスクスケジューラ</td></tr><tr><td data-label="段">③ ルールへ</td><td data-label="何が動くか">2回以上の型を <code>CLAUDE.md</code>「よくあるミス」に載せる（PR・<code>needs-human</code>）</td><td data-label="ファイル・ツール"><code>CLAUDE.md</code>、<code>01_ナレッジ/mistakes/</code></td></tr></tbody></table></div><ul><li>記録は PC の中だけ（<code>_inbox/</code> は git の管理外）。</li></ul>
 <h3 class="sub">あなたがやること</h3>
-<ul><li>① は自動。失敗を手で書き残さなくてよい。</li><li>② は各自の PC で定期実行を登録する（<a href="../setup.html#c6"><code>docs/setup.html</code> 6章</a>オプション）。</li><li>週1の PR が来たら、内容を見てマージ（<code>CLAUDE.md</code> を変えるので人が見る）。</li><li>使いどころ：<code>mistakes/</code>（週1要約の初回実行で作られる）を読めばノウハウ集、案件の終わりの振り返りの材料、新しい人の学習材料になる。</li></ul>
+<ul><li>① は自動。失敗を手で書き残さなくてよい。</li><li>② は各自の PC で定期実行を登録する（<a href="../setup.html#c6"><code>docs/setup.html</code> 付録A</a>オプション）。</li><li>週1の PR が来たら、内容を見てマージ（<code>CLAUDE.md</code> を変えるので人が見る）。</li><li>使いどころ：<code>mistakes/</code>（週1要約の初回実行で作られる）を読めばノウハウ集、案件の終わりの振り返りの材料、新しい人の学習材料になる。</li></ul>
 <p class="stat"><b>状態</b>記録・型へのまとめ<span class="st live">動いている</span>／launchd 経由・本番モードの定期実行は<span class="st unk">未確認</span>／Windows は実機で<span class="st unk">未確認</span></p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は週1の自動ナレッジ化が動かなかった</p></div><div class="after"><span class="k">今回</span><p>今回は記録から <code>CLAUDE.md</code> まで1本につないだ。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>01_ナレッジ/自動吸い上げ設計.md</code>、<code>01_ナレッジ/定期実行の導入手順.md</code>、<code>01_ナレッジ/定期実行の導入手順_Windows.md</code>、PR #3・#4・#19</p></section>
@@ -121,7 +124,7 @@
 <p class="stat"><b>状態</b><span class="st live">動いている</span></p>
 <div class="ba mini"><div class="before"><span class="k">前回の反省</span><p>前回は PR だけで追って分かりにくかった</p></div><div class="after"><span class="k">今回</span><p>今回は Issue に集めて、ハブの <code>design-change</code> 一覧で見る。</p></div></div>
 <section class="src"><h2>出典</h2><p><code>00_ルール/Issue作成規定.md</code> §4、<code>00_ルール/PRレビュー規定.md</code> §4、PR #18</p></section>
-<nav class="xlink" aria-label="関連ページ"><a class="btn" href="../setup.html">セットアップガイド（約31分） →</a><span>手を動かす手順はこちら</span></nav>
+<nav class="xlink" aria-label="関連ページ"><a class="btn" href="../setup.html">セットアップガイド（約32分） →</a><span>手を動かす手順はこちら</span></nav>
 </main>
 <footer class="kb-foot"><a href="../hub.html">← 開発ハブに戻る</a></footer>
 <script src="kb.js" defer></script>
