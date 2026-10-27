@@ -12,7 +12,12 @@
 <link rel="stylesheet" href="kb.css">
 </head>
 <body>
-<!-- ===== 書式の見本。本文はすべてダミー。新しい記事は このファイルを複製して本文を差し替える ===== -->
+<!-- 新しい記事を作る手順（本文はすべてダミー）
+ 1. このファイルを docs/kb/<記事名>.html に複製する（kb.css・kb.js は同じ場所のまま。コピー不要）
+ 2. <title>・<h1>・.lead・.meta（所要時間・対象・更新日）を書き換える
+ 3. <details id="toc"> の目次と、章 <h2 class="chap" id="cN"> の番号・所要時間・id をそろえて書き換える
+ 4. 本文は部品（.point .ba .steps .st .trap .check .fig .src）の見本をコピーして使う。図には title と desc を付ける
+ 5. <head> のテーマ復元 script 1行と <script src="kb.js" defer> は消さない。見本の本文・ダミー文は全部消す -->
 <header class="kb-band"><div class="kb-in">
 <div class="kb-nav"><a href="../hub.html">← 開発ハブ</a><button id="tg" class="tg" type="button" aria-pressed="false" aria-label="ダークモード" hidden><span class="ic" aria-hidden="true">☀️</span><span>ダークモード</span></button></div>
 <h1>記事の題がここに入ります</h1>
@@ -66,7 +71,6 @@
 <section class="src"><h2>出典</h2><ul><li>出典の名前（ダミー）— 使った範囲を一言で</li><li>リポジトリ内の文書（ダミー）</li></ul></section>
 </main>
 <footer class="kb-foot">開発ハブの記事書式（kb.css）。本文はダミーです。</footer>
-<script>(function(){var b=document.getElementById("tg"),r=document.documentElement;if(!b)return;function cur(){var a=r.getAttribute("data-theme");if(a==="light"||a==="dark")return a;try{return window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){return"light"}}function show(){var d=cur()==="dark";b.setAttribute("aria-pressed",d?"true":"false");b.setAttribute("aria-label","ダークモード（"+(d?"オン":"オフ")+"）");b.querySelector(".ic").textContent=d?"🌙":"☀️"}b.hidden=false;show();b.addEventListener("click",function(){var n=cur()==="dark"?"light":"dark";r.setAttribute("data-theme",n);try{localStorage.setItem("hub-theme",n)}catch(e){}show()});try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",show)}catch(e){}})();
-(function(){try{if(window.matchMedia("(min-width: 701px)").matches){document.getElementById("toc").open=true}}catch(e){}})();</script>
+<script src="kb.js" defer></script>
 </body>
 </html>
