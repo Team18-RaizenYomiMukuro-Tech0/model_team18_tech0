@@ -106,3 +106,13 @@ pre code{background:none;padding:0;white-space:pre}
 tr{padding:var(--s2) var(--s3);border-top:var(--bw1) solid color-mix(in srgb,var(--ctext) 14%,transparent)}tr:first-child{border-top:0}
 td{border:0;padding:2px 0}td::before{content:attr(data-label);display:block;font:800 var(--fs-xs)/1.5 var(--body);color:var(--csub);letter-spacing:.04em}td:first-child::before{display:none}
 .fig .t{font-size:15px}.fig .s{font-size:12px}}
+
+/* 流れ図の戻り道（ピンク＝文書へ、別色＝精度の改善） */
+:root{--r1:#C21F7A;--r2:#0B7F77}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--r1:#FF5BCB;--r2:#40E0D0}}
+:root[data-theme="dark"]{--r1:#FF5BCB;--r2:#40E0D0}
+:root[data-theme="light"]{--r1:#C21F7A;--r2:#0B7F77}
+.fig .e1{stroke:var(--r1);stroke-width:3;stroke-dasharray:7 5}.fig .e2{stroke:var(--r2);stroke-width:3;stroke-dasharray:7 5}.fig .a1{fill:var(--r1)}.fig .a2{fill:var(--r2)}
+.fig .l1{fill:var(--r1);font:800 13px var(--body)}.fig .l2{fill:var(--r2);font:800 13px var(--body)}
+.lg i{display:inline-block;width:30px;margin-right:6px;vertical-align:middle;border-top:3px solid var(--kac)}.lg i.r1{border-top:3px dashed var(--r1)}.lg i.r2{border-top:3px dashed var(--r2)}
+@media(max-width:700px){#f2 .t{font-size:17px}#f2 .l1,#f2 .l2{font-size:17px}}
