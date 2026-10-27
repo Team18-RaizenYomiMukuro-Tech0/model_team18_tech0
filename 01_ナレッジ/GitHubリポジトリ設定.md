@@ -22,7 +22,7 @@
 ## メンバーと権限
 - Organization: `Team18-RaizenYomiMukuro-Tech0`（Free）。管理者は `Hiroki0023`
 - チーム `members`（書き込み権限）: `Hiroki0023`・`re-ji-tech0`・`matsuki24335`
-- CODEOWNERS は役割が決まってから入れる
+- CODEOWNERS は作らない（レビューの担当は PR レビュー規定と `.github/labeler.yml` の `needs-human` で決める。2026-10-27 りじちょー判断）
 
 ## 学び
 - ルールセットは push の後に入れる。先に入れると最初の push 自体が拒否される。

@@ -8,7 +8,7 @@
     "skills"
   ],
   "configs": {
-    "role": "書記。学びと決定をナレッジに返す。添削から voice を育てる",
+    "role": "書記。学びと決定をナレッジに返す。添削から言い回しを残す（必要になったら voice/ を作る）",
     "character": "phyllis",
     "accent": "sky",
     "provider": "claude",

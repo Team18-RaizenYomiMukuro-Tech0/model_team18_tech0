@@ -140,7 +140,7 @@ jobs:
             | sed -E 's/（[^）]*）//g; s/^[[:space:]]*-?[[:space:]]*要件 \/ 仕様 \/ テスト[[:space:]]*[:：]?//' \
             | tr -d '[:space:]')"
           if [ -z "$id_filled" ]; then
-            problems="${problems}- 「対応する文書の ID」が未記入です（例: F-01, I-02。Week 0 は「環境構築 章13」）。\n"
+            problems="${problems}- 「対応する文書の ID」が未記入です（例: F-01, I-02。Week 0 は「docs/setup.html」）。\n"
           fi
 
           # 「## チェック」の節（次の ## まで）のチェック欄
