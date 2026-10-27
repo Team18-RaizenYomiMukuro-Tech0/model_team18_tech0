@@ -172,3 +172,4 @@ td{border:0;padding:2px 0}td::before{content:attr(data-label);display:block;font
 .toc li.part-li{list-style:none;margin:.5em 0 0 -1.4em;font-weight:800}.toc li.nm{list-style:none;margin-left:-.5em}
 .src h3{margin:var(--s2) 0 0;font:800 var(--fs-s)/1.6 var(--body)}.src h3+p{margin:0}
 @media(max-width:700px){.part{font-size:1.25rem}.part .time{margin-left:0}}
+.flow4{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 5px;margin:var(--s2) 0 1.3em}.flow4 .fs{position:relative}.flow4 i{font-style:normal;font-weight:800;line-height:1.9}.flow4 small{position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.7rem;line-height:1.3;color:var(--sub);font-weight:700}
