@@ -142,3 +142,26 @@ td{border:0;padding:2px 0}td::before{content:attr(data-label);display:block;font
 .osp[hidden]{display:none}
 .osh{display:inline-block;margin:0 0 var(--s2);padding:0 14px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--tint);color:var(--ctext);font:800 var(--fs-xs)/1.9 var(--body)}
 .kb h4{margin:var(--s4) 0 var(--s2);font:800 var(--fs-m)/var(--lh-t) var(--body)}
+
+/* 帯「なぜセットアップするのか」（ハイライト枠・メリット4枚） */
+.why{margin:var(--s4) 0 var(--s5);padding-bottom:var(--s4);border-bottom:var(--bw1) dashed var(--kac)}
+.why>.chap{margin-top:0}
+.why-hl{background:var(--hero);color:var(--onhero);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:5px 5px 0 var(--kac);padding:var(--s4);margin:var(--s3) 0 var(--s4)}
+.why-hl h3{margin:0 0 var(--s2);font:800 1.5rem/var(--lh-t) var(--body)}.why-hl p{margin:0;font-weight:700}
+.why .tbl{margin:var(--s3) 0}.why-so{margin:var(--s4) 0 var(--s2)}
+.merits{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin:var(--s2) 0 var(--s4)}
+.merit{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-top:8px solid var(--m3);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s2) var(--s3) var(--s3)}
+.merit:nth-child(1){border-top-color:var(--m1)}.merit:nth-child(2){border-top-color:var(--m2)}.merit:nth-child(4){border-top-color:var(--kac)}
+.merit h3{margin:0 0 var(--s1);font:800 var(--fs-l)/var(--lh-t) var(--body)}.merit .mn{margin-right:6px}
+.merit p{margin:0 0 var(--s1);font-size:var(--fs-m);line-height:1.6}.merit p.note{font-size:var(--fs-s);color:var(--csub)}
+.why-go{margin:var(--s3) 0 0;padding:var(--s2) var(--s3);border-left:8px solid var(--kac);background:var(--tint);border-radius:var(--r1)}.why-go b{margin-right:var(--s2)}
+.toc li.why-li{list-style:none;margin-left:-1.4em;font-weight:800}
+@media(max-width:700px){.merits{grid-template-columns:1fr}.why-hl h3{font-size:1.25rem}}
+.why .tbl td,.why .tbl th{padding:5px 12px;line-height:1.5}.why .tbl td:first-child{width:44%}
+.why-hl{padding:var(--s3) var(--s4)}.why-hl h3{font-size:1.35rem}.why-hl p{font-size:var(--fs-m);line-height:1.6}
+.why-so{margin:var(--s3) 0 var(--s2)}.merits{margin:var(--s2) 0 var(--s3);gap:var(--s2)}.merit p{font-size:var(--fs-s);line-height:1.55}.merit h3{font-size:var(--fs-m)}
+.why .ba li{font-size:var(--fs-s);line-height:1.5}.why .ba{gap:var(--s2)}.why .sub{margin:var(--s3) 0 var(--s2)}
+.why .tbl td,.why .tbl th{font-size:var(--fs-s);padding:4px 10px}.why .tbl td:first-child{width:38%}
+.merit{padding:6px var(--s3) var(--s2)}.merit p{font-size:.8rem}.merit p.note{font-size:.76rem}
+.why .ba .k{margin-bottom:4px}.why .ba>div{padding:var(--s2) var(--s3)}.why-go{font-size:var(--fs-s);padding:6px var(--s3)}
+@media(max-width:700px){.why .tbl td:first-child{width:auto}}
