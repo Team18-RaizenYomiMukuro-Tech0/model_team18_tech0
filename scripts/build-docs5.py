@@ -56,7 +56,6 @@ MERMAID_URL = f"https://cdn.jsdelivr.net/npm/mermaid@{MERMAID_VERSION}/dist/merm
 
 CSS = """
 :root{--bg:#fff;--fg:#1f2328;--muted:#59636e;--line:#d1d9e0;--soft:#f6f8fa;--accent:#0969da;--decided:#fff8c5;--decided-line:#d4a72c}
-@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#9198a1;--line:#3d444d;--soft:#151b23;--accent:#4493f8;--decided:#2d2a12;--decided-line:#9e6a03}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif}
 main{max-width:60rem;margin:0 auto;padding:0 16px 48px}
@@ -218,8 +217,7 @@ def page(title, body, nav_html, footer_html, mermaid):
         script = (
             '<script type="module">'
             f'import mermaid from "{MERMAID_URL}";'
-            'const dark=matchMedia("(prefers-color-scheme: dark)").matches;'
-            'mermaid.initialize({startOnLoad:true,theme:dark?"dark":"default"});'
+            'mermaid.initialize({startOnLoad:true,theme:"default"});'
             "</script>"
         )
     return (

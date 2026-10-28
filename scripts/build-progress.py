@@ -186,7 +186,7 @@ def page(body, updated, sample=False):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <title>進捗｜雷禅・黄泉・軀</title>
 <meta name="description" content="担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。">
 <meta name="theme-color" content="#2A1B3D">
@@ -195,11 +195,10 @@ def page(body, updated, sample=False):
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="kb/kb.css">
 <style>{CSS}</style>
-<script>(function(){{try{{var t=localStorage.getItem("hub-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}}catch(e){{}}}})();</script>
 </head>
 <body>
 <header class="kb-band"><div class="kb-in">
-<div class="kb-nav"><a href="hub.html">← 開発ハブ</a><button id="tg" class="tg" type="button" aria-pressed="false" aria-label="ダークモード" hidden><span class="ic" aria-hidden="true">☀️</span><span>ダークモード</span></button></div>
+<div class="kb-nav"><a href="hub.html">← 開発ハブ</a></div>
 <h1>進捗{'<span class="sample">サンプル</span>' if sample else ''}</h1>
 <p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
 <ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
