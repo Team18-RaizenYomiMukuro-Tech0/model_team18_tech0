@@ -1,8 +1,6 @@
-/* kb.css — ナレッジ記事の共通書式（開発ハブ docs/hub.html と同じ色トークン・字・ダークモード切替）
-   使い方: <link rel="stylesheet" href="kb.css"> ＋ _template.html の <head>（フォント2行・テーマ復元の script）と末尾の script を写す */
+/* kb.css — ナレッジ記事の共通書式（開発ハブ docs/hub.html と同じ色トークン・字）
+   使い方: <link rel="stylesheet" href="kb.css"> ＋ _template.html の <head>（フォント2行）と末尾の script を写す */
 :root{--bg:#E3D8F3;--text:#2A1B3D;--sub:#3F3158;--card:#FFFFFF;--ctext:#2A1B3D;--csub:#54476B;--line:#2A1B3D;--hero:#FF69B4;--onhero:#2A1B3D;--btn:#2A1B3D;--btext:#FFFFFF;--bhover:#FFD700;--bhtext:#2A1B3D;--band:#2A1B3D;--btxt:#FFFFFF;--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;--focus:#FF69B4;--dot:rgba(42,27,61,.07);--dotb:rgba(255,255,255,.12);--hbg:#2A1B3D;--htext:#FFFFFF;--hsh:#FFD700;--kac:#2A1B3D;--tint:#F3EDFB;--code:#EFE7FA;--ok:#0B6B63;--okbg:#C9F3EE;--warn:#FFF1B8;--warnbd:#8A6A00;color-scheme:light}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1D1030;--text:#F7EFFF;--sub:#D9C9F0;--card:#2A1646;--ctext:#F4ECFF;--csub:#CDBBEA;--line:#12091F;--hero:#FF5BCB;--onhero:#12091F;--btn:#B8FF3D;--btext:#12091F;--bhover:#F4ECFF;--bhtext:#12091F;--band:#12091F;--btxt:#FFFFFF;--m1:#B8FF3D;--m2:#6FD6FF;--m3:#FF5BCB;--focus:#B8FF3D;--dot:rgba(247,239,255,.05);--dotb:rgba(247,239,255,.08);--hbg:#3B2263;--htext:#F7EFFF;--hsh:#B8FF3D;--kac:#9F86F0;--tint:#33205A;--code:#1D1030;--ok:#6FD6FF;--okbg:#12384A;--warn:#3A2D0C;--warnbd:#FFD36B;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1D1030;--text:#F7EFFF;--sub:#D9C9F0;--card:#2A1646;--ctext:#F4ECFF;--csub:#CDBBEA;--line:#12091F;--hero:#FF5BCB;--onhero:#12091F;--btn:#B8FF3D;--btext:#12091F;--bhover:#F4ECFF;--bhtext:#12091F;--band:#12091F;--btxt:#FFFFFF;--m1:#B8FF3D;--m2:#6FD6FF;--m3:#FF5BCB;--focus:#B8FF3D;--dot:rgba(247,239,255,.05);--dotb:rgba(247,239,255,.08);--hbg:#3B2263;--htext:#F7EFFF;--hsh:#B8FF3D;--kac:#9F86F0;--tint:#33205A;--code:#1D1030;--ok:#6FD6FF;--okbg:#12384A;--warn:#3A2D0C;--warnbd:#FFD36B;color-scheme:dark}
 /* 共通ルール（ハブと同じ値） */
 :root{--head:"Rampart One","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;--body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;--bw1:2px;--bw2:3px;--r1:8px;--r2:12px;--rp:999px;--s1:4px;--s2:8px;--s3:12px;--s4:20px;--s5:32px;--fs-xs:.78rem;--fs-s:.85rem;--fs-m:.94rem;--fs-l:1.08rem;--lh-t:1.4;--lh-b:1.8;--sh1:3px 3px 0 var(--line)}
 *{box-sizing:border-box}
@@ -14,10 +12,8 @@ code{font:600 .88em/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;bac
 .kb-band{position:relative;overflow:hidden;color:var(--btxt);padding:var(--s4) 16px var(--s5);background:radial-gradient(ellipse 45% 90% at 85% 40%,rgba(255,95,190,.38),transparent 70%),radial-gradient(ellipse 75% 90% at 50% 20%,transparent 30%,rgba(0,0,0,.6) 100%),var(--band);border-bottom:6px solid transparent;border-image:linear-gradient(90deg,var(--m1) 0 33.3%,var(--m2) 0 66.6%,var(--m3) 0) 1}
 .kb-band::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--dotb) 3px,transparent 3.4px);background-size:24px 24px;-webkit-mask-image:radial-gradient(ellipse 80% 100% at 50% 30%,rgba(0,0,0,.05) 25%,#000 100%);mask-image:radial-gradient(ellipse 80% 100% at 50% 30%,rgba(0,0,0,.05) 25%,#000 100%);pointer-events:none}
 .kb-in{position:relative;max-width:820px;margin:0 auto}
-.kb-nav{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);font-size:var(--fs-s);font-weight:800;margin-bottom:var(--s3)}
+.kb-nav{display:flex;justify-content:space-between;align-items:center;min-height:29.75px;gap:var(--s3);font-size:var(--fs-s);font-weight:800;margin-bottom:var(--s3)}
 .kb-nav a{text-decoration:none;border-bottom:2px solid var(--btxt)}
-.tg{display:inline-flex;align-items:center;gap:6px;padding:2px 14px;border:var(--bw1) solid var(--btxt);border-radius:var(--rp);background:transparent;color:var(--btxt);font:800 var(--fs-s)/1.6 var(--body);cursor:pointer}
-.tg[hidden]{display:none}.tg:hover{background:var(--btxt);color:var(--band)}.tg[aria-pressed="true"]{background:var(--hero);color:var(--onhero);border-color:var(--hero)}
 .kb-band h1{margin:0;font:800 clamp(1.5rem,5.2vw,2.1rem)/var(--lh-t) var(--body);letter-spacing:.02em;-webkit-text-stroke:0}
 .kb-band .lead{margin:var(--s2) 0 0;font-size:var(--fs-m);line-height:1.6}
 .meta{display:flex;flex-wrap:wrap;gap:var(--s2);margin:var(--s3) 0 0;padding:0;list-style:none}
@@ -109,9 +105,6 @@ td{border:0;padding:2px 0}td::before{content:attr(data-label);display:block;font
 
 /* 流れ図の戻り道（ピンク＝文書へ、別色＝精度の改善） */
 :root{--r1:#C21F7A;--r2:#0B7F77}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--r1:#FF5BCB;--r2:#40E0D0}}
-:root[data-theme="dark"]{--r1:#FF5BCB;--r2:#40E0D0}
-:root[data-theme="light"]{--r1:#C21F7A;--r2:#0B7F77}
 .fig .e1{stroke:var(--r1);stroke-width:3;stroke-dasharray:7 5}.fig .e2{stroke:var(--r2);stroke-width:3;stroke-dasharray:7 5}.fig .a1{fill:var(--r1)}.fig .a2{fill:var(--r2)}
 .fig .l1{fill:var(--r1);font:800 13px var(--body)}.fig .l2{fill:var(--r2);font:800 13px var(--body)}
 .lg i{display:inline-block;width:30px;margin-right:6px;vertical-align:middle;border-top:3px solid var(--kac)}.lg i.r1{border-top:3px dashed var(--r1)}.lg i.r2{border-top:3px dashed var(--r2)}
