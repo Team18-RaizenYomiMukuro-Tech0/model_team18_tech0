@@ -23,4 +23,15 @@ if [ -n "$hit" ]; then
   echo "  → 値を消して、環境変数（.env / Vercel / Render）に移してください"
   exit 1
 fi
+# 3) 仕様の表に M-/SP- の行が増えたのに、図・モックを一緒に更新していないときの警告（止めない）
+staged=$(git -c core.quotepath=false diff --cached --name-only)
+for spec in $(echo "$staged" | grep -E '^02_プロジェクト/[^/]+/仕様\.md$'); do
+  proj=${spec%/仕様.md}
+  added=$(git -c core.quotepath=false diff --cached -U0 -- "$spec" | grep -E '^\+\| *(M|SP)-[0-9]')
+  [ -z "$added" ] && continue
+  if ! echo "$staged" | grep -q "^$proj/evidence/mock/"; then
+    echo "[pre-commit] 仕様の行が増えました。図・モック（evidence/mock/）の更新が要らないか確かめてください（00_ルール/開発フロー.md）"
+    break
+  fi
+done
 exit 0
