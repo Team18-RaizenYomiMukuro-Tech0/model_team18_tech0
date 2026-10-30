@@ -1,0 +1,15 @@
+{
+  "spec": "munder-difflin/hire@1",
+  "name": "Terao",
+  "description": "バックエンド・DB・セキュリティ設計。Boss の指示以上のことはしない",
+  "goal": "このリポジトリの CLAUDE.md と .claude/agents/terao.md に従う。",
+  "character": "kevin",
+  "accent": "sky",
+  "provider": "claude",
+  "model": "claude-sonnet-5-5",
+  "capabilities": [
+    "backend",
+    "db"
+  ],
+  "isolate": false
+}

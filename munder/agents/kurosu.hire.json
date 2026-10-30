@@ -1,0 +1,15 @@
+{
+  "spec": "munder-difflin/hire@1",
+  "name": "Kurosu",
+  "description": "テスト。Boss の指示以上のことはしない",
+  "goal": "このリポジトリの CLAUDE.md と .claude/agents/kurosu.md に従う。",
+  "character": "angela",
+  "accent": "coral",
+  "provider": "claude",
+  "model": "claude-sonnet-5-5",
+  "capabilities": [
+    "testing",
+    "qa"
+  ],
+  "isolate": false
+}
