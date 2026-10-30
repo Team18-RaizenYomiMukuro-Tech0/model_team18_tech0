@@ -1,0 +1,15 @@
+{
+  "spec": "munder-difflin/hire@1",
+  "name": "Mi-rin",
+  "description": "フロントエンド・デザイン。Boss の指示以上のことはしない",
+  "goal": "このリポジトリの CLAUDE.md と .claude/agents/mirin.md に従う。",
+  "character": "kelly",
+  "accent": "coral",
+  "provider": "claude",
+  "model": "claude-sonnet-5-5",
+  "capabilities": [
+    "frontend",
+    "design"
+  ],
+  "isolate": false
+}
