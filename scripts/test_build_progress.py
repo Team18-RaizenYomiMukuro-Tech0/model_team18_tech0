@@ -88,6 +88,25 @@ class T(unittest.TestCase):
         out = bp.render(bp.build_model([i], [], NAMES, dt.date(2026, 11, 5)), "x")
         self.assertIn('<p class="none">なし</p>', out)
 
+    def test_summary_shares_alert_logic(self):
+        m = model()  # 今日 11/5
+        sm = bp.build_summary(m, "2026-11-05T00:00:00+09:00", sample=True)
+        self.assertEqual((sm["total"], sm["closed"]), (9, 2))
+        self.assertEqual((sm["overdue"], sm["dueSoon"]), (1, 2))  # #3 遅延 / #4・#5 あと2日（alerts と同じ）
+        self.assertEqual(sm["overdue"] + sm["dueSoon"], len(m["alerts"]))
+        by = {p["name"]: p for p in sm["byPerson"]}
+        self.assertEqual(by["だーあさ"], {"name": "だーあさ", "closed": 1, "open": 2, "overdue": 0})
+        self.assertEqual(by["りゅうちゃん"]["overdue"], 1)
+        self.assertEqual(by[bp.NO_ASSIGNEE]["open"], 2)
+        self.assertEqual([p["title"] for p in sm["phases"]], ["1 5文書", "2 実装①", "3 実装②", "4 評価・受入"])
+        self.assertEqual(sm["phases"][0], {"title": "1 5文書", "closed": 2, "total": 3})
+        self.assertTrue(sm["sample"])
+
+    def test_summary_has_no_account_names(self):
+        txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
+        for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):
+            self.assertNotIn(acct, txt)
+
     def test_empty_and_escape(self):
         self.assertIn("まだ Issue がありません", bp.render(model(data="progress-empty.json"), "x"))
         out = bp.render(bp.build_model(
