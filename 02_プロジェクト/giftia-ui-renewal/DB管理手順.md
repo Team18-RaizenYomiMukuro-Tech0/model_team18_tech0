@@ -2,6 +2,7 @@
 
 - 対象: 要件 N-09、決定 inputs/キックオフ記録.md #35 8-2。
 - 実行者: レージが手で行う。使うのは**管理用アカウント**で、アプリ用アカウントでは行わない。
+- 対応: 実装計画 B2、テスト設計 H-17・NF-18・NF-19・NF-09・E-08。
 - 状態: **下書き**。DB には接続していない。ここに書いたコマンドは1つも実行していない（実行前に未確認の点が下の「穴」にある）。
 - 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #28（証明書）。
 
@@ -44,7 +45,7 @@ SHOW STATUS LIKE 'Ssl_cipher';
 ```
 
 - 確かめ方: `CURRENT_USER()` が管理用アカウント、`DATABASE()` が `giftia_t501`、`Ssl_cipher` が空でない。
-- `VERSION()` が 5.7 以上なら JSON 型が使える（設計.md 未決 E の答え）。**5.7 未満なら手順1の `items` を `TEXT` にする**。
+- `VERSION()` は `8.4.9-azure` のはず（#54-1。読み取りで確認済み）。JSON 型を使う。違うバージョンが出たら止まって相談する（5.7 未満なら手順1の `items` を `TEXT` にする）。
 - 作業が終わったら `Remove-Item Env:MYSQL_PWD, Env:GIFTIA_ADMIN_PASSWORD`。
 
 ## 1. `share_links` を作る（CREATE TABLE）
@@ -99,16 +100,20 @@ SHOW TABLES;
 ```
 
 - アプリ用アカウントが存在すること。現在の権限をメモしておく（戻すときに使う）。
-- `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（設計.md で列の実名は未決1。実名を確定してから下のテーブル名を埋める）。
+- `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（#54 の読み取り結果 `backend/db_schema.md`（ブランチ feat/issue-50-db-ssl-verify）の7つ: order_items・orders・product_facts・product_scenes・products・reviews・users。実行前に `SHOW TABLES` と一致するか確かめる）。
 
 **実行**（`<…>` を埋めてから流す。ユーザーとホストは環境変数ではなく SQL に直接書く）
 
 ```sql
--- 既存テーブルごとに1行ずつ（DB 全体への GRANT SELECT ON giftia_t501.* は、share_links にも SELECT が付くだけなので使ってもよいが、
+-- 既存テーブルごとに1行ずつ（7つ）（DB 全体への GRANT SELECT ON giftia_t501.* は、share_links にも SELECT が付くだけなので使ってもよいが、
 -- 後から作るテーブルにも及ぶ。N-04 は「既存テーブル」と書いているので、テーブルごとが表に近い）
-GRANT SELECT ON giftia_t501.<既存テーブル1> TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.<既存テーブル2> TO '<アプリ用ユーザー>'@'<ホスト指定>';
--- …既存テーブルの数だけ
+GRANT SELECT ON giftia_t501.order_items TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.orders TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.product_facts TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.product_scenes TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.products TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.reviews TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.users TO '<アプリ用ユーザー>'@'<ホスト指定>';
 
 GRANT SELECT, INSERT ON giftia_t501.share_links TO '<アプリ用ユーザー>'@'<ホスト指定>';
 FLUSH PRIVILEGES;
@@ -206,10 +211,63 @@ SHOW TABLES;                      -- 実行前の一覧から share_links が消
 
 - アプリ用アカウントの権限の掃除（任意）: テーブルを消すと、その `share_links` への権限の記録だけ残ることがある。不要なら `REVOKE SELECT, INSERT ON giftia_t501.share_links FROM '<アプリ用ユーザー>'@'<ホスト指定>';`。ただしテーブルが無いと REVOKE が失敗する DB もあるので、失敗しても害はない。
 
+## 確かめ（NF-18・NF-19・B2 の完了条件）
+
+手順1〜4を実際に流すとき、次の順で確かめて `evidence/` に残す。DB への書き込みは管理用アカウントの手順1〜4だけで、アプリ用アカウントでは拒否の確認だけを行う。
+
+### A. 作る前の控え（手順1の直前）
+
+既存テーブルの定義と件数を控える（B2 完了条件 3、E-08）。DROP の後（B）と比べるのに使う。
+
+```sql
+SELECT table_name, column_name, column_type, is_nullable, column_key
+  FROM information_schema.columns WHERE table_schema = DATABASE()
+  ORDER BY table_name, ordinal_position;
+SELECT table_name, table_rows FROM information_schema.tables
+  WHERE table_schema = DATABASE() ORDER BY table_name;
+```
+
+`table_rows` は概算なので、各既存テーブルの `SELECT COUNT(*) FROM <既存テーブル>;` も控える。結果はファイルに保存し、手順1の後と手順4の後に同じものを取って比べる。
+
+### B. NF-18 テスト行の印と後片付け
+
+1. 手順1・2の後、管理用アカウントで印なし（`is_test = 0`）の行を1行置く（テスト前からあった本物の行の代わり。架空の値）。
+
+```sql
+INSERT INTO share_links (share_id, items, created_at, is_test)
+VALUES ('AAAAAAAAAAAAAAAAAAAAAA', JSON_ARRAY(JSON_OBJECT('product_id','G0001','name','テスト','price',1000,'reason','手順書の確認用')), UTC_TIMESTAMP(), 0);
+```
+
+2. アプリのテスト（テストのコードが `is_test = 1` の行を作る）を流す。API に `is_test: 1` を含めて送っても 0 のままであること（アプリ側のテスト。`share_links` を SELECT して確かめる）。
+3. 手順3を実行する（先に件数と中身の SELECT、そのあと `DELETE … WHERE is_test = 1`）。
+4. 確かめ（合格の基準）:
+   - 印の付いた行（`is_test = 1`）だけが消え、手順の1で置いた印なしの行は残る。
+   - 後片付けの後の `share_links` の件数が、テストを始める前と同じ。
+   - アプリ用アカウントでは行を消せない（手順2の拒否の確認。NF-09）。
+
+```sql
+SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;
+SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   -- 1行残っている
+```
+
+5. 手順1の1行は、確かめの後に消す。**`is_test = 0` なので手順3では消えない**。このときだけ主キーを指定して消す: `DELETE FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA' AND is_test = 0;`（`WHERE` なしは流さない）。
+
+記録: `evidence/NF-18.md` に、前後の件数、消した条件（`is_test = 1`）を書く（接続情報は書かない）。
+
+### C. NF-19 戻し方
+
+1. アプリを前のコミットに戻して入れ直し、S-01 が通ること（アプリ側。公開中は先に公開を止める）。
+2. 手順4の前に A と同じ控えを取り、手順4（`DROP TABLE share_links`）の後にもう一度取る。
+3. 合格の基準: 既存テーブルの列・件数が、A の控えと前後で同じ。`SHOW TABLES LIKE 'share_links'` が空。
+4. 確認後に必要なら手順1からテーブルを作り直す。
+
+記録: `evidence/NF-19.md`（①の結果、②の比べた結果）。
+
 ## 実行の記録
 
 実行したら `evidence/db/<YYYY-MM-DD>_<手順番号>.md` を作る（例 `evidence/db/2026-11-08_3.md`）。書くこと:
 
+- 置き場所: 手順ごとの記録は `evidence/db/<YYYY-MM-DD>_<手順番号>.md`。確かめの記録は上の `evidence/NF-18.md`・`evidence/NF-19.md`
 - 実行者と日時
 - 実行したコマンドと出力（ホスト・ユーザー・パスワードは `<伏せ>` に置き換える）
 - 実行前の確認の結果、実行後の確かめの結果（件数など）
@@ -220,5 +278,5 @@ SHOW TABLES;                      -- 実行前の一覧から share_links が消
 ## 穴（未確認・決まっていないこと）
 
 1. **管理用アカウント・アプリ用アカウントのホスト指定・Azure の制限**: 運営相談の「相談3: DB のアカウントと権限」の返事待ち。それまで空欄のまま。
-2. **MySQL のバージョン**（未決 E）: JSON 型の可否。DB 接続後に手順0の `VERSION()` で分かる。
-3. **既存テーブルの実名**（設計.md 未決1）: 手順2の `<既存テーブル…>` が埋まらない。DB 接続後。
+2. **MySQL のバージョン**: `8.4.9-azure` で JSON 型を使うと決定済み（#54-1）。穴ではなくなった。手順0の `VERSION()` で一致を確かめる。
+3. **既存テーブルの実名**: 7つ書いた。実行前の `SHOW TABLES` で一致を確かめる。`users` にも SELECT を与えるが、アプリは個人情報の列を引かない（設計.md N-13）。権限を `users` から外すかどうかは設計に書かれていません。
