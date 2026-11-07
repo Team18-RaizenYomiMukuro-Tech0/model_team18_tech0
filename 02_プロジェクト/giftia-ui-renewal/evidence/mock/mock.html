@@ -31,7 +31,10 @@ header.top{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bot
 .logo i::after{content:"";position:absolute;left:8px;top:-2px;width:2px;height:22px;background:var(--coral)}
 .spacer{flex:1}
 .hsearch{display:flex;flex:1 1 180px;max-width:360px;border:1px solid #bdb0a8;border-radius:8px;overflow:hidden}
-.hsearch input{flex:1;min-width:0;border:0;padding:8px 10px;font:inherit;min-height:44px}
+.hsearch input{flex:1;min-width:0;border:0;padding:8px 10px;font:inherit;min-height:44px;background:#f5f2ef}
+.hsearch input::placeholder{color:#b5aaa4}
+.hsearch{background:#f5f2ef}
+.selbadge{align-self:flex-start;background:var(--coral);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
 .hsearch button{border:0;background:var(--peach);min-width:44px;min-height:44px}
 .tax{font-size:12px;font-weight:400;color:var(--sub)}
 .small12{font-size:12px;color:var(--sub);margin-top:14px}
@@ -116,7 +119,7 @@ body.show-note #list{display:block}
   <header class="top">
     <button class="logo" id="home" aria-label="Giftia 検索ページへ"><i></i>Giftia</button>
     <span class="sp">AC-03</span>
-    <form class="hsearch" id="hs" role="search"><input type="search" id="hq" aria-label="商品名で探す" placeholder="商品名で探す" autocomplete="off"><button type="submit" aria-label="検索">🔍</button></form><span class="sp">#39-1</span>
+    <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す（準備中）" placeholder="準備中" disabled></div><span class="sp">#41-8</span>
     <span class="spacer"></span>
     <button class="hbtn" data-soon="fav">♡ <span class="t">お気に入り</span></button>
     <button class="hbtn" data-soon="login">👤 <span class="t">ログイン</span><span class="tag">準備中</span></button>
@@ -150,8 +153,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 
 /* 付箋：まだ決まっていない点だけ残す */
 const NOTES=[
- /*0*/"共有リンクの URL の頭（ドメイン）は、外部公開の承認後に決めます（#37-16）。いまは仮の https://giftia.example/s/ です。",
- /*1*/"新しいリンクを作ったとき、前のリンクの表示を入れ替えるか、並べて残すか。決まっていません（このモックは入れ替え）。"
+ /*0*/"共有リンクの URL の頭（ドメイン）は、外部公開の承認後に決めます（#37-16）。いまは仮の https://giftia.example/s/ です。"
 ];
 const note=i=>`<div class="sticky">${esc(NOTES[i])}</div>`;
 const sp=t=>`<span class="sp">${t}</span>`;
@@ -237,7 +239,7 @@ function searchHTML(){
   </form>`;
   if(S.st==="initial") h+=`<div class="msgbox init">シーンを選んで「候補を出す」を押してください。予算は空でも大丈夫です。</div>`;
   if(S.st==="loading") h+=`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
-  if(S.st==="empty") h+=`<div class="msgbox empty" role="status">条件に合う商品がありません。予算を変えてみてください${sp("SP-01 0件")}</div>`;
+  if(S.st==="empty") h+=`<div class="msgbox empty" role="status">${parseBudget(S.budgetRaw)===null?"この条件に合う商品がありません。シーンを変えてみてください":"条件に合う商品がありません。予算を変えてみてください"}${sp("SP-01 0件 #41-2")}</div>`;
   if(S.st==="error") h+=`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`;
   if(S.st==="results"){
     h+=`<div class="rhead"><h2 style="margin:0;font-size:16px">候補（${S.items.length}件）</h2>${sp("SP-02 上位10件")}</div>
@@ -248,7 +250,7 @@ function searchHTML(){
 }
 function card(p){
   const on=S.picked.has(p.id),hi=hasRating(p)&&p.r>=4.5;
-  return `<article class="card ${on?"sel":""}"><span class="rank">${p.rank}位</span>
+  return `<article class="card ${on?"sel":""}"><span class="rank">${p.rank}位</span>${on?`<span class="selbadge">選択中${sp("#41-6")}</span>`:""}
    ${hi?`<span class="badge">高評価の商品${sp("SP-03 4.5以上")}</span>`:""}
    <div class="img" role="img" aria-label="商品イメージ（仮）"></div>
    <div class="name">${esc(p.name)}</div><div class="price">${yen(p.price)}${TAX}</div>
@@ -268,7 +270,7 @@ function sharebar(){
   if(S.mkErr) h+=`<div class="msgbox err" style="flex-basis:100%;margin:0" role="alert">失敗しました。もう一度お試しください <button class="ghost" id="mk2">再試行</button>${sp("SP-05 失敗")}</div>`;
   if(S.link) h+=`<div class="linkbox"><div class="linkrow"><code id="lk">${esc(S.link)}</code><button class="primary" id="cp">コピー</button>${sp("SP-05 #32-6・#33")}</div>
    <div class="copymsg ${S.copyMsg?S.copyMsg.k:""}" role="status" aria-live="polite">${S.copyMsg?esc(S.copyMsg.t):""}</div>
-   <button class="ghost" id="openMine">この共有リンクを開いてみる</button>${note(0)}${note(1)}</div>`;
+   <button class="ghost" id="openMine">この共有リンクを開いてみる</button>${note(0)}</div>`;
   return h+"</div>";
 }
 function shareHTML(){
@@ -340,7 +342,7 @@ document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySe
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
-  S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
+  keepInput(); S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
   if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";const pb=parseBudget(S.budgetRaw);S.items=rank(Number.isNaN(pb)?4500:pb,S.scene)}
   if(st==="invalid"&&!Number.isNaN(parseBudget(S.budgetRaw))){S.budgetRaw="12"}
   render()});
@@ -352,7 +354,6 @@ document.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>{
   else openShare(SHID[k]);
 });
 document.addEventListener("click",e=>{if(e.target.closest("[data-soon]"))toast("準備中です（入口だけ。R-02 は要件に未追記）")});
-$("#hs").onsubmit=e=>{e.preventDefault();toast("準備中です（検索の中身は R-02 の要件追記時に決めます）")};
 $("#home").onclick=()=>{S.view="search";render()};
 render();
 </script>
