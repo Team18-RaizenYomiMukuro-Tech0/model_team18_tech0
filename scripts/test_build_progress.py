@@ -198,7 +198,39 @@ class T(unittest.TestCase):
         i = out2.index("5 空の段階")
         li = out2[i:out2.index("</li>", i)]
         self.assertNotIn("<details>", li)
-        self.assertIn("0／0", li)
+        self.assertIn("Issue なし", li)  # 0件の段は「0／0（0%）」でなく「Issue なし」
+        self.assertNotIn("0／0", li)
+
+    def test_stage_breakdown_row_style(self):
+        out = bp.render(model(), "x")
+        sec = out[out.index('class="stg2"'):out.index('id="prs"')]
+        self.assertNotIn('<ul class="rows">', sec)  # 太枠の箱をやめ、区切り線の一覧
+        self.assertIn('class="srows"', sec)
+        self.assertIn("レージ・期限 11/", sec)  # 担当と期限は小さい灰色の文字
+        self.assertIn("りゅうちゃん・期限 10/31", sec)
+        for k in ("gray", "blue", "green", "red"):
+            self.assertIn('class="sb ' + k, sec)  # 札は状態だけ（未着手=灰・作業中=青・マージ済み=緑・遅れ=赤）
+        inner = "".join(re.findall(r'<ul class="srows">.*?</ul>', sec, re.S))
+        self.assertNotIn('class="chip"', inner)  # 内訳の中に札（チップ）はない
+        self.assertNotIn("Hiroki0023", sec)
+
+    def test_status_badge_contrast_at_least_4_5(self):
+        def lum(h):
+            c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+            c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+            return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+        for k in ("gray", "blue", "green", "red"):
+            m = re.search(r"\.sb\." + k + r"\{background:(#\w+);color:(#\w+)\}", bp.CSS if hasattr(bp, "CSS") else open(bp.__file__).read())
+            self.assertIsNotNone(m, k)
+            a, b = sorted((lum(m.group(1)), lum(m.group(2))), reverse=True)
+            self.assertGreaterEqual((a + 0.05) / (b + 0.05), 4.5, k)
+
+    def test_pr_table_nowrap_and_short_date(self):
+        out = bp.render(model(), "x")
+        self.assertIn("#prs td:nth-child(1),#prs td:nth-child(3),#prs td:nth-child(4){white-space:nowrap", out)  # PR 番号・担当者・日時は折り返さない
+        a = out.index('id="prs"')
+        self.assertRegex(out[a:], r'data-label="マージ日時">\d\d/\d\d \d\d:\d\d</td>')  # 11/07 17:52 の形
+        self.assertNotRegex(out[a:], r'data-label="マージ日時">20\d\d-')
 
     def test_sort_buttons_for_narrow_width(self):
         out = bp.render(model(), "x")
