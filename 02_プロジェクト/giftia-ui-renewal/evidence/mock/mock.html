@@ -201,6 +201,16 @@ h2.sec{margin:22px 0 10px}
  header.top>.sp{order:5}
  .hbtn .tag{font-size:9px;padding:1px 4px}
 }
+
+/* #61 スマホ幅（480px以下）でトップのカテゴリーを折りたたむ。パソコン幅と検索結果は変えない */
+.cat-toggle{display:none}
+.cathead{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;background:none;border:0;padding:0;font:inherit;font-weight:inherit;color:inherit;text-align:left;cursor:pointer}
+.cathead .chev{margin-left:auto;font-size:14px;padding-right:4px}
+@container (max-width:480px){
+ .cat-static{display:none}
+ .cat-toggle{display:block}
+ .cats.shut{display:none}
+}
 </style>
 </head>
 <body class="show-sp show-note xmas">
@@ -343,7 +353,7 @@ function filterR02(){
 }
 
 /* ---------- 状態 ---------- */
-const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cats:[],page:1,items:[],detailId:null,detailOpen:false,
+const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cats:[],catOpen:false,page:1,items:[],detailId:null,detailOpen:false,
   dstate:"ok",picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null};
 const store={};
 const HOUR=3600e3;
@@ -365,7 +375,10 @@ function request(ok){
 }
 
 /* ---------- 描画 ---------- */
+let lastView=null;
 function render(){
+  if(S.view==="top"&&lastView!=="top")S.catOpen=false;/* #62-1: トップに戻ったら閉じた状態から */
+  lastView=S.view;
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
   $("#stateBtns").hidden=S.view==="share"; $("#shareBtns").hidden=S.view!=="share";
   document.querySelectorAll("[data-ds]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.ds===S.dstate));
@@ -394,8 +407,9 @@ function topHTML(){
       ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
-  <h2 class="sec">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
-  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
+  <h2 class="sec cat-static">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
+  <h2 class="sec cat-toggle"><button type="button" id="catToggle" class="cathead" aria-expanded="${S.catOpen}" aria-controls="catlist">カテゴリーから探す<span class="multi">（複数選べます）</span><span class="chev" aria-hidden="true">${S.catOpen?"▲":"▼"}</span></button>${sp("AC-04 #61")}</h2>
+  <div class="cats ${S.catOpen?"":"shut"}" id="catlist">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   <div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
 }
@@ -514,6 +528,7 @@ function bind(){
   document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;runSearch()});
   document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.cats=[];S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
+  const ct=$("#catToggle"); if(ct) ct.onclick=()=>{S.catOpen=!S.catOpen;render();const n=$("#catToggle");if(n)n.focus()};
   const bg=$("#bandGo"); if(bg) bg.onclick=()=>{S.scene=null;S.page=1;S.view="result";runSearch()};
   const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.cats=[];S.page=1;runSearch()};
   document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
@@ -578,7 +593,7 @@ document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
   if(S.view==="share"&&!S.shItems&&S.shState==="ok"){openShare(SHID.ok)}
   else if(S.view==="result"&&S.st==="initial"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";S.items=rank(null,"送別");S.st="results";S.detailId=S.items[0].id;render()}
   else render()});
-document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375")});
+document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375");S.catOpen=false;/* #62-2: 幅を変えたら閉じた状態から */render()});
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
