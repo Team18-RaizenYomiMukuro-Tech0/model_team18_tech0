@@ -17,7 +17,7 @@
 | `GIFTIA_ADMIN_USER` | 管理用アカウントのユーザー名 |
 | `GIFTIA_ADMIN_PASSWORD` | 管理用アカウントのパスワード |
 | `GIFTIA_DB_USER` | アプリ用アカウントのユーザー名（権限を与える相手） |
-| `GIFTIA_DB_SSL_CA` | 証明書ファイル。#28 の値は `C:\Users\rkhv3\certs\DigiCertGlobalRootG2.crt.pem` |
+| `GIFTIA_DB_SSL_CA` | 証明書ファイル。#28 の値は `C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem` |
 
 PowerShell で設定する（値は自分で入れる。履歴に残したくなければ `Read-Host -AsSecureString` を使う）:
 
@@ -27,7 +27,7 @@ $env:GIFTIA_DB_NAME = "giftia_t501"
 $env:GIFTIA_ADMIN_USER = "<管理用ユーザー>"
 $env:GIFTIA_ADMIN_PASSWORD = "<管理用パスワード>"
 $env:GIFTIA_DB_USER = "<アプリ用ユーザー>"
-$env:GIFTIA_DB_SSL_CA = "C:\Users\rkhv3\certs\DigiCertGlobalRootG2.crt.pem"
+$env:GIFTIA_DB_SSL_CA = "C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem"
 ```
 
 接続は SSL 必須、証明書とホスト名を検証する（`VERIFY_IDENTITY`）。以降の SQL は `mysql` コマンドラインで流す。共通の接続コマンド（`MYSQL_PWD` はこのシェルの中だけ）:
