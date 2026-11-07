@@ -139,6 +139,32 @@ class T(unittest.TestCase):
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "guest-dev"):
             self.assertNotIn(acct, visible)
 
+    def test_stage_breakdown_rows_and_empty_stage(self):
+        m = model()
+        st = {x["title"]: x for x in m["stages"]}
+        self.assertEqual([r["number"] for r in st["1 5文書"]["rows"]], [1, 2, 3])
+        out = bp.render(m, "x")
+        sec = out[out.index('class="stg2"'):out.index('id="al"') if out.index('id="al"') > out.index('class="stg2"') else None]
+        self.assertIn("内訳を開く（3件）", sec)
+        self.assertNotIn("<details open", sec)
+        self.assertIn("#3 [B2] 仕様のデータ項目を確定する", sec)  # 行は担当カードの内訳と同じ形
+        self.assertIn("りゅうちゃん", sec)  # 担当の表示名
+        # 0件の段は開くボタンを出さない
+        d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
+        d["milestones"].append({"number": 9, "title": "5 空の段階", "due_on": "2026-11-28T14:59:59Z"})
+        out2 = bp.render(bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5)), "x")
+        i = out2.index("5 空の段階")
+        li = out2[i:out2.index("</li>", i)]
+        self.assertNotIn("<details>", li)
+        self.assertIn("0／0", li)
+
+    def test_sort_buttons_for_narrow_width(self):
+        out = bp.render(model(), "x")
+        self.assertIn('class="sortbar"', out)
+        self.assertIn('data-k="t" aria-pressed="true">マージ日時', out)
+        self.assertIn('data-k="a" aria-pressed="false">担当者', out)
+        self.assertIn("@media(max-width:700px){#prs .sortbar{display:flex}}", out)
+
     def test_empty_and_escape(self):
         self.assertIn("まだ Issue がありません", bp.render(model(data="progress-empty.json"), "x"))
         out = bp.render(bp.build_model(
