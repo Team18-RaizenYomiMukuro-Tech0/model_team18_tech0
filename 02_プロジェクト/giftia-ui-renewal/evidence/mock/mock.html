@@ -416,15 +416,15 @@ function resultHTML(){
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
   if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
-    const msg=S.cat?"この条件に合う商品がありません。カテゴリーを変えてみてください":S.mode==="r01"?(S.band?"条件に合う商品がありません。価格帯を変えてみてください":"この条件に合う商品がありません。シーンを変えてみてください"):"条件に合う商品がありません。条件を変えてみてください";
-    return h+`<div class="msgbox empty" role="status">${msg}${sp(S.cat?"SP-01 0件 #55-2":"SP-01 0件 #41-2")}</div>`+afterResults();
+    const msg="この条件に合う商品がありません。"+(S.cat?"カテゴリー":S.band?"価格帯":"シーン")+"を変えてみてください";/* #56-4: カテゴリー→価格帯→シーンの順 */
+    return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #56-4")}</div>`+afterResults();
   }
   if(S.st!=="results") return h+`<div class="msgbox init">トップでシーンを押すか、上の条件を選んでください。</div>`+afterResults();
   const r01=S.mode==="r01";
   const total=S.items.length;
   if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
-  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}</span>`:""}</div>
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cat?"・"+esc(S.cat):""}</span>`:""}</div>
   <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
   if(!r01){
     const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
