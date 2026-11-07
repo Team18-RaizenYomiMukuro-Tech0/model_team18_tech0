@@ -410,9 +410,12 @@ class T(unittest.TestCase):
         kb = open(os.path.join(D, "..", "docs", "kb", "kb.css"), encoding="utf-8").read()
         for tok, hexv in (("m1", "#FFD700"), ("m2", "#40E0D0"), ("m3", "#FF69B4")):
             self.assertIn("--%s:%s" % (tok, hexv), kb)
-        self.assertIn("var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,#fff 75% 100%", hub)
-        self.assertIn(".stg2 li.w4{--c:#FFFFFF}", out)
-        self.assertIn(".stg2 li[class] .bar{background:#3F3158}", out)  # 白は暗い棒の地で消えない
+        self.assertIn("var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,var(--m1) 75%,var(--m2) 87.5%,var(--m3) 100%", hub)
+        self.assertIn("linear-gradient(to right,var(--m1),var(--m2),var(--m3))", hub)  # STAGE 4 の文字・枠は白でなく同じ3色のグラデーション
+        self.assertNotIn("#fff 75% 100%", hub)
+        self.assertIn("\\u{1F3C1}", open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read())  # 右端はゴールの旗
+        self.assertIn(".stg2 li.w4{--c:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}", out)  # 白でなく黄→青緑→桃（ハブのゲージと同じ値）
+        self.assertIn(".stg2 li[class] .bar{background:#3F3158}", out)  # 暗い棒の地の上で3色が見える
 
     def test_area_badges(self):
         out = bp.render(model(), "x")
@@ -451,9 +454,9 @@ class T(unittest.TestCase):
             c = re.search(r"\.ar-%s\{color:(#\w+)\}" % k, src).group(1)
             for bg in ("#FFFFFF", "#F3EDFB"):
                 self.assertGreaterEqual(ratio(c, bg), 4.5, (k, bg))
-        for c in ("#FFD700", "#40E0D0", "#FF69B4", "#FFFFFF"):  # 段階の見出しの地の色 × 文字色 #2A1B3D
+        for c in ("#FFD700", "#40E0D0", "#FF69B4"):  # 段階の見出しの地の色 × 文字色 #2A1B3D
             self.assertGreaterEqual(ratio("#2A1B3D", c), 4.5, c)
-        for c in ("#FFD700", "#40E0D0", "#FF69B4", "#FFFFFF"):  # 棒の色は暗い棒の地（#3F3158）の上で見える（3:1 以上）
+        for c in ("#FFD700", "#40E0D0", "#FF69B4"):  # 棒の色は暗い棒の地（#3F3158）の上で見える（3:1 以上）
             self.assertGreaterEqual(ratio(c, "#3F3158"), 3, c)
 
     def test_pr_table_nowrap_and_short_date(self):

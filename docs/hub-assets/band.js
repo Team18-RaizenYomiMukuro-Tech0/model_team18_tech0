@@ -22,7 +22,7 @@ if(t&&num(t.gain)&&t.gain>0){pw.textContent="今日 +"+t.gain+" 霊力";pw.hidde
 var bar=document.getElementById("gb");bar.setAttribute("aria-label","全体の進み具合 "+all+"パーセント"+(ch?"、溜め中 "+ch+"パーセント分":""));
 var gn=document.getElementById("gn"),gl=document.getElementById("gl");
 ST.forEach(function(s,i){var pos=(i+1)*25,lit=all>=pos,now=i===cur;
-var d=mk("span","gd"+(lit?" lit":"")+(now?" now":""));d.style.left=pos===100?"calc(100% - 9px)":pos+"%";if(pos===100)d.classList.add("last");d.style.setProperty("--c",i===3?"#fff":"var(--m"+(i+1)+")");gn.appendChild(d);
+var d=mk("span","gd"+(lit?" lit":"")+(now?" now":""));d.style.left=pos+"%";d.style.setProperty("--c","var(--m"+(i+1)+")");if(i===3){d.className="gd last goal";d.textContent="\u{1F3C1}";var gw=mk("span","gw","発表 11/24");gn.appendChild(gw)}gn.appendChild(d);
 var li=mk("li",(now?"now":"")+(lit||now?"":" off"));li.dataset.n=i+1;
 li.appendChild(mk("span","no","STAGE "+(i+1)));li.appendChild(mk("span","nm",s[0]));
 var w=mk("span","ws");w.appendChild(mk("span","o",s[1]+"（"));w.appendChild(document.createTextNode(s[2]));w.appendChild(mk("span","o","）"));li.appendChild(w);
