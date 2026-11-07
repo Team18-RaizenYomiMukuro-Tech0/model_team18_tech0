@@ -481,7 +481,13 @@ class T(unittest.TestCase):
         self.assertIn("全体 22% <span>（完了 2 / 9）</span>", out)
         self.assertNotIn('class="sum"', out)  # 数字タイルは無い
         self.assertNotIn(">未着手<", out.split("</header>")[1].split('id="al"')[0])
-        self.assertIn("数えるのは Issue だけ", out.split('<p class="note">')[1])
+        tail = out.split('<p class="note">')[1]
+        self.assertIn("自動で作られる。</p>", tail)  # 冒頭の1行は summary の外
+        how = tail.split('<details class="howto">')[1].split("</details>")[0]
+        self.assertIn("<summary>このページの見方</summary>", how)
+        self.assertEqual(how.count("<li>"), 5)
+        for lab in ("数えるもの", "状態", "分野の札", "期限", "更新"):
+            self.assertIn(f"<b>{lab}:</b>", how)
 
     def test_now_section_contents_and_order(self):
         out = bp.render(model(), "x")

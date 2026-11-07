@@ -382,6 +382,7 @@ CSS = """
 .ar-P{color:#5B2A9C}.ar-B{color:#0B6B63}.ar-F{color:#B0145E}.ar-T{color:#8A5200}
 .sample{display:inline-block;margin-left:var(--s3);padding:0 14px;border:var(--bw2) solid var(--btxt);border-radius:var(--rp);background:var(--m1);color:#12091F;font:800 var(--fs-m)/1.8 var(--body);vertical-align:middle;-webkit-text-stroke:0}.sample-note{margin:var(--s3) 0 0;font-weight:800;font-size:var(--fs-s)}
 .note{font-size:var(--fs-s);color:var(--sub)}
+.howto{font-size:var(--fs-s);color:var(--sub)}.howto>summary{cursor:pointer;font-weight:800}.howto ul{margin:var(--s2) 0 0;padding-left:1.4em}.howto li{margin:2px 0}
 @media(max-width:480px){.ph{flex-wrap:wrap}.num{margin-left:0;text-align:left;width:100%}}
 """
 
@@ -451,7 +452,14 @@ def page(body, updated, sample=False, members=()):
 </div></header>
 <main class="kb"><div class="pg">
 {body}
-<p class="note">担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。数えるのは Issue だけ。数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。ひも付く PR がマージ済みなのに Issue が開いているものは「マージ済み・Issue 未完了」（暫定。数えるのは Issue だけなので未完了のまま）。領域別の件数は Issue 題の頭文字（P=PM／B=DB・API／F=画面／T=テスト）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
+<p class="note">担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。</p>
+<details class="howto"><summary>このページの見方</summary><ul>
+<li><b>数えるもの:</b> 閉じた Issue だけ。PR は数えない（本文の「Closes #番号」で Issue にひも付く）</li>
+<li><b>状態:</b> PR なし＝未着手／Draft＝作業中／Ready＝レビュー待ち／マージ済みで Issue が開いている＝マージ済み・Issue 未完了</li>
+<li><b>分野の札:</b> 題名の頭の印（P=PM・B=DB と API・F=画面・T=テスト）</li>
+<li><b>期限:</b> 段階（マイルストーン）の期限</li>
+<li><b>更新:</b> main へのマージ、Issue の開け閉め・担当・段階の変更、毎朝 1 回（日本時間）</li>
+</ul></details>
 </div></main>
 <script src="kb/kb.js" defer></script>
 <script>{FILTER_JS}</script>
