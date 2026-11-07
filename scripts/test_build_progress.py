@@ -81,13 +81,13 @@ class T(unittest.TestCase):
             self.assertIn(">%s</button>" % n, out)
         self.assertIn('data-who="hiroki0023"', out)
         self.assertIn('id="al"', out)
-        self.assertIn("遅れ・期限が近い", out)
+        self.assertIn("🔥 いま動くこと", out)
 
     def test_no_alerts_shows_none(self):
         i = {"number": 1, "title": "t", "state": "open", "html_url": "https://github.com/a/b/issues/1",
              "milestone": None, "assignees": []}
         out = bp.render(bp.build_model([i], [], NAMES, dt.date(2026, 11, 5)), "x")
-        self.assertIn('<p class="none">なし</p>', out)
+        self.assertIn('<p class="none">いま急ぐものはありません 🎉</p>', out)
 
     def test_summary_shares_alert_logic(self):
         m = model()  # 今日 11/5
@@ -164,6 +164,44 @@ class T(unittest.TestCase):
         self.assertIn('data-k="t" aria-pressed="true">マージ日時', out)
         self.assertIn('data-k="a" aria-pressed="false">担当者', out)
         self.assertIn("@media(max-width:700px){#prs .sortbar{display:flex}}", out)
+
+    def test_header_short_and_overall_bar(self):
+        out = bp.render(model(), "2026-11-05 07:30 JST", sample=True)
+        head = out[out.index("<header"):out.index("</header>")]
+        self.assertIn("更新 07:30", head)
+        self.assertNotIn("数えるのは Issue だけ", head)
+        self.assertNotIn("Issue の進み具合", head)  # 説明文は一番下の注記へ
+        self.assertIn("ダミーデータの表示例", head)  # サンプルの札は --data のときだけ残る
+        self.assertNotIn("ダミーデータの表示例", bp.render(model(), "x")[:3000])
+        self.assertIn("全体 22% <span>（完了 2 / 9）</span>", out)
+        self.assertNotIn('class="sum"', out)  # 数字タイルは無い
+        self.assertNotIn(">未着手<", out.split("</header>")[1].split('id="al"')[0])
+        self.assertIn("数えるのは Issue だけ", out.split('<p class="note">')[1])
+
+    def test_now_section_contents_and_order(self):
+        out = bp.render(model(), "x")
+        al = out[out.index('id="al"'):out.index('class="pgrid"')]
+        self.assertIn("⚠ ", al)
+        self.assertIn("⏰ ", al)
+        self.assertIn("👀 ", al)
+        self.assertIn("PR #21", al)  # Ready の PR（Draft の #23 は出ない）
+        self.assertNotIn("PR #23 ", al.split("👀")[1])
+        self.assertIn('data-who="re-ji-tech0"', al)  # 作者で絞れる
+        self.assertIn("レージ", al.split("👀")[1])  # 作者は表示名
+        pos = [out.index(k) for k in ('id="al"', 'class="pgrid"', 'class="stg2"', 'id="prs"')]
+        self.assertEqual(pos, sorted(pos))  # いま動くこと → 担当者カード → 段階 → 直近 PR
+        self.assertTrue(out.index('id="al"') < out.index("全体 22%") + 400)
+
+    def test_now_section_merged_but_open_and_empty(self):
+        i = {"number": 1, "title": "t", "state": "open", "html_url": "https://github.com/a/b/issues/1",
+             "milestone": None, "assignees": [{"login": "Hiroki0023"}]}
+        p = {"number": 2, "title": "pr", "state": "closed", "html_url": "https://github.com/a/b/pull/2",
+             "pull_request": {"merged_at": "2026-11-04T01:00:00Z"}, "body": "Closes #1", "user": {"login": "Hiroki0023"}}
+        out = bp.render(bp.build_model([i, p], [], NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertIn("✅ ", out)
+        self.assertIn("Issue を閉じるだけ", out)
+        empty = bp.render(bp.build_model([{**i, "assignees": [], "state": "closed"}], [], NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertIn('<p class="none">いま急ぐものはありません 🎉</p>', empty)
 
     def test_empty_and_escape(self):
         self.assertIn("まだ Issue がありません", bp.render(model(data="progress-empty.json"), "x"))

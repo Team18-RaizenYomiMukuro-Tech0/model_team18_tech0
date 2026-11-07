@@ -6,7 +6,9 @@ GitHub の Issue とマイルストーンを API で読み、担当者ごとの�
   - 期限・遅延はマイルストーン（段階）の due_on（日本時間の日付）
   - 未完了の Issue の状態は3つ: 未着手（つながる PR なし）／作業中（Draft の PR あり）／レビュー待ち（Ready の PR あり）。
     つながりは PR 本文の「Closes #n」（CLOSE_RE）で判定
-  - 一番上に「遅れ・期限が近い」（期限切れ、または期限の2日前以内の未完了 Issue）
+  - 一番上に「🔥 いま動くこと」: ⚠ 遅れ・⏰ 期限が近い（期限の2日前以内）の Issue、👀 レビュー待ちの PR（Ready）、
+    ✅ マージ済みなのに Issue が開いたまま（閉じるだけ）。0件なら「いま急ぐものはありません 🎉」
+  - 並びは いま動くこと → 担当者カード → 段階ごと → 直近マージ済み PR
   - 上部の名前ボタンで担当者ごとに絞れる（#名前 で開くと最初から絞れる）
   - 開いた Issue にひも付く PR がマージ済みなら「マージ済み・Issue 未完了」（PM 未決事項 #71 の暫定。数えるのは Issue だけなので未完了のまま）
   - 担当者カードは畳んだ「内訳」つき。領域別の件数は Issue 題の頭文字 [P*][B*][F*][T*] から
@@ -140,13 +142,20 @@ def build_model(issues, milestones, names, today):
             when = dt.datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(JST)
             merged_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
                                "author": names.get(u, OTHER), "at": when})
+    review_prs = []
+    for p in prs:
+        if p["state"] == "open" and not p.get("draft"):
+            u = (p.get("user") or {}).get("login")
+            review_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
+                               "author": names.get(u, OTHER), "who": u.lower() if u in names else "none"})
+    review_prs.sort(key=lambda x: x["number"], reverse=True)
     merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
     merged_prs = merged_prs[:RECENT_PRS]
     members = [{"id": k.lower(), "name": v} for k, v in names.items()]
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
-            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -178,7 +187,7 @@ def due_badge(r):
     return ""
 
 
-def render_row(r, who=None):
+def render_row(r, who=None, mark="", extra=""):
     prs = "".join(
         f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
@@ -189,8 +198,8 @@ def render_row(r, who=None):
     unset = '<span class="st plan">期限未設定</span>' if (not r["done"] and not r["due"]) else ""
     names = "".join(f'<span class="chip">{e(n)}</span>' for n in (who or []))
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
-    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt"><a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
-            f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}'
+    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}<a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
+            f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}{extra}'
             f'<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
 
 
@@ -266,7 +275,9 @@ CSS = """
 .bar{height:12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--tint);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--m2)}
 .pcard,.stg2,.empty{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s3)}
-.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--s3);align-items:start}
+.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.kb-band{padding-bottom:var(--s4)}.kb-band .kb-nav{margin-bottom:var(--s2)}.upd{margin:2px 0 0;font:800 var(--fs-xs)/1.6 var(--body)}.kb-band .meta{margin-top:var(--s2)}
+.allbar{margin:0}.allbar p{margin:0 0 4px;font-weight:800}.allbar span{font-weight:500;color:var(--sub);font-size:var(--fs-s)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--s3);align-items:start}
 .pcard details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.pcard details[open]>summary{margin-bottom:var(--s2)}
 .st.merged{background:var(--tint);color:var(--ctext);border:var(--bw1) solid var(--kac)}
 #prs .sortbar{display:none;align-items:center;gap:var(--s2);font:800 var(--fs-xs)/1.8 var(--body)}#prs .sortbar button{font:inherit;color:inherit;background:transparent;border:var(--bw1) solid var(--kac);border-radius:var(--rp);padding:0 12px;cursor:pointer}#prs .sortbar button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
@@ -341,14 +352,13 @@ def page(body, updated, sample=False, members=()):
 <header class="kb-band"><div class="kb-in">
 <div class="kb-nav"><a href="hub.html">← 開発ハブ</a></div>
 <h1>進捗ダッシュボード{'<span class="sample">サンプル</span>' if sample else ''}</h1>
-<p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
-<ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
+<p class="upd" title="{e(updated)}">更新 {e(updated.split()[1] if " " in updated else updated)}</p>
 {'<p class="sample-note">ダミーデータの表示例です。実際の Issue ではありません。</p>' if sample else ''}
 {who_buttons(members)}
 </div></header>
 <main class="kb"><div class="pg">
 {body}
-<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。ひも付く PR がマージ済みなのに Issue が開いているものは「マージ済み・Issue 未完了」（暫定。数えるのは Issue だけなので未完了のまま）。領域別の件数は Issue 題の頭文字（P=PM／B=DB・API／F=画面／T=テスト）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
+<p class="note">担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。数えるのは Issue だけ。数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。ひも付く PR がマージ済みなのに Issue が開いているものは「マージ済み・Issue 未完了」（暫定。数えるのは Issue だけなので未完了のまま）。領域別の件数は Issue 題の頭文字（P=PM／B=DB・API／F=画面／T=テスト）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
 </div></main>
 <script src="kb/kb.js" defer></script>
 <script>{FILTER_JS}</script>
@@ -358,6 +368,27 @@ def page(body, updated, sample=False, members=()):
 """
 
 
+def now_section(model):
+    """🔥 いま動くこと: 行動に直結するものだけ。名前ボタンで絞ると自分の分だけになる（data-who）"""
+    nm = model["name_of"]
+    who = lambda r: [nm.get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]]
+    items = []
+    for r in model["alerts"]:
+        items.append(render_row(r, who(r), mark="⚠ " if r["late"] else "⏰ "))
+    shown = {r["number"] for r in model["alerts"]}
+    for p in model["review_prs"]:
+        items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a href="{e(safe_url(p["url"]))}">PR #{p["number"]} {e(p["title"])}</a></div>'
+                     f'<div class="rm"><span class="st live">レビュー待ち</span><span class="chip">{e(p["author"])}</span></div></li>')
+    for p in model["people"]:
+        for r in p["rows"]:
+            if r["status"] == "merged" and r["number"] not in shown:
+                shown.add(r["number"])
+                items.append(render_row(r, who(r), mark="✅ ", extra='<span class="chip">Issue を閉じるだけ</span>'))
+    return ('<section class="pcard" id="al"><h3 style="margin:0">🔥 いま動くこと</h3>'
+            f'<ul class="rows">{"".join(items)}</ul>'
+            f'<p class="none"{" hidden" if items else ""}>いま急ぐものはありません 🎉</p></section>')
+
+
 def render(model, updated, sample=False):
     mem = model.get("members", [])
     if not model["total"] and not model["stages"]:
@@ -365,24 +396,11 @@ def render(model, updated, sample=False):
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
         return page(body + render_prs(model.get("merged_prs", [])), updated, sample, mem)
     pc = pct(model["done"], model["total"])
-    late = sum(1 for r in model["alerts"] if r["late"])
-    c = model["counts"]
-    parts = [f'<div class="sum"><div><b>{pc}%</b><span>全体の完了</span></div>'
-             f'<div><b>{model["done"]}</b><span>完了</span></div>'
-             f'<div><b>{model["total"] - model["done"]}</b><span>未完了</span></div>'
-             f'<div><b>{late}</b><span>遅れている</span></div></div>',
-             f'<div class="sum"><div><b>{c["todo"]}</b><span>未着手</span></div>'
-             f'<div><b>{c["wip"]}</b><span>作業中</span></div>'
-             f'<div><b>{c["review"]}</b><span>レビュー待ち</span></div>'
-             f'<div><b>{c["merged"]}</b><span>マージ済み・Issue 未完了</span></div></div>']
+    parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["done"]} / {model["total"]}）</span></p>'
+             f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div></div>',
+             now_section(model)]
     if model["total"]:
         parts.append('<div class="pgrid">' + "".join(render_person(p) for p in model["people"]) + "</div>")
-    alerts = "".join(render_row(r, [model["name_of"].get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]])
-                     for r in model["alerts"])
-    parts.append('<section class="pcard" id="al"><h3 style="margin:0">遅れ・期限が近い</h3>'
-                 f'<ul class="rows">{alerts}</ul>'
-                 f'<p class="none"{" hidden" if alerts else ""}>なし</p>'
-                 '<p class="sv" style="margin:0;font-size:var(--fs-xs)">未完了で、期限切れ（ピンク）と、期限の2日前以内（黄）の Issue。期限は段階の期限。</p></section>')
     if model["stages"]:
         parts.append('<section class="stg2"><h3 style="margin:0">段階ごと</h3><ul>'
                      + "".join(render_stage(s, model["name_of"]) for s in model["stages"]) + "</ul></section>")
