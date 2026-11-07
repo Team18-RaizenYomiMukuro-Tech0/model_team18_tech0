@@ -8,6 +8,9 @@ GitHub の Issue とマイルストーンを API で読み、担当者ごとの�
     つながりは PR 本文の「Closes #n」（CLOSE_RE）で判定
   - 一番上に「遅れ・期限が近い」（期限切れ、または期限の2日前以内の未完了 Issue）
   - 上部の名前ボタンで担当者ごとに絞れる（#名前 で開くと最初から絞れる）
+  - 開いた Issue にひも付く PR がマージ済みなら「マージ済み・Issue 未完了」（PM 未決事項 #71 の暫定。数えるのは Issue だけなので未完了のまま）
+  - 担当者カードは畳んだ「内訳」つき。領域別の件数は Issue 題の頭文字 [P*][B*][F*][T*] から
+  - 一番下に直近マージ済み PR 10件の表（担当者の列見出しで並べ替え）
   - 同じデータから progress-summary.json も書く（ハブの進捗カード用。表示名だけで、アカウント名・メールは入れない）。
     取得に失敗したときは {"updatedAt", "error"} だけを書く
   - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
@@ -33,6 +36,10 @@ CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+
 NO_ASSIGNEE = "担当未定"
 NO_MILESTONE = "段階なし"
 SOON_DAYS = 2  # 期限の何日前から「近い」にするか
+RECENT_PRS = 10
+OTHER = "その他"  # 表示名の対応表に無い PR 作者
+AREA_RE = re.compile(r"^\s*\[([PBFT])\d+\]")
+AREAS = {"P": "PM", "B": "DB・API", "F": "画面", "T": "テスト"}  # Issue 題の頭文字 → 領域
 
 
 def api_get(repo, path, token):
@@ -89,12 +96,15 @@ def build_model(issues, milestones, names, today):
         late = (today - d).days if (d and not done and today > d) else 0
         left = (d - today).days if (d and not done and today <= d) else None
         prs_of = linked.get(i["number"], [])
-        status = "done" if done else ("review" if any(x["state"] == "open" for x in prs_of)
-                                      else "wip" if any(x["state"] == "draft" for x in prs_of) else "todo")
+        status = ("done" if done else "merged" if any(x["state"] == "merged" for x in prs_of)
+                  else "review" if any(x["state"] == "open" for x in prs_of)
+                  else "wip" if any(x["state"] == "draft" for x in prs_of) else "todo")
+        am = AREA_RE.match(i["title"])
         logins = [a["login"] for a in i.get("assignees") or [] if a["login"] in names] or [None]
         rows.append({"number": i["number"], "title": i["title"], "url": i["html_url"], "done": done,
                      "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late, "left": left,
-                     "status": status, "assignees": logins, "prs": prs_of})
+                     "status": status, "area": am.group(1) if am else None,
+                     "assignees": logins, "prs": prs_of})
     people = {}
     for r in rows:
         for login in r["assignees"]:
@@ -120,12 +130,22 @@ def build_model(issues, milestones, names, today):
     open_rows = [r for r in rows if not r["done"]]
     alerts = sorted((r for r in open_rows if r["late"] or (r["left"] is not None and r["left"] <= SOON_DAYS)),
                     key=lambda r: (r["due"], r["number"]))
-    counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review")}
+    counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review", "merged")}
+    merged_prs = []
+    for p in prs:
+        t = (p.get("pull_request") or {}).get("merged_at")
+        if t:
+            u = (p.get("user") or {}).get("login")
+            when = dt.datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(JST)
+            merged_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
+                               "author": names.get(u, OTHER), "at": when})
+    merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
+    merged_prs = merged_prs[:RECENT_PRS]
     members = [{"id": k.lower(), "name": v} for k, v in names.items()]
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
-            "alerts": alerts, "counts": counts, "members": members,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -141,7 +161,8 @@ def safe_url(u):
     return u if u.startswith("https://github.com/") else "#"
 
 
-STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち")}
+STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち"),
+          "merged": ("merged", "マージ済み・Issue 未完了")}
 
 
 def due_badge(r):
@@ -177,12 +198,32 @@ def render_person(p):
     total = len(p["rows"])
     pc = pct(done, total)
     rows = sorted(p["rows"], key=lambda r: (r["done"], -r["late"], r["number"]))
+    areas = "".join(
+        f'<span class="chip">{AREAS[k]} {sum(1 for r in p["rows"] if r["area"] == k and r["done"])}'
+        f'／{sum(1 for r in p["rows"] if r["area"] == k)}</span>'
+        for k in AREAS if any(r["area"] == k for r in p["rows"]))
     return (f'<section class="pcard" data-who="{e(p["id"])}"><div class="ph"><span class="av" aria-hidden="true">{e(p["name"][:1])}</span>'
-            f'<div><h3>{e(p["name"])}</h3>'
-            + (f'<p class="lg">{e(p["login"])}</p>' if p["login"] and p["login"] != p["name"] else "")
-            + f'</div><div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
+            f'<h3>{e(p["name"])}</h3>'
+            f'<div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
             f'<div class="bar" role="img" aria-label="完了 {pc}%"><i style="width:{pc}%"></i></div>'
-            f'<ul class="rows">{"".join(render_row(r) for r in rows)}</ul></section>')
+            + (f'<div class="rm">{areas}</div>' if areas else "")
+            + f'<details><summary>内訳を開く（{total}件）</summary><ul class="rows">{"".join(render_row(r) for r in rows)}</ul></details></section>')
+
+
+def render_prs(prs):
+    """直近マージ済み PR の表。担当者の列見出しで並べ替え（JS はページ内のみ）"""
+    if not prs:
+        return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
+    rows = "".join(
+        f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}">'
+        f'<td data-label="PR"><a href="{e(safe_url(x["url"]))}">#{x["number"]}</a></td>'
+        f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
+        f'<td data-label="マージ日時">{x["at"].strftime("%Y-%m-%d %H:%M")}</td></tr>' for x in prs)
+    return ('<section class="pcard" id="prs"><h3 style="margin:0">直近マージ済み PR（%d件）</h3><div class="tbl"><table><thead><tr>'
+            '<th>PR</th><th>タイトル</th>'
+            '<th aria-sort="none"><button type="button" data-k="a">担当者 <span aria-hidden="true">⇅</span></button></th>'
+            '<th aria-sort="descending"><button type="button" data-k="t">マージ日時（JST） <span aria-hidden="true">▼</span></button></th>'
+            '</tr></thead><tbody>%s</tbody></table></div></section>') % (len(prs), rows)
 
 
 def md(d):
@@ -216,7 +257,10 @@ CSS = """
 .bar{height:12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--tint);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--m2)}
 .pcard,.stg2,.empty{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s3)}
-.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.lg{margin:0;font-size:var(--fs-xs);color:var(--csub)}
+.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--s3);align-items:start}
+.pcard details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.pcard details[open]>summary{margin-bottom:var(--s2)}
+.st.merged{background:var(--tint);color:var(--ctext);border:var(--bw1) solid var(--kac)}
+#prs th button{font:inherit;color:inherit;background:transparent;border:0;padding:0;cursor:pointer}#prs td{padding:6px 12px}#prs .tbl{box-shadow:none}
 .av{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--hbg);color:var(--htext);box-shadow:3px 3px 0 var(--hsh);font:800 1rem/1 var(--body);flex:none}
 .num{margin-left:auto;text-align:right}.num b{display:block;font:800 1.5rem/1.2 var(--body)}.num span{font-size:var(--fs-xs);color:var(--csub)}
 .rows,.stg2 ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2)}
@@ -258,6 +302,14 @@ bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribut
 window.addEventListener("hashchange",function(){show(st())});show(st())})();"""
 
 
+# 直近 PR の表: 列見出しで並べ替え。担当者は押すたびに 昇順 → 逆順。既定はマージ日時の新しい順
+SORT_JS = """(function(){var t=document.querySelector("#prs tbody");if(!t)return;var hs=[].slice.call(document.querySelectorAll("#prs th[aria-sort]")),cur="t",dir=-1;
+function key(r,k){return k==="a"?r.getAttribute("data-a"):r.getAttribute("data-t")}
+function go(k){dir=(k===cur)?-dir:(k==="t"?-1:1);cur=k;var rs=[].slice.call(t.rows);rs.sort(function(x,y){var a=key(x,k),b=key(y,k),c=a<b?-1:a>b?1:0;if(k==="a"&&c===0){c=x.getAttribute("data-t")<y.getAttribute("data-t")?1:-1;return c}return c*dir});rs.forEach(function(r){t.appendChild(r)});
+hs.forEach(function(h){var b=h.querySelector("button"),on=b.getAttribute("data-k")===k;h.setAttribute("aria-sort",on?(dir>0?"ascending":"descending"):"none");b.querySelector("span").textContent=on?(dir>0?"▲":"▼"):"⇅"})}
+hs.forEach(function(h){var b=h.querySelector("button");b.addEventListener("click",function(){go(b.getAttribute("data-k"))})})})();"""
+
+
 def page(body, updated, sample=False, members=()):
     return f"""<!doctype html>
 <html lang="ja">
@@ -265,7 +317,7 @@ def page(body, updated, sample=False, members=()):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>進捗｜雷禅・黄泉・軀</title>
+<title>進捗ダッシュボード｜雷禅・黄泉・軀</title>
 <meta name="description" content="担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。">
 <meta name="theme-color" content="#2A1B3D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -277,7 +329,7 @@ def page(body, updated, sample=False, members=()):
 <body>
 <header class="kb-band"><div class="kb-in">
 <div class="kb-nav"><a href="hub.html">← 開発ハブ</a></div>
-<h1>進捗{'<span class="sample">サンプル</span>' if sample else ''}</h1>
+<h1>進捗ダッシュボード{'<span class="sample">サンプル</span>' if sample else ''}</h1>
 <p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
 <ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
 {'<p class="sample-note">ダミーデータの表示例です。実際の Issue ではありません。</p>' if sample else ''}
@@ -285,10 +337,11 @@ def page(body, updated, sample=False, members=()):
 </div></header>
 <main class="kb"><div class="pg">
 {body}
-<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
+<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。ひも付く PR がマージ済みなのに Issue が開いているものは「マージ済み・Issue 未完了」（暫定。数えるのは Issue だけなので未完了のまま）。領域別の件数は Issue 題の頭文字（P=PM／B=DB・API／F=画面／T=テスト）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
 </div></main>
 <script src="kb/kb.js" defer></script>
 <script>{FILTER_JS}</script>
+<script>{SORT_JS}</script>
 </body>
 </html>
 """
@@ -299,29 +352,32 @@ def render(model, updated, sample=False):
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body, updated, sample, mem)
+        return page(body + render_prs(model.get("merged_prs", [])), updated, sample, mem)
     pc = pct(model["done"], model["total"])
     late = sum(1 for r in model["alerts"] if r["late"])
+    c = model["counts"]
     parts = [f'<div class="sum"><div><b>{pc}%</b><span>全体の完了</span></div>'
              f'<div><b>{model["done"]}</b><span>完了</span></div>'
              f'<div><b>{model["total"] - model["done"]}</b><span>未完了</span></div>'
              f'<div><b>{late}</b><span>遅れている</span></div></div>',
-             f'<div class="sum"><div><b>{model["counts"]["todo"]}</b><span>未着手</span></div>'
-             f'<div><b>{model["counts"]["wip"]}</b><span>作業中</span></div>'
-             f'<div><b>{model["counts"]["review"]}</b><span>レビュー待ち</span></div></div>']
+             f'<div class="sum"><div><b>{c["todo"]}</b><span>未着手</span></div>'
+             f'<div><b>{c["wip"]}</b><span>作業中</span></div>'
+             f'<div><b>{c["review"]}</b><span>レビュー待ち</span></div>'
+             f'<div><b>{c["merged"]}</b><span>マージ済み・Issue 未完了</span></div></div>']
+    if model["total"]:
+        parts.append('<div class="pgrid">' + "".join(render_person(p) for p in model["people"]) + "</div>")
     alerts = "".join(render_row(r, [model["name_of"].get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]])
                      for r in model["alerts"])
-    parts.insert(0, '<section class="pcard" id="al"><h3 style="margin:0">遅れ・期限が近い</h3>'
-                    f'<ul class="rows">{alerts}</ul>'
-                    f'<p class="none"{" hidden" if alerts else ""}>なし</p>'
-                    '<p class="sv" style="margin:0;font-size:var(--fs-xs)">未完了で、期限切れ（ピンク）と、期限の2日前以内（黄）の Issue。期限は段階の期限。</p></section>')
+    parts.append('<section class="pcard" id="al"><h3 style="margin:0">遅れ・期限が近い</h3>'
+                 f'<ul class="rows">{alerts}</ul>'
+                 f'<p class="none"{" hidden" if alerts else ""}>なし</p>'
+                 '<p class="sv" style="margin:0;font-size:var(--fs-xs)">未完了で、期限切れ（ピンク）と、期限の2日前以内（黄）の Issue。期限は段階の期限。</p></section>')
     if model["stages"]:
         parts.append('<section class="stg2"><h3 style="margin:0">段階ごと</h3><ul>'
                      + "".join(render_stage(s) for s in model["stages"]) + "</ul></section>")
-    if model["total"]:
-        parts += [render_person(p) for p in model["people"]]
-    else:
+    if not model["total"]:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
+    parts.append(render_prs(model.get("merged_prs", [])))
     return page("\n".join(parts), updated, sample, mem)
 
 

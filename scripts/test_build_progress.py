@@ -2,6 +2,7 @@ import datetime as dt
 import importlib.util
 import json
 import os
+import re
 import unittest
 
 D = os.path.dirname(os.path.abspath(__file__))
@@ -55,8 +56,8 @@ class T(unittest.TestCase):
         self.assertEqual(rows[4]["status"], "wip")     # Draft の PR #23
         self.assertEqual(rows[6]["status"], "review")  # Ready の PR #21
         self.assertEqual(rows[1]["status"], "done")
-        self.assertEqual(rows[3]["status"], "todo")    # マージ済み PR だけでは作業中にしない
-        self.assertEqual(model()["counts"], {"todo": 5, "wip": 1, "review": 1})
+        self.assertEqual(rows[3]["status"], "merged")  # Issue が開いていて PR がマージ済み（暫定の表示）
+        self.assertEqual(model()["counts"], {"todo": 4, "wip": 1, "review": 1, "merged": 1})
 
     def test_alerts_late_and_within_two_days(self):
         m = model()  # 今日 11/5
@@ -106,6 +107,37 @@ class T(unittest.TestCase):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):
             self.assertNotIn(acct, txt)
+
+    def test_recent_prs_ten_default_newest_first_and_others(self):
+        prs = model()["merged_prs"]
+        self.assertEqual(len(prs), 10)  # 13件マージ済みのうち新しい10件
+        self.assertEqual([x["at"] for x in prs], sorted((x["at"] for x in prs), reverse=True))
+        allp = bp.build_model(json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))["issues"],
+                              [], NAMES, dt.date(2026, 11, 5))["merged_prs"]
+        self.assertTrue(all(x["author"] in set(NAMES.values()) | {bp.OTHER} for x in allp))  # 名前の対応表に無い人は「その他」
+        self.assertIn(bp.OTHER, {x["author"] for x in allp})
+
+    def test_prs_table_and_sort_hooks(self):
+        out = bp.render(model(), "x")
+        a = out.index('id="prs"')
+        self.assertEqual(out[a:].count("<tr data-a="), 10)
+        self.assertIn('data-k="a">担当者', out)
+        self.assertIn('aria-sort="descending"', out)  # 既定はマージ日時の新しい順
+        self.assertIn('id="prs"', out.split("<script>")[0])
+        self.assertNotIn("http://", out.split("<body>")[1])  # 外部読み込みなし
+
+    def test_cards_folded_with_area_counts(self):
+        out = bp.render(model(), "x")
+        self.assertIn("<details><summary>内訳を開く", out)
+        self.assertNotIn("<details open", out)
+        self.assertIn("画面 0／1", out)
+        self.assertIn("<h1>進捗ダッシュボード", out)
+
+    def test_visible_text_has_display_names_only(self):
+        out = bp.render(model(), "x")
+        visible = re.sub(r"<script.*?</script>|<style.*?</style>|<[^>]+>", " ", out, flags=re.S)
+        for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "guest-dev"):
+            self.assertNotIn(acct, visible)
 
     def test_empty_and_escape(self):
         self.assertIn("まだ Issue がありません", bp.render(model(data="progress-empty.json"), "x"))
