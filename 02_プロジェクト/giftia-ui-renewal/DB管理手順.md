@@ -100,20 +100,19 @@ SHOW TABLES;
 ```
 
 - アプリ用アカウントが存在すること。現在の権限をメモしておく（戻すときに使う）。
-- `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（#54 の読み取り結果 `backend/db_schema.md`（ブランチ feat/issue-50-db-ssl-verify）の7つ: order_items・orders・product_facts・product_scenes・products・reviews・users。実行前に `SHOW TABLES` と一致するか確かめる）。
+- `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（#54 の読み取り結果 `backend/db_schema.md`（ブランチ feat/issue-50-db-ssl-verify）の7つのうち `users` を除く6つに与える: order_items・orders・product_facts・product_scenes・products・reviews・users。実行前に `SHOW TABLES` と一致するか確かめる）。
 
 **実行**（`<…>` を埋めてから流す。ユーザーとホストは環境変数ではなく SQL に直接書く）
 
 ```sql
--- 既存テーブルごとに1行ずつ（7つ）（DB 全体への GRANT SELECT ON giftia_t501.* は、share_links にも SELECT が付くだけなので使ってもよいが、
--- 後から作るテーブルにも及ぶ。N-04 は「既存テーブル」と書いているので、テーブルごとが表に近い）
+-- 既存テーブルごとに1行ずつ（`users` を除く6つ。#58-9）（DB 全体への GRANT SELECT ON giftia_t501.* は `users` にも付くので使わない。
+-- N-04 の表どおり、テーブルごとに書く）
 GRANT SELECT ON giftia_t501.order_items TO '<アプリ用ユーザー>'@'<ホスト指定>';
 GRANT SELECT ON giftia_t501.orders TO '<アプリ用ユーザー>'@'<ホスト指定>';
 GRANT SELECT ON giftia_t501.product_facts TO '<アプリ用ユーザー>'@'<ホスト指定>';
 GRANT SELECT ON giftia_t501.product_scenes TO '<アプリ用ユーザー>'@'<ホスト指定>';
 GRANT SELECT ON giftia_t501.products TO '<アプリ用ユーザー>'@'<ホスト指定>';
 GRANT SELECT ON giftia_t501.reviews TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.users TO '<アプリ用ユーザー>'@'<ホスト指定>';
 
 GRANT SELECT, INSERT ON giftia_t501.share_links TO '<アプリ用ユーザー>'@'<ホスト指定>';
 FLUSH PRIVILEGES;
@@ -279,4 +278,4 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 
 1. **管理用アカウント・アプリ用アカウントのホスト指定・Azure の制限**: 運営相談の「相談3: DB のアカウントと権限」の返事待ち。それまで空欄のまま。
 2. **MySQL のバージョン**: `8.4.9-azure` で JSON 型を使うと決定済み（#54-1）。穴ではなくなった。手順0の `VERSION()` で一致を確かめる。
-3. **既存テーブルの実名**: 7つ書いた。実行前の `SHOW TABLES` で一致を確かめる。`users` にも SELECT を与えるが、アプリは個人情報の列を引かない（設計.md N-13）。権限を `users` から外すかどうかは設計に書かれていません。
+3. **既存テーブルの実名**: 7つあるうち、`users` を除く6つに SELECT を与える（#58-9。ログインの答えが来たら見直す）。実行前の `SHOW TABLES` で一致を確かめる。
