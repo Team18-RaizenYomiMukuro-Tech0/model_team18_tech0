@@ -156,7 +156,9 @@
    "assignees": [],
    "pull_request": {
     "merged_at": null
-   }
+   },
+   "draft": false,
+   "body": "Closes #6"
   },
   {
    "number": 22,
@@ -169,6 +171,19 @@
     "merged_at": null
    },
    "body": "Closes #5"
+  },
+  {
+   "number": 23,
+   "title": "feat: 画面遷移図の下書き",
+   "state": "open",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/23",
+   "milestone": null,
+   "assignees": [],
+   "pull_request": {
+    "merged_at": null
+   },
+   "draft": true,
+   "body": "Closes #4"
   }
  ],
  "milestones": [
