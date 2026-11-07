@@ -8,6 +8,8 @@ GitHub の Issue とマイルストーンを API で読み、担当者ごとの�
     つながりは PR 本文の「Closes #n」（CLOSE_RE）で判定
   - 一番上に「遅れ・期限が近い」（期限切れ、または期限の2日前以内の未完了 Issue）
   - 上部の名前ボタンで担当者ごとに絞れる（#名前 で開くと最初から絞れる）
+  - 同じデータから progress-summary.json も書く（ハブの進捗カード用。表示名だけで、アカウント名・メールは入れない）。
+    取得に失敗したときは {"updatedAt", "error"} だけを書く
   - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
     それ以外のアカウントや担当なしの Issue は「担当未定」1枠にまとめる（数えはする）
 
@@ -323,6 +325,23 @@ def render(model, updated, sample=False):
     return page("\n".join(parts), updated, sample, mem)
 
 
+def build_summary(model, updated_at, sample=False):
+    """progress.html と同じ model から作る。遅れ・期限が近いの判定は model の alerts（build_model）を共有"""
+    alerts = model["alerts"]
+    out = {"updatedAt": updated_at, "total": model["total"], "closed": model["done"],
+           "overdue": sum(1 for r in alerts if r["late"]),
+           "dueSoon": sum(1 for r in alerts if not r["late"]),
+           "byPerson": [{"name": p["name"],
+                         "closed": sum(1 for r in p["rows"] if r["done"]),
+                         "open": sum(1 for r in p["rows"] if not r["done"]),
+                         "overdue": sum(1 for r in p["rows"] if r["late"])} for p in model["people"]],
+           "phases": [{"title": x["title"], "closed": x["done"], "total": x["total"]}
+                      for x in model["stages"] if x["title"] != NO_MILESTONE]}
+    if sample:
+        out["sample"] = True  # ダミーデータから作った（--data）
+    return out
+
+
 def error_page(msg, updated):
     body = (f'<div class="empty"><h3>今回は取得できませんでした</h3><p>GitHub から Issue を読めませんでした（{e(msg)}）。'
             '次の更新でもう一度試します。</p></div>')
@@ -339,6 +358,7 @@ def main():
     now = dt.datetime.now(JST)
     today = dt.date.fromisoformat(a.today) if a.today else now.date()
     updated = f"{today.isoformat()} {now.strftime('%H:%M')} JST" if not a.today else today.isoformat()
+    updated_at = now.isoformat(timespec="seconds") if not a.today else f"{today.isoformat()}T00:00:00+09:00"
     os.makedirs(a.out, exist_ok=True)
     out = os.path.join(a.out, "progress.html")
     try:
@@ -351,13 +371,19 @@ def main():
             token = os.environ.get("GITHUB_TOKEN")
             issues = api_get(repo, "issues?state=all", token)
             milestones = api_get(repo, "milestones?state=all", token)
-        text = render(build_model(issues, milestones, load_names(a.names), today), updated, sample=bool(a.data))
+        model = build_model(issues, milestones, load_names(a.names), today)
+        text = render(model, updated, sample=bool(a.data))
+        summary = build_summary(model, updated_at, sample=bool(a.data))
     except Exception as ex:  # 公開全体を止めない
         print(f"warning: 進捗を作れませんでした: {type(ex).__name__}", file=sys.stderr)
         text = error_page(type(ex).__name__, updated)
+        summary = {"updatedAt": updated_at, "error": type(ex).__name__}
     with open(out, "w", encoding="utf-8") as f:
         f.write(text)
-    print(f"wrote {out}")
+    with open(os.path.join(a.out, "progress-summary.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"wrote {out} and progress-summary.json")
 
 
 if __name__ == "__main__":
