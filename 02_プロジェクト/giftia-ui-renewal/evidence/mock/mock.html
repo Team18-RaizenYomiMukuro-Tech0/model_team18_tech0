@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Giftia レビュー用モック</title>
+<title>Giftia レビュー用モック（案A）</title>
 <style>
-:root{--bg:#f4f1ee;--paper:#fff;--ink:#3a3331;--sub:#7a6f6a;--line:#e8dfd9;--peach:#fdeee6;--coral:#ee6c4d;--coral-d:#d4553a;--sage:#e6ebdd;--sage-d:#5d7a4e;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8}
+:root{--bg:#f4f1ee;--paper:#fff;--ink:#3a3331;--sub:#7a6f6a;--line:#e8dfd9;--peach:#fdeee6;--coral:#ee6c4d;--coral-d:#d4553a;--sage:#e6ebdd;--sage-d:#5d7a4e;--green:#6f8a5a;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.45}
 :focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
-#bar{position:sticky;top:0;z-index:20;background:#2f2a28;color:#fff;padding:8px 12px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+#bar{position:sticky;top:0;z-index:30;background:#2f2a28;color:#fff;padding:8px 12px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
 #bar b{color:#ffd9cc}
 #bar .grp{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 #bar button{background:#4a4340;border:1px solid #6b625e;color:#fff;border-radius:6px;padding:3px 9px;font-size:12px}
@@ -22,49 +22,48 @@ button:disabled{cursor:not-allowed;opacity:.45}
 #app.w375{max-width:375px}
 .sp{display:none;font:600 10px/1 monospace;background:#e3efff;color:#1a4fa0;border:1px solid #9bbcf0;border-radius:4px;padding:2px 4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
 body.show-sp .sp{display:inline-block}
-.sticky{display:none;background:var(--note);color:#4a3d00;border:1px solid #d9c24a;border-radius:4px;padding:5px 8px;font-size:12px;line-height:1.45;margin:6px 0;box-shadow:1px 2px 0 rgba(0,0,0,.12);max-width:34em;text-align:left}
+.sticky{display:none;background:var(--note);color:#4a3d00;border:1px solid #d9c24a;border-radius:4px;padding:5px 8px;font-size:12px;line-height:1.45;margin:6px 0;box-shadow:1px 2px 0 rgba(0,0,0,.12);max-width:34em;text-align:left;font-weight:400}
 .sticky::before{content:"📌 仕様に書かれていません：";font-weight:700}
 body.show-note .sticky{display:block}
-header.top{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.logo{font-weight:800;font-size:22px;color:var(--ink);letter-spacing:.02em;display:flex;align-items:center;gap:6px;cursor:pointer;background:none;border:0;padding:0}
+header.top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-weight:800;font-size:22px;color:var(--ink);display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;min-height:44px}
 .logo i{display:inline-block;width:22px;height:22px;border:2px solid var(--coral);border-radius:4px;position:relative}
 .logo i::after{content:"";position:absolute;left:8px;top:-2px;width:2px;height:22px;background:var(--coral)}
-.spacer{flex:1}
-.hsearch{display:flex;flex:1 1 180px;max-width:360px;border:1px solid #bdb0a8;border-radius:8px;overflow:hidden}
-.hsearch input{flex:1;min-width:0;border:0;padding:8px 10px;font:inherit;min-height:44px;background:#f5f2ef}
+.hsearch{display:flex;flex:1 1 180px;max-width:420px;border:1px solid #d9cfc8;border-radius:22px;overflow:hidden;background:#f5f2ef}
+.hsearch input{flex:1;min-width:0;border:0;padding:8px 14px;font:inherit;min-height:44px;background:#f5f2ef}
 .hsearch input::placeholder{color:#b5aaa4}
-.hsearch{background:#f5f2ef}
-.selbadge{align-self:flex-start;background:var(--coral);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
-.hsearch button{border:0;background:var(--peach);min-width:44px;min-height:44px}
-.tax{font-size:12px;font-weight:400;color:var(--sub)}
-.small12{font-size:12px;color:var(--sub);margin-top:14px}
-.chosen{margin-top:18px;border:2px solid var(--coral);border-radius:12px;padding:12px;background:#fffaf8}
-.chosen ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
-.chosen li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
-.chosen li .nm{flex:1 1 160px}
-.overmsg{flex-basis:100%;color:var(--err);font-weight:600;font-size:13px}
+.spacer{flex:1}
 .hbtn{background:none;border:0;padding:6px 8px;border-radius:8px;display:flex;gap:4px;align-items:center;font-size:13px;min-height:44px}
 .hbtn:hover{background:var(--peach)}
+.cnt{background:var(--coral);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px;text-align:center}
 .tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;background:#eee;color:#555}
-.toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);background:#3a3331;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;z-index:10;display:none;max-width:90%}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#3a3331;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;z-index:40;display:none;max-width:90%}
 .toast.on{display:block}
 main{padding:20px}
 h1{font-size:20px;margin:0 0 4px}
-.hero{background:var(--peach);border-radius:12px;padding:18px 20px;margin-bottom:18px}
+h2.sec{font-size:15px;margin:22px 0 10px}
+.hero{background:var(--peach);border-radius:14px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;overflow:hidden}
+.hero h1{font-size:28px;line-height:1.35;margin:0 0 8px}
 .hero p{margin:0;color:var(--sub);font-size:13px}
-form.search{background:var(--peach);border-radius:12px;padding:16px 20px;display:grid;gap:14px}
-fieldset{border:0;margin:0;padding:0}
-legend,label.lb{font-weight:700;font-size:13px;margin-bottom:6px;padding:0;display:block}
-.scenes{display:flex;gap:8px;flex-wrap:wrap}
-.scene{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 20px;min-height:44px}
-.scene[aria-pressed=true]{border:2px solid var(--coral);background:#fff6f2;font-weight:700;padding:8px 19px}
+.hero svg{flex:0 0 150px;width:150px;height:auto}
+@container (max-width:600px){.hero h1{font-size:21px}.hero svg{display:none}}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px}
+.tile[aria-pressed=true]{border:2px solid var(--coral);background:#fff6f2;font-weight:700}
+.tile .ic{font-size:22px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat{justify-content:flex-start;padding-left:16px}
+@container (max-width:600px){.tiles,.cats{grid-template-columns:repeat(2,1fr)}}
+.ferr{color:var(--err);font-size:13px;margin-top:4px;font-weight:600;min-height:1.2em}
+.budgetbox{background:var(--peach);border-radius:12px;padding:14px 18px;margin-top:12px}
 .budget{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+label.lb{font-weight:700;font-size:13px;display:block;margin-bottom:6px}
 input.yen{font:inherit;padding:9px 12px;border:1px solid #bdb0a8;border-radius:8px;width:11em;min-height:44px;background:#fff}
 input.yen[aria-invalid=true]{border:2px solid var(--err)}
-.ferr{color:var(--err);font-size:13px;margin-top:4px;font-weight:600;min-height:1.2em}
 .primary{background:var(--coral);color:#fff;border:0;border-radius:8px;padding:10px 22px;font-weight:700;min-height:44px}
 .primary:not(:disabled):hover{background:var(--coral-d)}
 .ghost{background:#fff;border:1px solid #bdb0a8;border-radius:8px;padding:8px 14px;min-height:44px}
+.full{width:100%;text-align:center}
 .msgbox{margin-top:16px;border-radius:10px;padding:18px;text-align:center}
 .msgbox.err{background:var(--errbg);color:var(--err)}
 .msgbox.empty{background:#f5f2ef;color:var(--sub)}
@@ -72,21 +71,56 @@ input.yen[aria-invalid=true]{border:2px solid var(--err)}
 .spinner{width:28px;height:28px;border:4px solid var(--line);border-top-color:var(--coral);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
-.rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 10px}
-.grid{display:grid;grid-template-columns:1fr;gap:14px}
-@container (min-width:600px){.grid{grid-template-columns:repeat(2,1fr)}}
+.filters{background:var(--peach);border-radius:12px;padding:14px 18px;display:grid;gap:10px}
+.frow{display:flex;gap:14px 28px;flex-wrap:wrap;align-items:flex-start}
+.fgrp{display:flex;flex-direction:column;gap:6px}
+.fgrp b{font-size:12px}
+.fbtns{display:flex;gap:8px;flex-wrap:wrap}
+.fb{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 14px;font-size:13px;min-height:44px}
+.fb[aria-pressed=true]{border:2px solid var(--coral);font-weight:700;padding:5px 13px}
+.fb.txt{background:none;border:0;padding:6px 8px}
+.notice{background:var(--sage);border-radius:8px;padding:8px 14px;font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.notice button{background:none;border:0;color:var(--coral-d);font-weight:700;min-height:44px;padding:0 6px}
+.layout{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px}
+@container (min-width:1000px){.layout{grid-template-columns:1fr 340px}}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;align-content:start}
+@container (min-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
 @container (min-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
-.card{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fff;position:relative}
-.card.sel{border:2px solid var(--coral);padding:11px;background:#fffaf8}
-.rank{align-self:flex-start;background:#3a3331;color:#fff;font-size:11px;border-radius:10px;padding:1px 8px}
-.badge{align-self:flex-start;background:#fbe3d9;color:#a2402a;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
-.img{height:90px;border-radius:8px;background:linear-gradient(#f6f3ee 33%,#d5dcc9 33% 66%,#f4a58f 66%)}
-.name{font-weight:700}
-.price{font-size:18px;font-weight:700}
+.card{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;background:#fff;position:relative}
+.card.focus{border:2px solid var(--coral);padding:11px}
+.card.sel{background:#fffaf8}
+.topline{display:flex;gap:6px;align-items:center;min-height:24px;flex-wrap:wrap;padding-right:44px}
+.rank{background:#3a3331;color:#fff;font-size:11px;border-radius:10px;padding:1px 8px}
+.badge{background:#fbe3d9;color:#a2402a;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
+.selbadge{background:var(--coral);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
+.heart{position:absolute;right:6px;top:4px;background:none;border:0;font-size:20px;min-width:44px;min-height:44px;color:#9d908a}
+.heart[aria-pressed=true]{color:var(--coral)}
+.imgwrap{position:relative;border-radius:8px;overflow:hidden;background:#faf7f4}
+.imgwrap svg{display:block;width:100%;height:96px}
+.imgtag{position:absolute;right:4px;bottom:3px;font-size:10px;background:rgba(255,255,255,.85);border-radius:3px;padding:0 4px;color:var(--sub)}
+button.name{background:none;border:0;padding:0;text-align:left;font-weight:700;min-height:44px;line-height:1.35}
+.price{font-size:17px;font-weight:700}
+.tax{font-size:12px;font-weight:400;color:var(--sub)}
+.meta{font-size:12px;color:#5c514d;display:flex;gap:10px;flex-wrap:wrap}
+.star{color:#e8a317}
 .reason{font-size:13px;color:#4d4441;margin:0}
 .pick{margin-top:auto;display:flex;gap:8px;align-items:center;font-weight:600;min-height:44px;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
 .pick input{width:20px;height:20px;accent-color:var(--coral)}
-.sharebar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--peach);padding:12px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:16px -20px -20px}
+.detail{position:relative;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;align-self:start;background:#fff}
+@container (max-width:999px){.detail:not(.open){display:none}}
+.detail .imgwrap svg{height:150px}
+.detail h3{margin:0;font-size:15px;padding-right:44px}
+.detail dl{margin:0;font-size:12px}.detail dt{font-weight:700;margin-top:6px}.detail dd{margin:0;color:#5c514d}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.pager .pg{display:flex;gap:6px;align-items:center}
+.pager button{min-width:44px;min-height:44px;border-radius:22px;border:0;background:none}
+.pager button[aria-current=page]{background:var(--green);color:#fff;font-weight:700}
+.chosen{margin-top:18px;border:2px solid var(--coral);border-radius:12px;padding:12px;background:#fffaf8}
+.chosen ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.chosen li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.chosen li .nm{flex:1 1 160px}
+.sharebar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--peach);padding:12px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:16px -20px -20px;z-index:5}
+.overmsg{flex-basis:100%;color:var(--err);font-weight:600;font-size:13px}
 .linkbox{flex-basis:100%;background:var(--sage);border-radius:10px;padding:12px}
 .linkrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .linkrow code{background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;user-select:all;word-break:break-all;flex:1 1 220px;font-size:13px}
@@ -95,17 +129,26 @@ input.yen[aria-invalid=true]{border:2px solid var(--err)}
 .shbar{background:var(--sage);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px}
 .note{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px}
 .note.end{background:#eee;color:#555}.note.out{background:#fdecea;color:var(--err)}
+.small12{font-size:12px;color:var(--sub);margin-top:14px}
+#ov{position:absolute;inset:0;background:rgba(58,51,49,.35);z-index:15;display:none;justify-content:flex-end;align-items:flex-start;padding:60px 16px}
+#ov.on{display:flex}
+#ov .dlg{background:#fff;border-radius:12px;width:min(380px,100%);max-height:80%;overflow:auto;padding:16px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+#ov ul{list-style:none;margin:8px 0;padding:0;display:grid;gap:8px}
+#ov li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+#ov li .nm{flex:1 1 140px;font-size:13px}
+.qty{display:flex;align-items:center;gap:4px}
+.qty button{min-width:44px;min-height:44px;border:1px solid var(--line);background:#fff;border-radius:8px}
 #list{border-top:3px dashed #d9c24a;background:#fffbe0;padding:14px 20px;font-size:13px;display:none}
 body.show-note #list{display:block}
 #list ol{margin:6px 0 0;padding-left:1.4em}
-@container (max-width:480px){header.top,main{padding-left:12px;padding-right:12px}.sharebar{margin:16px -12px -20px;padding:10px 12px}.hbtn .t{font-size:11px}#list{padding:12px}}
+@container (max-width:480px){header.top,main{padding-left:12px;padding-right:12px}.sharebar{margin:16px -12px -20px;padding:10px 12px}.hbtn .t{font-size:11px}#list{padding:12px}.hero{padding:16px}}
 </style>
 </head>
 <body class="show-sp show-note">
 
 <div id="bar" role="region" aria-label="レビュー用の操作（製品の画面ではありません）">
   <b>レビュー用操作</b>
-  <div class="grp">画面：<button data-view="search" aria-pressed="true">検索</button><button data-view="share" aria-pressed="false">共有ページ</button></div>
+  <div class="grp">画面：<button data-view="top" aria-pressed="true">トップ</button><button data-view="result" aria-pressed="false">検索結果</button><button data-view="share" aria-pressed="false">共有ページ</button></div>
   <div class="grp">幅：<button data-w="375" aria-pressed="false">375px</button><button data-w="1280" aria-pressed="true">1280px</button></div>
   <div class="grp"><label><input type="checkbox" id="tSp" checked> 仕様ID</label><label><input type="checkbox" id="tNote" checked> 付箋</label></div>
   <div class="grp" id="stateBtns">検索の状態：
@@ -117,52 +160,102 @@ body.show-note #list{display:block}
 
 <div id="stage"><div id="app">
   <header class="top">
-    <button class="logo" id="home" aria-label="Giftia 検索ページへ"><i></i>Giftia</button>
-    <span class="sp">AC-03</span>
-    <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す（準備中）" placeholder="準備中" disabled></div><span class="sp">#41-8</span>
+    <button class="logo" id="home" aria-label="Giftia トップへ"><i></i>Giftia</button>
+    <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す（準備中）" placeholder="準備中" disabled></div>
+    <span class="sp">AC-03 #41-8</span>
     <span class="spacer"></span>
-    <button class="hbtn" data-soon="fav">♡ <span class="t">お気に入り</span></button>
-    <button class="hbtn" data-soon="login">👤 <span class="t">ログイン</span><span class="tag">準備中</span></button>
-    <button class="hbtn" data-soon="cart">🛒 <span class="t">カート</span></button>
+    <button class="hbtn" id="bFav" aria-label="お気に入り">♡ <span class="t">お気に入り</span><span class="cnt" id="nFav">0</span></button>
+    <button class="hbtn" id="bLogin">👤 <span class="t">ログイン</span><span class="tag">準備中</span></button>
+    <button class="hbtn" id="bCart" aria-label="カート">🛒 <span class="t">カート</span><span class="cnt" id="nCart">0</span></button>
   </header>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <main id="view"></main>
   <div id="list"></div>
+  <div id="ov" role="dialog" aria-modal="true" aria-label="パネル"></div>
 </div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
-/* 架空データ（実在の商品ではありません） */
+/* ---------- 架空データ（実在の商品ではありません） ---------- */
+const CATS=["お菓子","ドリンク","生活雑貨","インテリア","カタログギフト","コスメ","ビジネス小物","フラワー","家電","酒類","食品"];
+const CIC={"お菓子":"🍪","ドリンク":"🥤","生活雑貨":"🧴","インテリア":"🪴","カタログギフト":"📖","コスメ":"💄","ビジネス小物":"📓","フラワー":"💐","家電":"🔌","酒類":"🍶","食品":"🍱"};
+const HUE={"お菓子":35,"ドリンク":90,"生活雑貨":15,"インテリア":120,"カタログギフト":200,"コスメ":340,"ビジネス小物":220,"フラワー":320,"家電":190,"酒類":50,"食品":70};
+const P=(id,name,cat,price,stock,scenes,r,v,n,d,wrap,extra)=>Object.assign({id,name,cat,price,stock,scenes,r,v,n,d,wrap},extra||{});
+const ALL=["お礼","誕生日","送別"];
 const PRODUCTS=[
- {id:1, name:"綿の店 ふわり ガーゼタオルセット", price:4000,stock:12,scenes:["お礼","誕生日","送別"],r:4.7, v:120,n:48,d:3,wrap:true},
- {id:2, name:"Kasuri Home ガーゼタオルセット",   price:4300,stock:5, scenes:["送別","お礼"],        r:4.6, v:31, n:12,d:2,wrap:true},
- {id:3, name:"Lino タオルセット",                price:3600,stock:4, scenes:["送別"],              r:4.3, v:46, n:0, d:2,wrap:false},
- {id:4, name:"ソフトガーゼ タオルセット",        price:3200,stock:8, scenes:["誕生日","送別"],     r:4.5, v:22, n:7, d:3,wrap:true},
- {id:5, name:"ナチュラルタッチ タオルセット",    price:3800,stock:3, scenes:["送別","お礼"],       r:4.49,v:35, n:5, d:3,wrap:true},
- {id:6, name:"山の香 ほうじ茶ギフト",            price:4100,stock:20,scenes:["お礼","送別"],       r:4.8, v:18, n:30,d:null,wrap:false},
- {id:7, name:"季節の焼き菓子詰合せ",             price:4400,stock:0, scenes:["送別","誕生日"],     r:4.4, v:200,n:20,d:2,wrap:true},
- {id:8, name:"プリザーブドフラワー ミニ",        price:4500,stock:6, scenes:["誕生日","送別"],     r:null,v:null,n:0,d:4,wrap:true},
- {id:9, name:"ふんわり綿 フェイスタオル",            price:5200,stock:10,scenes:["お礼","送別"],       r:4.4, v:60, n:15,d:2,wrap:true},
- {id:10,name:"手ぬぐい 季節柄",                  price:2800,stock:30,scenes:["送別","お礼"],       r:4.1, v:9,  n:2, d:2,wrap:false},
- {id:11,name:"ドリップコーヒー 12袋",            price:3300,stock:15,scenes:["お礼","送別"],       r:4.2, v:0,  n:3, d:2,wrap:false},
- {id:12,name:"入浴剤 ギフトボックス",            price:3150,stock:9, scenes:["送別","誕生日"],     r:4.6, v:55, n:0, d:null,wrap:true}
+ P(1,"綿の店 ふわり ガーゼタオルセット","生活雑貨",4000,12,ALL,4.7,120,48,3,true,{desc:"ふんわりやさしい肌ざわりのガーゼタオル。吸水性が高く、毎日の暮らしに寄り添う使い心地。",set:"バスタオル×1 / フェイスタオル×2（ホワイト・セージ・コーラル）"}),
+ P(2,"Kasuri Home ガーゼタオルセット","生活雑貨",4300,5,["送別","お礼"],4.6,31,12,2,true,{desc:"かすり織り風の柄を楽しめるガーゼタオル。"}),
+ P(3,"Lino タオルセット","生活雑貨",3600,4,["送別"],4.3,46,0,2,false),
+ P(4,"ソフトガーゼ タオルセット","生活雑貨",3200,8,["誕生日","送別"],4.5,22,7,3,true),
+ P(5,"ナチュラルタッチ タオルセット","生活雑貨",3800,3,["送別","お礼"],4.49,35,5,3,true),
+ P(6,"山の香 ほうじ茶ギフト","ドリンク",4100,20,["お礼","送別"],4.8,18,30,null,false),
+ P(7,"季節の焼き菓子詰合せ","お菓子",4400,0,["送別","誕生日"],4.4,200,20,2,true),
+ P(8,"プリザーブドフラワー ミニ","フラワー",4500,6,["誕生日","送別"],null,null,0,4,true),
+ P(9,"ふんわり綿 フェイスタオル","生活雑貨",5200,10,["お礼","送別"],4.4,60,15,2,true),
+ P(10,"手ぬぐい 季節柄","生活雑貨",2800,30,["送別","お礼"],4.1,9,2,2,false),
+ P(11,"ドリップコーヒー 12袋","ドリンク",3300,15,["お礼","送別"],4.2,0,3,2,false),
+ P(12,"入浴剤 ギフトボックス","コスメ",3150,9,["送別","誕生日"],4.6,55,0,null,true),
+ P(13,"ハーブティー 5種セット","ドリンク",2800,40,ALL,4.4,40,9,2,false),
+ P(14,"ミニマグカップ ペア","生活雑貨",3400,11,["誕生日","送別"],4.5,28,6,3,true),
+ P(15,"ハンドクリーム 3点","コスメ",2980,25,["誕生日","お礼"],4.3,64,1,2,true),
+ P(16,"ブックカバー 革調","ビジネス小物",3600,7,["送別","お礼"],4.2,15,11,3,false),
+ P(17,"カタログギフト Sコース","カタログギフト",3000,99,ALL,4.0,12,4,2,false),
+ P(18,"フルーツゼリー 詰合せ","食品",3200,18,["お礼","送別"],4.6,90,14,2,true),
+ P(19,"ミニ加湿器","家電",5800,6,["誕生日"],4.1,20,0,4,true),
+ P(20,"クラフトビール 3本","酒類",4200,14,["送別","お礼"],4.5,33,8,3,true),
+ P(21,"アロマキャンドル","インテリア",3400,22,["誕生日","送別"],4.4,41,3,3,true),
+ P(22,"フラワーアレンジ 小","フラワー",4800,5,["誕生日","お礼"],4.7,26,0,3,true),
+ P(23,"ペンケース 本革風","ビジネス小物",2500,16,["送別"],4.0,8,2,2,false),
+ P(24,"米菓 詰合せ","お菓子",2400,30,["お礼","送別"],4.3,52,6,2,false),
+ P(25,"ステンレスボトル","生活雑貨",4600,9,["送別","誕生日"],4.6,77,10,3,true),
+ P(26,"ドライフルーツ ギフト","食品",3300,12,["お礼"],4.2,19,0,2,false),
+ P(27,"日本酒 小瓶 3本","酒類",5400,8,["送別"],4.8,24,5,4,true),
+ P(28,"フォトフレーム","インテリア",2900,13,["誕生日","送別"],4.1,31,1,3,false),
+ P(29,"焼き菓子 ミニケーキ","お菓子",2200,35,["誕生日"],4.4,70,0,2,true),
+ P(30,"コーヒーミル 手動","家電",6200,4,["送別","お礼"],4.5,38,7,4,false)
 ];
+const TILES=["お礼","誕生日","送別","取引先へのお礼"];
+const TICON={"お礼":"🎁","誕生日":"🎂","送別":"✉️","取引先へのお礼":"🤝"};
+const tag=t=>t==="取引先へのお礼"?"お礼":t;
+const BANDS=[["lo","〜2,999円",p=>p<=2999],["mid","3,000〜4,999円",p=>p>=3000&&p<=4999],["hi","5,000円〜",p=>p>=5000]];
+const PER=12;
 const yen=n=>n.toLocaleString("ja-JP")+"円";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-/* 付箋：まだ決まっていない点だけ残す */
+/* ---------- 付箋（#45・案A・既存仕様に書かれていない点） ---------- */
 const NOTES=[
- /*0*/"共有リンクの URL の頭（ドメイン）は、外部公開の承認後に決めます（#37-16）。いまは仮の https://giftia.example/s/ です。"
+ /*0*/"共有リンクの URL の頭（ドメイン）は、外部公開の承認後に決めます（#37-16）。いまは仮の https://giftia.example/s/ です。",
+ /*1*/"案Aのトップにある「予算から探す」の価格帯ボタン。#45-2 でトップは自由入力にしたため置いていません（価格帯ボタンは結果画面だけ）。",
+ /*2*/"結果画面で価格帯ボタンを押したときの扱い。R-01 の予算（自由入力）と上位10件の候補をやめ、R-02 の絞り込み（12件ずつ・おすすめ順）に切り替えています（仮置き）。",
+ /*3*/"トップの「おすすめの商品」の選び方・並び（仮に先頭の4件）。",
+ /*4*/"R-02 の絞り込みに、在庫0の商品を出すか（仮：出さない）。",
+ /*5*/"詳細の「商品の特徴」「セット内容」の元の列。既存の列に無いので、値がある商品だけ出しています（欠けた項目は表示しない、OPEN-06）。",
+ /*6*/"同じ価格帯ボタンをもう一度押すと解除する動き（仮：解除する）。シーンは単一選択で、押し直しても選んだまま。",
+ /*7*/"ヘッダーのお気に入り・カートを開いたときの見た目（案Aに画面が無い。仮に右上へ重ねて表示）。",
+ /*8*/"「取引先へのお礼」タイルと「お礼」タイルの選択状態の見せ方（どちらも「お礼」タグで探す。仮：別のタイルとして別々に選択表示）。"
 ];
 const note=i=>`<div class="sticky">${esc(NOTES[i])}</div>`;
 const sp=t=>`<span class="sp">${t}</span>`;
 const TAX='<span class="tax">（税込）</span>';
+const priceHTML=n=>`<span class="price">${yen(n)}${TAX}</span>`;
 
 /* 検索中の回る表示。「あかぷさんの顔」の画像が届いたら、ここ1か所だけ差し替える（#39-2） */
 const spinnerHTML=()=>`<img class="spinner" src="akapu.png" alt="" width="96" height="96" style="display:block;border:0;border-radius:50%;width:96px;height:96px;object-fit:cover">`;
 
-/* SP-01 予算の正規化・検証（設計「予算欄の正規化」）。空欄は予算なし（#38・#39-4'）。戻り値: 数 / null=予算なし / NaN=入力エラー */
+/* イラスト風の仮画像（SVG）。「イメージ」と明記（OPEN-06） */
+function imgHTML(p){
+  const h=HUE[p.cat]||20,c=(a,l)=>`hsl(${(h+a)%360},${a?28:45}%,${l}%)`;
+  return `<div class="imgwrap" role="img" aria-label="イメージ（仮画像）"><svg viewBox="0 0 120 96" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="22" y="58" width="76" height="22" rx="7" fill="${c(0,70)}"/><rect x="26" y="40" width="68" height="22" rx="7" fill="${c(40,80)}"/><rect x="30" y="22" width="60" height="22" rx="7" fill="${c(0,95)}" stroke="${c(0,85)}"/></svg><span class="imgtag">イメージ</span></div>`;
+}
+const heroSVG=`<svg viewBox="0 0 150 120" aria-hidden="true"><rect x="30" y="50" width="90" height="60" rx="6" fill="#fff" stroke="#f1d6c9"/><rect x="24" y="38" width="102" height="18" rx="5" fill="#fff" stroke="#f1d6c9"/><rect x="70" y="38" width="12" height="72" fill="#ee6c4d"/><path d="M76 38c-22-26-40-8-24 0M76 38c22-26 40-8 24 0" fill="none" stroke="#ee6c4d" stroke-width="7" stroke-linecap="round"/><circle cx="20" cy="30" r="3" fill="#f4a58f"/><circle cx="132" cy="22" r="3" fill="#8a9a6e"/><circle cx="138" cy="70" r="3" fill="#ee6c4d"/></svg>`;
+
+/* ---------- ブラウザ内保存（お気に入り・カート。D-10） ---------- */
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let FAV=ls.get("giftia:favorites",[]); let CART=ls.get("giftia:cart",{});
+const saveFav=()=>ls.set("giftia:favorites",FAV), saveCart=()=>ls.set("giftia:cart",CART);
+
+/* ---------- SP-01 予算の正規化・検証 ---------- 戻り値: 数 / null=予算なし / NaN=入力エラー */
 function parseBudget(raw){
   let s=String(raw).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/，/g,",");
   s=s.replace(/^[\s　]+|[\s　]+$/g,"").replace(/,/g,"");
@@ -192,8 +285,15 @@ function reason(p){
   else if(p.wrap) s+="ラッピングができます。";
   return s;
 }
-/* 状態。picked は選んだ順の Map（検索し直しても残す。#39-3） */
-const S={view:"search",st:"initial",scene:null,budgetRaw:"4500",sceneErr:false,items:[],picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null};
+/* R-02 の絞り込み（単一選択・条件間 AND、おすすめ順＝ID順。#25） */
+function filterR02(){
+  const b=BANDS.find(x=>x[0]===S.band);
+  return PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price)));
+}
+
+/* ---------- 状態 ---------- */
+const S={view:"top",st:"initial",mode:"r01",scene:null,budgetRaw:"",sceneErr:false,band:null,page:1,items:[],detailId:null,detailOpen:false,
+  picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null};
 const store={};
 const HOUR=3600e3;
 const rid=()=>{const a="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";const b=new Uint8Array(22);crypto.getRandomValues(b);return [...b].map(x=>a[x%64]).join("")};
@@ -213,54 +313,104 @@ function request(ok){
   });
 }
 
-/* 描画 */
+/* ---------- 描画 ---------- */
 function render(){
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
-  $("#stateBtns").hidden=S.view!=="search"; $("#shareBtns").hidden=S.view!=="share";
-  document.querySelectorAll("[data-st]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.st===S.st));
+  $("#stateBtns").hidden=S.view==="share"; $("#shareBtns").hidden=S.view!=="share";
+  document.querySelectorAll("[data-st]").forEach(b=>b.setAttribute("aria-pressed",S.view!=="share"&&b.dataset.st===S.st));
   document.querySelectorAll("[data-sh]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sh===S.shState));
   $("#shMine").disabled=!S.link;
-  $("#view").innerHTML=S.view==="search"?searchHTML():shareHTML();
+  $("#nFav").textContent=FAV.length; $("#nCart").textContent=Object.values(CART).reduce((a,b)=>a+b,0);
+  $("#view").innerHTML=S.view==="top"?topHTML():S.view==="result"?resultHTML():shareHTML();
+  renderOv();
   bind();
-  $("#list").innerHTML="<b>📌 まだ決まっていない点（"+NOTES.length+"件）</b><ol>"+NOTES.map(n=>"<li>"+esc(n)+"</li>").join("")+"</ol>";
+  $("#list").innerHTML="<b>📌 仕様に書かれていない点の一覧（"+NOTES.length+"件）</b><ol>"+NOTES.map(n=>"<li>"+esc(n)+"</li>").join("")+"</ol>";
 }
-function searchHTML(){
-  const sc=["お礼","誕生日","送別"];
-  const bv=parseBudget(S.budgetRaw), badBudget=S.st==="invalid"&&Number.isNaN(bv);
-  let h=`<div class="hero"><h1>ありがとうに、ちょうどいいギフト。</h1><p>予算（総額）とシーンから、贈りものの候補を出します。${sp("SP-01")}</p></div>
-  <form class="search" id="f" novalidate>
-   <fieldset><legend>シーン${sp("SP-01")}</legend><div class="scenes" role="group" aria-label="シーン">${sc.map(x=>`<button type="button" class="scene" data-scene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div>
-    <div class="ferr" role="alert">${S.sceneErr?"シーンを選んでください":""}</div></fieldset>
-   <div><label class="lb" for="bud">予算（任意）${sp("SP-01")}</label>
-    <div class="budget"><input class="yen" id="bud" inputmode="numeric" autocomplete="off" placeholder="例：4,500" value="${esc(S.budgetRaw)}" aria-invalid="${badBudget}" aria-describedby="berr"> 円
+function budgetFormHTML(){
+  const bv=parseBudget(S.budgetRaw), bad=S.st==="invalid"&&Number.isNaN(bv);
+  return `<div class="budgetbox"><label class="lb" for="bud">予算（任意）${sp("SP-01")}</label>
+    <div class="budget"><input class="yen" id="bud" inputmode="numeric" autocomplete="off" placeholder="例：4,500" value="${esc(S.budgetRaw)}" aria-invalid="${bad}" aria-describedby="berr"> 円（税込）
     <button class="primary" type="submit" ${S.st==="loading"?"disabled":""}>候補を出す</button></div>
-    <div id="berr" class="ferr" role="alert">${badBudget?"予算は1,000〜999,999円の整数で入れてください":""}</div>
-    <div style="font-size:12px;color:var(--sub)">空でも探せます（価格では絞りません）。1,000〜999,999円の整数。全角やカンマも読めます。</div></div>
-  </form>`;
-  if(S.st==="initial") h+=`<div class="msgbox init">シーンを選んで「候補を出す」を押してください。予算は空でも大丈夫です。</div>`;
-  if(S.st==="loading") h+=`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
-  if(S.st==="empty") h+=`<div class="msgbox empty" role="status">${parseBudget(S.budgetRaw)===null?"この条件に合う商品がありません。シーンを変えてみてください":"条件に合う商品がありません。予算を変えてみてください"}${sp("SP-01 0件 #41-2")}</div>`;
-  if(S.st==="error") h+=`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`;
-  if(S.st==="results"){
-    h+=`<div class="rhead"><h2 style="margin:0;font-size:16px">候補（${S.items.length}件）</h2>${sp("SP-02 上位10件")}</div>
-    <div class="grid">${S.items.map(card).join("")}</div>`;
+    <div id="berr" class="ferr" role="alert">${bad?"予算は1,000〜999,999円の整数で入れてください":""}</div>
+    <div style="font-size:12px;color:var(--sub)">空でも探せます（価格では絞りません）。1,000〜999,999円の整数。全角やカンマも読めます。</div></div>`;
+}
+function topHTML(){
+  const rec=PRODUCTS.slice(0,4);
+  return `<section class="hero"><div><h1>ありがとうに、<br>ちょうどいいギフト。</h1><p>相手とシーンに合わせて、気持ちが伝わる贈りものを。${sp("案A トップ")}</p></div>${heroSVG}</section>
+  <form id="f" novalidate>
+   <h2 class="sec">シーンから探す${sp("SP-01 / OPEN-02 #45-3")}</h2>
+   <div class="tiles" role="group" aria-label="シーン">${TILES.map(x=>`<button type="button" class="tile" data-tile="${x}" aria-pressed="${S.scene===x}"><span class="ic" aria-hidden="true">${TICON[x]}</span>${x}</button>`).join("")}</div>
+   <div class="ferr" role="alert">${S.sceneErr?"シーンを選んでください":""}</div>${note(8)}
+   ${budgetFormHTML()}${note(1)}
+  </form>
+  ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
+  <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
+  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
+  <h2 class="sec">おすすめの商品</h2>${note(3)}
+  <div class="grid">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
+}
+function stars(p){return hasRating(p)?`<span><span class="star">★</span> ${p.r}（${p.v}件）</span>`:""}
+function metaHTML(p){return `<div class="meta">${stars(p)}${p.d!=null?`<span>🚚 ${p.d}日でお届け</span>`:""}${p.wrap?`<span>🎁 ラッピング可</span>`:""}</div>`}
+function pickHTML(p,picked){return `<label class="pick"><input type="checkbox" data-pick="${p.id}" ${picked?"checked":""}> ${picked?"選んでいます（外す）":"選ぶ"}</label>`}
+function cardHTML(p,o){
+  o=o||{};
+  const picked=S.picked.has(p.id),hi=hasRating(p)&&p.r>=4.5,fav=FAV.includes(p.id);
+  const r01=!o.mini&&S.mode==="r01"&&p.rank;
+  return `<article class="card ${S.detailId===p.id&&!o.mini?"focus":""} ${picked&&!o.mini?"sel":""}">
+   <button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="${esc(p.name)}をお気に入り${fav?"から外す":"に追加"}">${fav?"♥":"♡"}</button>
+   <div class="topline">${r01?`<span class="rank">${p.rank}位</span>`:""}${hi?`<span class="badge">高評価の商品${sp("AC-10")}</span>`:""}${picked&&!o.mini?`<span class="selbadge">選択中${sp("#41-6")}</span>`:""}</div>
+   ${imgHTML(p)}
+   <button class="name" ${o.mini?"":`data-detail="${p.id}"`}>${esc(p.name)}</button>${priceHTML(p.price)}${metaHTML(p)}
+   ${r01?`<p class="reason">${esc(p.reason)}${sp("SP-03")}</p>`:""}${o.mini?"":pickHTML(p,picked)}</article>`;
+}
+function detailHTML(){
+  const p=S.items.find(x=>x.id===S.detailId);
+  if(!p) return `<aside class="detail ${S.detailOpen?"open":""}" aria-label="商品の詳細"><div style="color:var(--sub);font-size:13px">商品を選ぶと、ここに詳細が出ます。</div></aside>`;
+  const fav=FAV.includes(p.id),hi=hasRating(p)&&p.r>=4.5;
+  return `<aside class="detail ${S.detailOpen?"open":""}" aria-label="商品の詳細" id="detail">
+   <h3>${esc(p.name)}</h3><button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="お気に入り">${fav?"♥":"♡"}</button>
+   ${imgHTML(p)}${hi?`<div class="topline"><span class="badge">高評価の商品</span></div>`:""}
+   <div>${priceHTML(p.price)}</div>${metaHTML(p)}
+   ${S.mode==="r01"&&p.reason?`<p class="reason">${esc(p.reason)}</p>`:""}
+   <dl>${p.desc?`<dt>商品の特徴</dt><dd>${esc(p.desc)}</dd>`:""}${p.set?`<dt>セット内容</dt><dd>${esc(p.set)}</dd>`:""}</dl>${note(5)}
+   <button class="primary full" data-cart="${p.id}">🛒 カートに入れる</button>
+   <button class="ghost full" data-fav="${p.id}">♡ お気に入りに${fav?"から外す":"追加"}</button><div>${sp("AC-08")}</div></aside>`;
+}
+function resultHTML(){
+  let h=`<section class="filters" aria-label="検索条件">
+   <div class="frow">
+    <div class="fgrp"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
+    <div class="fgrp"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
+   </div>
+   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}">${c}</button>`).join("")}</div></div>
+  </section>${note(2)}${note(6)}
+  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
+  const bv=parseBudget(S.budgetRaw);
+  if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
+  if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
+  if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
+    const withBudget=S.mode==="r01"&&bv!==null&&!Number.isNaN(bv);
+    const msg=withBudget?"条件に合う商品がありません。予算を変えてみてください":S.mode==="r01"?"この条件に合う商品がありません。シーンを変えてみてください":"この条件に合う商品がありません。条件を変えてみてください";
+    return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #41-2")}</div>`+afterResults();
   }
-  if(S.picked.size||S.creating||S.link||S.st==="results") h+=chosenHTML()+sharebar();
-  return h;
+  if(S.st!=="results") return h+`<div class="msgbox init">トップで予算（任意）とシーンを入れて「候補を出す」を押すか、上の条件を選んでください。</div>`+afterResults();
+  const r01=S.mode==="r01";
+  const total=S.items.length;
+  const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${bv?`・予算${yen(bv)}（税込）`:"・予算なし"}</span>`:""}</div>
+  <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
+  if(!r01){
+    const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
+    h+=`<nav class="pager" aria-label="ページ送り"><span>全 ${total} 件中 ${a} 〜 ${b} 件を表示${sp("#45-5 12件ずつ")}</span><span class="pg"><button data-pg="${S.page-1}" ${S.page<=1?"disabled":""} aria-label="前へ">‹</button>${Array.from({length:pages},(_,i)=>`<button data-pg="${i+1}" ${S.page===i+1?'aria-current="page"':""}>${i+1}</button>`).join("")}<button data-pg="${S.page+1}" ${S.page>=pages?"disabled":""} aria-label="次へ">›</button></span></nav>`;
+  }
+  h+=`</div>${detailHTML()}</div>`;
+  return h+afterResults();
 }
-function card(p){
-  const on=S.picked.has(p.id),hi=hasRating(p)&&p.r>=4.5;
-  return `<article class="card ${on?"sel":""}"><span class="rank">${p.rank}位</span>${on?`<span class="selbadge">選択中${sp("#41-6")}</span>`:""}
-   ${hi?`<span class="badge">高評価の商品${sp("SP-03 4.5以上")}</span>`:""}
-   <div class="img" role="img" aria-label="商品イメージ（仮）"></div>
-   <div class="name">${esc(p.name)}</div><div class="price">${yen(p.price)}${TAX}</div>
-   <p class="reason">${esc(p.reason)}${sp("SP-03")}</p>
-   <label class="pick"><input type="checkbox" data-pick="${p.id}" ${on?"checked":""}> ${on?"選んでいます（外す）":"選ぶ"}</label></article>`;
-}
+function afterResults(){ return (S.picked.size||S.creating||S.link||S.st==="results")?chosenHTML()+sharebar():"" }
 function chosenHTML(){
   const a=[...S.picked.values()];
   return `<section class="chosen" aria-label="選んだ候補"><b>選んだ候補（${a.length}件）</b>${sp("SP-04 #39-3")}
-   ${a.length?`<ul>${a.map(p=>`<li><span class="nm">${esc(p.name)}</span><span>${yen(p.price)}${TAX}</span><button class="ghost" data-unpick="${p.id}" aria-label="${esc(p.name)}を外す">外す</button></li>`).join("")}</ul>`:`<div style="font-size:13px;color:var(--sub);margin-top:6px">まだ選んでいません。</div>`}</section>`;
+   ${a.length?`<ul>${a.map(p=>`<li><span class="nm">${esc(p.name)}</span><span>${priceHTML(p.price)}</span><button class="ghost" data-unpick="${p.id}" aria-label="${esc(p.name)}を外す">外す</button></li>`).join("")}</ul>`:`<div style="font-size:13px;color:var(--sub);margin-top:6px">まだ選んでいません。</div>`}</section>`;
 }
 function sharebar(){
   const n=S.picked.size, over=n>10, dis=n===0||over||S.creating;
@@ -285,29 +435,60 @@ function shareHTML(){
    <div class="grid">${items.map(it=>{
      const cur=PRODUCTS.find(p=>p.id===it.id);
      const nt=!cur?`<span class="note end">この商品は販売終了しました</span>${sp("SP-06 #32-5")}`:cur.stock===0?`<span class="note out">在庫なし</span>${sp("SP-06 #32-5")}`:"";
-     return `<article class="card"><div class="img" role="img" aria-label="商品イメージ（仮）"></div><div class="name">${esc(it.name)}</div><div class="price">${yen(it.price)}${TAX}</div>${nt?`<div>${nt}</div>`:""}<p class="reason">${esc(it.reason)}${sp("SP-03")}</p></article>`}).join("")}</div>
+     return `<article class="card">${imgHTML(cur||{cat:"生活雑貨"})}<div style="font-weight:700">${esc(it.name)}</div>${priceHTML(it.price)}${nt?`<div>${nt}</div>`:""}<p class="reason">${esc(it.reason)}${sp("SP-03")}</p></article>`}).join("")}</div>
    <p class="small12">このページはリンクを知っている人なら誰でも見られます${sp("N-15")}</p>`;
 }
-/* 操作 */
+function renderOv(){
+  const ov=$("#ov");
+  if(!S.panel){ov.className="";ov.innerHTML="";return}
+  ov.className="on";
+  if(S.panel==="fav"){
+    ov.innerHTML=`<div class="dlg"><b>お気に入り（${FAV.length}件）</b>${sp("FAV")}${note(7)}<ul>${FAV.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return p?`<li><span class="nm">${esc(p.name)}</span><span>${priceHTML(p.price)}</span><button class="ghost" data-fav="${id}">外す</button></li>`:""}).join("")||'<li style="color:var(--sub)">まだありません。</li>'}</ul><button class="ghost full" data-close>閉じる</button></div>`;
+  }else{
+    const ids=Object.keys(CART).map(Number);let total=0;
+    ov.innerHTML=`<div class="dlg"><b>カート</b>${sp("OPEN-05")}<ul>${ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);if(!p)return"";total+=p.price*CART[id];return `<li><span class="nm">${esc(p.name)}<br>${priceHTML(p.price)}</span><span class="qty"><button data-qd="${id}" aria-label="減らす">−</button><b aria-live="polite">${CART[id]}</b><button data-qu="${id}" aria-label="増やす">＋</button></span><button class="ghost" data-qx="${id}">削除</button></li>`}).join("")||'<li style="color:var(--sub)">カートは空です。</li>'}</ul>
+     <div style="font-weight:700;margin:8px 0">合計 ${yen(total)}${TAX}</div><button class="primary full" data-order>注文へ進む</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
+  }
+}
+/* ---------- 操作 ---------- */
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2000)}
 function keepInput(){const b=$("#bud");if(b)S.budgetRaw=b.value}
+function setFav(id){const i=FAV.indexOf(id);i<0?FAV.push(id):FAV.splice(i,1);saveFav()}
 function bind(){
-  document.querySelectorAll("[data-scene]").forEach(b=>b.onclick=()=>{keepInput();S.scene=b.dataset.scene;S.sceneErr=false;if(S.st==="invalid")S.st="initial";render()});
-  const f=$("#f"); if(f) f.onsubmit=e=>{e.preventDefault();keepInput();doSearch()};
-  document.querySelectorAll("[data-pick]").forEach(c=>c.onchange=()=>{keepInput();const id=+c.dataset.pick;if(c.checked){const p=S.items.find(x=>x.id===id);if(p)S.picked.set(id,p)}else S.picked.delete(id);render();const e=document.querySelector('[data-pick="'+id+'"]');if(e)e.focus()});
-  document.querySelectorAll("[data-unpick]").forEach(c=>c.onclick=()=>{keepInput();S.picked.delete(+c.dataset.unpick);render()});
-  const r=$("#retry"); if(r) r.onclick=doSearch;
+  const f=$("#f"); if(f) f.onsubmit=e=>{e.preventDefault();keepInput();submitTop()};
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{keepInput();S.scene=b.dataset.tile;S.sceneErr=false;if(S.st==="invalid")S.st="initial";render()});
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>toast("準備中です（カテゴリーと DB の対応が決まってから）"));
+  document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=b.dataset.fscene;S.page=1;S.sceneErr=false;runSearch()});
+  document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.mode="r02";S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
+  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.budgetRaw="";S.mode="r02";S.page=1;runSearch()};
+  document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
+  document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>{S.detailId=+b.dataset.detail;S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
+  document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{setFav(+b.dataset.fav);render()});
+  document.querySelectorAll("[data-cart]").forEach(b=>b.onclick=()=>{const id=b.dataset.cart;CART[id]=(CART[id]||0)+1;saveCart();render();toast("カートに入れました")});
+  document.querySelectorAll("[data-pick]").forEach(c=>c.onchange=()=>{const id=+c.dataset.pick;if(c.checked){const p=S.items.find(x=>x.id===id)||PRODUCTS.find(x=>x.id===id);if(p)S.picked.set(id,{...p,reason:reason(p)})}else S.picked.delete(id);render();const e=document.querySelector('[data-pick="'+id+'"]');if(e)e.focus()});
+  document.querySelectorAll("[data-unpick]").forEach(c=>c.onclick=()=>{S.picked.delete(+c.dataset.unpick);render()});
+  const r=$("#retry"); if(r) r.onclick=runSearch;
   const m=$("#mk"); if(m) m.onclick=doCreate; const m2=$("#mk2"); if(m2) m2.onclick=doCreate;
   const cp=$("#cp"); if(cp) cp.onclick=doCopy;
   const om=$("#openMine"); if(om) om.onclick=()=>openShare(S.shId);
   const sr=$("#shRetry"); if(sr) sr.onclick=()=>openShare(S.shId);
+  document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{S.panel=null;render()});
+  document.querySelectorAll("[data-qu]").forEach(b=>b.onclick=()=>{CART[b.dataset.qu]++;saveCart();render()});
+  document.querySelectorAll("[data-qd]").forEach(b=>b.onclick=()=>{const k=b.dataset.qd;CART[k]=Math.max(1,CART[k]-1);saveCart();render()});
+  document.querySelectorAll("[data-qx]").forEach(b=>b.onclick=()=>{delete CART[b.dataset.qx];saveCart();render()});
+  const od=document.querySelector("[data-order]"); if(od) od.onclick=()=>toast("デモのため、注文はできません");
 }
-function doSearch(){
+function submitTop(){
   const b=parseBudget(S.budgetRaw);
   S.sceneErr=!S.scene;
-  if(Number.isNaN(b)||!S.scene){S.st=Number.isNaN(b)?"invalid":(S.st==="invalid"?"initial":S.st);render();return}
+  if(Number.isNaN(b)||!S.scene){S.st=Number.isNaN(b)?"invalid":(S.st==="invalid"?"initial":S.st);S.view="top";render();return}
+  S.mode="r01";S.band=null;S.page=1;S.view="result";runSearch();
+}
+function runSearch(){
   const tk=++S.token; S.st="loading";render();
-  request(()=>rank(b,S.scene)).then(items=>{ if(tk!==S.token)return; S.items=items;S.st=items.length?"results":"empty";render() })
+  const b=parseBudget(S.budgetRaw);
+  request(()=>S.mode==="r01"?rank(Number.isNaN(b)?null:b,tag(S.scene)):filterR02())
+   .then(items=>{ if(tk!==S.token)return; S.items=items;S.st=items.length?"results":"empty";S.detailId=items[0]?items[0].id:null;S.detailOpen=false;render() })
    .catch(()=>{ if(tk!==S.token)return; S.st="error";render() });
 }
 function doCreate(){
@@ -334,16 +515,24 @@ function openShare(id){
    .then(r=>{if(tk!==S.token)return;S.shState=r.s;S.shItems=r.items||null;render()})
    .catch(()=>{if(tk!==S.token)return;S.shState="fail";render()});
 }
-/* レビューバー */
+/* ヘッダー・レビューバー */
+$("#bFav").onclick=()=>{S.panel=S.panel==="fav"?null:"fav";render()};
+$("#bCart").onclick=()=>{S.panel=S.panel==="cart"?null:"cart";render()};
+$("#bLogin").onclick=()=>toast("準備中です（運営の承認後に作ります）");
+$("#ov").onclick=e=>{if(e.target.id==="ov"){S.panel=null;render()}};
+$("#home").onclick=()=>{S.view="top";S.panel=null;render()};
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
   S.view=b.dataset.view;
-  if(S.view==="share"&&!S.shItems&&S.shState==="ok"){openShare(SHID.ok)}else render()});
+  if(S.view==="share"&&!S.shItems&&S.shState==="ok"){openShare(SHID.ok)}
+  else if(S.view==="result"&&S.st==="initial"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";S.items=rank(null,"送別");S.st="results";S.detailId=S.items[0].id;render()}
+  else render()});
 document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375")});
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
   keepInput(); S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
-  if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";const pb=parseBudget(S.budgetRaw);S.items=rank(Number.isNaN(pb)?4500:pb,S.scene)}
+  S.view=(st==="initial"||st==="invalid")?"top":"result";
+  if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";const pb=parseBudget(S.budgetRaw);S.items=rank(Number.isNaN(pb)?null:pb,tag(S.scene));S.detailId=S.items[0].id}
   if(st==="invalid"&&!Number.isNaN(parseBudget(S.budgetRaw))){S.budgetRaw="12"}
   render()});
 document.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>{
@@ -353,8 +542,6 @@ document.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>{
   else if(k==="mine"){openShare(S.shId)}
   else openShare(SHID[k]);
 });
-document.addEventListener("click",e=>{if(e.target.closest("[data-soon]"))toast("準備中です（入口だけ。R-02 は要件に未追記）")});
-$("#home").onclick=()=>{S.view="search";render()};
 render();
 </script>
 </body>
