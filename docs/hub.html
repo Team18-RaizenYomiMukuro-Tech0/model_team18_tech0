@@ -143,6 +143,13 @@ body::after{background-image:radial-gradient(var(--dotE) 4px,transparent 4.4px);
 .gk .k2{background:repeating-linear-gradient(135deg,rgba(255,255,255,.9) 0 3px,transparent 3px 6px)}
 @media(max-width:700px){.gz{max-width:none}.gl .o{display:none}.gl{gap:2px}.gl li{padding:4px 1px}.gl .nm{font-size:.85rem}}
 @media(prefers-reduced-motion:reduce){.gf,.gc,.gd.now{animation:none!important;transition:none!important}.gd.now{box-shadow:0 0 0 4px var(--c)}}
+.gc i{min-width:12px}.gd.last{margin-left:0}
+@media(max-width:700px){
+.band{min-height:0;padding-bottom:44px}
+.band::after{background-size:100% 24px,auto 250px}
+.hero{gap:18px}
+.gd.last{left:100%!important;margin-left:-18px!important}
+}
 </style>
 </head>
 <body>
@@ -196,7 +203,7 @@ fetch("progress-summary.json",{cache:"no-cache"}).then(function(r){if(!r.ok)thro
 var ph=j&&j.phases;if(!Array.isArray(ph)||ph.length!==4)throw 0;
 ph.forEach(function(p){if(!p||!num(p.closed)||!num(p.total))throw 0});
 var jst=new Date(Date.now()+9*36e5).toISOString().slice(0,10);
-var all=0,ch=0,seg=[];ph.forEach(function(p,i){if(p.total){var cl=p.closed/p.total*25,mo=num(p.merged_open)?Math.min(p.merged_open/p.total*25,25-cl):0;all+=cl;if(mo>0){ch+=mo;seg.push([i*25+cl,mo])}}});
+var all=0,ch=0,seg=[];ph.forEach(function(p,i){if(p.total){var cl=p.closed/p.total*25,mo=num(p.merged_open)?Math.min(p.merged_open/p.total*25,25-cl):0;all+=cl;if(mo>0){ch+=mo;seg.push([i*25+cl,mo,i>0&&cl<.5])}}});
 all=Math.round(all);ch=Math.round(ch);
 var cur=-1;ph.forEach(function(p,i){if(cur<0&&typeof p.start==="string"&&typeof p.due==="string"&&p.start<=jst&&jst<=p.due)cur=i});
 if(cur<0)ph.forEach(function(p,i){if(cur<0&&p.total>0&&p.closed<p.total)cur=i});
@@ -206,7 +213,7 @@ if(t&&num(t.gain)&&t.gain>0){pw.textContent="今日 +"+t.gain+" 霊力";pw.hidde
 var bar=document.getElementById("gb");bar.setAttribute("aria-label","全体の進み具合 "+all+"パーセント"+(ch?"、溜め中 "+ch+"パーセント分":""));
 var gn=document.getElementById("gn"),gl=document.getElementById("gl");
 ST.forEach(function(s,i){var pos=(i+1)*25,lit=all>=pos,now=i===cur;
-var d=mk("span","gd"+(lit?" lit":"")+(now?" now":""));d.style.left=pos===100?"calc(100% - 9px)":pos+"%";if(pos===100)d.style.marginLeft="0";d.style.setProperty("--c",i===3?"#fff":"var(--m"+(i+1)+")");gn.appendChild(d);
+var d=mk("span","gd"+(lit?" lit":"")+(now?" now":""));d.style.left=pos===100?"calc(100% - 9px)":pos+"%";if(pos===100)d.classList.add("last");d.style.setProperty("--c",i===3?"#fff":"var(--m"+(i+1)+")");gn.appendChild(d);
 var li=mk("li",(now?"now":"")+(lit||now?"":" off"));li.dataset.n=i+1;
 li.appendChild(mk("span","no","STAGE "+(i+1)));li.appendChild(mk("span","nm",s[0]));
 var w=mk("span","ws");w.appendChild(mk("span","o",s[1]+"（"));w.appendChild(document.createTextNode(s[2]));w.appendChild(mk("span","o","）"));li.appendChild(w);
@@ -215,7 +222,7 @@ gl.appendChild(li)});
 var f=document.getElementById("gf"),c=document.getElementById("gc");
 gz.hidden=false;var old=document.querySelector(".band .stages");if(old)old.hidden=true;
 if(ch)document.getElementById("gk-c").hidden=false;
-requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.clipPath="inset(0 "+(100-all)+"% 0 0)";seg.forEach(function(x){var e=document.createElement("i");e.style.left=x[0]+"%";e.style.width=x[1]+"%";c.appendChild(e)})})});
+requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.clipPath="inset(0 "+(100-all)+"% 0 0)";seg.forEach(function(x){var e=document.createElement("i");e.style.left=x[2]?"calc("+x[0]+"% + 11px)":x[0]+"%";e.style.width=x[1]+"%";c.appendChild(e)})})});
 }).catch(function(){})})();
 </script>
 </body>
