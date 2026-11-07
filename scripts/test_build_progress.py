@@ -507,6 +507,14 @@ class T(unittest.TestCase):
             self.assertNotIn("border", rule[0])
             self.assertNotIn("var(--hero)", rule[0])  # 濃い塗り（ボタンの形）にしない
 
+    def test_head_has_the_hub_icon_lines(self):
+        hub = open(os.path.join(os.path.dirname(__file__), "..", "docs", "hub.html"), encoding="utf-8").read().split("\n")
+        want = [l for l in hub if 'rel="icon"' in l or 'rel="apple-touch-icon"' in l]
+        self.assertEqual(len(want), 4)
+        head = bp.render(model(), "x").split("</head>")[0]
+        for l in want:
+            self.assertIn(l, head)  # hub.html の <head> と同じ4行（progress.html は docs/ と同じ階層）
+
     def test_now_section_contents_and_order(self):
         out = bp.render(model(), "x")
         al = out[out.index('id="al"'):out.index('class="pgrid"')]

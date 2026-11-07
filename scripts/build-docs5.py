@@ -228,7 +228,20 @@ def externalize(h):
     return re.sub(r"<a\b([^>]*)>", repl, h)
 
 
-def page(title, body, nav_html, footer_html, mermaid):
+# タブのアイコン（docs/hub.html の <head> と同じ4行。画像は hub-assets/ への相対パスで、ページの深さに合わせて ../ を足す）
+ICON_LINES = (
+    '<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%232A1B3D%22/%3E%3Cpath d=%22M0 64V50l12-5 8 3 10-8 12 6 8-4 14 5v17z%22 fill=%22%2312091F%22/%3E%3Ccircle cx=%2222%22 cy=%2221%22 r=%2211%22 fill=%22%23FFD700%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3Ccircle cx=%2242%22 cy=%2221%22 r=%2211%22 fill=%22%2340E0D0%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3Ccircle cx=%2232%22 cy=%2238%22 r=%2211%22 fill=%22%23FF69B4%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3C/svg%3E">',
+    '<link rel="icon" type="image/png" sizes="32x32" href="{up}hub-assets/favicon-32.png">',
+    '<link rel="icon" type="image/png" sizes="16x16" href="{up}hub-assets/favicon-16.png">',
+    '<link rel="apple-touch-icon" href="{up}hub-assets/apple-touch-icon.png">',
+)
+
+
+def icon_links(up):
+    return "\n".join(l.replace("{up}", up) for l in ICON_LINES) + "\n"
+
+
+def page(title, body, nav_html, footer_html, mermaid, up="../"):
     script = ""
     if mermaid:
         script = (
@@ -240,7 +253,7 @@ def page(title, body, nav_html, footer_html, mermaid):
     return (
         "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
-        f"<title>{html.escape(title)}</title>\n<style>{CSS}</style>\n</head>\n<body>\n"
+        f"<title>{html.escape(title)}</title>\n" + icon_links(up) + f"<style>{CSS}</style>\n</head>\n<body>\n"
         + externalize(f"{nav_html}\n<main>\n{body}\n<footer>{footer_html}</footer>\n</main>\n") + f"{script}\n</body>\n</html>\n"
     )
 
@@ -288,7 +301,7 @@ def build_project(project, out_root, repo, commit):
         links = f'元の文書: <a href="{blob}">{html.escape(rel_md)}</a>' if blob else f"元の文書: <code>{html.escape(rel_md)}</code>"
         footer = f"{links}<br>生成元コミット: <code>{html.escape(short)}</code>（この HTML は .md から自動生成。直接は編集しません）"
         title = f"{label} — {project}"
-        (out_dir / f"{key}.html").write_text(page(title, body, "".join(nav), footer, mermaid), encoding="utf-8")
+        (out_dir / f"{key}.html").write_text(page(title, body, "".join(nav), footer, mermaid, up="../../"), encoding="utf-8")
 
 
 def rewrite_links(body, project, repo, commit):
@@ -328,7 +341,7 @@ def build_index(projects, out_root, commit):
     footer = f"生成元コミット: <code>{html.escape(commit[:7] if commit else '不明')}</code>"
     d = out_root / "docs5"
     d.mkdir(parents=True, exist_ok=True)
-    (d / "index.html").write_text(page("5文書（HTML 版）", body, "", footer, False), encoding="utf-8")
+    (d / "index.html").write_text(page("5文書（HTML 版）", body, "", footer, False, up="../"), encoding="utf-8")
 
 
 def main():
