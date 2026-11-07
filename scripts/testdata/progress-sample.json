@@ -2,7 +2,7 @@
  "issues": [
   {
    "number": 1,
-   "title": "要求定義を統合する",
+   "title": "[P1] 要求定義を統合する",
    "state": "closed",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/1",
    "milestone": {
@@ -18,7 +18,7 @@
   },
   {
    "number": 2,
-   "title": "要件の機能一覧を埋める",
+   "title": "[P1] 要件の機能一覧を埋める",
    "state": "closed",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/2",
    "milestone": {
@@ -34,7 +34,7 @@
   },
   {
    "number": 3,
-   "title": "仕様のデータ項目を確定する",
+   "title": "[B2] 仕様のデータ項目を確定する",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/3",
    "milestone": {
@@ -50,7 +50,7 @@
   },
   {
    "number": 4,
-   "title": "設計: 画面遷移図",
+   "title": "[F1] 設計: 画面遷移図",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/4",
    "milestone": {
@@ -69,7 +69,7 @@
   },
   {
    "number": 5,
-   "title": "テスト設計の期待結果",
+   "title": "[T1] テスト設計の期待結果",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/5",
    "milestone": {
@@ -85,7 +85,7 @@
   },
   {
    "number": 6,
-   "title": "API の実装",
+   "title": "[B3] API の実装",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/6",
    "milestone": {
@@ -109,7 +109,7 @@
   },
   {
    "number": 8,
-   "title": "担当を決める",
+   "title": "[F2] 担当を決める",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/8",
    "milestone": {
@@ -121,7 +121,7 @@
   },
   {
    "number": 9,
-   "title": "受入の観点を整える",
+   "title": "[P3] 受入の観点を整える",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/9",
    "milestone": {
@@ -145,7 +145,10 @@
    "pull_request": {
     "merged_at": "2026-10-29T01:00:00Z"
    },
-   "body": "Closes #3"
+   "body": "Closes #3",
+   "user": {
+    "login": "matsuki24335"
+   }
   },
   {
    "number": 21,
@@ -158,7 +161,10 @@
     "merged_at": null
    },
    "draft": false,
-   "body": "Closes #6"
+   "body": "Closes #6",
+   "user": {
+    "login": "re-ji-tech0"
+   }
   },
   {
    "number": 22,
@@ -170,7 +176,10 @@
    "pull_request": {
     "merged_at": null
    },
-   "body": "Closes #5"
+   "body": "Closes #5",
+   "user": {
+    "login": "re-ji-tech0"
+   }
   },
   {
    "number": 23,
@@ -183,7 +192,522 @@
     "merged_at": null
    },
    "draft": true,
-   "body": "Closes #4"
+   "body": "Closes #4",
+   "user": {
+    "login": "re-ji-tech0"
+   }
+  },
+  {
+   "number": 30,
+   "title": "docs: 変更 1",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/30",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-01T00:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 31,
+   "title": "docs: 変更 2",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/31",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "re-ji-tech0"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-01T02:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 32,
+   "title": "docs: 変更 3",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/32",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-01T04:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 33,
+   "title": "docs: 変更 4",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/33",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "guest-dev"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-01T06:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 34,
+   "title": "docs: 変更 5",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/34",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-02T08:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 35,
+   "title": "docs: 変更 6",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/35",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "re-ji-tech0"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-02T10:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 36,
+   "title": "docs: 変更 7",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/36",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-02T12:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 37,
+   "title": "docs: 変更 8",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/37",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "guest-dev"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-02T14:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 38,
+   "title": "docs: 変更 9",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/38",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-03T16:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 39,
+   "title": "docs: 変更 10",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/39",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "re-ji-tech0"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-03T18:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 40,
+   "title": "docs: 変更 11",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/40",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-03T20:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 41,
+   "title": "docs: 変更 12",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/41",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "guest-dev"
+   },
+   "pull_request": {
+    "merged_at": "2026-11-03T22:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 101,
+   "title": "docs: 過去の変更 1",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/101",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-02T00:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 102,
+   "title": "docs: 過去の変更 2",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/102",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-03T01:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 103,
+   "title": "docs: 過去の変更 3",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/103",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-04T02:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 104,
+   "title": "docs: 過去の変更 4",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/104",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-05T03:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 105,
+   "title": "docs: 過去の変更 5",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/105",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-06T04:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 106,
+   "title": "docs: 過去の変更 6",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/106",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-07T05:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 107,
+   "title": "docs: 過去の変更 7",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/107",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-08T06:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 108,
+   "title": "docs: 過去の変更 8",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/108",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-09T07:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 109,
+   "title": "docs: 過去の変更 9",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/109",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-10T08:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 110,
+   "title": "docs: 過去の変更 10",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/110",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-11T00:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 111,
+   "title": "docs: 過去の変更 11",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/111",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-12T01:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 112,
+   "title": "docs: 過去の変更 12",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/112",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "Hiroki0023"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-13T02:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 113,
+   "title": "docs: 過去の変更 13",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/113",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-02T00:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 114,
+   "title": "docs: 過去の変更 14",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/114",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-03T01:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 115,
+   "title": "docs: 過去の変更 15",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/115",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-04T02:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 116,
+   "title": "docs: 過去の変更 16",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/116",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-05T03:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 117,
+   "title": "docs: 過去の変更 17",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/117",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-06T04:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 118,
+   "title": "docs: 過去の変更 18",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/118",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-07T05:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 119,
+   "title": "docs: 過去の変更 19",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/119",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-08T06:30:00Z"
+   },
+   "draft": false,
+   "body": ""
+  },
+  {
+   "number": 120,
+   "title": "docs: 過去の変更 20",
+   "state": "closed",
+   "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/120",
+   "milestone": null,
+   "assignees": [],
+   "user": {
+    "login": "matsuki24335"
+   },
+   "pull_request": {
+    "merged_at": "2026-10-09T07:30:00Z"
+   },
+   "draft": false,
+   "body": ""
   }
  ],
  "milestones": [

@@ -2,6 +2,7 @@ import datetime as dt
 import importlib.util
 import json
 import os
+import re
 import unittest
 
 D = os.path.dirname(os.path.abspath(__file__))
@@ -55,8 +56,8 @@ class T(unittest.TestCase):
         self.assertEqual(rows[4]["status"], "wip")     # Draft の PR #23
         self.assertEqual(rows[6]["status"], "review")  # Ready の PR #21
         self.assertEqual(rows[1]["status"], "done")
-        self.assertEqual(rows[3]["status"], "todo")    # マージ済み PR だけでは作業中にしない
-        self.assertEqual(model()["counts"], {"todo": 5, "wip": 1, "review": 1})
+        self.assertEqual(rows[3]["status"], "merged")  # Issue が開いていて PR がマージ済み（暫定の表示）
+        self.assertEqual(model()["counts"], {"todo": 4, "wip": 1, "review": 1, "merged": 1})
 
     def test_alerts_late_and_within_two_days(self):
         m = model()  # 今日 11/5
@@ -80,13 +81,13 @@ class T(unittest.TestCase):
             self.assertIn(">%s</button>" % n, out)
         self.assertIn('data-who="hiroki0023"', out)
         self.assertIn('id="al"', out)
-        self.assertIn("遅れ・期限が近い", out)
+        self.assertIn("🔥 いま動くこと", out)
 
     def test_no_alerts_shows_none(self):
         i = {"number": 1, "title": "t", "state": "open", "html_url": "https://github.com/a/b/issues/1",
              "milestone": None, "assignees": []}
         out = bp.render(bp.build_model([i], [], NAMES, dt.date(2026, 11, 5)), "x")
-        self.assertIn('<p class="none">なし</p>', out)
+        self.assertIn('<p class="none">いま急ぐものはありません 🎉</p>', out)
 
     def test_summary_shares_alert_logic(self):
         m = model()  # 今日 11/5
@@ -106,6 +107,143 @@ class T(unittest.TestCase):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):
             self.assertNotIn(acct, txt)
+
+    def test_recent_prs_ten_default_newest_first_and_others(self):
+        prs = model()["merged_prs"]
+        self.assertEqual(len(prs), 10)  # 13件マージ済みのうち新しい10件
+        self.assertEqual([x["at"] for x in prs], sorted((x["at"] for x in prs), reverse=True))
+        allp = bp.build_model(json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))["issues"],
+                              [], NAMES, dt.date(2026, 11, 5))["merged_prs"]
+        self.assertTrue(all(x["author"] in set(NAMES.values()) | {bp.OTHER} for x in allp))  # 名前の対応表に無い人は「その他」
+        self.assertIn(bp.OTHER, {x["author"] for x in allp})
+
+    def _many(self):
+        iss = []
+        for n in range(1, 41):  # だーあさ 15件 / レージ 12件 / りゅうちゃん 3件 / 他 10件。番号が大きいほど新しい
+            u = "Hiroki0023" if n % 4 in (0, 1) and n <= 30 else "matsuki24335" if n in (3, 7, 11) else "re-ji-tech0" if n % 4 in (2, 3) and n <= 30 else "stranger"
+            iss.append({"number": n, "title": f"PR {n}", "state": "closed", "html_url": f"https://github.com/o/r/pull/{n}",
+                        "user": {"login": u}, "pull_request": {"merged_at": f"2026-10-{(n % 28) + 1:02d}T0{n % 10}:00:00Z"}, "labels": []})
+        return bp.build_model(iss, [], NAMES, dt.date(2026, 11, 5))
+
+    def test_pool_is_ten_per_member_plus_overall(self):
+        m = self._many()
+        pool = m["merged_pool"]
+        self.assertEqual(len({x["number"] for x in pool}), len(pool))  # 重複なし
+        for who in ("hiroki0023", "re-ji-tech0"):
+            self.assertEqual(sum(1 for x in pool if x["who"] == who), 10)
+        self.assertLessEqual(sum(1 for x in pool if x["who"] == "matsuki24335"), 10)
+        self.assertEqual(sum(1 for x in pool if x["top"]), 10)
+        for x in m["merged_prs"]:
+            self.assertIn(x["number"], {y["number"] for y in pool})
+        # 「その他」は全体の最近10件にいるときだけ
+        self.assertEqual(sum(1 for x in pool if x["who"] == "none"), 10)  # 「その他」も最近10件
+        self.assertLessEqual(len(pool), 10 + 4 * 10)
+
+    def test_rows_carry_who_and_filter_js_limits_table(self):
+        out = bp.render(self._many(), "x")
+        a = out.index('id="prs"')
+        self.assertIn('data-who="hiroki0023"', out[a:])
+        self.assertIn('id="prn"', out)
+        self.assertIn('#prs tbody', out)
+        self.assertIn('data-top', out.split("<script>", 1)[1])
+        # 表専用の名前ボタン: 表の上、全員｜3人｜その他。上のボタン（#who）とは別の ID・別の保存キー
+        self.assertIn('id="prwho"', out)
+        self.assertLess(out.index('id="prwho"'), out.index('<table>'))
+        pw = out[out.index('id="prwho"'):out.index('<table>')]
+        self.assertEqual([x for x in re.findall(r'hidden>([^<]+)</button>', pw)], ["全員", "だーあさ", "レージ", "りゅうちゃん", bp.OTHER])
+        js = out[out.index("progress-prwho") - 400:]
+        self.assertNotIn('"#prs', bp.FILTER_JS)  # 上のボタンの JS は PR 表に触らない
+        self.assertNotIn("prs", bp.FILTER_JS)
+        self.assertIn("progress-prwho", out)
+        self.assertNotIn("progress-who", bp.PRWHO_JS)
+        self.assertEqual(out[a:].count('data-top="0" hidden>'), out[a:].count('data-top="0"'))  # 全員表示では全体の10件だけ見える
+
+    def test_prs_table_and_sort_hooks(self):
+        out = bp.render(model(), "x")
+        a = out.index('id="prs"')
+        self.assertGreaterEqual(out[a:].count("<tr data-a="), 10)
+        self.assertEqual(out[a:].count('data-top="1"'), 10)  # 「全員」で見える行は全体の最近10件
+        self.assertIn('data-k="a">担当者', out)
+        self.assertIn('aria-sort="descending"', out)  # 既定はマージ日時の新しい順
+        self.assertIn('id="prs"', out.split("<script>")[0])
+        self.assertNotIn("http://", out.split("<body>")[1])  # 外部読み込みなし
+
+    def test_cards_folded_with_area_counts(self):
+        out = bp.render(model(), "x")
+        self.assertIn("<details><summary>内訳を開く", out)
+        self.assertNotIn("<details open", out)
+        self.assertIn("画面 0／1", out)
+        self.assertIn("<h1>進捗ダッシュボード", out)
+
+    def test_visible_text_has_display_names_only(self):
+        out = bp.render(model(), "x")
+        visible = re.sub(r"<script.*?</script>|<style.*?</style>|<[^>]+>", " ", out, flags=re.S)
+        for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "guest-dev"):
+            self.assertNotIn(acct, visible)
+
+    def test_stage_breakdown_rows_and_empty_stage(self):
+        m = model()
+        st = {x["title"]: x for x in m["stages"]}
+        self.assertEqual([r["number"] for r in st["1 5文書"]["rows"]], [1, 2, 3])
+        out = bp.render(m, "x")
+        sec = out[out.index('class="stg2"'):out.index('id="al"') if out.index('id="al"') > out.index('class="stg2"') else None]
+        self.assertIn("内訳を開く（3件）", sec)
+        self.assertNotIn("<details open", sec)
+        self.assertIn("#3 [B2] 仕様のデータ項目を確定する", sec)  # 行は担当カードの内訳と同じ形
+        self.assertIn("りゅうちゃん", sec)  # 担当の表示名
+        # 0件の段は開くボタンを出さない
+        d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
+        d["milestones"].append({"number": 9, "title": "5 空の段階", "due_on": "2026-11-28T14:59:59Z"})
+        out2 = bp.render(bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5)), "x")
+        i = out2.index("5 空の段階")
+        li = out2[i:out2.index("</li>", i)]
+        self.assertNotIn("<details>", li)
+        self.assertIn("0／0", li)
+
+    def test_sort_buttons_for_narrow_width(self):
+        out = bp.render(model(), "x")
+        self.assertIn('class="sortbar"', out)
+        self.assertIn('data-k="t" aria-pressed="true">マージ日時', out)
+        self.assertIn('data-k="a" aria-pressed="false">担当者', out)
+        self.assertIn("@media(max-width:700px){#prs .sortbar{display:flex}}", out)
+
+    def test_header_short_and_overall_bar(self):
+        out = bp.render(model(), "2026-11-05 07:30 JST", sample=True)
+        head = out[out.index("<header"):out.index("</header>")]
+        self.assertIn("更新 07:30", head)
+        self.assertNotIn("数えるのは Issue だけ", head)
+        self.assertNotIn("Issue の進み具合", head)  # 説明文は一番下の注記へ
+        self.assertIn("ダミーデータの表示例", head)  # サンプルの札は --data のときだけ残る
+        self.assertNotIn("ダミーデータの表示例", bp.render(model(), "x")[:3000])
+        self.assertIn("全体 22% <span>（完了 2 / 9）</span>", out)
+        self.assertNotIn('class="sum"', out)  # 数字タイルは無い
+        self.assertNotIn(">未着手<", out.split("</header>")[1].split('id="al"')[0])
+        self.assertIn("数えるのは Issue だけ", out.split('<p class="note">')[1])
+
+    def test_now_section_contents_and_order(self):
+        out = bp.render(model(), "x")
+        al = out[out.index('id="al"'):out.index('class="pgrid"')]
+        self.assertIn("⚠ ", al)
+        self.assertIn("⏰ ", al)
+        self.assertIn("👀 ", al)
+        self.assertIn("PR #21", al)  # Ready の PR（Draft の #23 は出ない）
+        self.assertNotIn("PR #23 ", al.split("👀")[1])
+        self.assertIn('data-who="re-ji-tech0"', al)  # 作者で絞れる
+        self.assertIn("レージ", al.split("👀")[1])  # 作者は表示名
+        pos = [out.index(k) for k in ('id="al"', 'class="pgrid"', 'class="stg2"', 'id="prs"')]
+        self.assertEqual(pos, sorted(pos))  # いま動くこと → 担当者カード → 段階 → 直近 PR
+        self.assertTrue(out.index('id="al"') < out.index("全体 22%") + 400)
+
+    def test_now_section_merged_but_open_and_empty(self):
+        i = {"number": 1, "title": "t", "state": "open", "html_url": "https://github.com/a/b/issues/1",
+             "milestone": None, "assignees": [{"login": "Hiroki0023"}]}
+        p = {"number": 2, "title": "pr", "state": "closed", "html_url": "https://github.com/a/b/pull/2",
+             "pull_request": {"merged_at": "2026-11-04T01:00:00Z"}, "body": "Closes #1", "user": {"login": "Hiroki0023"}}
+        out = bp.render(bp.build_model([i, p], [], NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertIn("✅ ", out)
+        self.assertIn("Issue を閉じるだけ", out)
+        empty = bp.render(bp.build_model([{**i, "assignees": [], "state": "closed"}], [], NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertIn('<p class="none">いま急ぐものはありません 🎉</p>', empty)
 
     def test_empty_and_escape(self):
         self.assertIn("まだ Issue がありません", bp.render(model(data="progress-empty.json"), "x"))

@@ -6,8 +6,13 @@ GitHub の Issue とマイルストーンを API で読み、担当者ごとの�
   - 期限・遅延はマイルストーン（段階）の due_on（日本時間の日付）
   - 未完了の Issue の状態は3つ: 未着手（つながる PR なし）／作業中（Draft の PR あり）／レビュー待ち（Ready の PR あり）。
     つながりは PR 本文の「Closes #n」（CLOSE_RE）で判定
-  - 一番上に「遅れ・期限が近い」（期限切れ、または期限の2日前以内の未完了 Issue）
+  - 一番上に「🔥 いま動くこと」: ⚠ 遅れ・⏰ 期限が近い（期限の2日前以内）の Issue、👀 レビュー待ちの PR（Ready）、
+    ✅ マージ済みなのに Issue が開いたまま（閉じるだけ）。0件なら「いま急ぐものはありません 🎉」
+  - 並びは いま動くこと → 担当者カード → 段階ごと → 直近マージ済み PR
   - 上部の名前ボタンで担当者ごとに絞れる（#名前 で開くと最初から絞れる）
+  - 開いた Issue にひも付く PR がマージ済みなら「マージ済み・Issue 未完了」（PM 未決事項 #71 の暫定。数えるのは Issue だけなので未完了のまま）
+  - 担当者カードは畳んだ「内訳」つき。領域別の件数は Issue 題の頭文字 [P*][B*][F*][T*] から
+  - 一番下に直近マージ済み PR 10件の表（担当者の列見出しで並べ替え）
   - 同じデータから progress-summary.json も書く（ハブの進捗カード用。表示名だけで、アカウント名・メールは入れない）。
     取得に失敗したときは {"updatedAt", "error"} だけを書く
   - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
@@ -33,6 +38,10 @@ CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+
 NO_ASSIGNEE = "担当未定"
 NO_MILESTONE = "段階なし"
 SOON_DAYS = 2  # 期限の何日前から「近い」にするか
+RECENT_PRS = 10
+OTHER = "その他"  # 表示名の対応表に無い PR 作者
+AREA_RE = re.compile(r"^\s*\[([PBFT])\d+\]")
+AREAS = {"P": "PM", "B": "DB・API", "F": "画面", "T": "テスト"}  # Issue 題の頭文字 → 領域
 
 
 def api_get(repo, path, token):
@@ -89,12 +98,15 @@ def build_model(issues, milestones, names, today):
         late = (today - d).days if (d and not done and today > d) else 0
         left = (d - today).days if (d and not done and today <= d) else None
         prs_of = linked.get(i["number"], [])
-        status = "done" if done else ("review" if any(x["state"] == "open" for x in prs_of)
-                                      else "wip" if any(x["state"] == "draft" for x in prs_of) else "todo")
+        status = ("done" if done else "merged" if any(x["state"] == "merged" for x in prs_of)
+                  else "review" if any(x["state"] == "open" for x in prs_of)
+                  else "wip" if any(x["state"] == "draft" for x in prs_of) else "todo")
+        am = AREA_RE.match(i["title"])
         logins = [a["login"] for a in i.get("assignees") or [] if a["login"] in names] or [None]
         rows.append({"number": i["number"], "title": i["title"], "url": i["html_url"], "done": done,
                      "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late, "left": left,
-                     "status": status, "assignees": logins, "prs": prs_of})
+                     "status": status, "area": am.group(1) if am else None,
+                     "assignees": logins, "prs": prs_of})
     people = {}
     for r in rows:
         for login in r["assignees"]:
@@ -105,11 +117,12 @@ def build_model(issues, milestones, names, today):
     order = sorted(people.values(), key=lambda p: (p["login"] is None, p["name"]))
     stages = {}
     for r in rows:
-        s = stages.setdefault(r["stage"], {"title": r["stage"], "due": r["due"], "done": 0, "total": 0})
+        s = stages.setdefault(r["stage"], {"title": r["stage"], "due": r["due"], "done": 0, "total": 0, "rows": []})
+        s["rows"].append(r)
         s["total"] += 1
         s["done"] += r["done"]
     for m in milestones:  # Issue が0件の段階も出す
-        stages.setdefault(m["title"], {"title": m["title"], "due": due[m["number"]], "done": 0, "total": 0})
+        stages.setdefault(m["title"], {"title": m["title"], "due": due[m["number"]], "done": 0, "total": 0, "rows": []})
     stage_list = sorted(stages.values(), key=lambda s: (s["due"] is None, s["due"] or today, s["title"]))
     prev = None
     for s in stage_list:  # 期間: 前の段階の翌日〜期限
@@ -120,12 +133,38 @@ def build_model(issues, milestones, names, today):
     open_rows = [r for r in rows if not r["done"]]
     alerts = sorted((r for r in open_rows if r["late"] or (r["left"] is not None and r["left"] <= SOON_DAYS)),
                     key=lambda r: (r["due"], r["number"]))
-    counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review")}
+    counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review", "merged")}
+    merged_prs = []
+    for p in prs:
+        t = (p.get("pull_request") or {}).get("merged_at")
+        if t:
+            u = (p.get("user") or {}).get("login")
+            when = dt.datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(JST)
+            merged_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
+                               "author": names.get(u, OTHER), "at": when,
+                               "who": u.lower() if u in names else "none"})
+    review_prs = []
+    for p in prs:
+        if p["state"] == "open" and not p.get("draft"):
+            u = (p.get("user") or {}).get("login")
+            review_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
+                               "author": names.get(u, OTHER), "who": u.lower() if u in names else "none"})
+    review_prs.sort(key=lambda x: x["number"], reverse=True)
+    merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
+    # 表に入れる行: 全体の最近10件 + 各メンバーの最近10件（重複は1行）。top=全体の最近10件に入る行
+    pool = {}
+    for x in merged_prs[:RECENT_PRS]:
+        pool[x["number"]] = dict(x, top=True)
+    for w in [m.lower() for m in names] + ["none"]:
+        for x in [y for y in merged_prs if y["who"] == w][:RECENT_PRS]:
+            pool.setdefault(x["number"], dict(x, top=False))
+    merged_pool = sorted(pool.values(), key=lambda x: (x["at"], x["number"]), reverse=True)
+    merged_prs = merged_prs[:RECENT_PRS]
     members = [{"id": k.lower(), "name": v} for k, v in names.items()]
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
-            "alerts": alerts, "counts": counts, "members": members,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -141,7 +180,8 @@ def safe_url(u):
     return u if u.startswith("https://github.com/") else "#"
 
 
-STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち")}
+STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち"),
+          "merged": ("merged", "マージ済み・Issue 未完了")}
 
 
 def due_badge(r):
@@ -156,7 +196,7 @@ def due_badge(r):
     return ""
 
 
-def render_row(r, who=None):
+def render_row(r, who=None, mark="", extra=""):
     prs = "".join(
         f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
@@ -167,8 +207,8 @@ def render_row(r, who=None):
     unset = '<span class="st plan">期限未設定</span>' if (not r["done"] and not r["due"]) else ""
     names = "".join(f'<span class="chip">{e(n)}</span>' for n in (who or []))
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
-    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt"><a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
-            f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}'
+    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}<a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
+            f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}{extra}'
             f'<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
 
 
@@ -177,19 +217,46 @@ def render_person(p):
     total = len(p["rows"])
     pc = pct(done, total)
     rows = sorted(p["rows"], key=lambda r: (r["done"], -r["late"], r["number"]))
+    areas = "".join(
+        f'<span class="chip">{AREAS[k]} {sum(1 for r in p["rows"] if r["area"] == k and r["done"])}'
+        f'／{sum(1 for r in p["rows"] if r["area"] == k)}</span>'
+        for k in AREAS if any(r["area"] == k for r in p["rows"]))
     return (f'<section class="pcard" data-who="{e(p["id"])}"><div class="ph"><span class="av" aria-hidden="true">{e(p["name"][:1])}</span>'
-            f'<div><h3>{e(p["name"])}</h3>'
-            + (f'<p class="lg">{e(p["login"])}</p>' if p["login"] and p["login"] != p["name"] else "")
-            + f'</div><div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
+            f'<h3>{e(p["name"])}</h3>'
+            f'<div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
             f'<div class="bar" role="img" aria-label="完了 {pc}%"><i style="width:{pc}%"></i></div>'
-            f'<ul class="rows">{"".join(render_row(r) for r in rows)}</ul></section>')
+            + (f'<div class="rm">{areas}</div>' if areas else "")
+            + f'<details><summary>内訳を開く（{total}件）</summary><ul class="rows">{"".join(render_row(r) for r in rows)}</ul></details></section>')
+
+
+def render_prs(prs, members=()):
+    """直近マージ済み PR の表。担当者の列見出しで並べ替え（JS はページ内のみ）"""
+    if not prs:
+        return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
+    rows = "".join(
+        f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}" data-who="{e(x.get("who", "none"))}" data-top="{1 if x.get("top", True) else 0}"{"" if x.get("top", True) else " hidden"}>'
+        f'<td data-label="PR"><a href="{e(safe_url(x["url"]))}">#{x["number"]}</a></td>'
+        f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
+        f'<td data-label="マージ日時">{x["at"].strftime("%Y-%m-%d %H:%M")}</td></tr>' for x in prs)
+    who_row = ('<ul class="meta" id="prwho" aria-label="PR を担当者で絞る">'
+               + "".join(f'<li><button type="button" data-id="{e(i)}" aria-pressed="{"true" if i == "" else "false"}" hidden>{e(n)}</button></li>'
+                         for i, n in [("", "全員")] + [(m["id"], m["name"]) for m in members] + [("none", OTHER)]) + '</ul>')
+    return ('<section class="pcard" id="prs"><h3 style="margin:0">直近マージ済み PR（<span id="prn">%d</span>件）</h3>'
+            + who_row + '<div class="sortbar" role="group" aria-label="並べ替え">並べ替え:'
+            '<button type="button" data-k="t" aria-pressed="true">マージ日時</button>'
+            '<button type="button" data-k="a" aria-pressed="false">担当者</button></div>'
+            '<div class="tbl"><table><thead><tr>'
+            '<th>PR</th><th>タイトル</th>'
+            '<th aria-sort="none"><button type="button" data-k="a">担当者 <span aria-hidden="true">⇅</span></button></th>'
+            '<th aria-sort="descending"><button type="button" data-k="t">マージ日時（JST） <span aria-hidden="true">▼</span></button></th>'
+            '</tr></thead><tbody>%s</tbody></table></div></section>') % (sum(1 for x in prs if x.get("top", True)), rows)
 
 
 def md(d):
     return f"{d.month}/{d.day}"
 
 
-def render_stage(s):
+def render_stage(s, name_of):
     pc = pct(s["done"], s["total"])
     if s["due"]:
         period = f"{md(s['start'])}〜{md(s['due'])}" if s["start"] else f"〜{md(s['due'])}"
@@ -205,7 +272,11 @@ def render_stage(s):
         period, left = "期限未設定", ""
     return (f'<li><span class="sn">{e(s["title"])}</span><span class="chip">{period}</span>'
             f'<div class="bar"><i style="width:{pc}%"></i></div>'
-            f'<span class="sv">{s["done"]}／{s["total"]}（{pc}%）{"　" + left if left else ""}</span></li>')
+            f'<span class="sv">{s["done"]}／{s["total"]}（{pc}%）{"　" + left if left else ""}</span>'
+            + (f'<details><summary>内訳を開く（{s["total"]}件）</summary><ul class="rows">'
+               + "".join(render_row(x, [name_of.get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in x["assignees"]])
+                         for x in sorted(s["rows"], key=lambda x: (x["done"], -x["late"], x["number"])))
+               + "</ul></details>" if s["rows"] else "") + "</li>")
 
 
 CSS = """
@@ -216,7 +287,14 @@ CSS = """
 .bar{height:12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--tint);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--m2)}
 .pcard,.stg2,.empty{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s3)}
-.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.lg{margin:0;font-size:var(--fs-xs);color:var(--csub)}
+.ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.kb-band{padding-bottom:var(--s4)}.kb-band .kb-nav{margin-bottom:var(--s2)}.upd{margin:2px 0 0;font:800 var(--fs-xs)/1.6 var(--body)}.kb-band .meta{margin-top:var(--s2)}
+.allbar{margin:0}.allbar p{margin:0 0 4px;font-weight:800}.allbar span{font-weight:500;color:var(--sub);font-size:var(--fs-s)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--s3);align-items:start}
+.pcard details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.pcard details[open]>summary{margin-bottom:var(--s2)}
+.st.merged{background:var(--tint);color:var(--ctext);border:var(--bw1) solid var(--kac)}
+#prs .sortbar{display:none;align-items:center;gap:var(--s2);font:800 var(--fs-xs)/1.8 var(--body)}#prs .sortbar button{font:inherit;color:inherit;background:transparent;border:var(--bw1) solid var(--kac);border-radius:var(--rp);padding:0 12px;cursor:pointer}#prs .sortbar button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
+@media(max-width:700px){#prs .sortbar{display:flex}}
+#prs th button{font:inherit;color:inherit;background:transparent;border:0;padding:0;cursor:pointer}#prs td{padding:6px 12px}#prs .tbl{box-shadow:none}
 .av{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--hbg);color:var(--htext);box-shadow:3px 3px 0 var(--hsh);font:800 1rem/1 var(--body);flex:none}
 .num{margin-left:auto;text-align:right}.num b{display:block;font:800 1.5rem/1.2 var(--body)}.num span{font-size:var(--fs-xs);color:var(--csub)}
 .rows,.stg2 ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2)}
@@ -227,10 +305,10 @@ CSS = """
 .st.soon{background:var(--warn);color:var(--ctext);border:var(--bw1) solid var(--warnbd)}
 [hidden]{display:none!important}
 .none{margin:0;font-weight:800}
-#who li{padding:0}#who button{font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--rp);padding:0 12px;cursor:pointer}#who button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
+#who li,#prwho li{padding:0}#prwho{margin-bottom:var(--s3)}#who button,#prwho button{font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--rp);padding:0 12px;cursor:pointer}#who button[aria-pressed="true"],#prwho button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
 .st.set{background:var(--m1);color:#12091F;border:var(--bw1) solid var(--line)}
 .pr{font-size:var(--fs-xs);font-weight:800}
-.stg2 li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s3);align-items:center}.stg2 .bar{grid-column:1/-1}.sn{font-weight:800}.sv{font-size:var(--fs-xs);color:var(--csub)}
+.stg2>ul>li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s3);align-items:center}.stg2 .bar,.stg2 details{grid-column:1/-1}.stg2 details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.stg2 details[open]>summary{margin-bottom:var(--s2)}.sn{font-weight:800}.sv{font-size:var(--fs-xs);color:var(--csub)}
 .sample{display:inline-block;margin-left:var(--s3);padding:0 14px;border:var(--bw2) solid var(--btxt);border-radius:var(--rp);background:var(--m1);color:#12091F;font:800 var(--fs-m)/1.8 var(--body);vertical-align:middle;-webkit-text-stroke:0}.sample-note{margin:var(--s3) 0 0;font-weight:800;font-size:var(--fs-s)}
 .note{font-size:var(--fs-s);color:var(--sub)}
 @media(max-width:480px){.ph{flex-wrap:wrap}.num{margin-left:0;text-align:left;width:100%}}
@@ -253,9 +331,27 @@ function ok(i){return bs.some(function(b){return b.getAttribute("data-id")===i})
 function st(){var i="";try{i=decodeURIComponent(location.hash.slice(1)).toLowerCase()}catch(e){}if(i&&ok(i))return i;try{i=localStorage.getItem(K)||""}catch(e){i=""}return ok(i)?i:""}
 function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});
 [].forEach.call(document.querySelectorAll("section.pcard[data-who]"),function(c){c.hidden=!!i&&c.getAttribute("data-who")!==i});
-var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}}
+var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}
+}
 bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}try{history.replaceState(null,"",i?"#"+i:location.pathname+location.search)}catch(e){}show(i)})});
 window.addEventListener("hashchange",function(){show(st())});show(st())})();"""
+
+
+# 直近 PR の表専用の名前ボタン（上のボタンとは独立。保存キーも別）。全員=全体の最近10件、名前=その人の最近10件
+PRWHO_JS = """(function(){var w=document.getElementById("prwho"),tb=document.querySelector("#prs tbody");if(!w||!tb)return;var bs=[].slice.call(w.querySelectorAll("button")),K="progress-prwho";
+function ok(i){return bs.some(function(b){return b.getAttribute("data-id")===i})}
+function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});var c=0;
+[].forEach.call(tb.rows,function(r){var h=i?r.getAttribute("data-who")!==i:r.getAttribute("data-top")!=="1";r.hidden=h;if(!h)c++});var n=document.getElementById("prn");if(n)n.textContent=c}
+bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}show(i)})});
+var i="";try{i=localStorage.getItem(K)||""}catch(e){}show(ok(i)?i:"")})();"""
+
+
+# 直近 PR の表: 列見出しで並べ替え。担当者は押すたびに 昇順 → 逆順。既定はマージ日時の新しい順
+SORT_JS = """(function(){var t=document.querySelector("#prs tbody");if(!t)return;var bs=[].slice.call(document.querySelectorAll("#prs button[data-k]")),cur="t",dir=-1;
+function key(r,k){return k==="a"?r.getAttribute("data-a"):r.getAttribute("data-t")}
+function go(k){dir=(k===cur)?-dir:(k==="t"?-1:1);cur=k;var rs=[].slice.call(t.rows);rs.sort(function(x,y){var a=key(x,k),b=key(y,k),c=a<b?-1:a>b?1:0;if(k==="a"&&c===0){return x.getAttribute("data-t")<y.getAttribute("data-t")?1:-1}return c*dir});rs.forEach(function(r){t.appendChild(r)});
+bs.forEach(function(b){var on=b.getAttribute("data-k")===k,h=b.parentNode,sp=b.querySelector("span");if(h.tagName==="TH"){h.setAttribute("aria-sort",on?(dir>0?"ascending":"descending"):"none");sp.textContent=on?(dir>0?"▲":"▼"):"⇅"}else{b.setAttribute("aria-pressed",on?"true":"false")}})}
+bs.forEach(function(b){b.addEventListener("click",function(){go(b.getAttribute("data-k"))})})})();"""
 
 
 def page(body, updated, sample=False, members=()):
@@ -265,7 +361,7 @@ def page(body, updated, sample=False, members=()):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>進捗｜雷禅・黄泉・軀</title>
+<title>進捗ダッシュボード｜雷禅・黄泉・軀</title>
 <meta name="description" content="担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。">
 <meta name="theme-color" content="#2A1B3D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -277,21 +373,43 @@ def page(body, updated, sample=False, members=()):
 <body>
 <header class="kb-band"><div class="kb-in">
 <div class="kb-nav"><a href="hub.html">← 開発ハブ</a></div>
-<h1>進捗{'<span class="sample">サンプル</span>' if sample else ''}</h1>
-<p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
-<ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
+<h1>進捗ダッシュボード{'<span class="sample">サンプル</span>' if sample else ''}</h1>
+<p class="upd" title="{e(updated)}">更新 {e(updated.split()[1] if " " in updated else updated)}</p>
 {'<p class="sample-note">ダミーデータの表示例です。実際の Issue ではありません。</p>' if sample else ''}
 {who_buttons(members)}
 </div></header>
 <main class="kb"><div class="pg">
 {body}
-<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
+<p class="note">担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。数えるのは Issue だけ。数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。ひも付く PR がマージ済みなのに Issue が開いているものは「マージ済み・Issue 未完了」（暫定。数えるのは Issue だけなので未完了のまま）。領域別の件数は Issue 題の頭文字（P=PM／B=DB・API／F=画面／T=テスト）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
 </div></main>
 <script src="kb/kb.js" defer></script>
 <script>{FILTER_JS}</script>
+<script>{PRWHO_JS}</script>
+<script>{SORT_JS}</script>
 </body>
 </html>
 """
+
+
+def now_section(model):
+    """🔥 いま動くこと: 行動に直結するものだけ。名前ボタンで絞ると自分の分だけになる（data-who）"""
+    nm = model["name_of"]
+    who = lambda r: [nm.get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]]
+    items = []
+    for r in model["alerts"]:
+        items.append(render_row(r, who(r), mark="⚠ " if r["late"] else "⏰ "))
+    shown = {r["number"] for r in model["alerts"]}
+    for p in model["review_prs"]:
+        items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a href="{e(safe_url(p["url"]))}">PR #{p["number"]} {e(p["title"])}</a></div>'
+                     f'<div class="rm"><span class="st live">レビュー待ち</span><span class="chip">{e(p["author"])}</span></div></li>')
+    for p in model["people"]:
+        for r in p["rows"]:
+            if r["status"] == "merged" and r["number"] not in shown:
+                shown.add(r["number"])
+                items.append(render_row(r, who(r), mark="✅ ", extra='<span class="chip">Issue を閉じるだけ</span>'))
+    return ('<section class="pcard" id="al"><h3 style="margin:0">🔥 いま動くこと</h3>'
+            f'<ul class="rows">{"".join(items)}</ul>'
+            f'<p class="none"{" hidden" if items else ""}>いま急ぐものはありません 🎉</p></section>')
 
 
 def render(model, updated, sample=False):
@@ -299,29 +417,19 @@ def render(model, updated, sample=False):
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body, updated, sample, mem)
+        return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])), updated, sample, mem)
     pc = pct(model["done"], model["total"])
-    late = sum(1 for r in model["alerts"] if r["late"])
-    parts = [f'<div class="sum"><div><b>{pc}%</b><span>全体の完了</span></div>'
-             f'<div><b>{model["done"]}</b><span>完了</span></div>'
-             f'<div><b>{model["total"] - model["done"]}</b><span>未完了</span></div>'
-             f'<div><b>{late}</b><span>遅れている</span></div></div>',
-             f'<div class="sum"><div><b>{model["counts"]["todo"]}</b><span>未着手</span></div>'
-             f'<div><b>{model["counts"]["wip"]}</b><span>作業中</span></div>'
-             f'<div><b>{model["counts"]["review"]}</b><span>レビュー待ち</span></div></div>']
-    alerts = "".join(render_row(r, [model["name_of"].get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]])
-                     for r in model["alerts"])
-    parts.insert(0, '<section class="pcard" id="al"><h3 style="margin:0">遅れ・期限が近い</h3>'
-                    f'<ul class="rows">{alerts}</ul>'
-                    f'<p class="none"{" hidden" if alerts else ""}>なし</p>'
-                    '<p class="sv" style="margin:0;font-size:var(--fs-xs)">未完了で、期限切れ（ピンク）と、期限の2日前以内（黄）の Issue。期限は段階の期限。</p></section>')
+    parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["done"]} / {model["total"]}）</span></p>'
+             f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div></div>',
+             now_section(model)]
+    if model["total"]:
+        parts.append('<div class="pgrid">' + "".join(render_person(p) for p in model["people"]) + "</div>")
     if model["stages"]:
         parts.append('<section class="stg2"><h3 style="margin:0">段階ごと</h3><ul>'
-                     + "".join(render_stage(s) for s in model["stages"]) + "</ul></section>")
-    if model["total"]:
-        parts += [render_person(p) for p in model["people"]]
-    else:
+                     + "".join(render_stage(s, model["name_of"]) for s in model["stages"]) + "</ul></section>")
+    if not model["total"]:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
+    parts.append(render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])))
     return page("\n".join(parts), updated, sample, mem)
 
 
