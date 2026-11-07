@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Giftia 主要フロー図（R-01）</title>
+<style>
+:root{
+  --bg:#f7f6f2; --card:#fff; --ink:#1f2328; --sub:#59606a; --line:#d0d4da;
+  --ui:#2f6fdb; --ui-bg:#e8f0fd; --api:#1f8a5b; --api-bg:#e4f5ec; --db:#8a5a1f; --db-bg:#f8efe0;
+  --warn:#b4531a; --warn-bg:#fdeee3; --err:#b3261e; --err-bg:#fdeceb;
+  --pend:#6b6f76; --gap:#7b3fb3; --gap-bg:#f3ecfa;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#16181b; --card:#1f2327; --ink:#e8eaed; --sub:#a4abb4; --line:#3a4048;
+  --ui:#7aa7f5; --ui-bg:#1c2a44; --api:#59c791; --api-bg:#172e24; --db:#d9a566; --db-bg:#33270f;
+  --warn:#f0a070; --warn-bg:#3a2415; --err:#f28b82; --err-bg:#3d1b19; --pend:#9aa0a8; --gap:#c79af0; --gap-bg:#2c1d3d;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,"Hiragino Sans","Yu Gothic",sans-serif}
+header,main{max-width:980px;margin:0 auto;padding:0 16px}
+header{padding-top:20px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:17px;margin:24px 0 8px}
+h3{font-size:15px;margin:18px 0 6px}
+p.lead{margin:0 0 12px;color:var(--sub);font-size:13px}
+/* tabs (CSS only) */
+input.tab{position:absolute;opacity:0;pointer-events:none}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tabs label{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-size:14px}
+#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+input.tab:focus-visible~.tabs label{outline:2px solid var(--ui)}
+.panel{display:none}
+#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3{display:block}
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:var(--sub);margin:4px 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:22px;height:12px;border-radius:3px;border:1.5px solid var(--line);background:var(--card)}
+.sw.pend{border:1.5px dashed var(--pend)}
+.sw.gap{border:1.5px dashed var(--gap);background:var(--gap-bg)}
+.sw.err{border-color:var(--err);background:var(--err-bg)}
+.sw.warn{border-color:var(--warn);background:var(--warn-bg)}
+/* nodes */
+.node{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.node b{display:block;font-size:14px}
+.node small{display:block;color:var(--sub);font-size:12px}
+.ids{display:block;margin-top:3px;font-size:11px;color:var(--sub);font-family:ui-monospace,Consolas,monospace}
+.node.ui{border-color:var(--ui);background:var(--ui-bg)}
+.node.api{border-color:var(--api);background:var(--api-bg)}
+.node.db{border-color:var(--db);background:var(--db-bg)}
+.node.err{border-color:var(--err);background:var(--err-bg)}
+.node.warn{border-color:var(--warn);background:var(--warn-bg)}
+.node.pend{border:1.5px dashed var(--pend);background:transparent}
+.node.gap{border:1.5px dashed var(--gap);background:var(--gap-bg)}
+.node.gap b::before{content:"仕様に書かれていません｜";color:var(--gap);font-weight:700}
+.tag{display:inline-block;font-size:11px;border-radius:4px;padding:0 6px;margin-right:4px;border:1px solid currentColor}
+.tag.ui{color:var(--ui)} .tag.api{color:var(--api)} .tag.db{color:var(--db)} .tag.pend{color:var(--pend);border-style:dashed}
+.arrow{text-align:center;color:var(--sub);line-height:1;font-size:16px;margin:2px 0}
+/* rows: main + side */
+.row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px 14px;align-items:start;margin-bottom:2px}
+.side{display:flex;flex-direction:column;gap:6px}
+.step-no{display:inline-block;min-width:22px;text-align:center;border-radius:11px;background:var(--ink);color:var(--bg);font-size:12px;margin-right:6px}
+.exp{font-size:12px;color:var(--sub)}
+.exp b{display:inline;color:var(--ink)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}
+.box ul{margin:4px 0 0;padding-left:18px}
+.box li{margin:2px 0}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+.tl{display:flex;align-items:stretch;gap:0;margin:10px 0}
+.tl .seg{flex:1;padding:10px;border:1.5px solid var(--line);background:var(--card);font-size:13px;min-width:0}
+.tl .seg.s1{border-color:var(--ui);background:var(--ui-bg);border-radius:10px 0 0 10px}
+.tl .seg.s2{border-color:var(--api);background:var(--api-bg);flex:2}
+.tl .seg.s3{border-color:var(--err);background:var(--err-bg);border-radius:0 10px 10px 0}
+.foot{font-size:12px;color:var(--sub);margin:24px 0 40px}
+@media (max-width:680px){
+  .row{grid-template-columns:1fr}
+  .cols{grid-template-columns:1fr}
+  .tl{flex-direction:column}
+  .tl .seg{border-radius:0!important}
+  .tl .seg.s1{border-radius:10px 10px 0 0!important}
+  .tl .seg.s3{border-radius:0 0 10px 10px!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Giftia 主要フロー図（R-01 共同購入者）</h1>
+  <p class="lead">チームレビュー用。正本は 要求.md・仕様.md・設計.md・キックオフ記録（#22〜#32）。この図は文書にある流れだけを描き、文書に無い所は紫の破線＋「仕様に書かれていません」で示します。ID は小さく付けています（SP＝仕様、D＝設計、AC＝受入基準）。</p>
+  <div class="legend" aria-label="凡例">
+    <span><i class="sw" style="border-color:var(--ui);background:var(--ui-bg)"></i>画面・利用者</span>
+    <span><i class="sw" style="border-color:var(--api);background:var(--api-bg)"></i>API（FastAPI）</span>
+    <span><i class="sw" style="border-color:var(--db);background:var(--db-bg)"></i>DB（MySQL）</span>
+    <span><i class="sw warn"></i>つまずき・分岐</span>
+    <span><i class="sw err"></i>エラー・期限切れ</span>
+    <span><i class="sw pend"></i>未決・承認待ち（破線）</span>
+    <span><i class="sw gap"></i>仕様に書かれていない（紫の破線）</span>
+  </div>
+</header>
+
+<main>
+<input class="tab" type="radio" name="tab" id="t1" checked>
+<input class="tab" type="radio" name="tab" id="t2">
+<input class="tab" type="radio" name="tab" id="t3">
+<div class="tabs" role="tablist">
+  <label for="t1">① 顧客視点</label>
+  <label for="t2">② システム視点</label>
+  <label for="t3">③ 共有リンクの状態</label>
+</div>
+
+<!-- ============ 図1 顧客視点 ============ -->
+<section class="panel p1" aria-label="顧客視点">
+  <h2>① 顧客視点：Aさんが仲間に候補を送って決める</h2>
+  <p class="lead">Aさん（Exhibit 2）: 同僚3人で送別品（1,500円ずつ＝総額4,500円）。30分で10商品以上見て一度閉じ、夜に3商品へ絞ってLINEに送り、2人の賛成で購入。R-01 の体験: (1) 1回の訪問で、仲間に見せられる候補を3つほどに絞りきれる (2) 仲間がひと目で「それならいい」と言える理由つきで送れる。</p>
+
+  <div class="row">
+    <div class="node ui"><b><span class="step-no">1</span>予算（総額）とシーン「送別」を入れる</b>
+      <small>例: 4,500円。予算は1,000〜999,999円の整数（全角・カンマは画面が直す）。シーンは3つのボタンから1つ。</small>
+      <span class="ids">SP-01 ／ D-08 ／ F-01 ／ 体験(1)</span></div>
+    <div class="side">
+      <div class="node warn"><b>入力エラー</b><small>予算欄の下に「予算は1,000〜999,999円の整数で入れてください」。直して入れ直す。</small><span class="ids">SP-01 ／ D-08 ／ 422 invalid_budget</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node ui"><b><span class="step-no">2</span>候補と理由を見る（上位10件・順位順）</b>
+      <small>各候補に、事実をつなげた自然な文の理由。例「職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。」</small>
+      <span class="ids">SP-01〜03 ／ D-01〜D-04 ／ F-01, F-01a, F-02 ／ 体験(2)</span></div>
+    <div class="side">
+      <div class="node warn"><b>0件</b><small>「条件に合う商品がありません。予算を変えてみてください」→ 予算を変えて出し直す。</small><span class="ids">SP-01</span></div>
+      <div class="node err"><b>失敗・10秒で打ち切り</b><small>「失敗しました。もう一度お試しください」と再試行ボタン。</small><span class="ids">SP-01 ／ 500</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node ui"><b><span class="step-no">3</span>候補を選ぶ・外す</b>
+      <small>1つ以上、上限なし。選択中の数を表示。選択は画面の中だけ（再読込で消える）。Aさんは3つに絞った。</small>
+      <span class="ids">SP-04 ／ D-08 ／ F-03 ／ 体験(1)</span></div>
+    <div class="side">
+      <div class="node warn"><b>0件選択</b><small>「共有リンクを作る」ボタンを押せない。</small><span class="ids">SP-05 ／ D-08</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node ui"><b><span class="step-no">4</span>共有リンクを作る → リンク＋コピーボタン</b>
+      <small>サイトを閉じずに作られる（AC-01）。作成中はボタンを押せない。作成後は作成ボタンが再び押せる。コピーすると「コピーしました」を2秒。失敗したら長押しでコピーの案内。</small>
+      <span class="ids">SP-05 ／ D-05, D-07, D-08 ／ F-04 ／ AC-01</span></div>
+    <div class="side">
+      <div class="node err"><b>作成の失敗・10秒で打ち切り</b><small>「失敗しました。もう一度お試しください」と再試行。失敗ならリンクは作られない（打ち切り後に裏で作られることは許す）。</small><span class="ids">SP-05 ／ #30 C</span></div>
+      <div class="node warn"><b>選び直す</b><small>選び直したら、同じ選び方でも毎回新しいリンク。作成済みのリンクの中身は変えない。</small><span class="ids">SP-07 ／ D-05</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node gap"><b><span class="step-no">5</span>LINEで仲間に送る</b>
+      <small>サイトの外の操作。Aさんがコピーしたリンクを自分でLINEに貼る前提。LINEへ直接送る共有ボタン・LINE連携は文書にありません。</small>
+      <span class="ids">要求.md 体験(2)「候補を送れ」</span></div>
+    <div class="side">
+      <div class="node pend"><b>外部公開の承認待ち（ADR-004）</b><small>承認まで公開しないので、仲間の実機のスマホから開く流れは、承認後でなければ試せない。仕様 AC-02 は「スマホ幅の画面」と書く。</small><span class="ids">ADR-004 ／ 運営相談</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node ui"><b><span class="step-no">6</span>仲間がスマホ幅（375px）でリンクを開く（ログインなし）</b>
+      <small>作成時点の商品名・価格・理由が全部表示される（AC-02）。PC 1280px でも崩れない。</small>
+      <span class="ids">SP-06 ／ D-06, D-09 ／ F-05, N-01 ／ AC-02</span></div>
+    <div class="side">
+      <div class="node err"><b>期限切れ</b><small>作成から720時間（ちょうどまでは有効）を1秒でも過ぎたら、商品は出さず「このリンクは期限切れです」だけ。</small><span class="ids">SP-06 ／ 410</span></div>
+      <div class="node err"><b>見つからない／表示の失敗</b><small>「リンクが見つかりません」／「失敗しました。もう一度お試しください」＋再試行。</small><span class="ids">SP-06 ／ 404, 500</span></div>
+      <div class="node warn"><b>販売終了・在庫なしの商品</b><small>作成時点の名前・価格は出したまま、「この商品は販売終了しました」／「在庫なし」を足す。</small><span class="ids">SP-06 ／ #32-5</span></div>
+      <div class="node pend"><b>ログインの入口は「準備中」</b><small>運営承認まで。リンクを開くのにログインは要らない。</small><span class="ids">#26</span></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="row">
+    <div class="node gap"><b><span class="step-no">7</span>仲間が同意して、購入へ</b>
+      <small>仲間の返事（賛成）はサイトの外の行動で、サイトは制御できない。体験の目標で受入基準にはしない（要求.md）。共有ページから購入へ進む操作（カート・注文）があるかは文書にありません。</small>
+      <span class="ids">要求.md 体験(2) ／ 決済・配送は対象外</span></div>
+    <div class="side">
+      <div class="node warn"><b>カートの「注文へ進む」</b><small>ボタンだけ。押すと「デモのため、注文はできません」。（検索ページ側のカート。共有ページに置くかは未記載）</small><span class="ids">#26, #27 ／ OPEN-05</span></div>
+      <div class="node gap"><b>期限切れリンクの再発行・延長</b><small>期限切れのあと、Aさんがどうするか（延長の入口があるか）。SP-07 は「選び直したら新しいリンク」のみ。</small><span class="ids">SP-06 ／ SP-07</span></div>
+    </div>
+  </div>
+
+  <div class="box"><b>受入基準との対応</b>
+    <ul>
+      <li><b>AC-01</b>：予算4,500円・送別を入れ、1つ以上選んで共有リンクを作る → 1回の操作の流れの中で作られる（段1〜4）</li>
+      <li><b>AC-02</b>：そのリンクをログインなしでスマホ幅で開く → 選んだ候補がすべて、理由の文つきで表示される（段6）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 図2 システム視点 ============ -->
+<section class="panel p2" aria-label="システム視点">
+  <h2>② システム視点：画面 ⇄ API ⇄ DB</h2>
+  <p class="lead">3つの API を、上から順に処理の流れで描く。<span class="tag ui">画面</span><span class="tag api">API</span><span class="tag db">DB</span> は処理する場所。10秒を超える問い合わせは画面・API とも打ち切り、500 に。</p>
+
+  <h3>A. 候補を出す　GET /api/candidates?budget=…&amp;scene=…</h3>
+  <div class="row">
+    <div class="node ui"><span class="tag ui">画面</span><b>予算欄の正規化 → 検索</b>
+      <small>全角→半角、カンマ・前後空白を除く、先頭0無視。直せない文字は入力エラー（API は呼ばない）。10秒で打ち切り、以降の応答は捨てる。</small>
+      <span class="ids">D-08 ／ SP-01 ／ #32-1, #30 J</span></div>
+    <div class="side">
+      <div class="node warn"><b>入力エラー</b><small>予算欄の下に文言を表示。</small></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>入力検証</b>
+      <small>budget は半角数字だけ・1,000〜999,999。scene は お礼/誕生日/送別。</small>
+      <span class="ids">D-01 ／ SP-01</span></div>
+    <div class="side"><div class="node err"><b>422</b><small>invalid_budget / invalid_scene → 画面は入力エラー表示</small></div></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node db"><span class="tag db">DB</span><b>候補の抽出（読み取りのみ）</b>
+      <small>商品 × シーンタグ。シーン一致・在庫≧1・価格が予算の70%以上100%以下（price×10 ≧ budget×7、両端を含む）。</small>
+      <span class="ids">D-01 ／ SP-01</span></div>
+    <div class="side">
+      <div class="node warn"><b>0件</b><small>200 で items:[] → 画面が「条件に合う商品がありません…」</small></div>
+      <div class="node pend"><b>11カテゴリーと category の対応（未決2）</b><small>R-01 の導線では使わない。R-02 の絞り込みで必要。DB 待ち。</small></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node db"><span class="tag db">DB</span><b>送別回数の都度集計（保存しない）</b>
+      <small>候補の商品IDだけ。注文のうち推定シーン＝送別かつ会社宛て。0件の商品は回数0。</small>
+      <span class="ids">D-04 ／ DATA-01</span></div>
+    <div class="side">
+      <div class="node pend"><b>注文テーブルの列の実名・会社宛ての見分け方（未決1）</b><small>DB 接続後に Exhibit 4 の実物で確認。</small></div>
+    </div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>ベイズ平均で順位付け → 上位10件</b>
+      <small>点数＝(v÷(v＋20))×R＋(20÷(v＋20))×C。C は評価のある候補の平均。評価か件数が無ければ v＝0。同点は送別回数の多い順→商品ID順。</small>
+      <span class="ids">D-02 ／ SP-02 ／ F-01a</span></div>
+    <div class="side"></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>理由の文を作る（テンプレート、AI なし）</b>
+      <small>値のある材料の文だけをつなぐ。送別回数0でも「まだありません」。→ 200 { items:[…reason], count }</small>
+      <span class="ids">D-03 ／ SP-03 ／ F-02 ／ ADR-003</span></div>
+    <div class="side">
+      <div class="node err"><b>500・10秒超過</b><small>DB 障害・Db の10秒上限 → 画面は「失敗しました。もう一度お試しください」＋再試行</small><span class="ids">D-12</span></div>
+    </div>
+  </div>
+
+  <h3>B. リンクを作る　POST /api/share-links　{ product_ids:[…] }</h3>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>検証</b><small>1件以上・型・商品が存在すること。</small><span class="ids">D-05 ／ SP-05</span></div>
+    <div class="side"><div class="node err"><b>422</b><small>empty_selection / invalid_product_ids</small></div></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>作成時点の商品名・価格・理由を作り、22文字の識別子を生成</b>
+      <small>サーバーが作り直す（画面の値を信用しない）。英大小文字・数字・「-」「_」。毎回新しいリンク。</small>
+      <span class="ids">D-05 ／ SP-05, SP-07 ／ N-02 ／ #30 I</span></div>
+    <div class="side"></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node db"><span class="tag db">DB</span><b>share_links に1行 INSERT</b>
+      <small>share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }</small>
+      <span class="ids">D-07 ／ DATA-02</span></div>
+    <div class="side">
+      <div class="node pend"><b>JSON 型が使えるか（未決E）</b><small>班の MySQL のバージョン未確認。使えなければ TEXT に JSON 文字列。</small></div>
+      <div class="node err"><b>500・10秒超過</b><small>失敗なら行は作られない。打ち切り後に裏で作られることは許す。</small></div>
+    </div>
+  </div>
+
+  <h3>C. リンクを開く　GET /api/share-links/{share_id}</h3>
+  <div class="row">
+    <div class="node db"><span class="tag db">DB</span><b>share_links から行を取得</b><small>識別子で1行。</small><span class="ids">D-06 ／ SP-06</span></div>
+    <div class="side"><div class="node err"><b>404</b><small>該当なし → 「リンクが見つかりません」</small></div></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node api"><span class="tag api">API</span><b>期限の判定（サーバー時刻）</b>
+      <small>現在 − created_at ＞ 720時間（秒で比べる）で期限切れ。ちょうどまでは有効。</small>
+      <span class="ids">D-06, D-11 ／ SP-06</span></div>
+    <div class="side"><div class="node err"><b>410</b><small>商品は返さず → 「このリンクは期限切れです」だけ</small></div></div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="row">
+    <div class="node db"><span class="tag db">DB</span><b>商品の現在の状態を確認（販売終了・在庫なしだけ）</b>
+      <small>商品が無い→discontinued、在庫0→out_of_stock。→ 200（名前・価格・理由は保存した値）</small>
+      <span class="ids">D-06 ／ SP-06 ／ #32-5</span></div>
+    <div class="side"><div class="node err"><b>500・10秒超過</b><small>画面は失敗表示＋再試行</small></div></div>
+  </div>
+
+  <div class="box"><b>全体の枠（図の外側）</b>
+    <div class="cols" style="margin-top:6px">
+      <div class="node pend"><b>配置（Azure）・公開URL</b><small>ADR-004 運営承認待ち。承認までは手元のPCで開発・テスト。</small></div>
+      <div class="node pend"><b>ログイン（認証）</b><small>運営承認待ち。入口は「準備中」。</small></div>
+      <div class="node"><b>テスト用の差し替え</b><small>時計（Clock）と DB 実行口（Db）はテストのコードからだけ差し替え。入口は作らない。</small><span class="ids">D-11, D-12</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 図3 共有リンクの状態 ============ -->
+<section class="panel p3" aria-label="共有リンクの状態">
+  <h2>③ 共有リンクの状態</h2>
+  <p class="lead">1本のリンク（share_links の1行）が、作られてから期限切れになるまで。中身は変えない（SP-07）。行はアプリから消さない（テスト後の後片付けのみ）。</p>
+
+  <div class="tl">
+    <div class="seg s1"><b>作成</b><br>POST で1行 INSERT<br>created_at を記録<br><span class="ids">SP-05 ／ D-05, D-07</span></div>
+    <div class="seg s2"><b>有効（0 〜 720時間ちょうど）</b><br>ログインなしで開ける。作成時点の商品名・価格・理由を表示。商品ごとに、開いた時点の状態を確認して表示を足す。<br><span class="ids">SP-06 ／ D-06, D-09</span></div>
+    <div class="seg s3"><b>期限切れ（720時間＋1秒〜）</b><br>商品は出さず「このリンクは期限切れです」だけ（410）。<br><span class="ids">SP-06 ／ D-06</span></div>
+  </div>
+
+  <h3>有効なあいだの、商品ごとの表示</h3>
+  <table>
+    <thead><tr><th>開いた時点の商品</th><th>画面の表示</th><th>API の status</th><th>ID</th></tr></thead>
+    <tbody>
+      <tr><td>DB にあり、在庫あり</td><td>作成時点の名前・価格・理由</td><td>available</td><td>SP-06</td></tr>
+      <tr><td>在庫0</td><td>作成時点の名前・価格・理由＋「在庫なし」</td><td>out_of_stock</td><td>SP-06 ／ #32-5</td></tr>
+      <tr><td>DB に無い</td><td>作成時点の名前・価格・理由＋「この商品は販売終了しました」</td><td>discontinued</td><td>SP-06 ／ #32-5</td></tr>
+    </tbody>
+  </table>
+
+  <h3>開いたとき、ほかに起きうること</h3>
+  <table>
+    <thead><tr><th>状況</th><th>表示</th><th>コード</th></tr></thead>
+    <tbody>
+      <tr><td>識別子に該当する行が無い</td><td>「リンクが見つかりません」</td><td>404</td></tr>
+      <tr><td>720時間を1秒でも過ぎた</td><td>「このリンクは期限切れです」（商品なし）</td><td>410</td></tr>
+      <tr><td>DB 障害・10秒で打ち切り</td><td>「失敗しました。もう一度お試しください」＋再試行</td><td>500</td></tr>
+    </tbody>
+  </table>
+
+  <div class="cols" style="margin-top:12px">
+    <div class="node gap"><b>期限切れの前に知らせる／延長する</b><small>文書にあるのは「選び直したら新しいリンクを作る」（SP-07）だけ。延長・通知・再発行の入口は未記載。</small></div>
+    <div class="node gap"><b>リンクを無効にする操作</b><small>作った人が途中で取り消す操作は文書にありません（アプリの機能としての削除は作らない、とだけ設計に記載）。</small></div>
+    <div class="node pend"><b>公開の範囲</b><small>外部公開（ADR-004）が承認されるまで、リンクは手元のPCからだけ。</small></div>
+  </div>
+</section>
+
+<p class="foot">作成: Takahiro（設計）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みなし・単体の HTML。</p>
+</main>
+</body>
+</html>
