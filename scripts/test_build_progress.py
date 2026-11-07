@@ -417,9 +417,9 @@ class T(unittest.TestCase):
         self.assertNotIn("#fff 75% 100%", hub)
         self.assertIn("class=\"glow\"", open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read())  # 右端は魔界の門（扉は進み具合で開く）
         self.assertIn(".stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}", out)  # 紺の地＋3色のふち・白文字
-        self.assertIn(".stg2 li.w4 .bar{background:#2A1B3D}.stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}", out)  # バーは紺の地、溜まった分だけ3色
+        self.assertIn(".stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}", out)  # 溜まった分だけ3色
         self.assertIn(".stg2 li[class] .sn{white-space:nowrap}", out)
-        self.assertIn(".stg2 li.w1 .bar,.stg2 li.w2 .bar,.stg2 li.w3 .bar{height:8px;border:0;background:var(--tint)}", out)  # 段1〜3は細く薄い紫の地（STAGE 4 だけ紺）
+        self.assertIn(".stg2 li.w1 .bar,.stg2 li.w2 .bar,.stg2 li.w3 .bar,.stg2 li.w4 .bar{height:8px;border:0;background:var(--tint)}", out)  # 4段とも細く薄い紫の地（STAGE 4 は札だけ紺）
         self.assertIn(".stg2 li.w1 .sn,.stg2 li.w2 .sn,.stg2 li.w3 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}", out)  # 段1〜3の札は枠なしの薄い塗り
         self.assertIn(".stg2>ul>li>.chip{border:0;background:none;padding:0;color:var(--ctext)}", out)  # 日付は枠なしの文字
 
@@ -462,8 +462,6 @@ class T(unittest.TestCase):
                 self.assertGreaterEqual(ratio(c, bg), 4.5, (k, bg))
         for c in ("#FFD700", "#40E0D0", "#FF69B4"):  # 段階の見出しの地の色 × 文字色 #2A1B3D
             self.assertGreaterEqual(ratio("#2A1B3D", c), 4.5, c)
-        for c in ("#FFD700", "#40E0D0", "#FF69B4"):  # STAGE 4 の棒の3色は紺の地（#2A1B3D）の上で見える（3:1 以上）
-            self.assertGreaterEqual(ratio(c, "#2A1B3D"), 3, c)
 
     def test_pr_table_nowrap_and_short_date(self):
         out = bp.render(model(), "x")

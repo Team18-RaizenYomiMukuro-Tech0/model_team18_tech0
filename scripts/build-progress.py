@@ -377,12 +377,12 @@ CSS = """
 .stg2 li.w1{--c:var(--m1)}.stg2 li.w2{--c:var(--m2)}.stg2 li.w3{--c:var(--m3)}.stg2 li.w4{--c:#2A1B3D}
 .stg2 li[class] .sn{display:inline-block;justify-self:start;padding:0 12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--c);color:#2A1B3D}.sn b{margin-left:4px}
 .stg2 li[class] .bar i{background:var(--c)}
-.stg2 li.w1 .bar,.stg2 li.w2 .bar,.stg2 li.w3 .bar{height:8px;border:0;background:var(--tint)}
+.stg2 li.w1 .bar,.stg2 li.w2 .bar,.stg2 li.w3 .bar,.stg2 li.w4 .bar{height:8px;border:0;background:var(--tint)}
 .stg2 li.w1 .sn,.stg2 li.w2 .sn,.stg2 li.w3 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}
 .stg2>ul>li>.chip{border:0;background:none;padding:0;color:var(--ctext)}
 .stg2 li[class] .sn{white-space:nowrap}
 .stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}
-.stg2 li.w4 .bar{background:#2A1B3D}.stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
+.stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
 @media(max-width:600px){.stg2>ul>li{grid-template-columns:minmax(0,1fr)}.stg2>ul>li .chip{justify-self:start}}
 .ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
 .chip.ar{margin-right:0;border-color:currentColor}
