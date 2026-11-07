@@ -42,6 +42,10 @@ RECENT_PRS = 10
 OTHER = "その他"  # 表示名の対応表に無い PR 作者
 AREA_RE = re.compile(r"^\s*\[([PBFT])\d+\]")
 AREAS = {"P": "PM", "B": "DB・API", "F": "画面", "T": "テスト"}  # Issue 題の頭文字 → 領域
+# 題の頭の [B2] → 分野の札。AREA_RE と違い番号まで取り、残りの題名を返す
+AREA_TITLE_RE = re.compile(r"^\s*\[([PBFT]\d+)\]\s*(.*)$", re.S)
+# 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）
+WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
 
 
 def api_get(repo, path, token):
@@ -199,7 +203,15 @@ def due_badge(r):
     return ""
 
 
-def render_row(r, who=None, mark="", extra=""):
+def title_parts(title, badge):
+    """分野の札にするとき（badge）は (札の HTML, 残りの題名)。頭に [P1] などが無ければ札なしで題名そのまま"""
+    m = AREA_TITLE_RE.match(title) if badge else None
+    if not m:
+        return "", title
+    return f'<span class="ar ar-{m.group(1)[0]}">{m.group(1)}</span>', m.group(2)
+
+
+def render_row(r, who=None, mark="", extra="", badge=False):
     prs = "".join(
         f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
@@ -210,7 +222,8 @@ def render_row(r, who=None, mark="", extra=""):
     unset = '<span class="st plan">期限未設定</span>' if (not r["done"] and not r["due"]) else ""
     names = "".join(f'<span class="chip">{e(n)}</span>' for n in (who or []))
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
-    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}<a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
+    ab, ttl = title_parts(r["title"], badge)
+    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}{ab}<a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(ttl)}</a></div>'
             f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}{extra}'
             f'<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
 
@@ -231,7 +244,8 @@ def render_stage_row(r, who):
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
         for x in r["prs"])
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
-    return (f'<li class="sr" data-who="{e(ids)}"><a class="stt" href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a>'
+    ab, ttl = title_parts(r["title"], True)
+    return (f'<li class="sr" data-who="{e(ids)}">{ab}<a class="stt" href="{e(safe_url(r["url"]))}">#{r["number"]} {e(ttl)}</a>'
             f'<div class="srm"><span class="sb {SB[r["status"]]}">{label}</span>{late}'
             f'<span class="sd">{e("、".join(who))}・{due}{soon}</span>{prs}</div></li>')
 
@@ -242,7 +256,7 @@ def render_person(p):
     pc = pct(done, total)
     rows = sorted(p["rows"], key=lambda r: (r["done"], -r["late"], r["number"]))
     areas = "".join(
-        f'<span class="chip">{AREAS[k]} {sum(1 for r in p["rows"] if r["area"] == k and r["done"])}'
+        f'<span class="chip ar ar-{k}">{AREAS[k]} {sum(1 for r in p["rows"] if r["area"] == k and r["done"])}'
         f'／{sum(1 for r in p["rows"] if r["area"] == k)}</span>'
         for k in AREAS if any(r["area"] == k for r in p["rows"]))
     return (f'<section class="pcard" data-who="{e(p["id"])}"><div class="ph"><span class="av" aria-hidden="true">{e(p["name"][:1])}</span>'
@@ -250,7 +264,7 @@ def render_person(p):
             f'<div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
             f'<div class="bar" role="img" aria-label="完了 {pc}%"><i style="width:{pc}%"></i></div>'
             + (f'<div class="rm">{areas}</div>' if areas else "")
-            + f'<details><summary>内訳を開く（{total}件）</summary><ul class="rows">{"".join(render_row(r) for r in rows)}</ul></details></section>')
+            + f'<details><summary>内訳を開く（{total}件）</summary><ul class="rows">{"".join(render_row(r, badge=True) for r in rows)}</ul></details></section>')
 
 
 def render_prs(prs, members=()):
@@ -295,7 +309,10 @@ def render_stage(s, name_of):
     else:
         period, left = "期限未設定", ""
     progress = f'{s["done"]}／{s["total"]}（{pc}%）' if s["total"] else "Issue なし"
-    return (f'<li><span class="sn">{e(s["title"])}</span><span class="chip">{period}</span>'
+    wz = WAZA.get(s["title"][:1]) if s["title"][1:2] == " " else None
+    cls = f' class="w{s["title"][0]}"' if wz else ""
+    waza = f" <b>{wz}</b>" if wz else ""
+    return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span><span class="chip">{period}</span>'
             f'<div class="bar"><i style="width:{pc}%"></i></div>'
             f'<span class="sv">{progress}{"　" + left if left else ""}</span>'
             + (f'<details><summary>内訳を開く（{s["total"]}件）</summary><ul class="srows">'
@@ -339,6 +356,12 @@ CSS = """
 .srm{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:2px}.sd{font-size:var(--fs-xs);color:var(--csub)}.srows .pr{font-weight:400;color:var(--csub)}
 .sb{display:inline-block;padding:0 8px;border-radius:var(--rp);font:800 var(--fs-xs)/1.7 var(--body)}
 .sb.gray{background:#E6E6EA;color:#34343E}.sb.blue{background:#D6E6FB;color:#0F3C78}.sb.green{background:#D3F0DC;color:#0B5A2A}.sb.red{background:#FBD9DC;color:#8A1020}
+.stg2 li.w1{--c:var(--m1)}.stg2 li.w2{--c:var(--m2)}.stg2 li.w3{--c:var(--m3)}.stg2 li.w4{--c:#FFFFFF}
+.stg2 li[class] .sn{display:inline-block;justify-self:start;padding:0 12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--c);color:#2A1B3D}.sn b{margin-left:4px}
+.stg2 li[class] .bar{background:#3F3158}.stg2 li[class] .bar i{background:var(--c)}
+.ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
+.chip.ar{margin-right:0;border-color:currentColor}
+.ar-P{color:#5B2A9C}.ar-B{color:#0B6B63}.ar-F{color:#B0145E}.ar-T{color:#8A5200}
 .sample{display:inline-block;margin-left:var(--s3);padding:0 14px;border:var(--bw2) solid var(--btxt);border-radius:var(--rp);background:var(--m1);color:#12091F;font:800 var(--fs-m)/1.8 var(--body);vertical-align:middle;-webkit-text-stroke:0}.sample-note{margin:var(--s3) 0 0;font-weight:800;font-size:var(--fs-s)}
 .note{font-size:var(--fs-s);color:var(--sub)}
 @media(max-width:480px){.ph{flex-wrap:wrap}.num{margin-left:0;text-align:left;width:100%}}

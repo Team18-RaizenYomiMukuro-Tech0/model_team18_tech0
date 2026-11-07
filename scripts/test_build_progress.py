@@ -220,7 +220,8 @@ class T(unittest.TestCase):
         sec = out[out.index('class="stg2"'):out.index('id="al"') if out.index('id="al"') > out.index('class="stg2"') else None]
         self.assertIn("内訳を開く（3件）", sec)
         self.assertNotIn("<details open", sec)
-        self.assertIn("#3 [B2] 仕様のデータ項目を確定する", sec)  # 行は担当カードの内訳と同じ形
+        self.assertIn("#3 仕様のデータ項目を確定する", sec)  # 題の頭の [B2] は分野の札になる（札は別の要素）
+        self.assertIn('<span class="ar ar-B">B2</span>', sec)
         self.assertIn("りゅうちゃん", sec)  # 担当の表示名
         # 0件の段は開くボタンを出さない
         d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
@@ -255,6 +256,60 @@ class T(unittest.TestCase):
             self.assertIsNotNone(m, k)
             a, b = sorted((lum(m.group(1)), lum(m.group(2))), reverse=True)
             self.assertGreaterEqual((a + 0.05) / (b + 0.05), 4.5, k)
+
+    def test_stage_colors_and_waza_names(self):
+        out = bp.render(model(), "x")
+        sec = out[out.index('class="stg2"'):out.index('id="prs"')]
+        for n, w in (("1", "霊気"), ("2", "霊丸"), ("3", "霊光波動"), ("4", "魔族覚醒")):
+            self.assertRegex(sec, r'<li class="w%s"><span class="sn">%s [^<]*<b>%s</b></span>' % (n, n, w))
+        self.assertIn("2 実装① <b>霊丸</b>", sec)
+        self.assertIn('<li><span class="sn">段階なし</span>', sec)  # 段階の無いものは色なし・技名なし
+        # 色の値はハブの霊力ゲージ（docs/hub.html）と同じ: 黄 m1 / 水色 m2 / ピンク m3 / 白
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        kb = open(os.path.join(D, "..", "docs", "kb", "kb.css"), encoding="utf-8").read()
+        for tok, hexv in (("m1", "#FFD700"), ("m2", "#40E0D0"), ("m3", "#FF69B4")):
+            self.assertIn("--%s:%s" % (tok, hexv), kb)
+        self.assertIn("var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,#fff 75% 100%", hub)
+        self.assertIn(".stg2 li.w4{--c:#FFFFFF}", out)
+        self.assertIn(".stg2 li[class] .bar{background:#3F3158}", out)  # 白は暗い棒の地で消えない
+
+    def test_area_badges(self):
+        out = bp.render(model(), "x")
+        # 題から外れる（stage の内訳と担当者カードの内訳）。「いま動くこと」は従来どおり題に [B2] が残る
+        now = out[out.index('id="al"'):out.index('class="pgrid"')]
+        self.assertIn("[B2] 仕様のデータ項目を確定する", now)
+        self.assertNotIn('class="ar ', now)
+        cards = out[out.index('class="pgrid"'):out.index('class="stg2"')]
+        self.assertIn('<span class="ar ar-B">B2</span><a href="', cards)
+        self.assertNotIn("[B2]", cards)
+        for k, n in (("P", "P1"), ("F", "F1"), ("T", "T1")):
+            self.assertIn('<span class="ar ar-%s">%s</span>' % (k, n), out)
+        # 担当者カードの分野の内訳の札も同じ色のクラス
+        self.assertIn('class="chip ar ar-P">PM ', cards)
+        self.assertIn('class="chip ar ar-B">DB・API ', cards)
+        # 頭に [..] が無い題はそのまま
+        self.assertEqual(bp.title_parts("担当がまだ決まっていない作業", True), ("", "担当がまだ決まっていない作業"))
+        self.assertEqual(bp.title_parts("[X9] 別の印", True), ("", "[X9] 別の印"))
+        self.assertEqual(bp.title_parts("[B2] 題", False), ("", "[B2] 題"))
+        self.assertNotIn("Hiroki0023", out)
+
+    def test_color_contrast_area_and_stage(self):
+        def lum(h):
+            c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+            c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+            return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+        def ratio(a, b):
+            x, y = sorted((lum(a), lum(b)), reverse=True)
+            return (x + 0.05) / (y + 0.05)
+        src = open(bp.__file__, encoding="utf-8").read()
+        for k in "PBFT":  # 分野の札の文字色（枠も同色）: 白い背景・行の薄い紫の背景の上で 4.5:1 以上
+            c = re.search(r"\.ar-%s\{color:(#\w+)\}" % k, src).group(1)
+            for bg in ("#FFFFFF", "#F3EDFB"):
+                self.assertGreaterEqual(ratio(c, bg), 4.5, (k, bg))
+        for c in ("#FFD700", "#40E0D0", "#FF69B4", "#FFFFFF"):  # 段階の見出しの地の色 × 文字色 #2A1B3D
+            self.assertGreaterEqual(ratio("#2A1B3D", c), 4.5, c)
+        for c in ("#FFD700", "#40E0D0", "#FF69B4", "#FFFFFF"):  # 棒の色は暗い棒の地（#3F3158）の上で見える（3:1 以上）
+            self.assertGreaterEqual(ratio(c, "#3F3158"), 3, c)
 
     def test_pr_table_nowrap_and_short_date(self):
         out = bp.render(model(), "x")
