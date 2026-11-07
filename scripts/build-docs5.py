@@ -214,6 +214,20 @@ def collect_defined(texts):
     return defined
 
 
+EXT_HREF_RE = re.compile(r'\shref=["\'](?:https?:)?//', re.I)
+
+
+def externalize(h):
+    """外のサイト（github.com など）へのリンクを別タブで開く。同じサイトの中（相対・#）は同じタブのまま"""
+    def repl(m):
+        attrs = m.group(1)
+        if EXT_HREF_RE.search(attrs) and "target=" not in attrs:
+            return f'<a{attrs} target="_blank" rel="noopener">'
+        return m.group(0)
+
+    return re.sub(r"<a\b([^>]*)>", repl, h)
+
+
 def page(title, body, nav_html, footer_html, mermaid):
     script = ""
     if mermaid:
@@ -227,7 +241,7 @@ def page(title, body, nav_html, footer_html, mermaid):
         "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
         f"<title>{html.escape(title)}</title>\n<style>{CSS}</style>\n</head>\n<body>\n"
-        f"{nav_html}\n<main>\n{body}\n<footer>{footer_html}</footer>\n</main>\n{script}\n</body>\n</html>\n"
+        + externalize(f"{nav_html}\n<main>\n{body}\n<footer>{footer_html}</footer>\n</main>\n") + f"{script}\n</body>\n</html>\n"
     )
 
 
