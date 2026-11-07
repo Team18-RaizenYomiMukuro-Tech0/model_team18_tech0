@@ -92,6 +92,9 @@ label.lb{font-weight:700;font-size:13px;display:block;margin-bottom:6px}
 .grid{display:grid;grid-template-columns:1fr;gap:14px;align-content:start}
 @container (min-width:560px){.grid{grid-template-columns:repeat(2,1fr)}}
 @container (min-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+.grid.rec4{grid-template-columns:repeat(2,1fr)}
+@container (min-width:760px){.grid.rec4{grid-template-columns:repeat(4,1fr)}}
+.linkbtn{background:none;border:0;padding:6px 0;min-height:44px;font:inherit;font-weight:700;color:var(--coral);text-decoration:underline;cursor:pointer}
 .card{border:1px solid var(--line);border-radius:var(--rl);padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surf);position:relative}
 .card.focus{border:2px solid var(--coral);padding:11px}
 .card.sel{background:var(--sel)}
@@ -269,8 +272,8 @@ const spinnerHTML=()=>`<img class="spinner" src="akapu.png" alt="" width="96" he
 
 /* イラスト風の仮画像（SVG）。「イメージ」と明記（OPEN-06） */
 function imgHTML(p){
-  const h=HUE[p.cat]||20,c=(a,l)=>`hsl(${(h+a)%360},${a?28:45}%,${l}%)`;
-  return `<div class="imgwrap" role="img" aria-label="イメージ（仮画像）"><svg viewBox="0 0 120 96" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="22" y="58" width="76" height="22" rx="7" fill="${c(0,70)}"/><rect x="26" y="40" width="68" height="22" rx="7" fill="${c(40,80)}"/><rect x="30" y="22" width="60" height="22" rx="7" fill="${c(0,95)}" stroke="${c(0,85)}"/></svg><span class="imgtag">イメージ</span></div>`;
+  const h=HUE[p.cat]||20,c=(a,l)=>`hsl(${(h+a)%360},${a?45:60}%,${l}%)`;
+  return `<div class="imgwrap" role="img" aria-label="イメージ（仮画像）"><svg viewBox="0 0 120 96" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="22" y="58" width="76" height="22" rx="7" fill="${c(0,38)}"/><rect x="26" y="40" width="68" height="22" rx="7" fill="${c(40,52)}"/><rect x="30" y="22" width="60" height="22" rx="7" fill="${c(0,62)}" stroke="${c(0,30)}" stroke-width="1.5"/></svg><span class="imgtag">イメージ</span></div>`;
 }
 const ornSVG=`<svg class="orn" viewBox="0 0 110 90" aria-hidden="true"><path d="M20 0v26M55 0v40M90 0v18" stroke="#c9a227" stroke-width="1.5"/><circle cx="20" cy="34" r="9" fill="#b3261e"/><circle cx="17" cy="31" r="2.5" fill="#fff" opacity=".6"/><circle cx="55" cy="50" r="11" fill="#c9a227"/><circle cx="51" cy="46" r="3" fill="#fff" opacity=".6"/><circle cx="90" cy="26" r="8" fill="#b3261e"/><circle cx="87" cy="23" r="2" fill="#fff" opacity=".6"/></svg>`;
 const heroSVG=`<svg viewBox="0 0 150 120" aria-hidden="true"><rect x="30" y="50" width="90" height="60" rx="6" fill="#fff" stroke="#f1d6c9"/><rect x="24" y="38" width="102" height="18" rx="5" fill="#fff" stroke="#f1d6c9"/><rect class="rib" x="70" y="38" width="12" height="72"/><path class="ribs" d="M76 38c-22-26-40-8-24 0M76 38c22-26 40-8 24 0" fill="none" stroke-width="7" stroke-linecap="round"/><circle cx="20" cy="30" r="3" fill="#f4a58f"/><circle cx="132" cy="22" r="3" fill="#8a9a6e"/><circle cx="138" cy="70" r="3" fill="#c9a227"/></svg>`;
@@ -349,6 +352,7 @@ function render(){
 function budgetFormHTML(){
   return `<h2 class="sec">予算から探す（任意）${sp("SP-01 #49-1〜3")}</h2>
    <div class="bands" role="group" aria-label="価格帯（税込）">${BANDS.map(b=>`<button type="button" class="tile" data-tband="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div>
+   ${S.band&&!S.scene?`<div style="margin-top:8px"><button type="button" class="linkbtn" id="bandGo">この価格帯の商品を見る →</button>${sp("R2-14 #53-3")}</div>`:""}
    <div style="font-size:12px;color:var(--sub);margin-top:6px">価格は税込です。選ばなければ価格では絞りません。もう一度押すと解除します。</div>
    <div style="font-size:12px;color:var(--sub);margin-top:6px">シーンを押すと候補が出ます。価格帯は先に選んでも、あとから選んでもかまいません。</div>`;
 }
@@ -363,8 +367,8 @@ function topHTML(){
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
   <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
   <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
-  <h2 class="sec">おすすめの商品</h2>
-  <div class="grid">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
+  <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
+  <div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
 }
 function stars(p){return hasRating(p)?`<span><span class="star">★</span> ${p.r}（${p.v}件）</span>`:""}
 function metaHTML(p){return `<div class="meta">${stars(p)}${p.d!=null?`<span>🚚 ${p.d}日でお届け</span>`:""}${p.wrap?`<span>🎁 ラッピング可</span>`:""}</div>`}
@@ -475,6 +479,7 @@ function bind(){
   document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;runSearch()});
   document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
+  const bg=$("#bandGo"); if(bg) bg.onclick=()=>{S.scene=null;S.page=1;S.view="result";runSearch()};
   const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.page=1;runSearch()};
   document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
   document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>{S.detailId=+b.dataset.detail;S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
@@ -490,7 +495,7 @@ function bind(){
   document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{S.panel=null;render()});
   document.querySelectorAll("[data-qu]").forEach(b=>b.onclick=()=>{CART[b.dataset.qu]=Math.min(99,CART[b.dataset.qu]+1);saveCart();render()});
   document.querySelectorAll("[data-qd]").forEach(b=>b.onclick=()=>{const k=b.dataset.qd;CART[k]=Math.max(1,CART[k]-1);saveCart();render()});
-  document.querySelectorAll("[data-qin]").forEach(i=>i.onchange=()=>{const k=i.dataset.qin;const n=parseInt(String(i.value).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)),10);if(!Number.isNaN(n))CART[k]=Math.min(99,Math.max(1,n));saveCart();render()});
+  document.querySelectorAll("[data-qin]").forEach(i=>i.onchange=()=>{const k=i.dataset.qin;const t=String(i.value).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[－ー−]/g,"-").trim();/* #53-4: 整数だけ受ける。空・小数・数字以外は直前の数量。0以下は1 */if(/^-?\d+$/.test(t))CART[k]=Math.min(99,Math.max(1,parseInt(t,10)));saveCart();render()});
   document.querySelectorAll("[data-qx]").forEach(b=>b.onclick=()=>{delete CART[b.dataset.qx];saveCart();render()});
   const od=document.querySelector("[data-order]"); if(od) od.onclick=()=>toast("デモのため、注文はできません");
 }
