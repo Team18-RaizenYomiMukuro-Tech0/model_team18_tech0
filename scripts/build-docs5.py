@@ -51,6 +51,9 @@ ID_RE = re.compile(r"(?<![A-Za-z0-9_\-])(" + "|".join(sorted(ID_OWNER, key=len, 
 # 「この文書で決まったこと」の節の見出し
 DECIDED_RE = re.compile(r"^(#{2,6})\s*(?:この文書で)?(?:決まったこと|決定事項|決定したこと)\s*$")
 
+# 一覧ページから開く「設計の変更」（文書を変えた Issue）。開発ハブにあった「今週の変更点」と同じ URL
+DESIGN_CHANGE_URL = "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=label%3Adesign-change"
+
 MERMAID_VERSION = "11.4.0"
 MERMAID_URL = f"https://cdn.jsdelivr.net/npm/mermaid@{MERMAID_VERSION}/dist/mermaid.esm.min.mjs"
 
@@ -306,6 +309,7 @@ def build_index(projects, out_root, commit):
         "<h1>5文書（HTML 版）</h1>"
         "<p>要求 → 要件 → 仕様 → 設計 → テスト設計。.md から自動生成した読み取り用のページです。</p>"
         f'<ul class="projects">{"".join(items) or "<li>対象の案件フォルダがありません</li>"}</ul>'
+        f'<p><a href="{DESIGN_CHANGE_URL}">🧬 設計の変更</a> — 文書を変えた Issue（design-change ラベル）</p>'
     )
     footer = f"生成元コミット: <code>{html.escape(commit[:7] if commit else '不明')}</code>"
     d = out_root / "docs5"
