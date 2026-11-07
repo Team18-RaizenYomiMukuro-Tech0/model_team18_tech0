@@ -130,9 +130,11 @@ button.name{background:none;border:0;padding:0;text-align:left;font-weight:700;m
 .note{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px}
 .note.end{background:#eee;color:#555}.note.out{background:#fdecea;color:var(--err)}
 .small12{font-size:12px;color:var(--sub);margin-top:14px}
-#ov{position:absolute;inset:0;background:rgba(58,51,49,.35);z-index:15;display:none;justify-content:flex-end;align-items:flex-start;padding:60px 16px}
+#ov{position:absolute;inset:0;background:rgba(58,51,49,.35);z-index:15;display:none;justify-content:flex-end;align-items:stretch}
 #ov.on{display:flex}
-#ov .dlg{background:#fff;border-radius:12px;width:min(380px,100%);max-height:80%;overflow:auto;padding:16px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+#ov .dlg{background:#fff;border-radius:12px 0 0 12px;width:min(380px,100%);height:100%;overflow:auto;padding:16px;box-shadow:-8px 0 28px rgba(0,0,0,.25);animation:slidein .25s ease-out}
+@keyframes slidein{from{transform:translateX(100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){#ov .dlg{animation:none}}
 #ov ul{list-style:none;margin:8px 0;padding:0;display:grid;gap:8px}
 #ov li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:6px 10px}
 #ov li .nm{flex:1 1 140px;font-size:13px}
@@ -153,6 +155,7 @@ body.show-note #list{display:block}
   <div class="grp"><label><input type="checkbox" id="tSp" checked> 仕様ID</label><label><input type="checkbox" id="tNote" checked> 付箋</label></div>
   <div class="grp" id="stateBtns">検索の状態：
     <button data-st="initial">初期</button><button data-st="loading">検索中</button><button data-st="results">結果あり</button><button data-st="empty">0件</button><button data-st="error">失敗</button><button data-st="invalid">入力エラー</button></div>
+  <div class="grp">デモ：<button data-demo="page">範囲外ページ</button><button data-demo="sold">カートに販売終了を入れる</button></div>
   <div class="grp"><label><input type="checkbox" id="fFail"> 次の検索・作成・共有表示を失敗させる</label><label><input type="checkbox" id="fSlow"> 11秒かかる（10秒で打ち切り）</label><label><input type="checkbox" id="fCopy"> コピーを失敗させる</label></div>
   <div class="grp" id="shareBtns" hidden>共有ページの状態：
     <button data-sh="ok">表示</button><button data-sh="gone">販売終了・在庫なし</button><button data-sh="exp">期限切れ</button><button data-sh="nf">見つからない</button><button data-sh="load">読み込み中</button><button data-sh="fail">失敗</button><button data-sh="mine" id="shMine" disabled>作ったリンクを開く</button></div>
@@ -226,14 +229,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 /* ---------- 付箋（#45・案A・既存仕様に書かれていない点） ---------- */
 const NOTES=[
  /*0*/"共有リンクの URL の頭（ドメイン）は、外部公開の承認後に決めます（#37-16）。いまは仮の https://giftia.example/s/ です。",
- /*1*/"案Aのトップにある「予算から探す」の価格帯ボタン。#45-2 でトップは自由入力にしたため置いていません（価格帯ボタンは結果画面だけ）。",
- /*2*/"結果画面で価格帯ボタンを押したときの扱い。R-01 の予算（自由入力）と上位10件の候補をやめ、R-02 の絞り込み（12件ずつ・おすすめ順）に切り替えています（仮置き）。",
- /*3*/"トップの「おすすめの商品」の選び方・並び（仮に先頭の4件）。",
- /*4*/"R-02 の絞り込みに、在庫0の商品を出すか（仮：出さない）。",
- /*5*/"詳細の「商品の特徴」「セット内容」の元の列。既存の列に無いので、値がある商品だけ出しています（欠けた項目は表示しない、OPEN-06）。",
- /*6*/"同じ価格帯ボタンをもう一度押すと解除する動き（仮：解除する）。シーンは単一選択で、押し直しても選んだまま。",
- /*7*/"ヘッダーのお気に入り・カートを開いたときの見た目（案Aに画面が無い。仮に右上へ重ねて表示）。",
- /*8*/"「取引先へのお礼」タイルと「お礼」タイルの選択状態の見せ方（どちらも「お礼」タグで探す。仮：別のタイルとして別々に選択表示）。"
+ /*1*/"「取引先へのお礼」タイルと「お礼」タイルの選択状態の見せ方（どちらも「お礼」タグで探す。仮：別のタイルとして別々に選択表示）。"
 ];
 const note=i=>`<div class="sticky">${esc(NOTES[i])}</div>`;
 const sp=t=>`<span class="sp">${t}</span>`;
@@ -265,14 +261,17 @@ function parseBudget(raw){
   return (n>=1000&&n<=999999)?n:NaN;
 }
 /* SP-01 絞り込み / SP-02 ベイズ平均 / SP-03 理由 */
-function rank(budget,scene){
-  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(budget===null||(p.price*10>=budget*7&&p.price<=budget)));
+function orderBy(c){
   const rated=c.filter(p=>p.r!=null&&p.v!=null&&p.v>=1);
   const C=rated.length?rated.reduce((a,p)=>a+p.r,0)/rated.length:0;
   const sc=p=>{const v=(p.r==null||p.v==null)?0:p.v;const R=v===0?C:p.r;return (v/(v+20))*R+(20/(v+20))*C};
   const out=c.map(p=>({p,score:rated.length?sc(p):0}));
   out.sort((a,b)=>b.score-a.score||b.p.n-a.p.n||a.p.id-b.p.id);
-  return out.slice(0,10).map((o,i)=>({...o.p,rank:i+1,reason:reason(o.p)}));
+  return out.map(o=>o.p);
+}
+function rank(budget,scene){
+  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(budget===null||(p.price*10>=budget*7&&p.price<=budget)));
+  return orderBy(c).slice(0,10).map((p,i)=>({...p,rank:i+1,reason:reason(p)}));
 }
 const hasRating=p=>p.r!=null&&p.v!=null&&p.v>=1;
 function reason(p){
@@ -285,10 +284,10 @@ function reason(p){
   else if(p.wrap) s+="ラッピングができます。";
   return s;
 }
-/* R-02 の絞り込み（単一選択・条件間 AND、おすすめ順＝ID順。#25） */
+/* R-02 の絞り込み（単一選択・条件間 AND。在庫0は出さない。おすすめ順＝SP-02 と同じ式。#46-2・3） */
 function filterR02(){
   const b=BANDS.find(x=>x[0]===S.band);
-  return PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price)));
+  return orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))));
 }
 
 /* ---------- 状態 ---------- */
@@ -320,7 +319,7 @@ function render(){
   document.querySelectorAll("[data-st]").forEach(b=>b.setAttribute("aria-pressed",S.view!=="share"&&b.dataset.st===S.st));
   document.querySelectorAll("[data-sh]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sh===S.shState));
   $("#shMine").disabled=!S.link;
-  $("#nFav").textContent=FAV.length; $("#nCart").textContent=Object.values(CART).reduce((a,b)=>a+b,0);
+  $("#nFav").textContent=FAV.length; $("#nCart").textContent=Object.keys(CART).filter(k=>PRODUCTS.some(p=>p.id==k)).reduce((a,k)=>a+CART[k],0);
   $("#view").innerHTML=S.view==="top"?topHTML():S.view==="result"?resultHTML():shareHTML();
   renderOv();
   bind();
@@ -335,18 +334,18 @@ function budgetFormHTML(){
     <div style="font-size:12px;color:var(--sub)">空でも探せます（価格では絞りません）。1,000〜999,999円の整数。全角やカンマも読めます。</div></div>`;
 }
 function topHTML(){
-  const rec=PRODUCTS.slice(0,4);
+  const rec=orderBy(PRODUCTS.filter(p=>p.stock>=1)).slice(0,4);
   return `<section class="hero"><div><h1>ありがとうに、<br>ちょうどいいギフト。</h1><p>相手とシーンに合わせて、気持ちが伝わる贈りものを。${sp("案A トップ")}</p></div>${heroSVG}</section>
   <form id="f" novalidate>
    <h2 class="sec">シーンから探す${sp("SP-01 / OPEN-02 #45-3")}</h2>
    <div class="tiles" role="group" aria-label="シーン">${TILES.map(x=>`<button type="button" class="tile" data-tile="${x}" aria-pressed="${S.scene===x}"><span class="ic" aria-hidden="true">${TICON[x]}</span>${x}</button>`).join("")}</div>
-   <div class="ferr" role="alert">${S.sceneErr?"シーンを選んでください":""}</div>${note(8)}
-   ${budgetFormHTML()}${note(1)}
+   <div class="ferr" role="alert">${S.sceneErr?"シーンを選んでください":""}</div>${note(1)}
+   ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
   <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
   <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
-  <h2 class="sec">おすすめの商品</h2>${note(3)}
+  <h2 class="sec">おすすめの商品</h2>
   <div class="grid">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
 }
 function stars(p){return hasRating(p)?`<span><span class="star">★</span> ${p.r}（${p.v}件）</span>`:""}
@@ -360,7 +359,7 @@ function cardHTML(p,o){
    <button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="${esc(p.name)}をお気に入り${fav?"から外す":"に追加"}">${fav?"♥":"♡"}</button>
    <div class="topline">${r01?`<span class="rank">${p.rank}位</span>`:""}${hi?`<span class="badge">高評価の商品${sp("AC-10")}</span>`:""}${picked&&!o.mini?`<span class="selbadge">選択中${sp("#41-6")}</span>`:""}</div>
    ${imgHTML(p)}
-   <button class="name" ${o.mini?"":`data-detail="${p.id}"`}>${esc(p.name)}</button>${priceHTML(p.price)}${metaHTML(p)}
+   <button class="name" ${o.mini?`data-rec="${p.id}"`:`data-detail="${p.id}"`}>${esc(p.name)}</button>${priceHTML(p.price)}${metaHTML(p)}
    ${r01?`<p class="reason">${esc(p.reason)}${sp("SP-03")}</p>`:""}${o.mini?"":pickHTML(p,picked)}</article>`;
 }
 function detailHTML(){
@@ -372,7 +371,7 @@ function detailHTML(){
    ${imgHTML(p)}${hi?`<div class="topline"><span class="badge">高評価の商品</span></div>`:""}
    <div>${priceHTML(p.price)}</div>${metaHTML(p)}
    ${S.mode==="r01"&&p.reason?`<p class="reason">${esc(p.reason)}</p>`:""}
-   <dl>${p.desc?`<dt>商品の特徴</dt><dd>${esc(p.desc)}</dd>`:""}${p.set?`<dt>セット内容</dt><dd>${esc(p.set)}</dd>`:""}</dl>${note(5)}
+   <dl>${p.desc?`<dt>商品の特徴</dt><dd>${esc(p.desc)}</dd>`:""}${p.set?`<dt>セット内容</dt><dd>${esc(p.set)}</dd>`:""}</dl>
    <button class="primary full" data-cart="${p.id}">🛒 カートに入れる</button>
    <button class="ghost full" data-fav="${p.id}">♡ お気に入りに${fav?"から外す":"追加"}</button><div>${sp("AC-08")}</div></aside>`;
 }
@@ -383,19 +382,19 @@ function resultHTML(){
     <div class="fgrp"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
    </div>
    <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}">${c}</button>`).join("")}</div></div>
-  </section>${note(2)}${note(6)}
-  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
+  </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
   const bv=parseBudget(S.budgetRaw);
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
   if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
     const withBudget=S.mode==="r01"&&bv!==null&&!Number.isNaN(bv);
-    const msg=withBudget?"条件に合う商品がありません。予算を変えてみてください":S.mode==="r01"?"この条件に合う商品がありません。シーンを変えてみてください":"この条件に合う商品がありません。条件を変えてみてください";
+    const msg=S.mode==="r01"?(withBudget?"条件に合う商品がありません。予算を変えてみてください":"この条件に合う商品がありません。シーンを変えてみてください"):"条件に合う商品がありません。条件を変えてみてください";
     return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #41-2")}</div>`+afterResults();
   }
   if(S.st!=="results") return h+`<div class="msgbox init">トップで予算（任意）とシーンを入れて「候補を出す」を押すか、上の条件を選んでください。</div>`+afterResults();
   const r01=S.mode==="r01";
   const total=S.items.length;
+  if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
   h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${bv?`・予算${yen(bv)}（税込）`:"・予算なし"}</span>`:""}</div>
   <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
@@ -443,10 +442,10 @@ function renderOv(){
   if(!S.panel){ov.className="";ov.innerHTML="";return}
   ov.className="on";
   if(S.panel==="fav"){
-    ov.innerHTML=`<div class="dlg"><b>お気に入り（${FAV.length}件）</b>${sp("FAV")}${note(7)}<ul>${FAV.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return p?`<li><span class="nm">${esc(p.name)}</span><span>${priceHTML(p.price)}</span><button class="ghost" data-fav="${id}">外す</button></li>`:""}).join("")||'<li style="color:var(--sub)">まだありません。</li>'}</ul><button class="ghost full" data-close>閉じる</button></div>`;
+    ov.innerHTML=`<div class="dlg"><b>お気に入り（${FAV.length}件）</b>${sp("FAV #46-6")}<ul>${FAV.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return p?`<li><span class="nm">${esc(p.name)}</span><span>${priceHTML(p.price)}</span><button class="ghost" data-fav="${id}">外す</button></li>`:""}).join("")||'<li style="color:var(--sub)">まだありません。</li>'}</ul><button class="ghost full" data-close>閉じる</button></div>`;
   }else{
     const ids=Object.keys(CART).map(Number);let total=0;
-    ov.innerHTML=`<div class="dlg"><b>カート</b>${sp("OPEN-05")}<ul>${ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);if(!p)return"";total+=p.price*CART[id];return `<li><span class="nm">${esc(p.name)}<br>${priceHTML(p.price)}</span><span class="qty"><button data-qd="${id}" aria-label="減らす">−</button><b aria-live="polite">${CART[id]}</b><button data-qu="${id}" aria-label="増やす">＋</button></span><button class="ghost" data-qx="${id}">削除</button></li>`}).join("")||'<li style="color:var(--sub)">カートは空です。</li>'}</ul>
+    ov.innerHTML=`<div class="dlg"><b>カート</b>${sp("OPEN-05 #46-6")}<ul>${ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);if(!p)return `<li><span class="nm">（販売終了の商品）<br><span class="note end">販売終了</span>${sp("#46-6 合計に入れない")}</span><button class="ghost" data-qx="${id}">削除</button></li>`;total+=p.price*CART[id];return `<li><span class="nm">${esc(p.name)}<br>${priceHTML(p.price)}</span><span class="qty"><button data-qd="${id}" aria-label="減らす" ${CART[id]<=1?"disabled":""}>−</button><b aria-live="polite">${CART[id]}</b><button data-qu="${id}" aria-label="増やす" ${CART[id]>=10?"disabled":""}>＋</button></span><button class="ghost" data-qx="${id}">削除</button></li>`}).join("")||'<li style="color:var(--sub)">カートは空です。</li>'}</ul>
      <div style="font-weight:700;margin:8px 0">合計 ${yen(total)}${TAX}</div><button class="primary full" data-order>注文へ進む</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
   }
 }
@@ -458,13 +457,14 @@ function bind(){
   const f=$("#f"); if(f) f.onsubmit=e=>{e.preventDefault();keepInput();submitTop()};
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{keepInput();S.scene=b.dataset.tile;S.sceneErr=false;if(S.st==="invalid")S.st="initial";render()});
   document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>toast("準備中です（カテゴリーと DB の対応が決まってから）"));
-  document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=b.dataset.fscene;S.page=1;S.sceneErr=false;runSearch()});
+  document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;S.sceneErr=false;runSearch()});
+  document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.mode="r02";S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
-  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.budgetRaw="";S.mode="r02";S.page=1;runSearch()};
+  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.mode="r02";S.page=1;runSearch()};
   document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
   document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>{S.detailId=+b.dataset.detail;S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
   document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{setFav(+b.dataset.fav);render()});
-  document.querySelectorAll("[data-cart]").forEach(b=>b.onclick=()=>{const id=b.dataset.cart;CART[id]=(CART[id]||0)+1;saveCart();render();toast("カートに入れました")});
+  document.querySelectorAll("[data-cart]").forEach(b=>b.onclick=()=>{const id=b.dataset.cart;CART[id]=Math.min(10,(CART[id]||0)+1);saveCart();render();toast("カートに入れました")});
   document.querySelectorAll("[data-pick]").forEach(c=>c.onchange=()=>{const id=+c.dataset.pick;if(c.checked){const p=S.items.find(x=>x.id===id)||PRODUCTS.find(x=>x.id===id);if(p)S.picked.set(id,{...p,reason:reason(p)})}else S.picked.delete(id);render();const e=document.querySelector('[data-pick="'+id+'"]');if(e)e.focus()});
   document.querySelectorAll("[data-unpick]").forEach(c=>c.onclick=()=>{S.picked.delete(+c.dataset.unpick);render()});
   const r=$("#retry"); if(r) r.onclick=runSearch;
@@ -473,7 +473,7 @@ function bind(){
   const om=$("#openMine"); if(om) om.onclick=()=>openShare(S.shId);
   const sr=$("#shRetry"); if(sr) sr.onclick=()=>openShare(S.shId);
   document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{S.panel=null;render()});
-  document.querySelectorAll("[data-qu]").forEach(b=>b.onclick=()=>{CART[b.dataset.qu]++;saveCart();render()});
+  document.querySelectorAll("[data-qu]").forEach(b=>b.onclick=()=>{CART[b.dataset.qu]=Math.min(10,CART[b.dataset.qu]+1);saveCart();render()});
   document.querySelectorAll("[data-qd]").forEach(b=>b.onclick=()=>{const k=b.dataset.qd;CART[k]=Math.max(1,CART[k]-1);saveCart();render()});
   document.querySelectorAll("[data-qx]").forEach(b=>b.onclick=()=>{delete CART[b.dataset.qx];saveCart();render()});
   const od=document.querySelector("[data-order]"); if(od) od.onclick=()=>toast("デモのため、注文はできません");
@@ -535,6 +535,9 @@ document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
   if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";const pb=parseBudget(S.budgetRaw);S.items=rank(Number.isNaN(pb)?null:pb,tag(S.scene));S.detailId=S.items[0].id}
   if(st==="invalid"&&!Number.isNaN(parseBudget(S.budgetRaw))){S.budgetRaw="12"}
   render()});
+document.querySelectorAll("[data-demo]").forEach(b=>b.onclick=()=>{
+  if(b.dataset.demo==="page"){S.view="result";S.mode="r02";S.scene=null;S.band=null;S.items=filterR02();S.st="results";S.detailId=S.items[0].id;S.page=99;render()}
+  else{CART[999]=1;saveCart();S.panel="cart";render()}});
 document.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>{
   const k=b.dataset.sh; S.token++;
   if(k==="load"){S.shState="load";render()}
