@@ -159,6 +159,51 @@ class T(unittest.TestCase):
         only = bp.build_model([iss(1), pr(2, T, "")], [], NAMES, dt.date(2026, 11, 5))
         self.assertEqual(only["today_counts"], {"gain": 0, "merged": 1, "closed": 0})
 
+    def _sort_data(self):
+        ms = [{"number": n, "title": t, "due_on": d} for n, t, d in (
+            (1, "1 古い", "2026-10-30T00:00:00Z"), (2, "2 きのう", "2026-11-01T00:00:00Z"), (3, "3 今日", "2026-11-05T00:00:00Z"),
+            (4, "4 来週", "2026-11-07T00:00:00Z"), (5, "5 再来週", "2026-11-09T00:00:00Z"))]
+        mm = {m["number"]: {"number": m["number"], "title": m["title"]} for m in ms}
+        def i(n, m, state="open"):
+            return {"number": n, "title": "[B%d] 題 %d" % (n % 9, n), "state": state, "html_url": "u", "milestone": mm.get(m),
+                    "assignees": [{"login": "re-ji-tech0"}]}
+        # 番号順にするとバラバラになる並び: 1 完了(11/1)・2 期限なし・3 11/9・4 11/9（同じ期限）・5 遅れ(11/1)・6 今日・7 11/7・8 もっと遅れ(10/30)
+        return [i(1, 2, "closed"), i(2, None), i(3, 5), i(4, 5), i(5, 2), i(6, 3), i(7, 4), i(8, 1)], ms
+
+    def test_breakdown_sorted_by_due(self):
+        data, ms = self._sort_data()
+        m = bp.build_model(data, ms, NAMES, dt.date(2026, 11, 5))
+        rows = [r for p in m["people"] for r in p["rows"]]
+        # 遅れ（期限の早い順）→ 今日 → 期限の早い順 → 同じ期限は番号順 → 期限なし → 完了は最後
+        self.assertEqual([r["number"] for r in sorted(rows, key=bp.due_order)], [8, 5, 6, 7, 3, 4, 2, 1])
+        out = bp.render(m, "x")
+        card = out[out.index('data-who="re-ji-tech0"><div class="ph">'):]
+        card = card[:card.index("</details>")]
+        self.assertEqual([int(x) for x in re.findall(r'class="stt" href="[^"]*">#(\d+) ', card)], [8, 5, 6, 7, 3, 4, 2, 1])
+        # 担当者カードの内訳も #86 の形（太枠の箱でなく区切り線の一覧・状態だけ色札・段階と期限は灰色の文字）
+        self.assertIn('<ul class="srows">', card)
+        self.assertNotIn('<ul class="rows">', card)
+        self.assertIn('<span class="sd">1 古い・期限 10/30</span>', card)
+        self.assertIn('<span class="sd">3 今日・期限 11/5（今日が期限）</span>', card)
+        self.assertIn('<span class="sd">段階なし・期限なし</span>', card)
+        self.assertIn('<span class="sb red">遅れ 6日</span>', card)
+        self.assertNotIn('class="chip"', card)
+        self.assertIn('<span class="ar ar-B">B', card)  # 分野の札はそのまま
+        self.assertNotIn("re-ji-tech0", re.sub(r' data-who="[^"]*"', "", " " + card))  # 画面の文字にアカウント名を出さない（絞り込み用の属性は除く）
+
+    def test_stage_breakdown_sorted_same_due_by_number_done_last(self):
+        data, ms = self._sort_data()
+        for n in (9, 10, 11):  # 同じ段階（5 再来週・期限 11/9）に追加: 完了 #9 / 期限は同じ #11, #10
+            data.append({"number": n, "title": "x%d" % n, "state": "closed" if n == 9 else "open", "html_url": "u",
+                         "milestone": {"number": 5, "title": "5 再来週"}, "assignees": []})
+        m = bp.build_model(data, ms, NAMES, dt.date(2026, 11, 5))
+        st = {s["title"]: s for s in m["stages"]}["5 再来週"]
+        self.assertEqual([r["number"] for r in sorted(st["rows"], key=bp.due_order)], [3, 4, 10, 11, 9])
+        out = bp.render(m, "x")
+        sec = out[out.index('class="stg2"'):]
+        seg = sec[sec.index("5 再来週"):]
+        self.assertEqual([int(x) for x in re.findall(r'class="stt" href="[^"]*">#(\d+) ', seg)][:5], [3, 4, 10, 11, 9])
+
     def test_summary_has_no_account_names(self):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):
@@ -309,7 +354,7 @@ class T(unittest.TestCase):
         self.assertIn('class="st late"', now)  # 状態の札は従来どおり
         self.assertIn("PR #21 feat: API の骨組み", now)  # レビュー待ちの PR の題はそのまま
         cards = out[out.index('class="pgrid"'):out.index('class="stg2"')]
-        self.assertIn('<span class="ar ar-B">B2</span><a href="', cards)
+        self.assertIn('<span class="ar ar-B">B2</span><a class="stt" href="', cards)
         self.assertNotIn("[B2]", cards)
         for k, n in (("P", "P1"), ("F", "F1"), ("T", "T1")):
             self.assertIn('<span class="ar ar-%s">%s</span>' % (k, n), out)
