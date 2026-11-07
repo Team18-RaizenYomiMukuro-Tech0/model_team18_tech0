@@ -374,7 +374,7 @@ CSS = """
 .srm{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:2px}.sd{font-size:var(--fs-xs);color:var(--csub)}.srows .pr{font-weight:400;color:var(--csub)}
 .sb{display:inline-block;padding:0 8px;border-radius:var(--rp);font:800 var(--fs-xs)/1.7 var(--body)}
 .sb.gray{background:#E6E6EA;color:#34343E}.sb.blue{background:#D6E6FB;color:#0F3C78}.sb.green{background:#D3F0DC;color:#0B5A2A}.sb.red{background:#FBD9DC;color:#8A1020}
-.stg2 li.w1{--c:var(--m1)}.stg2 li.w2{--c:var(--m2)}.stg2 li.w3{--c:var(--m3)}.stg2 li.w4{--c:#FFFFFF}
+.stg2 li.w1{--c:var(--m1)}.stg2 li.w2{--c:var(--m2)}.stg2 li.w3{--c:var(--m3)}.stg2 li.w4{--c:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
 .stg2 li[class] .sn{display:inline-block;justify-self:start;padding:0 12px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--c);color:#2A1B3D}.sn b{margin-left:4px}
 .stg2 li[class] .bar{background:#3F3158}.stg2 li[class] .bar i{background:var(--c)}
 .ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
