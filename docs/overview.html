@@ -115,6 +115,19 @@ body::after{background-image:radial-gradient(var(--dotE) 4px,transparent 4.4px);
 .dk1{margin:var(--s2) 0 0;font-size:var(--fs-s);line-height:1.6}
 .dk{list-style:none;margin:var(--s2) 0 0;padding:0}.dk li{display:grid;grid-template-columns:2.6em 1fr;gap:0 8px;align-items:baseline;padding:4px 0;font-size:var(--fs-s);line-height:1.6}.dk .ak{margin:0;text-align:center;padding:0}
 .qt li.done{opacity:.6}.qt-ok{font-size:var(--fs-xs);font-weight:800;color:var(--csub);border:1px solid currentColor;border-radius:var(--rp);padding:0 6px;white-space:nowrap}.qk>details{margin-top:var(--s2)}
+/* 押せる所の形: ボタン=濃い塗りの丸い札+→ / リンク=下線（外は↗）。hover・focus-visible で下線を太く / 状態（押せない）=枠なしの薄い塗り */
+a:not(.btn):hover,a:not(.btn):focus-visible{text-decoration-thickness:3px}
+.badge{border:0;background:var(--bg);color:var(--ctext)}
+.ms a{text-decoration:underline;text-underline-offset:3px;border-bottom:0}
+.ms a:hover{background:var(--tint,transparent)}
+.ms.off li{border-bottom:0}
+.ms.off .st-pre{margin-left:auto;padding:0 8px;border-radius:var(--rp);background:var(--bg);color:var(--ctext);font-size:var(--fs-xs);font-weight:800;white-space:nowrap}
+.rl a,.qt-l a{text-decoration:underline;text-underline-offset:3px}
+.qt a{text-decoration:underline;text-underline-offset:3px;border-bottom:0}
+span.it{border:0;background:var(--bg)}
+a.it{border:0;background:none;padding:var(--s1) 0}
+a.it b{text-decoration:underline;text-underline-offset:3px}
+a.it:hover{background:none}a.it:hover b{text-decoration-thickness:3px}
 </style>
 </head>
 <body>

@@ -27,6 +27,12 @@
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="kb/kb.css">
 <link rel="stylesheet" href="hub-assets/ext.css">
+<style>
+/* 押せる所の形: リンク=下線（hover・focus-visible で太く） / 状態（押せない）=枠なしの薄い塗り */
+a:not(.btn):hover,a:not(.btn):focus-visible{text-decoration-thickness:3px}
+.st.unk,.st.live,.st.plan{border:0}.st.plan{background:var(--tint)}
+.chap .time,.part .time{border:0;background:var(--tint);color:var(--text)}
+</style>
 </head>
 <body>
 <header class="kb-band"><div class="kb-in">
