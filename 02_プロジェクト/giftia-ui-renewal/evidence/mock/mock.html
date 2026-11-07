@@ -6,11 +6,11 @@
 <title>Giftia レビュー用モック（案A）</title>
 <style>
 :root{--bg:#f4f1ee;--paper:#fff;--ink:#3a3331;--sub:#7a6f6a;--line:#e8dfd9;--peach:#fdeee6;--coral:#ee6c4d;--coral-d:#d4553a;--sage:#e6ebdd;--sage-d:#5d7a4e;--green:#6f8a5a;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8;
- --surf:#fff;--sel:#fff6f2;--muted:#f5f2ef;--imgbg:#faf7f4;--bd2:#bdb0a8;--ink2:#5c514d;--badge-bg:#fbe3d9;--badge-ink:#a2402a;
+ --surf:#fff;--sel:#fff6f2;--muted:#f5f2ef;--imgbg:#faf7f4;--bd2:#8a7d75;--btn-sel:#b8422a;--btn-sel-d:#8f321e;--ink2:#5c514d;--badge-bg:#fbe3d9;--badge-ink:#a2402a;
  --hero-bg:var(--peach);--hero-ink:var(--ink);--hero-sub:var(--sub);--rl:12px;--rm:8px;--shadow:0 1px 2px rgba(0,0,0,.04);--shadow-h:0 2px 6px rgba(0,0,0,.08);--gold:#c9a227}
 /* クリスマステーマ: 色・角丸・影はここ1か所（body.xmas を外すと淡色に戻る） */
 body.xmas{--bg:#f2e9dc;--paper:#fffaf2;--surf:#fffdf9;--muted:#f2e9db;--peach:#f8e8da;--line:#e3d3bb;--ink:#2a2120;--ink2:#4a3c37;--sub:#67554d;
- --coral:#b3261e;--coral-d:#8c1c16;--green:#1f5e3b;--sage:#e1eee4;--sage-d:#1f5e3b;--sel:#fdeee8;--imgbg:#f7efe4;--bd2:#8f7d6d;--badge-bg:#f7dcd5;--badge-ink:#8c1c16;--errbg:#fbe9e6;--err:#a31f18;
+ --coral:#b3261e;--coral-d:#8c1c16;--green:#1f5e3b;--sage:#e1eee4;--sage-d:#1f5e3b;--sel:#fdeee8;--imgbg:#f7efe4;--bd2:#8f7d6d;--btn-sel:#b3261e;--btn-sel-d:#8c1c16;--badge-bg:#f7dcd5;--badge-ink:#8c1c16;--errbg:#fbe9e6;--err:#a31f18;
  --hero-bg:linear-gradient(135deg,#1f5e3b 0%,#287249 100%);--hero-ink:#ffffff;--hero-sub:#f6ebcc;--rl:20px;--rm:14px;--shadow:0 4px 16px rgba(60,35,20,.10);--shadow-h:0 10px 26px rgba(60,35,20,.18)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
@@ -175,6 +175,20 @@ body.xmas .hero::before{content:"";position:absolute;inset:0;pointer-events:none
 body.xmas .hero{border:2px solid rgba(201,162,39,.55)}
 @container (max-width:600px){.hero h1{font-size:24px}.orn{display:none!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* #60 条件の欄の3群を同じボタンに（色はテーマ変数から。未選択=白地・枠・同じ余白、選択=主色＋白文字＋✓） */
+.tiles,.bands,.cats{display:flex;flex-wrap:wrap;gap:8px;grid-template-columns:none}
+.tile,.fb,.fb.txt,.cat{background:var(--surf);color:var(--ink);border:1px solid var(--bd2);border-radius:var(--rm);padding:8px 16px;font-size:14px;font-weight:400;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:none;cursor:pointer;line-height:1.3}
+.tile .ic{font-size:18px}
+.tile:hover,.fb:hover{background:var(--sel);border-color:var(--btn-sel)}
+.tile:focus-visible,.fb:focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
+.tile[aria-pressed=true],.fb[aria-pressed=true],.fb.txt[aria-pressed=true]{background:var(--btn-sel);color:#fff;border:1px solid var(--btn-sel);font-weight:700;padding:8px 16px}
+.tile[aria-pressed=true]:hover,.fb[aria-pressed=true]:hover{background:var(--btn-sel-d);border-color:var(--btn-sel-d)}
+.tile[aria-pressed=true] .ic{filter:none}
+.filters{gap:16px}.frow{gap:16px 28px}.fgrp{gap:8px}.fgrp b{font-size:14px}
+h2.sec{margin:22px 0 10px}
+.multi{font-size:12px;font-weight:400;color:var(--ink2);margin-left:6px}
+@container (max-width:600px){.tiles,.bands,.cats{grid-template-columns:none}}
 </style>
 </head>
 <body class="show-sp show-note xmas">
@@ -368,7 +382,7 @@ function topHTML(){
       ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
-  <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
+  <h2 class="sec">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
   <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   <div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
@@ -412,7 +426,7 @@ function resultHTML(){
     <div class="fgrp"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
     <div class="fgrp"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
    </div>
-   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cats.includes(c)}">${c}</button>`).join("")}</div></div>
+   <div class="fgrp"><b>カテゴリー<span class="multi">（複数選べます）</span>${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cats.includes(c)}">${c}</button>`).join("")}</div></div>
   </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
