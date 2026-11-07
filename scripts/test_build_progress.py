@@ -204,6 +204,23 @@ class T(unittest.TestCase):
         seg = sec[sec.index("5 再来週"):]
         self.assertEqual([int(x) for x in re.findall(r'class="stt" href="[^"]*">#(\d+) ', seg)][:5], [3, 4, 10, 11, 9])
 
+    def test_github_links_open_in_new_tab(self):
+        out = bp.render(model(), "x")
+        body = out.split("<body>")[1]
+        links = re.findall(r'<a [^>]*>', body)
+        gh = [a for a in links if 'href="https://github.com/' in a]
+        self.assertGreater(len(gh), 10)  # Issue・PR のリンク（いま動くこと・カード・段階・PR 表）
+        for a in gh:
+            self.assertIn('target="_blank" rel="noopener"', a)
+        for a in links:  # 同じサイトの中（ハブへ戻る）は同じタブのまま
+            if 'href="https://github.com/' not in a:
+                self.assertNotIn("_blank", a)
+        self.assertIn('<a href="hub.html">', body)
+        # 表の PR 番号・いま動くこと・段階の内訳・カードのそれぞれに付く
+        for key in ('id="al"', 'class="pgrid"', 'class="stg2"', 'id="prs"'):
+            seg = body[body.index(key):]
+            self.assertIn('target="_blank"', seg[:seg.index("</section>")])
+
     def test_summary_has_no_account_names(self):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):

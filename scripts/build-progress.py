@@ -193,6 +193,12 @@ def safe_url(u):
     return u if u.startswith("https://github.com/") else "#"
 
 
+def ext(u):
+    """GitHub への外部リンクの属性: 別タブで開く（同じサイトの中のリンクには使わない）"""
+    h = safe_url(u)
+    return f'href="{e(h)}"' + (' target="_blank" rel="noopener"' if h != "#" else "")
+
+
 STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち"),
           "merged": ("merged", "マージ済み・Issue 未完了")}
 
@@ -219,7 +225,7 @@ def title_parts(title, badge):
 
 def render_row(r, who=None, mark="", extra="", badge=False):
     prs = "".join(
-        f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
+        f'<a class="pr {x["state"]}" {ext(x["url"])}>PR #{x["number"]}'
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
         for x in r["prs"])
     due = f'期限 {r["due"].month}/{r["due"].day}' if r["due"] else "期限なし"
@@ -229,7 +235,7 @@ def render_row(r, who=None, mark="", extra="", badge=False):
     names = "".join(f'<span class="chip">{e(n)}</span>' for n in (who or []))
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
     ab, ttl = title_parts(r["title"], badge)
-    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}{ab}<a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(ttl)}</a></div>'
+    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt">{mark}{ab}<a {ext(r["url"])}>#{r["number"]} {e(ttl)}</a></div>'
             f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}{extra}'
             f'<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
 
@@ -251,12 +257,12 @@ def render_stage_row(r, who, stage=None):
     if not r["done"] and r["due"] and not r["late"] and r["left"] is not None and r["left"] <= SOON_DAYS:
         soon = "（今日が期限）" if r["left"] == 0 else f"（あと{r['left']}日）"
     prs = "".join(
-        f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
+        f'<a class="pr {x["state"]}" {ext(x["url"])}>PR #{x["number"]}'
         f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
         for x in r["prs"])
     ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
     ab, ttl = title_parts(r["title"], True)
-    return (f'<li class="sr" data-who="{e(ids)}">{ab}<a class="stt" href="{e(safe_url(r["url"]))}">#{r["number"]} {e(ttl)}</a>'
+    return (f'<li class="sr" data-who="{e(ids)}">{ab}<a class="stt" {ext(r["url"])}>#{r["number"]} {e(ttl)}</a>'
             f'<div class="srm"><span class="sb {SB[r["status"]]}">{label}</span>{late}'
             f'<span class="sd">{e(stage if stage is not None else "、".join(who))}・{due}{soon}</span>{prs}</div></li>')
 
@@ -284,7 +290,7 @@ def render_prs(prs, members=()):
         return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
     rows = "".join(
         f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}" data-who="{e(x.get("who", "none"))}" data-top="{1 if x.get("top", True) else 0}"{"" if x.get("top", True) else " hidden"}>'
-        f'<td data-label="PR"><a href="{e(safe_url(x["url"]))}">#{x["number"]}</a></td>'
+        f'<td data-label="PR"><a {ext(x["url"])}>#{x["number"]}</a></td>'
         f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
         f'<td data-label="マージ日時">{x["at"].strftime("%m/%d %H:%M")}</td></tr>' for x in prs)
     who_row = ('<ul class="meta" id="prwho" aria-label="PR を担当者で絞る">'
@@ -464,7 +470,7 @@ def now_section(model):
         items.append(render_row(r, who(r), mark="⚠ " if r["late"] else "⏰ ", badge=True))
     shown = {r["number"] for r in model["alerts"]}
     for p in model["review_prs"]:
-        items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a href="{e(safe_url(p["url"]))}">PR #{p["number"]} {e(p["title"])}</a></div>'
+        items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a {ext(p["url"])}>PR #{p["number"]} {e(p["title"])}</a></div>'
                      f'<div class="rm"><span class="st live">レビュー待ち</span><span class="chip">{e(p["author"])}</span></div></li>')
     for p in model["people"]:
         for r in p["rows"]:
