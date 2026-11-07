@@ -114,6 +114,35 @@ body::after{background-image:radial-gradient(var(--dotE) 4px,transparent 4.4px);
 .pb{height:10px;border:var(--bw1) solid var(--line);border-radius:var(--rp);background:var(--card);overflow:hidden}.pb i{display:block;height:100%;background:var(--hero)}
 #ps{display:grid;gap:var(--s1)}#ps p{margin:0;font-size:var(--fs-s);font-weight:800;color:var(--ctext)}#ps .msn{font-weight:500;color:var(--csub)}
 .who{list-style:none;margin:0;padding:0;display:grid;gap:4px}.who li{display:grid;grid-template-columns:6.8em 1fr auto;gap:8px;align-items:center;font-size:var(--fs-s)}.who span:last-child{font-weight:800;white-space:nowrap}
+/* ===== 霊力ゲージ（STAGE ボタンの置き換え。JSON が読めたときだけ表示） ===== */
+.stages[hidden]{display:none}.gz{max-width:58%;color:var(--btxt);text-shadow:0 1px 3px rgba(0,0,0,.85)}.gz[hidden]{display:none}
+.gzt{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:0 0 8px;font-size:.9rem;font-weight:800;line-height:1.3}
+.gzp{text-shadow:none;color:#2A1B3D;background:var(--m1);border:2px solid #fff;border-radius:999px;padding:1px 10px}
+.gb{position:relative;height:24px;border:3px solid #fff;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden}
+.gf{position:absolute;inset:0;background:linear-gradient(to right,var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,#fff 75% 100%);clip-path:inset(0 100% 0 0);transition:clip-path .9s cubic-bezier(.2,.8,.2,1)}
+.gf::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.5),transparent 55%)}
+.gc{position:absolute;top:0;bottom:0;left:0;width:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.9) 0 5px,transparent 5px 10px);border-left:2px dashed #fff;animation:gblink 1.2s ease-in-out infinite;transition:left .9s,width .9s}
+@keyframes gblink{0%,100%{opacity:.35}50%{opacity:1}}
+.gn{position:relative;height:0}
+.gd{position:absolute;top:-24px;width:18px;height:18px;margin-left:-9px;border-radius:50%;border:3px solid #fff;background:#2A1B3D;z-index:2}
+.gd.lit{background:var(--c);box-shadow:0 0 8px 2px var(--c)}
+.gd.now{animation:gpulse 1.8s ease-in-out infinite}
+@keyframes gpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35);box-shadow:0 0 14px 5px var(--c)}}
+.gl{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:10px 0 0;padding:0;list-style:none}
+.gl li{--c:var(--m1);text-align:center;padding:4px 2px;border-radius:10px;border:2px solid transparent;line-height:1.35}
+.gl li[data-n="2"]{--c:var(--m2)}.gl li[data-n="3"]{--c:var(--m3)}.gl li[data-n="4"]{--c:#fff}
+.gl li.now{border-color:#fff}
+.gl .no{display:block;font-size:.75rem;font-weight:800;letter-spacing:.08em;color:var(--c)}
+.gl .nm{display:block;font-size:.95rem;font-weight:800;word-break:keep-all}
+.gl .ws{display:block;font-size:.75rem;opacity:.9}
+.gl .dt{display:block;font-size:.75rem;font-weight:800;color:var(--c)}
+.gl li.off .nm,.gl li.off .ws{opacity:.7}
+.gk{display:flex;flex-wrap:wrap;gap:2px 14px;margin:6px 0 0;padding:0;list-style:none;font-size:.75rem}
+.gk i{display:inline-block;width:22px;height:10px;vertical-align:-1px;margin-right:5px;border:1px solid #fff;border-radius:3px}
+.gk .k1{background:linear-gradient(to right,var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,#fff 75% 100%)}
+.gk .k2{background:repeating-linear-gradient(135deg,rgba(255,255,255,.9) 0 3px,transparent 3px 6px)}
+@media(max-width:700px){.gz{max-width:none}.gl .o{display:none}.gl{gap:2px}.gl li{padding:4px 1px}.gl .nm{font-size:.85rem}}
+@media(prefers-reduced-motion:reduce){.gf,.gc,.gd.now{animation:none!important;transition:none!important}.gd.now{box-shadow:0 0 0 4px var(--c)}}
 </style>
 </head>
 <body>
@@ -123,6 +152,7 @@ body::after{background-image:radial-gradient(var(--dotE) 4px,transparent 4.4px);
 <h1 class="names" aria-label="開発ハブ（雷禅・黄泉・軀）"><span aria-hidden="true">雷禅</span><span aria-hidden="true">黄泉</span><span aria-hidden="true">軀</span></h1></div>
 <p class="sub">開発ハブ ― 4つのステージで進めます</p>
 <ol class="stages"><li class="stg"><b>STAGE 1</b><small>W1</small></li><li class="stg"><b>STAGE 2</b><small>W2</small></li><li class="stg"><b>STAGE 3</b><small>W3</small></li><li class="stg"><b>STAGE 4</b><small>W4</small></li></ol>
+<div class="gz" id="gz" hidden><p class="gzt"><span id="gz-all"></span><span class="gzp" id="gz-pw" hidden></span></p><div class="gb" id="gb" role="img"><div class="gf" id="gf"></div><div class="gc" id="gc"></div></div><div class="gn" id="gn" aria-hidden="true"></div><ol class="gl" id="gl" aria-label="4つのステージ"></ol><ul class="gk"><li><i class="k1"></i>閉じた Issue</li><li id="gk-c" hidden><i class="k2"></i>溜め中（PR は合流済み・Issue は未完了）</li></ul></div>
 </div></header>
 <main class="wrap">
 <section class="sec "><h2><span aria-hidden="true">📅</span>毎日<span class="mk" aria-hidden="true"><i></i><i></i><i></i></span></h2><div class="grid"><div class="card pl-card"><h3>開発の全体像</h3><p class="pl">🎁 予算とシーンで候補を出し、仲間に共有リンクで送る</p><ol class="mp" aria-label="段"><li>5文書</li><li>実装①</li><li>実装②</li><li>評価・受入</li><li>発表</li></ol><p class="cd"><span id="cd-end"></span><span id="cd-next"></span></p><p class="l3">🖥️画面 → ⚙️API → 🗄️DB</p><div class="go"><a class="btn" href="overview.html">開く →</a></div></div><div class="card pl-card"><h3>進捗ダッシュボード</h3><p>📊 担当者ごとの完了数・遅れ・期限が近い Issue を、Issue から自動で見る</p><p>👤 名前ボタンで自分だけに絞れる</p><div id="ps" hidden></div><div class="go"><a class="btn" href="progress.html">開く →</a></div></div><div class="card pl-card"><h3>GitHub</h3><ul class="ms" aria-label="GitHub"><li><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues?q=is%3Aopen+assignee%3A%40me"><b aria-hidden="true">📋</b>自分の担当 Issue<time>→</time></a></li><li><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pulls?q=is%3Apr+is%3Aopen+review-requested%3A%40me"><b aria-hidden="true">👀</b>レビュー待ちの PR<time>→</time></a></li></ul><h3 class="sh">モック・図</h3><ul class="ms off" aria-label="モック・図"><li><b aria-hidden="true">📽️</b>紙芝居<time>要件が固まったら</time></li><li><b aria-hidden="true">🕹️</b>クリックで動くモック<time>仕様が固まったら</time></li><li><b aria-hidden="true">🗺️</b>図（主要フロー・画面遷移・ER）<time>設計で作る</time></li></ul><p class="rl"><a href="https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/blob/main/docs/mock/README.md">置き場のルール: docs/mock/README.md</a></p></div></div></section>
@@ -156,6 +186,38 @@ f.appendChild(u);
 if(typeof j.updatedAt==="string"){var w=new Date(j.updatedAt);if(!isNaN(w)){var m=row("更新: "+w.toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})+" JST");m.className="msn";f.appendChild(m)}}
 ps.appendChild(f);ps.hidden=false}).catch(function(){})}
 })();
+
+/* 霊力ゲージ: 同じサイトの progress-summary.json から。読めなければ元の STAGE ボタンのまま */
+(function(){var gz=document.getElementById("gz");if(!gz||!window.fetch)return;
+var ST=[["霊気","5文書","W1","〜11/7"],["霊丸","実装①","W2","11/8〜11/11"],["霊光波動","実装②","W3","11/12〜11/15"],["魔族覚醒","評価・受入","W4","11/16〜11/21"]];
+function md(x){var m=/^\d{4}-(\d{2})-(\d{2})/.exec(x||"");return m?(+m[1])+"/"+(+m[2]):""}
+function mk(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function num(v){return typeof v==="number"&&isFinite(v)&&v>=0}
+fetch("progress-summary.json",{cache:"no-cache"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+var ph=j&&j.phases;if(!Array.isArray(ph)||ph.length!==4)throw 0;
+ph.forEach(function(p){if(!p||!num(p.closed)||!num(p.total))throw 0});
+var jst=new Date(Date.now()+9*36e5).toISOString().slice(0,10);
+var all=0,ch=0;ph.forEach(function(p){if(p.total){all+=p.closed/p.total*25;if(num(p.merged_open))ch+=p.merged_open/p.total*25}});
+all=Math.round(all);ch=Math.min(Math.round(ch),100-all);
+var cur=-1;ph.forEach(function(p,i){if(cur<0&&typeof p.start==="string"&&typeof p.due==="string"&&p.start<=jst&&jst<=p.due)cur=i});
+if(cur<0)ph.forEach(function(p,i){if(cur<0&&p.total>0&&p.closed<p.total)cur=i});
+document.getElementById("gz-all").textContent="全体 "+all+"%";
+var t=j.today,pw=document.getElementById("gz-pw");
+if(t&&num(t.merged)&&num(t.closed)){pw.textContent="今日 +"+(t.merged+t.closed)+" 霊力";pw.hidden=false}
+var bar=document.getElementById("gb");bar.setAttribute("aria-label","全体の進み具合 "+all+"パーセント"+(ch?"、溜め中 "+ch+"パーセント分":""));
+var gn=document.getElementById("gn"),gl=document.getElementById("gl");
+ST.forEach(function(s,i){var pos=(i+1)*25,lit=all>=pos,now=i===cur;
+var d=mk("span","gd"+(lit?" lit":"")+(now?" now":""));d.style.left=pos===100?"calc(100% - 9px)":pos+"%";if(pos===100)d.style.marginLeft="0";d.style.setProperty("--c",i===3?"#fff":"var(--m"+(i+1)+")");gn.appendChild(d);
+var li=mk("li",(now?"now":"")+(lit||now?"":" off"));li.dataset.n=i+1;
+li.appendChild(mk("span","no","STAGE "+(i+1)));li.appendChild(mk("span","nm",s[0]));
+var w=mk("span","ws");w.appendChild(mk("span","o",s[1]+"（"));w.appendChild(document.createTextNode(s[2]));w.appendChild(mk("span","o","）"));li.appendChild(w);
+if(now){var a=md(ph[i].start),b=md(ph[i].due);li.appendChild(mk("span","dt",a&&b?a+"〜"+b:s[3]))}
+gl.appendChild(li)});
+var f=document.getElementById("gf"),c=document.getElementById("gc");
+gz.hidden=false;var old=document.querySelector(".band .stages");if(old)old.hidden=true;
+if(ch)document.getElementById("gk-c").hidden=false;
+requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.clipPath="inset(0 "+(100-all)+"% 0 0)";c.style.left=all+"%";c.style.width=ch+"%"})});
+}).catch(function(){})})();
 </script>
 </body>
 </html>
