@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>モック｜ハブの霊力ゲージ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+/* 色・枠・フォントは docs/hub.html に合わせる。数字はすべて架空 */
+:root{--bg:#E3D8F3;--text:#2A1B3D;--sub:#3F3158;--card:#FFFFFF;--line:#2A1B3D;--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;--m4:#FFFFFF;--btn:#2A1B3D;--btext:#FFFFFF;--bhover:#FFD700;--bhtext:#2A1B3D;--focus:#FF69B4;
+--body:"M PLUS Rounded 1c",system-ui,-apple-system,"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:500 1rem/1.6 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+h1{font:800 1.2rem/1.4 var(--body);margin:0 0 4px}
+.lead{margin:0 0 14px;color:var(--sub);font-size:.9rem}
+.row{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin:0 0 14px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.btns button{font:800 .9rem/1 var(--body);padding:10px 14px;border:3px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);cursor:pointer;min-height:44px}
+.btns button[aria-pressed="true"],.btns button[aria-selected="true"]{background:var(--btn);color:var(--btext)}
+.btns button:hover{background:var(--bhover);color:var(--bhtext)}
+.lab{font:800 .8rem/1 var(--body);color:var(--sub)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* ハブ上部の帯 */
+.hero{background:radial-gradient(120% 140% at 80% 0,#5b2a6e 0,#2A1B3D 55%,#1a0f2a 100%);border:3px solid var(--line);border-radius:16px;padding:16px 16px 18px;color:#fff;box-shadow:4px 4px 0 var(--line)}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin:0 0 12px}
+.top h2{font:800 1.05rem/1.3 var(--body);margin:0;letter-spacing:.04em}
+.pw{font:800 .95rem/1.3 var(--body);color:#2A1B3D;background:var(--m1);border:2px solid #fff;border-radius:999px;padding:3px 12px;white-space:nowrap}
+.pw b{font-size:1.15em}
+[hidden]{display:none!important}
+.legend{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:rgba(255,255,255,.85)}
+.legend i{display:inline-block;width:14px;height:10px;vertical-align:-1px;margin-right:4px;border:1px solid #fff}
+.legend .a{background:linear-gradient(to top,var(--m3),#fff)}
+.legend .b{background:repeating-linear-gradient(135deg,var(--m3) 0 3px,transparent 3px 6px)}
+.note{margin:14px 0 0;font-size:.78rem;color:var(--sub)}
+
+/* パターン1：4つの器 */
+.gates{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0;padding:0;list-style:none}
+.g{--c:var(--m1);position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:10px 6px 12px;border:2px solid rgba(255,255,255,.35);border-radius:14px;background:rgba(255,255,255,.05)}
+.g[data-n="2"]{--c:var(--m2)}.g[data-n="3"]{--c:var(--m3)}.g[data-n="4"]{--c:var(--m4)}
+.g.today{border-color:#fff;animation:beat 2.6s ease-in-out infinite}
+@keyframes beat{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 18px 4px color-mix(in srgb,var(--c) 70%,transparent)}}
+.no{font:800 .72rem/1 var(--body);letter-spacing:.12em;color:var(--c)}
+.nm{font:800 1.1rem/1.3 var(--body);margin:0;color:#fff;word-break:keep-all}
+.sub{font-size:.72rem;line-height:1.4;color:rgba(255,255,255,.8);margin:0}
+.door{position:relative;width:min(100%,104px);height:132px;border:3px solid #fff;border-bottom-width:4px;border-radius:52px 52px 6px 6px;background:rgba(0,0,0,.45);overflow:hidden;margin:2px 0}
+.fill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(to top,var(--c),color-mix(in srgb,var(--c) 45%,#fff));transition:height .9s cubic-bezier(.2,.8,.2,1)}
+.fill::after{content:"";position:absolute;left:0;right:0;top:-6px;height:12px;background:radial-gradient(closest-side,rgba(255,255,255,.9),transparent);opacity:.8}
+.chg{position:absolute;left:0;right:0;height:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 70%,transparent) 0 6px,transparent 6px 12px);border-top:2px dashed var(--c);animation:blink 1.2s ease-in-out infinite;transition:height .9s,bottom .9s}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+.pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 1.5rem/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 0 8px #000}
+.st{font:800 .88rem/1.3 var(--body);color:var(--c);margin:0}
+.next{font-size:.78rem;line-height:1.4;margin:0;color:#fff}
+.next b{font-size:1.1em;color:var(--c)}
+.tag{display:inline-block;font:800 .8rem/1 var(--body);padding:4px 10px;border-radius:999px;background:var(--c);color:#2A1B3D;border:2px solid #fff}
+.g.locked{opacity:.55;filter:grayscale(.5)}
+.key{display:inline-block;font-size:1.05rem;line-height:1}
+.g.open-now .key{animation:unlock 1.2s ease-out 1}
+@keyframes unlock{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-25deg) scale(1.4)}60%{transform:rotate(15deg) scale(1.2)}100%{transform:rotate(0) scale(1)}}
+.g.flash .door::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:flash .9s ease-out 1}
+@keyframes flash{0%{opacity:.95}100%{opacity:0}}
+
+/* パターン2：1本の霊力 */
+.one{padding:6px 4px 0}
+.bar{position:relative;height:30px;border:3px solid #fff;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden}
+.bfill{position:absolute;inset:0;background:linear-gradient(to right,var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,var(--m4) 75% 100%);clip-path:inset(0 100% 0 0);transition:clip-path .9s cubic-bezier(.2,.8,.2,1)}
+.bfill::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.55),transparent 55%)}
+.bchg{position:absolute;top:0;bottom:0;left:0;width:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.85) 0 6px,transparent 6px 12px);border-left:2px dashed #fff;animation:blink 1.2s ease-in-out infinite;transition:left .9s,width .9s}
+.bval{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font:800 .9rem/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 0 6px #000}
+.nodes{position:relative;height:0}
+.nd{position:absolute;top:-30px;width:24px;height:24px;margin-left:-12px;border-radius:50%;border:3px solid #fff;background:#2A1B3D;z-index:2}
+.nd.lit{background:var(--c);box-shadow:0 0 10px 2px var(--c)}
+.nd.now{animation:ndpulse 1.8s ease-in-out infinite}
+@keyframes ndpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35);box-shadow:0 0 16px 6px var(--c)}}
+.labels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0 0;padding:0;list-style:none}
+.lb{--c:var(--m1);text-align:center;padding:6px 4px;border-radius:12px;border:2px solid transparent}
+.lb[data-n="2"]{--c:var(--m2)}.lb[data-n="3"]{--c:var(--m3)}.lb[data-n="4"]{--c:var(--m4)}
+.lb.now{border-color:#fff}
+.lb .no{display:block;margin-bottom:2px}
+.lb .nm{font-size:1.05rem}
+.lb .st{margin:2px 0}
+.lb.dim:not(.now) .nm,.lb.dim:not(.now) .sub{opacity:.7}
+
+@media(max-width:700px){
+ .gates{grid-template-columns:1fr 1fr;gap:10px}.door{height:112px}.nm{font-size:.9rem}.no{font-size:.68rem}
+ .labels{gap:2px}.lb{padding:6px 1px}.lb .nm{font-size:.8rem}.lb .st{font-size:.72rem}.lb .sub{font-size:.62rem}.lb .no{font-size:.6rem;letter-spacing:0}
+ .bval{font-size:.8rem}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+ .g.today{box-shadow:0 0 0 3px var(--c)}
+ .nd.now{box-shadow:0 0 0 4px var(--c)}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<h1>ハブ上部「霊力ゲージ」モック（2パターン）</h1>
+<p class="lead">STAGE 1〜4 を、閉じた Issue の割合で光が満ちるゲージにする案。2つを並べて比べます。数字はすべて架空です（本番は progress-summary.json の phases を使う想定）。</p>
+
+<div class="row">
+ <span class="lab">パターン</span>
+ <div class="btns" role="tablist" aria-label="パターン切替">
+  <button type="button" role="tab" id="tab1" aria-controls="p1" aria-selected="true" data-p="1">1 4つの器</button>
+  <button type="button" role="tab" id="tab2" aria-controls="p2" aria-selected="false" data-p="2">2 1本の霊力</button>
+ </div>
+</div>
+<div class="row">
+ <span class="lab">状態</span>
+ <div class="btns" role="group" aria-label="状態の切り替え">
+  <button type="button" data-s="0" aria-pressed="false">0%（始まり）</button>
+  <button type="button" data-s="40" aria-pressed="true">40%（進行中）</button>
+  <button type="button" data-s="100" aria-pressed="false">100%（全部そろった）</button>
+ </div>
+</div>
+
+<section class="hero" aria-label="霊力ゲージ">
+ <div class="top"><h2>開発の霊力 <span id="today-d" style="font-weight:500;font-size:.85em"></span></h2><span class="pw" id="pw"></span></div>
+ <div id="p1" role="tabpanel" aria-labelledby="tab1"><ol class="gates" id="gates"></ol></div>
+ <div id="p2" role="tabpanel" aria-labelledby="tab2" hidden>
+  <div class="one">
+   <div class="bar" id="bar" role="img"><div class="bfill" id="bfill"></div><div class="bchg" id="bchg"></div><div class="bval" id="bval"></div></div>
+   <div class="nodes" id="nodes"></div>
+   <ol class="labels" id="labels"></ol>
+  </div>
+ </div>
+ <ul class="legend"><li><i class="a"></i>閉じた Issue</li><li><i class="b"></i>溜め中（PR は合流済み・Issue はまだ開いている）</li></ul>
+</section>
+<p class="note">全体の進み具合は、4つの段階を同じ長さ（25%ずつ）として足したものです。パターン1は前の STAGE が 100% になるまで次は封印中。パターン2は全体が節目（25 / 50 / 75 / 100%）を越えるとその節目が点灯します。</p>
+</main>
+
+<script type="application/json" id="data">
+{
+ "stages":[
+  {"n":1,"name":"霊気","orig":"5文書","w":"W1","range":"〜11/7"},
+  {"n":2,"name":"霊丸","orig":"実装①","w":"W2","range":"11/8〜11/11"},
+  {"n":3,"name":"霊光波動","orig":"実装②","w":"W3","range":"11/12〜11/15"},
+  {"n":4,"name":"魔族覚醒","orig":"評価・受入","w":"W4","range":"11/16〜11/21"}
+ ],
+ "states":{
+  "0":  {"today":"11/7","todayStage":1,"power":0,"phases":[{"closed":0,"total":12,"merged":0},{"closed":0,"total":10,"merged":0},{"closed":0,"total":10,"merged":0},{"closed":0,"total":8,"merged":0}]},
+  "40": {"today":"11/9","todayStage":2,"power":5,"phases":[{"closed":12,"total":12,"merged":0},{"closed":6,"total":10,"merged":2},{"closed":0,"total":10,"merged":0},{"closed":0,"total":8,"merged":0}]},
+  "100":{"today":"11/21","todayStage":4,"power":9,"phases":[{"closed":12,"total":12,"merged":0},{"closed":10,"total":10,"merged":0},{"closed":10,"total":10,"merged":0},{"closed":8,"total":8,"merged":0}]}
+ }
+}
+</script>
+<script>
+(function(){
+var D=JSON.parse(document.getElementById('data').textContent);
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function pcts(st){return st.phases.map(function(p){return Math.round(p.closed/p.total*100)})}
+var prev=null;
+
+function render1(st,key){
+ var box=document.getElementById('gates');box.textContent='';
+ var P=pcts(st),PP=prev?pcts(D.states[prev]):null;
+ D.stages.forEach(function(g,i){
+  var ph=st.phases[i],pct=P[i],locked=i>0&&P[i-1]<100,done=pct>=100;
+  var li=el('li','g'+(g.n===st.todayStage?' today':'')+(locked?' locked':''));li.dataset.n=g.n;
+  if(done&&!(PP&&PP[i]>=100))li.classList.add('flash');
+  if(!locked&&PP&&i>0&&PP[i-1]<100)li.classList.add('open-now');
+  var charge=Math.min(Math.round(ph.merged/ph.total*100),100-pct);
+  li.setAttribute('role','group');
+  li.setAttribute('aria-label','STAGE '+g.n+' '+g.name+'、'+(locked?'封印中':(done?'覚醒':'覚醒まであと'+(100-pct)+'パーセント'))+'。閉じた Issue '+ph.closed+'/'+ph.total+(ph.merged?'、溜め中 '+ph.merged:''));
+  li.appendChild(el('span','no','STAGE '+g.n));
+  li.appendChild(el('h3','nm',g.name));li.lastChild.style.margin='0';
+  var door=el('div','door'),f=el('div','fill'),c=el('div','chg');
+  door.appendChild(f);door.appendChild(c);door.appendChild(el('div','pct',pct+'%'));
+  li.appendChild(door);
+  if(locked){
+   var p0=el('p','st');var k=el('span','key','🔒');k.setAttribute('aria-hidden','true');p0.appendChild(k);p0.appendChild(document.createTextNode(' 封印中'));
+   li.appendChild(p0);li.appendChild(el('p','next','STAGE '+(g.n-1)+' が覚醒したら開く'));
+  }else if(done){
+   var p1=el('p','st');p1.appendChild(el('span','tag','覚醒'));li.appendChild(p1);
+   li.appendChild(el('p','next',g.n<4?'次の鍵が外れた':'全部の鍵が外れた'));
+  }else{
+   var n=el('p','next');n.appendChild(document.createTextNode('覚醒まで '));n.appendChild(el('b',null,(100-pct)+'%'));
+   li.appendChild(n);
+  }
+  li.appendChild(el('p','sub',g.orig+'（'+g.w+' '+g.range+'）'));
+  box.appendChild(li);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.height=pct+'%';c.style.bottom=pct+'%';c.style.height=charge+'%'})});
+ });
+}
+
+function render2(st){
+ var P=pcts(st);
+ var total=0,ch=0;
+ P.forEach(function(p,i){total+=p/4;ch+=st.phases[i].merged/st.phases[i].total*25});
+ total=Math.round(total);ch=Math.min(Math.round(ch),100-total);
+ var bar=document.getElementById('bar');
+ bar.setAttribute('aria-label','全体の進み具合 '+total+'パーセント'+(ch?'、溜め中 '+ch+'パーセント分':''));
+ document.getElementById('bval').textContent=total+'%';
+ var f=document.getElementById('bfill'),c=document.getElementById('bchg');
+ f.style.clipPath='inset(0 100% 0 0)';c.style.width='0';c.style.left='0';
+ requestAnimationFrame(function(){requestAnimationFrame(function(){
+  f.style.clipPath='inset(0 '+(100-total)+'% 0 0)';c.style.left=total+'%';c.style.width=ch+'%';
+ })});
+ var nodes=document.getElementById('nodes');nodes.textContent='';
+ var labels=document.getElementById('labels');labels.textContent='';
+ D.stages.forEach(function(g,i){
+  var pos=(i+1)*25,lit=total>=pos,now=g.n===st.todayStage;
+  var nd=el('span','nd'+(lit?' lit':'')+(now?' now':''));nd.dataset.n=g.n;nd.style.left=(pos===100?'calc(100% - 12px)':pos+'%');nd.style.marginLeft=pos===100?'0':'-12px';
+  nd.style.setProperty('--c','var(--m'+g.n+')');
+  nd.setAttribute('aria-hidden','true');nodes.appendChild(nd);
+  var li=el('li','lb'+(now?' now':'')+(lit?'':' dim'));li.dataset.n=g.n;
+  li.appendChild(el('span','no','STAGE '+g.n));
+  li.appendChild(el('h3','nm',g.name));li.lastChild.style.margin='0';
+  li.appendChild(el('p','st',lit?'点灯 ✓':(now?'いまここ':'これから')));
+  li.appendChild(el('p','sub',g.orig+'（'+g.w+' '+g.range+'）'));
+  labels.appendChild(li);
+ });
+}
+
+function render(key){
+ var st=D.states[key];
+ render1(st,key);render2(st);
+ var pw=document.getElementById('pw');pw.textContent='';
+ pw.appendChild(document.createTextNode('今日 +'));pw.appendChild(el('b',null,String(st.power)));pw.appendChild(document.createTextNode(' 霊力'));
+ document.getElementById('today-d').textContent='（今日 '+st.today+'・架空）';
+ prev=key;
+}
+var sb=document.querySelectorAll('[data-s]');
+sb.forEach(function(b){b.addEventListener('click',function(){
+ sb.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render(b.dataset.s);
+})});
+function tab(p){
+ [1,2].forEach(function(n){
+  var t=document.getElementById('tab'+n);t.setAttribute('aria-selected',n===p?'true':'false');t.tabIndex=n===p?0:-1;
+  document.getElementById('p'+n).hidden=n!==p;
+ });
+ if(location.hash!==undefined)try{history.replaceState(null,'','#'+(sel||'')+(p===2?'-2':''))}catch(e){}
+}
+var sel='40';
+document.querySelectorAll('[data-p]').forEach(function(b){
+ b.addEventListener('click',function(){tab(+b.dataset.p)});
+ b.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var n=b.dataset.p==='1'?2:1;tab(n);document.getElementById('tab'+n).focus()}});
+});
+var h=location.hash.slice(1),two=/-2$/.test(h);h=h.replace(/-2$/,'');if(!D.states[h])h='40';sel=h;
+sb.forEach(function(x){x.setAttribute('aria-pressed',x.dataset.s===h?'true':'false')});
+sb.forEach(function(b){b.addEventListener('click',function(){sel=b.dataset.s})});
+render(h);tab(two?2:1);
+})();
+</script>
+</body>
+</html>

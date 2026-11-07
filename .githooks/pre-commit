@@ -29,8 +29,8 @@ for spec in $(echo "$staged" | grep -E '^02_プロジェクト/[^/]+/仕様\.md$
   proj=${spec%/仕様.md}
   added=$(git -c core.quotepath=false diff --cached -U0 -- "$spec" | grep -E '^\+\| *(M|SP)-[0-9]')
   [ -z "$added" ] && continue
-  if ! echo "$staged" | grep -q "^$proj/evidence/mock/"; then
-    echo "[pre-commit] 仕様の行が増えました。図・モック（evidence/mock/）の更新が要らないか確かめてください（00_ルール/開発フロー.md）"
+  if ! echo "$staged" | grep -q "^docs/mock/"; then
+    echo "[pre-commit] 仕様の行が増えました。図・モック（docs/mock/）の更新が要らないか確かめてください（00_ルール/開発フロー.md）"
     break
   fi
 done

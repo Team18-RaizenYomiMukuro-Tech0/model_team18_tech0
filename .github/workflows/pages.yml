@@ -17,9 +17,9 @@ on:
       - "scripts/build-progress.py"
       - "munder/progress-names.json"
       - ".github/workflows/pages.yml"
-  # 進捗ページの更新: Issue を閉じた／開いたとき
+  # 進捗ページの更新: Issue を開閉したとき、担当や段階（マイルストーン）を変えたとき
   issues:
-    types: [opened, closed, reopened]
+    types: [opened, closed, reopened, assigned, unassigned, milestoned, demilestoned]
   # 毎朝 日本時間 6:00（UTC 21:00）
   schedule:
     - cron: "0 21 * * *"
