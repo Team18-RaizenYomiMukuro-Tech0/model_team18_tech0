@@ -132,12 +132,12 @@ class T(unittest.TestCase):
         for who in ("hiroki0023", "re-ji-tech0"):
             self.assertEqual(sum(1 for x in pool if x["who"] == who), 10)
         self.assertLessEqual(sum(1 for x in pool if x["who"] == "matsuki24335"), 10)
-        self.assertLessEqual(len(pool), 10 + 3 * 10)
         self.assertEqual(sum(1 for x in pool if x["top"]), 10)
         for x in m["merged_prs"]:
             self.assertIn(x["number"], {y["number"] for y in pool})
         # 「その他」は全体の最近10件にいるときだけ
-        self.assertTrue(all(x["top"] for x in pool if x["who"] == "none"))
+        self.assertEqual(sum(1 for x in pool if x["who"] == "none"), 10)  # 「その他」も最近10件
+        self.assertLessEqual(len(pool), 10 + 4 * 10)
 
     def test_rows_carry_who_and_filter_js_limits_table(self):
         out = bp.render(self._many(), "x")
@@ -146,6 +146,16 @@ class T(unittest.TestCase):
         self.assertIn('id="prn"', out)
         self.assertIn('#prs tbody', out)
         self.assertIn('data-top', out.split("<script>", 1)[1])
+        # 表専用の名前ボタン: 表の上、全員｜3人｜その他。上のボタン（#who）とは別の ID・別の保存キー
+        self.assertIn('id="prwho"', out)
+        self.assertLess(out.index('id="prwho"'), out.index('<table>'))
+        pw = out[out.index('id="prwho"'):out.index('<table>')]
+        self.assertEqual([x for x in re.findall(r'hidden>([^<]+)</button>', pw)], ["全員", "だーあさ", "レージ", "りゅうちゃん", bp.OTHER])
+        js = out[out.index("progress-prwho") - 400:]
+        self.assertNotIn('"#prs', bp.FILTER_JS)  # 上のボタンの JS は PR 表に触らない
+        self.assertNotIn("prs", bp.FILTER_JS)
+        self.assertIn("progress-prwho", out)
+        self.assertNotIn("progress-who", bp.PRWHO_JS)
         self.assertEqual(out[a:].count('data-top="0" hidden>'), out[a:].count('data-top="0"'))  # 全員表示では全体の10件だけ見える
 
     def test_prs_table_and_sort_hooks(self):

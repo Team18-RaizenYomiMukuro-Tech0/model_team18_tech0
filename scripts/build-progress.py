@@ -155,8 +155,8 @@ def build_model(issues, milestones, names, today):
     pool = {}
     for x in merged_prs[:RECENT_PRS]:
         pool[x["number"]] = dict(x, top=True)
-    for m in names:
-        for x in [y for y in merged_prs if y["who"] == m.lower()][:RECENT_PRS]:
+    for w in [m.lower() for m in names] + ["none"]:
+        for x in [y for y in merged_prs if y["who"] == w][:RECENT_PRS]:
             pool.setdefault(x["number"], dict(x, top=False))
     merged_pool = sorted(pool.values(), key=lambda x: (x["at"], x["number"]), reverse=True)
     merged_prs = merged_prs[:RECENT_PRS]
@@ -229,7 +229,7 @@ def render_person(p):
             + f'<details><summary>内訳を開く（{total}件）</summary><ul class="rows">{"".join(render_row(r) for r in rows)}</ul></details></section>')
 
 
-def render_prs(prs):
+def render_prs(prs, members=()):
     """直近マージ済み PR の表。担当者の列見出しで並べ替え（JS はページ内のみ）"""
     if not prs:
         return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
@@ -238,8 +238,11 @@ def render_prs(prs):
         f'<td data-label="PR"><a href="{e(safe_url(x["url"]))}">#{x["number"]}</a></td>'
         f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
         f'<td data-label="マージ日時">{x["at"].strftime("%Y-%m-%d %H:%M")}</td></tr>' for x in prs)
+    who_row = ('<ul class="meta" id="prwho" aria-label="PR を担当者で絞る">'
+               + "".join(f'<li><button type="button" data-id="{e(i)}" aria-pressed="{"true" if i == "" else "false"}" hidden>{e(n)}</button></li>'
+                         for i, n in [("", "全員")] + [(m["id"], m["name"]) for m in members] + [("none", OTHER)]) + '</ul>')
     return ('<section class="pcard" id="prs"><h3 style="margin:0">直近マージ済み PR（<span id="prn">%d</span>件）</h3>'
-            '<div class="sortbar" role="group" aria-label="並べ替え">並べ替え:'
+            + who_row + '<div class="sortbar" role="group" aria-label="並べ替え">並べ替え:'
             '<button type="button" data-k="t" aria-pressed="true">マージ日時</button>'
             '<button type="button" data-k="a" aria-pressed="false">担当者</button></div>'
             '<div class="tbl"><table><thead><tr>'
@@ -302,7 +305,7 @@ CSS = """
 .st.soon{background:var(--warn);color:var(--ctext);border:var(--bw1) solid var(--warnbd)}
 [hidden]{display:none!important}
 .none{margin:0;font-weight:800}
-#who li{padding:0}#who button{font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--rp);padding:0 12px;cursor:pointer}#who button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
+#who li,#prwho li{padding:0}#prwho{margin-bottom:var(--s3)}#who button,#prwho button{font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--rp);padding:0 12px;cursor:pointer}#who button[aria-pressed="true"],#prwho button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
 .st.set{background:var(--m1);color:#12091F;border:var(--bw1) solid var(--line)}
 .pr{font-size:var(--fs-xs);font-weight:800}
 .stg2>ul>li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s3);align-items:center}.stg2 .bar,.stg2 details{grid-column:1/-1}.stg2 details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.stg2 details[open]>summary{margin-bottom:var(--s2)}.sn{font-weight:800}.sv{font-size:var(--fs-xs);color:var(--csub)}
@@ -329,9 +332,18 @@ function st(){var i="";try{i=decodeURIComponent(location.hash.slice(1)).toLowerC
 function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});
 [].forEach.call(document.querySelectorAll("section.pcard[data-who]"),function(c){c.hidden=!!i&&c.getAttribute("data-who")!==i});
 var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}
-var tb=document.querySelector("#prs tbody");if(tb){var c=0;[].forEach.call(tb.rows,function(r){var h=i?r.getAttribute("data-who")!==i:r.getAttribute("data-top")!=="1";r.hidden=h;if(!h)c++});var pn=document.getElementById("prn");if(pn)pn.textContent=c}}
+}
 bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}try{history.replaceState(null,"",i?"#"+i:location.pathname+location.search)}catch(e){}show(i)})});
 window.addEventListener("hashchange",function(){show(st())});show(st())})();"""
+
+
+# 直近 PR の表専用の名前ボタン（上のボタンとは独立。保存キーも別）。全員=全体の最近10件、名前=その人の最近10件
+PRWHO_JS = """(function(){var w=document.getElementById("prwho"),tb=document.querySelector("#prs tbody");if(!w||!tb)return;var bs=[].slice.call(w.querySelectorAll("button")),K="progress-prwho";
+function ok(i){return bs.some(function(b){return b.getAttribute("data-id")===i})}
+function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});var c=0;
+[].forEach.call(tb.rows,function(r){var h=i?r.getAttribute("data-who")!==i:r.getAttribute("data-top")!=="1";r.hidden=h;if(!h)c++});var n=document.getElementById("prn");if(n)n.textContent=c}
+bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}show(i)})});
+var i="";try{i=localStorage.getItem(K)||""}catch(e){}show(ok(i)?i:"")})();"""
 
 
 # 直近 PR の表: 列見出しで並べ替え。担当者は押すたびに 昇順 → 逆順。既定はマージ日時の新しい順
@@ -372,6 +384,7 @@ def page(body, updated, sample=False, members=()):
 </div></main>
 <script src="kb/kb.js" defer></script>
 <script>{FILTER_JS}</script>
+<script>{PRWHO_JS}</script>
 <script>{SORT_JS}</script>
 </body>
 </html>
@@ -404,7 +417,7 @@ def render(model, updated, sample=False):
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", []))), updated, sample, mem)
+        return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])), updated, sample, mem)
     pc = pct(model["done"], model["total"])
     parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["done"]} / {model["total"]}）</span></p>'
              f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div></div>',
@@ -416,7 +429,7 @@ def render(model, updated, sample=False):
                      + "".join(render_stage(s, model["name_of"]) for s in model["stages"]) + "</ul></section>")
     if not model["total"]:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
-    parts.append(render_prs(model.get("merged_pool", model.get("merged_prs", []))))
+    parts.append(render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])))
     return page("\n".join(parts), updated, sample, mem)
 
 
