@@ -452,6 +452,10 @@ def page(body, updated, sample=False, members=()):
 <title>進捗ダッシュボード｜雷禅・黄泉・軀</title>
 <meta name="description" content="担当者ごとの Issue の進み具合。GitHub の Issue とマイルストーンから自動で作られる。">
 <meta name="theme-color" content="#2A1B3D">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%232A1B3D%22/%3E%3Cpath d=%22M0 64V50l12-5 8 3 10-8 12 6 8-4 14 5v17z%22 fill=%22%2312091F%22/%3E%3Ccircle cx=%2222%22 cy=%2221%22 r=%2211%22 fill=%22%23FFD700%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3Ccircle cx=%2242%22 cy=%2221%22 r=%2211%22 fill=%22%2340E0D0%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3Ccircle cx=%2232%22 cy=%2238%22 r=%2211%22 fill=%22%23FF69B4%22 stroke=%22%23fff%22 stroke-width=%223%22/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="hub-assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="hub-assets/favicon-16.png">
+<link rel="apple-touch-icon" href="hub-assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
