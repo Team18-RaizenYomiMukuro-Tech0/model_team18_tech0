@@ -293,9 +293,10 @@ function orderBy(c,useN){
   out.sort((a,b)=>b.score-a.score||(useN?b.p.n-a.p.n:0)||a.p.id-b.p.id);
   return out.map(o=>o.p);
 }
-function rank(band,scene,cat){
+const catOk=(cats,p)=>!cats||!cats.length||cats.length>=CATS.length||cats.includes(p.cat);/* #58-1・2: 複数は OR。10個全部は選ばないのと同じ */
+function rank(band,scene,cats){
   const bd=BANDS.find(x=>x[0]===band);
-  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(!bd||bd[2](p.price))&&(!cat||p.cat===cat));
+  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(!bd||bd[2](p.price))&&catOk(cats,p));
   return orderBy(c,true).slice(0,10).map((p,i)=>({...p,rank:i+1,reason:reason(p)}));
 }
 const hasRating=p=>p.r!=null&&p.v!=null&&p.v>=1;
@@ -312,11 +313,11 @@ function reason(p){
 /* R-02 の絞り込み（単一選択・条件間 AND。在庫0は出さない。おすすめ順＝SP-02 と同じ式。#46-2・3） */
 function filterR02(){
   const b=BANDS.find(x=>x[0]===S.band);
-  return orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))&&(!S.cat||p.cat===S.cat)));
+  return orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))&&catOk(S.cats,p)));
 }
 
 /* ---------- 状態 ---------- */
-const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cat:null,page:1,items:[],detailId:null,detailOpen:false,
+const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cats:[],page:1,items:[],detailId:null,detailOpen:false,
   dstate:"ok",picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null};
 const store={};
 const HOUR=3600e3;
@@ -368,7 +369,7 @@ function topHTML(){
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
   <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
-  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cat===c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
+  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   <div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
 }
@@ -411,12 +412,12 @@ function resultHTML(){
     <div class="fgrp"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
     <div class="fgrp"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
    </div>
-   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cat===c}">${c}</button>`).join("")}</div></div>
+   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cats.includes(c)}">${c}</button>`).join("")}</div></div>
   </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
   if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
-    const msg="この条件に合う商品がありません。"+(S.cat?"カテゴリー":S.band?"価格帯":"シーン")+"を変えてみてください";/* #56-4: カテゴリー→価格帯→シーンの順 */
+    const msg="この条件に合う商品がありません。"+(S.cats.length?"カテゴリー":S.band?"価格帯":"シーン")+"を変えてみてください";/* #56-4: カテゴリー→価格帯→シーンの順 */
     return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #56-4")}</div>`+afterResults();
   }
   if(S.st!=="results") return h+`<div class="msgbox init">トップでシーンを押すか、上の条件を選んでください。</div>`+afterResults();
@@ -424,7 +425,7 @@ function resultHTML(){
   const total=S.items.length;
   if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
-  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cat?"・"+esc(S.cat):""}</span>`:""}</div>
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cats.length?"・"+S.cats.map(esc).join("・"):""}</span>`:""}</div>
   <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
   if(!r01){
     const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
@@ -483,12 +484,12 @@ function setFav(id){const i=FAV.indexOf(id);i<0?FAV.push(id):FAV.splice(i,1);sav
 function bind(){
   document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{const t=b.dataset.tile;if(S.scene===t){S.scene=null;render();return}S.scene=t;S.page=1;S.view="result";runSearch()});
   document.querySelectorAll("[data-tband]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.tband?null:b.dataset.tband;if(S.scene){S.page=1;S.view="result";runSearch()}else render()});
-  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{S.cat=S.cat===b.dataset.cat?null:b.dataset.cat;S.page=1;S.view="result";runSearch()});
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const c=b.dataset.cat;if(b.classList.contains("fb")){/* 結果画面：押すたびに選ぶ・外す（#58-5） */S.cats=S.cats.includes(c)?S.cats.filter(x=>x!==c):[...S.cats,c]}else{/* トップ：そのカテゴリー1つを選んで検索結果へ（#58-4） */S.cats=(S.cats.length===1&&S.cats[0]===c)?[]:[c]}S.page=1;S.view="result";runSearch()});
   document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;runSearch()});
-  document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.cat=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
+  document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.cats=[];S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
   const bg=$("#bandGo"); if(bg) bg.onclick=()=>{S.scene=null;S.page=1;S.view="result";runSearch()};
-  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.cat=null;S.page=1;runSearch()};
+  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.cats=[];S.page=1;runSearch()};
   document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
   document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>{S.detailId=+b.dataset.detail;S.dstate="ok";S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
   document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{setFav(+b.dataset.fav);render()});
@@ -512,7 +513,7 @@ function runSearch(){
   S.dstate="ok";
   S.mode=S.scene?"r01":"r02";
   const tk=++S.token; S.st="loading";render();
-  request(()=>S.mode==="r01"?rank(S.band,tag(S.scene),S.cat):filterR02())
+  request(()=>S.mode==="r01"?rank(S.band,tag(S.scene),S.cats):filterR02())
    .then(items=>{ if(tk!==S.token)return; S.items=items;S.st=items.length?"results":"empty";S.detailId=items[0]?items[0].id:null;S.detailOpen=false;render() })
    .catch(()=>{ if(tk!==S.token)return; S.st="error";render() });
 }
@@ -564,7 +565,7 @@ document.querySelectorAll("[data-demo]").forEach(b=>b.onclick=()=>{
   else{CART[999]=1;CART[7]=1;saveCart();S.panel="cart";render()}});
 document.querySelectorAll("[data-ds]").forEach(b=>b.onclick=()=>{
   S.token++;
-  if(!(S.view==="result"&&S.items.length)){S.view="result";S.scene=S.scene||"送別";S.mode="r01";S.items=rank(S.band,tag(S.scene),S.cat);S.st="results"}
+  if(!(S.view==="result"&&S.items.length)){S.view="result";S.scene=S.scene||"送別";S.mode="r01";S.items=rank(S.band,tag(S.scene),S.cats);S.st="results"}
   if(!S.items.some(x=>x.id===S.detailId)) S.detailId=S.items[0].id;
   S.dstate=b.dataset.ds;S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
 document.querySelectorAll("[data-sh]").forEach(b=>b.onclick=()=>{
