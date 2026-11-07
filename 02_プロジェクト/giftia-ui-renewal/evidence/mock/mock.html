@@ -425,7 +425,7 @@ function resultHTML(){
   const total=S.items.length;
   if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
-  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cats.length?"・"+S.cats.map(esc).join("・"):""}</span>`:""}</div>
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cats.length?"・"+CATS.filter(c=>S.cats.includes(c)).map(esc).join("・")/* #59-1: タイルの並び順 */:""}</span>`:""}</div>
   <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
   if(!r01){
     const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
