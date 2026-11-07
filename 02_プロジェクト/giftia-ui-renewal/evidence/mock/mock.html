@@ -55,11 +55,11 @@ h2.sec{font-size:15px;margin:22px 0 10px}
 .cat{justify-content:flex-start;padding-left:16px}
 @container (max-width:600px){.tiles,.cats{grid-template-columns:repeat(2,1fr)}}
 .ferr{color:var(--err);font-size:13px;margin-top:4px;font-weight:600;min-height:1.2em}
+.bands{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@container (max-width:600px){.bands{grid-template-columns:1fr}}
 .budgetbox{background:var(--peach);border-radius:12px;padding:14px 18px;margin-top:12px}
 .budget{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 label.lb{font-weight:700;font-size:13px;display:block;margin-bottom:6px}
-input.yen{font:inherit;padding:9px 12px;border:1px solid #bdb0a8;border-radius:8px;width:11em;min-height:44px;background:#fff}
-input.yen[aria-invalid=true]{border:2px solid var(--err)}
 .primary{background:var(--coral);color:#fff;border:0;border-radius:8px;padding:10px 22px;font-weight:700;min-height:44px}
 .primary:not(:disabled):hover{background:var(--coral-d)}
 .ghost{background:#fff;border:1px solid #bdb0a8;border-radius:8px;padding:8px 14px;min-height:44px}
@@ -205,15 +205,15 @@ const PRODUCTS=[
  P(17,"カタログギフト Sコース","カタログギフト",3000,99,ALL,4.0,12,4,2,false),
  P(18,"フルーツゼリー 詰合せ","食品",3200,18,["お礼","送別"],4.6,90,14,2,true),
  P(19,"ミニ加湿器","家電",5800,6,["誕生日"],4.1,20,0,4,true),
- P(20,"クラフトビール 3本","酒類",4200,14,["送別","お礼"],4.5,33,8,3,true),
+ P(20,"クラフトビール 3本","酒類",4999,14,["送別","お礼"],4.5,33,8,3,true),
  P(21,"アロマキャンドル","インテリア",3400,22,["誕生日","送別"],4.4,41,3,3,true),
  P(22,"フラワーアレンジ 小","フラワー",4800,5,["誕生日","お礼"],4.7,26,0,3,true),
  P(23,"ペンケース 本革風","ビジネス小物",2500,16,["送別"],4.0,8,2,2,false),
  P(24,"米菓 詰合せ","お菓子",2400,30,["お礼","送別"],4.3,52,6,2,false),
- P(25,"ステンレスボトル","生活雑貨",4600,9,["送別","誕生日"],4.6,77,10,3,true),
+ P(25,"ステンレスボトル","生活雑貨",5000,9,["送別","誕生日"],4.6,77,10,3,true),
  P(26,"ドライフルーツ ギフト","食品",3300,12,["お礼"],4.2,19,0,2,false),
  P(27,"日本酒 小瓶 3本","酒類",5400,8,["送別"],4.8,24,5,4,true),
- P(28,"フォトフレーム","インテリア",2900,13,["誕生日","送別"],4.1,31,1,3,false),
+ P(28,"フォトフレーム","インテリア",2999,13,["誕生日","送別"],4.1,31,1,3,false),
  P(29,"焼き菓子 ミニケーキ","お菓子",2200,35,["誕生日"],4.4,70,0,2,true),
  P(30,"コーヒーミル 手動","家電",6200,4,["送別","お礼"],4.5,38,7,4,false)
 ];
@@ -251,15 +251,6 @@ const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}
 let FAV=ls.get("giftia:favorites",[]); let CART=ls.get("giftia:cart",{});
 const saveFav=()=>ls.set("giftia:favorites",FAV), saveCart=()=>ls.set("giftia:cart",CART);
 
-/* ---------- SP-01 予算の正規化・検証 ---------- 戻り値: 数 / null=予算なし / NaN=入力エラー */
-function parseBudget(raw){
-  let s=String(raw).replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/，/g,",");
-  s=s.replace(/^[\s　]+|[\s　]+$/g,"").replace(/,/g,"");
-  if(s==="") return null;
-  if(!/^[0-9]+$/.test(s)) return NaN;
-  const n=parseInt(s.replace(/^0+(?=\d)/,""),10);
-  return (n>=1000&&n<=999999)?n:NaN;
-}
 /* SP-01 絞り込み / SP-02 ベイズ平均 / SP-03 理由 */
 function orderBy(c){
   const rated=c.filter(p=>p.r!=null&&p.v!=null&&p.v>=1);
@@ -269,8 +260,9 @@ function orderBy(c){
   out.sort((a,b)=>b.score-a.score||b.p.n-a.p.n||a.p.id-b.p.id);
   return out.map(o=>o.p);
 }
-function rank(budget,scene){
-  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(budget===null||(p.price*10>=budget*7&&p.price<=budget)));
+function rank(band,scene){
+  const bd=BANDS.find(x=>x[0]===band);
+  const c=PRODUCTS.filter(p=>p.scenes.includes(scene)&&p.stock>=1&&(!bd||bd[2](p.price)));
   return orderBy(c).slice(0,10).map((p,i)=>({...p,rank:i+1,reason:reason(p)}));
 }
 const hasRating=p=>p.r!=null&&p.v!=null&&p.v>=1;
@@ -291,7 +283,7 @@ function filterR02(){
 }
 
 /* ---------- 状態 ---------- */
-const S={view:"top",st:"initial",mode:"r01",scene:null,budgetRaw:"",sceneErr:false,band:null,page:1,items:[],detailId:null,detailOpen:false,
+const S={view:"top",st:"initial",mode:"r01",scene:null,sceneErr:false,band:null,page:1,items:[],detailId:null,detailOpen:false,
   picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null};
 const store={};
 const HOUR=3600e3;
@@ -326,12 +318,10 @@ function render(){
   $("#list").innerHTML="<b>📌 仕様に書かれていない点の一覧（"+NOTES.length+"件）</b><ol>"+NOTES.map(n=>"<li>"+esc(n)+"</li>").join("")+"</ol>";
 }
 function budgetFormHTML(){
-  const bv=parseBudget(S.budgetRaw), bad=S.st==="invalid"&&Number.isNaN(bv);
-  return `<div class="budgetbox"><label class="lb" for="bud">予算（任意）${sp("SP-01")}</label>
-    <div class="budget"><input class="yen" id="bud" inputmode="numeric" autocomplete="off" placeholder="例：4,500" value="${esc(S.budgetRaw)}" aria-invalid="${bad}" aria-describedby="berr"> 円（税込）
-    <button class="primary" type="submit" ${S.st==="loading"?"disabled":""}>候補を出す</button></div>
-    <div id="berr" class="ferr" role="alert">${bad?"予算は1,000〜999,999円の整数で入れてください":""}</div>
-    <div style="font-size:12px;color:var(--sub)">空でも探せます（価格では絞りません）。1,000〜999,999円の整数。全角やカンマも読めます。</div></div>`;
+  return `<h2 class="sec">予算から探す（任意）${sp("SP-01 #49-1〜3")}</h2>
+   <div class="bands" role="group" aria-label="価格帯（税込）">${BANDS.map(b=>`<button type="button" class="tile" data-tband="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div>
+   <div style="font-size:12px;color:var(--sub);margin-top:6px">価格は税込です。選ばなければ価格では絞りません。もう一度押すと解除します。</div>
+   <div class="budgetbox"><button class="primary" type="submit" ${S.st==="loading"?"disabled":""}>候補を出す</button></div>`;
 }
 function topHTML(){
   const rec=orderBy(PRODUCTS.filter(p=>p.stock>=1)).slice(0,4);
@@ -383,20 +373,18 @@ function resultHTML(){
    </div>
    <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}">${c}</button>`).join("")}</div></div>
   </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
-  const bv=parseBudget(S.budgetRaw);
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
   if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
-    const withBudget=S.mode==="r01"&&bv!==null&&!Number.isNaN(bv);
-    const msg=S.mode==="r01"?(withBudget?"条件に合う商品がありません。予算を変えてみてください":"この条件に合う商品がありません。シーンを変えてみてください"):"条件に合う商品がありません。条件を変えてみてください";
+    const msg=S.mode==="r01"?(S.band?"条件に合う商品がありません。価格帯を変えてみてください":"この条件に合う商品がありません。シーンを変えてみてください"):"条件に合う商品がありません。条件を変えてみてください";
     return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #41-2")}</div>`+afterResults();
   }
-  if(S.st!=="results") return h+`<div class="msgbox init">トップで予算（任意）とシーンを入れて「候補を出す」を押すか、上の条件を選んでください。</div>`+afterResults();
+  if(S.st!=="results") return h+`<div class="msgbox init">トップでシーンと価格帯（任意）を選んで「候補を出す」を押すか、上の条件を選んでください。</div>`+afterResults();
   const r01=S.mode==="r01";
   const total=S.items.length;
   if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
-  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${bv?`・予算${yen(bv)}（税込）`:"・予算なし"}</span>`:""}</div>
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}</span>`:""}</div>
   <div class="layout"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
   if(!r01){
     const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
@@ -451,11 +439,11 @@ function renderOv(){
 }
 /* ---------- 操作 ---------- */
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2000)}
-function keepInput(){const b=$("#bud");if(b)S.budgetRaw=b.value}
 function setFav(id){const i=FAV.indexOf(id);i<0?FAV.push(id):FAV.splice(i,1);saveFav()}
 function bind(){
-  const f=$("#f"); if(f) f.onsubmit=e=>{e.preventDefault();keepInput();submitTop()};
-  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{keepInput();S.scene=b.dataset.tile;S.sceneErr=false;if(S.st==="invalid")S.st="initial";render()});
+  const f=$("#f"); if(f) f.onsubmit=e=>{e.preventDefault();submitTop()};
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{S.scene=b.dataset.tile;S.sceneErr=false;if(S.st==="invalid")S.st="initial";render()});
+  document.querySelectorAll("[data-tband]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.tband?null:b.dataset.tband;render()});
   document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>toast("準備中です（カテゴリーと DB の対応が決まってから）"));
   document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;S.sceneErr=false;runSearch()});
   document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
@@ -479,15 +467,13 @@ function bind(){
   const od=document.querySelector("[data-order]"); if(od) od.onclick=()=>toast("デモのため、注文はできません");
 }
 function submitTop(){
-  const b=parseBudget(S.budgetRaw);
   S.sceneErr=!S.scene;
-  if(Number.isNaN(b)||!S.scene){S.st=Number.isNaN(b)?"invalid":(S.st==="invalid"?"initial":S.st);S.view="top";render();return}
-  S.mode="r01";S.band=null;S.page=1;S.view="result";runSearch();
+  if(!S.scene){S.st="invalid";S.view="top";render();return}
+  S.mode="r01";S.page=1;S.view="result";runSearch();
 }
 function runSearch(){
   const tk=++S.token; S.st="loading";render();
-  const b=parseBudget(S.budgetRaw);
-  request(()=>S.mode==="r01"?rank(Number.isNaN(b)?null:b,tag(S.scene)):filterR02())
+  request(()=>S.mode==="r01"?rank(S.band,tag(S.scene)):filterR02())
    .then(items=>{ if(tk!==S.token)return; S.items=items;S.st=items.length?"results":"empty";S.detailId=items[0]?items[0].id:null;S.detailOpen=false;render() })
    .catch(()=>{ if(tk!==S.token)return; S.st="error";render() });
 }
@@ -530,10 +516,10 @@ document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySe
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
-  keepInput(); S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
+  S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
   S.view=(st==="initial"||st==="invalid")?"top":"result";
-  if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";const pb=parseBudget(S.budgetRaw);S.items=rank(Number.isNaN(pb)?null:pb,tag(S.scene));S.detailId=S.items[0].id}
-  if(st==="invalid"&&!Number.isNaN(parseBudget(S.budgetRaw))){S.budgetRaw="12"}
+  if(st==="results"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";S.items=rank(S.band,tag(S.scene));S.detailId=S.items[0].id}
+  if(st==="invalid"){S.scene=null;S.sceneErr=true}
   render()});
 document.querySelectorAll("[data-demo]").forEach(b=>b.onclick=()=>{
   if(b.dataset.demo==="page"){S.view="result";S.mode="r02";S.scene=null;S.band=null;S.items=filterR02();S.st="results";S.detailId=S.items[0].id;S.page=99;render()}
