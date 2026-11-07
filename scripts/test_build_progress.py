@@ -100,8 +100,39 @@ class T(unittest.TestCase):
         self.assertEqual(by["りゅうちゃん"]["overdue"], 1)
         self.assertEqual(by[bp.NO_ASSIGNEE]["open"], 2)
         self.assertEqual([p["title"] for p in sm["phases"]], ["1 5文書", "2 実装①", "3 実装②", "4 評価・受入"])
-        self.assertEqual(sm["phases"][0], {"title": "1 5文書", "closed": 2, "total": 3})
+        self.assertEqual({k: sm["phases"][0][k] for k in ("title", "closed", "total")}, {"title": "1 5文書", "closed": 2, "total": 3})  # 既存のキーは変えない
         self.assertTrue(sm["sample"])
+
+    def test_summary_gauge_fields(self):
+        sm = bp.build_summary(model(), "x")
+        ph = {x["title"]: x for x in sm["phases"]}
+        self.assertEqual((ph["1 5文書"]["start"], ph["1 5文書"]["due"]), (None, "2026-10-31"))  # 最初の段階は start なし
+        self.assertEqual((ph["2 実装①"]["start"], ph["2 実装①"]["due"]), ("2026-11-01", "2026-11-07"))
+        self.assertEqual(ph["1 5文書"]["merged_open"], 1)  # #3: PR マージ済み・Issue 未完了
+        self.assertEqual([ph[k]["merged_open"] for k in ("2 実装①", "3 実装②", "4 評価・受入")], [0, 0, 0])
+        for x in sm["phases"]:  # 既存のキーはそのまま
+            self.assertTrue({"title", "closed", "total"} <= set(x))
+        self.assertEqual(sm["today"], {"merged": 0, "closed": 0})  # 今日 11/5 は動きなし
+        for k in ("updatedAt", "total", "closed", "overdue", "dueSoon", "byPerson", "phases"):
+            self.assertIn(k, sm)
+
+    def test_summary_today_counts_jst_and_no_due(self):
+        iss = [
+            {"number": 1, "title": "a", "state": "closed", "html_url": "u", "closed_at": "2026-11-04T16:00:00Z", "assignees": [], "milestone": None},  # JST 11/5 01:00 → 今日
+            {"number": 2, "title": "b", "state": "closed", "html_url": "u", "closed_at": "2026-11-05T15:30:00Z", "assignees": [], "milestone": None},  # JST 11/6 → 今日でない
+            {"number": 3, "title": "c", "state": "closed", "html_url": "u", "assignees": [], "milestone": None},  # closed_at なしでも落ちない
+            {"number": 10, "title": "p", "state": "closed", "html_url": "u", "pull_request": {"merged_at": "2026-11-05T01:00:00Z"}, "user": {"login": "x"}},
+            {"number": 11, "title": "q", "state": "closed", "html_url": "u", "pull_request": {"merged_at": "2026-11-04T14:59:00Z"}, "user": {"login": "x"}},  # JST 11/4 23:59
+            {"number": 12, "title": "r", "state": "closed", "html_url": "u", "pull_request": {"merged_at": None}, "user": {"login": "x"}},  # マージされず閉じた
+        ]
+        ms = [{"number": 1, "title": "M 日付なし", "due_on": None}]
+        sm = bp.build_summary(bp.build_model(iss, ms, NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertEqual(sm["today"], {"merged": 1, "closed": 1})
+        self.assertEqual(sm["phases"], [{"title": "M 日付なし", "closed": 0, "total": 0, "start": None, "due": None, "merged_open": 0}])
+        # 動きが0件のとき
+        empty = bp.build_summary(bp.build_model([], [], NAMES, dt.date(2026, 11, 5)), "x")
+        self.assertEqual(empty["today"], {"merged": 0, "closed": 0})
+        self.assertEqual(empty["phases"], [])
 
     def test_summary_has_no_account_names(self):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)

@@ -134,6 +134,9 @@ def build_model(issues, milestones, names, today):
     alerts = sorted((r for r in open_rows if r["late"] or (r["left"] is not None and r["left"] <= SOON_DAYS)),
                     key=lambda r: (r["due"], r["number"]))
     counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review", "merged")}
+    # 今日（JST）の動き: マージされた PR 数・閉じた Issue 数（上限なしで数える）
+    today_counts = {"merged": sum(1 for p in prs if jst_date((p.get("pull_request") or {}).get("merged_at")) == today),
+                    "closed": sum(1 for i in real if i["state"] == "closed" and jst_date(i.get("closed_at")) == today)}
     merged_prs = []
     for p in prs:
         t = (p.get("pull_request") or {}).get("merged_at")
@@ -164,7 +167,7 @@ def build_model(issues, milestones, names, today):
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
-            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "review_prs": review_prs,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "today_counts": today_counts, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -443,8 +446,13 @@ def build_summary(model, updated_at, sample=False):
                          "closed": sum(1 for r in p["rows"] if r["done"]),
                          "open": sum(1 for r in p["rows"] if not r["done"]),
                          "overdue": sum(1 for r in p["rows"] if r["late"])} for p in model["people"]],
-           "phases": [{"title": x["title"], "closed": x["done"], "total": x["total"]}
-                      for x in model["stages"] if x["title"] != NO_MILESTONE]}
+           # start は前の段階の期限の翌日（画面の期間と同じ）。期限か前の段階が無ければ null
+           "phases": [{"title": x["title"], "closed": x["done"], "total": x["total"],
+                       "start": x["start"].isoformat() if x["start"] else None,
+                       "due": x["due"].isoformat() if x["due"] else None,
+                       "merged_open": sum(1 for r in x["rows"] if r["status"] == "merged")}
+                      for x in model["stages"] if x["title"] != NO_MILESTONE],
+           "today": dict(model["today_counts"])}
     if sample:
         out["sample"] = True  # ダミーデータから作った（--data）
     return out
