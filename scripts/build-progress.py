@@ -13,6 +13,7 @@ GitHub の Issue とマイルストーンを API で読み、担当者ごとの�
   - 開いた Issue にひも付く PR がマージ済みなら「マージ済み・Issue 未完了」（PM 未決事項 #71 の暫定。数えるのは Issue だけなので未完了のまま）
   - 担当者カードは畳んだ「内訳」つき。領域別の件数は Issue 題の頭文字 [P*][B*][F*][T*] から
   - 一番下に直近マージ済み PR 10件の表（担当者の列見出しで並べ替え）
+  - 同じデータから issues-quick.json（全体像の「Issue の早見表」用。段階ごとの Issue 一覧。PR は含めない）も書く
   - 同じデータから progress-summary.json も書く（ハブの進捗カード用。表示名だけで、アカウント名・メールは入れない）。
     取得に失敗したときは {"updatedAt", "error"} だけを書く
   - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
@@ -525,6 +526,66 @@ def build_summary(model, updated_at, sample=False):
     return out
 
 
+REVIEWER_RE = re.compile(r"^##[ \t]*👀[ \t]*Reviewer[^\n]*\n(.*?)(?=^##[ \t]|\Z)", re.S | re.M)
+LOGIN_RE = re.compile(r"@([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)")
+AREA_ORDER = {"P": 0, "B": 1, "F": 2, "T": 3}
+OTHER_PHASE = "その他"
+
+
+def build_issues_quick(model, issues, names, updated_at, sample=False):
+    """全体像ページの「Issue の早見表」用。段階（マイルストーン）ごとの Issue 一覧。PR は含めない。
+    担当・レビュアーは progress-names.json の表示名だけ（載っていないアカウントは出さず、数を返す）。
+    戻り値は (JSON にする dict, 表示名にできなかったアカウントの数)"""
+    lower = {k.lower(): v for k, v in names.items()}
+    hidden = 0
+
+    def disp(logins):
+        nonlocal hidden
+        out = []
+        for lg in logins:
+            n = lower.get(lg.lower())
+            if n is None:
+                hidden += 1
+            elif n not in out:
+                out.append(n)
+        return out
+
+    def reviewers(body):
+        m = REVIEWER_RE.search(re.sub(r"<!--.*?-->", "", body or "", flags=re.S))
+        return LOGIN_RE.findall(m.group(1)) if m else []
+
+    phases = [{"title": x["title"], "start": x["start"].isoformat() if x["start"] else None,
+               "due": x["due"].isoformat() if x["due"] else None, "issues": []}
+              for x in model["stages"] if x["title"] != NO_MILESTONE]
+    by_title = {p["title"]: p for p in phases}
+    other = {"title": OTHER_PHASE, "start": None, "due": None, "issues": []}
+    for i in issues:
+        if "pull_request" in i:
+            continue
+        ms = i.get("milestone")
+        target = by_title.get(ms["title"]) if ms else other
+        if target is None:
+            target = other
+        m = AREA_TITLE_RE.match(i["title"])
+        code, title = (m.group(1), m.group(2)) if m else ("", i["title"])
+        target["issues"].append({
+            "n": i["number"], "code": code, "area": code[:1], "title": title,
+            "assignees": disp([a["login"] for a in i.get("assignees") or []]),
+            "reviewers": disp(reviewers(i.get("body"))),
+            "closed": i["state"] == "closed", "url": safe_url(i["html_url"]) if safe_url(i["html_url"]) != "#" else "",
+            "_k": (AREA_ORDER.get(code[:1], 9), int(code[1:]) if code else 0, i["number"])})
+    for p in phases + [other]:
+        p["issues"].sort(key=lambda x: x["_k"])
+        for x in p["issues"]:
+            del x["_k"]
+    if other["issues"]:
+        phases.append(other)
+    out = {"updatedAt": updated_at, "phases": phases}
+    if sample:
+        out["sample"] = True
+    return out, hidden
+
+
 def error_page(msg, updated):
     body = (f'<div class="empty"><h3>今回は取得できませんでした</h3><p>GitHub から Issue を読めませんでした（{e(msg)}）。'
             '次の更新でもう一度試します。</p></div>')
@@ -557,16 +618,23 @@ def main():
         model = build_model(issues, milestones, load_names(a.names), today)
         text = render(model, updated, sample=bool(a.data))
         summary = build_summary(model, updated_at, sample=bool(a.data))
+        quick, hidden = build_issues_quick(model, issues, load_names(a.names), updated_at, sample=bool(a.data))
+        if hidden:  # アカウント名は出さず、数だけ知らせる
+            print(f"warning: 表示名の無い担当・レビュアー {hidden} 件は issues-quick.json に出していません", file=sys.stderr)
     except Exception as ex:  # 公開全体を止めない
         print(f"warning: 進捗を作れませんでした: {type(ex).__name__}", file=sys.stderr)
         text = error_page(type(ex).__name__, updated)
         summary = {"updatedAt": updated_at, "error": type(ex).__name__}
+        quick = {"updatedAt": updated_at, "error": type(ex).__name__}
     with open(out, "w", encoding="utf-8") as f:
         f.write(text)
     with open(os.path.join(a.out, "progress-summary.json"), "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print(f"wrote {out} and progress-summary.json")
+    with open(os.path.join(a.out, "issues-quick.json"), "w", encoding="utf-8") as f:
+        json.dump(quick, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"wrote {out}, progress-summary.json and issues-quick.json")
 
 
 if __name__ == "__main__":

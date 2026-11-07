@@ -221,6 +221,60 @@ class T(unittest.TestCase):
             seg = body[body.index(key):]
             self.assertIn('target="_blank"', seg[:seg.index("</section>")])
 
+    def _quick(self, issues, milestones):
+        m = bp.build_model(issues, milestones, NAMES, dt.date(2026, 11, 5))
+        return bp.build_issues_quick(m, issues, NAMES, "2026-11-05T00:00:00+09:00")
+
+    def test_issues_quick_shape_order_codes_reviewers(self):
+        ms = [{"number": 1, "title": "1 一", "due_on": "2026-11-07T00:00:00Z"}, {"number": 2, "title": "2 二", "due_on": "2026-11-11T00:00:00Z"},
+              {"number": 3, "title": "3 空", "due_on": None}]
+        mm = {m["number"]: {"number": m["number"], "title": m["title"]} for m in ms}
+        def i(n, title, m=1, state="open", body="", assignees=("Hiroki0023",)):
+            return {"number": n, "title": title, "state": state, "html_url": "https://github.com/o/r/issues/%d" % n,
+                    "milestone": mm.get(m), "body": body, "assignees": [{"login": a} for a in assignees]}
+        tpl = "## 👀 Reviewer\n<!-- 例: @設計変更を出した人 -->\n- @Matsuki24335 と @re-ji-tech0 と @stranger\n\n## 👤 担当・期限\n- @other-after-section"
+        data = [
+            i(9, "コード無しの題", 1), i(8, "[T1] テスト", 1), i(7, "[F0] 画面", 1), i(6, "[B2] 後の B", 1), i(5, "[B1] 先の B", 1, "closed", tpl),
+            i(4, "[P1] PM", 1), i(30, "[B10] 番号は数として並べる", 1), i(31, "[X9] 知らない印", 1),
+            i(10, "[B1] 二段目", 2, assignees=("re-ji-tech0", "ghost")),
+            i(11, "マイルストーンなし", None),
+            {"number": 12, "title": "[P9] PR は含めない", "state": "closed", "html_url": "u", "milestone": mm[1], "pull_request": {"merged_at": None}},
+        ]
+        q, hidden = self._quick(data, ms)
+        self.assertEqual(q["updatedAt"], "2026-11-05T00:00:00+09:00")
+        self.assertEqual([p["title"] for p in q["phases"]], ["1 一", "2 二", "3 空", "その他"])  # 段階の並びは phases と同じ・なしは「その他」
+        sm = {p["title"]: p for p in bp.build_summary(bp.build_model(data, ms, NAMES, dt.date(2026, 11, 5)), "x")["phases"]}
+        for p in q["phases"][:3]:  # start / due は summary の phases と同じ
+            self.assertEqual((p["start"], p["due"]), (sm[p["title"]]["start"], sm[p["title"]]["due"]))
+        p1 = q["phases"][0]["issues"]
+        # P → B → F → T の順、同じ分野は番号を数として（B1 < B2 < B10）、コード無しは最後（番号順）
+        self.assertEqual([x["n"] for x in p1], [4, 5, 6, 30, 7, 8, 9, 31])
+        self.assertNotIn(12, [x["n"] for x in p1])  # PR は含めない
+        b1 = p1[1]
+        self.assertEqual((b1["n"], b1["code"], b1["area"], b1["title"]), (5, "B1", "B", "先の B"))  # 題から [B1] を外す
+        self.assertEqual(b1["assignees"], ["だーあさ"])
+        self.assertEqual(b1["reviewers"], ["りゅうちゃん", "レージ"])  # 本文の Reviewer 節だけ・大文字小文字は区別しない・節の外と表示名のない人は出さない
+        self.assertTrue(b1["closed"] and b1["url"].startswith("https://github.com/"))
+        self.assertEqual([(x["code"], x["area"], x["title"]) for x in p1 if x["n"] in (9, 31)],
+                         [("", "", "コード無しの題"), ("", "", "[X9] 知らない印")])  # 頭に [P/B/F/T数字] が無ければ code 空・題はそのまま
+        self.assertEqual(set(b1), {"n", "code", "area", "title", "assignees", "reviewers", "closed", "url"})
+        self.assertEqual(q["phases"][1]["issues"][0]["assignees"], ["レージ"])  # 表示名のない ghost は出さない
+        self.assertEqual(q["phases"][2]["issues"], [])
+        self.assertEqual(hidden, 2)  # stranger（レビュアー）と ghost（担当）の数だけ。名前は出さない
+        txt = json.dumps(q, ensure_ascii=False)
+        for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "stranger", "ghost", "@"):
+            self.assertNotIn(acct, txt)
+
+    def test_issues_quick_no_other_phase_when_empty_and_sample_flag(self):
+        q, hidden = self._quick([], [])
+        self.assertEqual((q["phases"], hidden), ([], 0))
+        d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
+        m = bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5))
+        q, _ = bp.build_issues_quick(m, d["issues"], NAMES, "x", sample=True)
+        self.assertTrue(q["sample"])
+        self.assertNotIn("その他", [p["title"] for p in q["phases"]][:4])
+        self.assertEqual(sum(len(p["issues"]) for p in q["phases"]), 9)  # Issue だけ（PR は数えない）
+
     def test_summary_has_no_account_names(self):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
         for acct in ("Hiroki0023", "re-ji-tech0", "matsuki24335", "@"):
@@ -352,7 +406,7 @@ class T(unittest.TestCase):
         self.assertIn("2 実装① <b>霊丸</b>", sec)
         self.assertIn('<li><span class="sn">段階なし</span>', sec)  # 段階の無いものは色なし・技名なし
         # 色の値はハブの霊力ゲージ（docs/hub.html）と同じ: 黄 m1 / 水色 m2 / ピンク m3 / 白
-        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        hub = open(os.path.join(D, "..", "docs", "hub-assets", "band.css"), encoding="utf-8").read()  # ゲージの CSS（上部は共通ファイル）
         kb = open(os.path.join(D, "..", "docs", "kb", "kb.css"), encoding="utf-8").read()
         for tok, hexv in (("m1", "#FFD700"), ("m2", "#40E0D0"), ("m3", "#FF69B4")):
             self.assertIn("--%s:%s" % (tok, hexv), kb)
