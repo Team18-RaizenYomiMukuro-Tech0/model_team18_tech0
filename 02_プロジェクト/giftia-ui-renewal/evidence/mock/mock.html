@@ -39,7 +39,7 @@ header.top{position:sticky;top:var(--barh,0px);z-index:20;background:var(--paper
 .hsearch input{flex:1;min-width:0;border:0;padding:8px 14px;font:inherit;min-height:44px;background:var(--muted)}
 .hsearch input::placeholder{color:#b5aaa4}
 .spacer{flex:1}
-.hbtn{background:none;border:0;padding:6px 8px;border-radius:var(--rm);display:flex;gap:4px;align-items:center;font-size:13px;min-height:44px}
+.hbtn{position:relative;background:none;border:0;padding:6px 8px;border-radius:var(--rm);display:flex;gap:4px;align-items:center;font-size:13px;min-height:44px}
 .hbtn:hover{background:var(--peach)}
 .cnt{background:var(--coral);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px;text-align:center}
 .tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;background:#eee;color:#555}
@@ -189,6 +189,18 @@ body.xmas .hero{border:2px solid rgba(201,162,39,.55)}
 h2.sec{margin:22px 0 10px}
 .multi{font-size:12px;font-weight:400;color:var(--ink2);margin-left:6px}
 @container (max-width:600px){.tiles,.bands,.cats{grid-template-columns:none}}
+
+/* #60-2 スマホ幅：1行目＝ロゴ＋検索欄、2行目＝お気に入り・ログイン・カート（文言はそのまま、1行、44px以上） */
+@container (max-width:480px){
+ header.top{gap:4px 8px;padding-top:8px;padding-bottom:8px}
+ header.top .logo{order:1;font-size:20px}
+ header.top .hsearch{order:2;flex:1 1 0;min-width:0;max-width:none}
+ header.top .spacer{order:3;flex:1 1 100%;height:0}
+ header.top .hbtn{order:4;padding:4px 6px;gap:3px;min-width:44px;white-space:nowrap}
+ header.top #bFav{margin-left:auto}
+ header.top>.sp{order:5}
+ .hbtn .tag{font-size:9px;padding:1px 4px}
+}
 </style>
 </head>
 <body class="show-sp show-note xmas">
@@ -215,7 +227,7 @@ h2.sec{margin:22px 0 10px}
     <span class="sp">AC-03 #41-8</span>
     <span class="spacer"></span>
     <button class="hbtn" id="bFav" aria-label="お気に入り">♡ <span class="t">お気に入り</span><span class="cnt" id="nFav">0</span></button>
-    <button class="hbtn" id="bLogin">👤 <span class="t">ログイン</span><span class="tag">準備中</span></button>
+    <button class="hbtn" id="bLogin" aria-label="ログイン（準備中）">👤 <span class="t">ログイン</span><span class="tag">準備中</span></button>
     <button class="hbtn" id="bCart" aria-label="カート">🛒 <span class="t">カート</span><span class="cnt" id="nCart">0</span></button>
   </header>
   <main id="view"></main>
