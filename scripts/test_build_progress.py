@@ -112,7 +112,7 @@ class T(unittest.TestCase):
         self.assertEqual([ph[k]["merged_open"] for k in ("2 実装①", "3 実装②", "4 評価・受入")], [0, 0, 0])
         for x in sm["phases"]:  # 既存のキーはそのまま
             self.assertTrue({"title", "closed", "total"} <= set(x))
-        self.assertEqual(sm["today"], {"merged": 0, "closed": 0})  # 今日 11/5 は動きなし
+        self.assertEqual(sm["today"], {"gain": 0, "merged": 0, "closed": 0})  # 今日 11/5 は動きなし
         for k in ("updatedAt", "total", "closed", "overdue", "dueSoon", "byPerson", "phases"):
             self.assertIn(k, sm)
 
@@ -127,12 +127,37 @@ class T(unittest.TestCase):
         ]
         ms = [{"number": 1, "title": "M 日付なし", "due_on": None}]
         sm = bp.build_summary(bp.build_model(iss, ms, NAMES, dt.date(2026, 11, 5)), "x")
-        self.assertEqual(sm["today"], {"merged": 1, "closed": 1})
+        self.assertEqual(sm["today"], {"gain": 1, "merged": 1, "closed": 1})  # 今日閉じた #1 だけ（PR 10 は Issue に結ばない）
         self.assertEqual(sm["phases"], [{"title": "M 日付なし", "closed": 0, "total": 0, "start": None, "due": None, "merged_open": 0}])
         # 動きが0件のとき
         empty = bp.build_summary(bp.build_model([], [], NAMES, dt.date(2026, 11, 5)), "x")
-        self.assertEqual(empty["today"], {"merged": 0, "closed": 0})
+        self.assertEqual(empty["today"], {"gain": 0, "merged": 0, "closed": 0})
         self.assertEqual(empty["phases"], [])
+
+    def test_today_gain_counts_issues_once(self):
+        def iss(n, state="open", closed=None):
+            return {"number": n, "title": "i", "state": state, "html_url": "u", "closed_at": closed, "assignees": [], "milestone": None}
+        def pr(n, merged, body):
+            return {"number": n, "title": "p", "state": "closed", "html_url": "u", "body": body, "user": {"login": "x"},
+                    "pull_request": {"merged_at": merged}}
+        T, Y = "2026-11-05T03:00:00Z", "2026-11-04T03:00:00Z"  # 今日 / きのう（JST）
+        data = [
+            iss(20), iss(21, "closed", T), iss(22), iss(23, "closed", Y), iss(24),
+            pr(30, T, "Closes #20"),                 # 今日マージ → 未完了 #20 が進む
+            pr(31, T, "Closes #21"),                 # #21 は今日閉じた Issue でもある → 1回だけ
+            pr(32, T, "ハブの直し（Issue なし）"),     # Issue に結ばない PR は数えない
+            pr(33, Y, "Closes #24"),                 # きのうマージ → 今日は数えない
+            pr(34, T, "Closes #22 Closes #20 Closes #999"),  # #20 は2回目・#999 は無い → #22 だけ増える
+            pr(35, T, "Closes #23"),                 # #23 はきのう閉じた → 今日は数えない
+        ]
+        m = bp.build_model(data, [], NAMES, dt.date(2026, 11, 5))
+        self.assertEqual(m["today_counts"]["gain"], 3)  # #20, #21, #22
+        self.assertEqual((m["today_counts"]["merged"], m["today_counts"]["closed"]), (5, 1))  # 既存の merged/closed は残る
+        sm = bp.build_summary(m, "x")
+        self.assertEqual(sm["today"], {"gain": 3, "merged": 5, "closed": 1})
+        # 0件: PR も Issue も今日の動きなし／Issue に結ばない PR だけ
+        only = bp.build_model([iss(1), pr(2, T, "")], [], NAMES, dt.date(2026, 11, 5))
+        self.assertEqual(only["today_counts"], {"gain": 0, "merged": 1, "closed": 0})
 
     def test_summary_has_no_account_names(self):
         txt = json.dumps(bp.build_summary(model(), "x"), ensure_ascii=False)
@@ -275,10 +300,14 @@ class T(unittest.TestCase):
 
     def test_area_badges(self):
         out = bp.render(model(), "x")
-        # 題から外れる（stage の内訳と担当者カードの内訳）。「いま動くこと」は従来どおり題に [B2] が残る
+        # 題から外れる（いま動くこと・担当者カードの内訳・段階の内訳）。札の文字は B2 のまま
         now = out[out.index('id="al"'):out.index('class="pgrid"')]
-        self.assertIn("[B2] 仕様のデータ項目を確定する", now)
-        self.assertNotIn('class="ar ', now)
+        self.assertIn('⚠ <span class="ar ar-B">B2</span><a href=', now)
+        self.assertIn("#3 仕様のデータ項目を確定する", now)
+        self.assertNotIn("[B2]", now)
+        self.assertNotIn("[F1]", now)
+        self.assertIn('class="st late"', now)  # 状態の札は従来どおり
+        self.assertIn("PR #21 feat: API の骨組み", now)  # レビュー待ちの PR の題はそのまま
         cards = out[out.index('class="pgrid"'):out.index('class="stg2"')]
         self.assertIn('<span class="ar ar-B">B2</span><a href="', cards)
         self.assertNotIn("[B2]", cards)

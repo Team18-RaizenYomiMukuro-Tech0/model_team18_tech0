@@ -139,7 +139,13 @@ def build_model(issues, milestones, names, today):
                     key=lambda r: (r["due"], r["number"]))
     counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review", "merged")}
     # 今日（JST）の動き: マージされた PR 数・閉じた Issue 数（上限なしで数える）
-    today_counts = {"merged": sum(1 for p in prs if jst_date((p.get("pull_request") or {}).get("merged_at")) == today),
+    # gain = 今日ゲージが進んだ Issue の数: 今日閉じた Issue ＋ 今日マージされた PR が Closes で結ぶ未完了 Issue（同じ Issue は1回）。Issue に結ばない PR は数えない
+    closed_today = {i["number"] for i in real if i["state"] == "closed" and jst_date(i.get("closed_at")) == today}
+    open_nums = {i["number"] for i in real if i["state"] != "closed"}
+    linked_today = {int(n) for p in prs if jst_date((p.get("pull_request") or {}).get("merged_at")) == today
+                    for n in CLOSE_RE.findall(p.get("body") or "")}
+    gain = len(closed_today | (linked_today & open_nums))
+    today_counts = {"gain": gain, "merged": sum(1 for p in prs if jst_date((p.get("pull_request") or {}).get("merged_at")) == today),
                     "closed": sum(1 for i in real if i["state"] == "closed" and jst_date(i.get("closed_at")) == today)}
     merged_prs = []
     for p in prs:
@@ -450,7 +456,7 @@ def now_section(model):
     who = lambda r: [nm.get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]]
     items = []
     for r in model["alerts"]:
-        items.append(render_row(r, who(r), mark="⚠ " if r["late"] else "⏰ "))
+        items.append(render_row(r, who(r), mark="⚠ " if r["late"] else "⏰ ", badge=True))
     shown = {r["number"] for r in model["alerts"]}
     for p in model["review_prs"]:
         items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a href="{e(safe_url(p["url"]))}">PR #{p["number"]} {e(p["title"])}</a></div>'
@@ -459,7 +465,7 @@ def now_section(model):
         for r in p["rows"]:
             if r["status"] == "merged" and r["number"] not in shown:
                 shown.add(r["number"])
-                items.append(render_row(r, who(r), mark="✅ ", extra='<span class="chip">Issue を閉じるだけ</span>'))
+                items.append(render_row(r, who(r), mark="✅ ", extra='<span class="chip">Issue を閉じるだけ</span>', badge=True))
     return ('<section class="pcard" id="al"><h3 style="margin:0">🔥 いま動くこと</h3>'
             f'<ul class="rows">{"".join(items)}</ul>'
             f'<p class="none"{" hidden" if items else ""}>いま急ぐものはありません 🎉</p></section>')
