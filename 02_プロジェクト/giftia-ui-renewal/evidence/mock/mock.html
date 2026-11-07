@@ -212,9 +212,9 @@ body.xmas .hero{border:2px solid rgba(201,162,39,.55)}
 <script>
 "use strict";
 /* ---------- 架空データ（実在の商品ではありません） ---------- */
-const CATS=["お菓子","ドリンク","生活雑貨","インテリア","カタログギフト","コスメ","ビジネス小物","フラワー","家電","酒類","食品"];
-const CIC={"お菓子":"🍪","ドリンク":"🥤","生活雑貨":"🧴","インテリア":"🪴","カタログギフト":"📖","コスメ":"💄","ビジネス小物":"📓","フラワー":"💐","家電":"🔌","酒類":"🍶","食品":"🍱"};
-const HUE={"お菓子":35,"ドリンク":90,"生活雑貨":15,"インテリア":120,"カタログギフト":200,"コスメ":340,"ビジネス小物":220,"フラワー":320,"家電":190,"酒類":50,"食品":70};
+const CATS=["生活雑貨","食品","コスメ","飲料","家電","インテリア","ビジネス小物","フラワー","酒類","カタログギフト"];/* DB の10種（#54-5） */
+const CIC={"飲料":"🥤","生活雑貨":"🧴","インテリア":"🪴","カタログギフト":"📖","コスメ":"💄","ビジネス小物":"📓","フラワー":"💐","家電":"🔌","酒類":"🍶","食品":"🍱"};
+const HUE={"飲料":90,"生活雑貨":15,"インテリア":120,"カタログギフト":200,"コスメ":340,"ビジネス小物":220,"フラワー":320,"家電":190,"酒類":50,"食品":70};
 const P=(id,name,cat,price,stock,scenes,r,v,n,d,wrap,extra)=>Object.assign({id,name,cat,price,stock,scenes,r,v,n,d,wrap},extra||{});
 const ALL=["お礼","誕生日","送別"];
 const PRODUCTS=[
@@ -223,30 +223,30 @@ const PRODUCTS=[
  P(3,"Lino タオルセット","生活雑貨",3600,4,["送別"],4.3,46,0,2,false),
  P(4,"ソフトガーゼ タオルセット","生活雑貨",3200,8,["誕生日","送別"],4.5,22,7,3,true),
  P(5,"ナチュラルタッチ タオルセット","生活雑貨",3800,3,["送別","お礼"],4.49,35,5,3,true),
- P(6,"山の香 ほうじ茶ギフト","ドリンク",4100,20,["お礼","送別"],4.8,18,30,null,false),
- P(7,"季節の焼き菓子詰合せ","お菓子",4400,0,["送別","誕生日"],4.4,200,20,2,true),
+ P(6,"山の香 ほうじ茶ギフト","飲料",4100,20,["お礼","送別"],4.8,18,30,null,false,{desc:"香ばしく焙煎したほうじ茶。冷めても香りが立ちます。",set:"140g×2本"}),
+ P(7,"季節の焼き菓子詰合せ","食品",4400,0,["送別","誕生日"],4.4,200,20,2,true),
  P(8,"プリザーブドフラワー ミニ","フラワー",4500,6,["誕生日","送別"],null,null,0,4,true),
  P(9,"ふんわり綿 フェイスタオル","生活雑貨",5200,10,["お礼","送別"],4.4,60,15,2,true),
  P(10,"手ぬぐい 季節柄","生活雑貨",2800,30,["送別","お礼"],4.1,9,2,2,false),
- P(11,"ドリップコーヒー 12袋","ドリンク",3300,15,["お礼","送別"],4.2,0,3,2,false),
+ P(11,"ドリップコーヒー 12袋","飲料",3300,15,["お礼","送別"],4.2,0,3,2,false),
  P(12,"入浴剤 ギフトボックス","コスメ",3150,9,["送別","誕生日"],4.6,55,0,null,true),
- P(13,"ハーブティー 5種セット","ドリンク",2800,40,ALL,4.4,40,9,2,false),
+ P(13,"ハーブティー 5種セット","飲料",2800,40,ALL,4.4,40,9,2,false),
  P(14,"ミニマグカップ ペア","生活雑貨",3400,11,["誕生日","送別"],4.5,28,6,3,true),
  P(15,"ハンドクリーム 3点","コスメ",2980,25,["誕生日","お礼"],4.3,64,1,2,true),
  P(16,"ブックカバー 革調","ビジネス小物",3600,7,["送別","お礼"],4.2,15,11,3,false),
  P(17,"カタログギフト Sコース","カタログギフト",3000,99,ALL,4.0,12,4,2,false),
- P(18,"フルーツゼリー 詰合せ","食品",3200,18,["お礼","送別"],4.6,90,14,2,true),
+ P(18,"フルーツゼリー 詰合せ","食品",3200,18,["お礼","送別"],4.6,90,14,2,true,{desc:"果肉入りのゼリーを個包装で。",set:"90g×12個"}),
  P(19,"ミニ加湿器","家電",5800,6,["誕生日"],4.1,20,0,4,true),
- P(20,"クラフトビール 3本","酒類",4999,14,["送別","お礼"],4.5,33,8,3,true),
+ P(20,"クラフトビール 3本","酒類",4999,14,["送別","お礼"],4.5,33,8,3,true,{desc:"香り豊かな3種のクラフトビール。",set:"330ml×3本"}),
  P(21,"アロマキャンドル","インテリア",3400,22,["誕生日","送別"],4.4,41,3,3,true),
  P(22,"フラワーアレンジ 小","フラワー",4800,5,["誕生日","お礼"],4.7,26,0,3,true),
  P(23,"ペンケース 本革風","ビジネス小物",2500,16,["送別"],4.0,8,2,2,false),
- P(24,"米菓 詰合せ","お菓子",2400,30,["お礼","送別"],4.3,52,6,2,false),
+ P(24,"米菓 詰合せ","食品",2400,30,["お礼","送別"],4.3,52,6,2,false),
  P(25,"ステンレスボトル","生活雑貨",5000,9,["送別","誕生日"],4.6,77,10,3,true),
  P(26,"ドライフルーツ ギフト","食品",3300,12,["お礼"],4.2,19,0,2,false),
  P(27,"日本酒 小瓶 3本","酒類",5400,8,["送別"],4.8,24,5,4,true),
  P(28,"フォトフレーム","インテリア",2999,13,["誕生日","送別"],4.1,31,1,3,false),
- P(29,"焼き菓子 ミニケーキ","お菓子",2200,35,["誕生日"],4.4,70,0,2,true),
+ P(29,"焼き菓子 ミニケーキ","食品",2200,35,["誕生日"],4.4,70,0,2,true),
  P(30,"コーヒーミル 手動","家電",6200,4,["送別","お礼"],4.5,38,7,4,false)
 ];
 const TILES=["お礼","誕生日","送別"];
@@ -311,11 +311,11 @@ function reason(p){
 /* R-02 の絞り込み（単一選択・条件間 AND。在庫0は出さない。おすすめ順＝SP-02 と同じ式。#46-2・3） */
 function filterR02(){
   const b=BANDS.find(x=>x[0]===S.band);
-  return orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))));
+  return orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))&&(!S.cat||p.cat===S.cat)));
 }
 
 /* ---------- 状態 ---------- */
-const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,page:1,items:[],detailId:null,detailOpen:false,
+const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cat:null,page:1,items:[],detailId:null,detailOpen:false,
   picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null};
 const store={};
 const HOUR=3600e3;
@@ -366,7 +366,7 @@ function topHTML(){
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
   <h2 class="sec">カテゴリーから探す${sp("AC-04 #45-4")}</h2>
-  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
+  <div class="cats">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cat===c}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   <div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`;
 }
@@ -403,7 +403,7 @@ function resultHTML(){
     <div class="fgrp"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
     <div class="fgrp"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
    </div>
-   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}">${c}</button>`).join("")}</div></div>
+   <div class="fgrp"><b>カテゴリー${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cat===c}">${c}</button>`).join("")}</div></div>
   </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
   if(S.st==="loading") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…${sp("検索中 #39-2")}</div>`;
   if(S.st==="error") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="retry" style="margin-top:8px">再試行</button>${sp("SP-01 失敗")}</div>`+afterResults();
@@ -473,14 +473,14 @@ function renderOv(){
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2000)}
 function setFav(id){const i=FAV.indexOf(id);i<0?FAV.push(id):FAV.splice(i,1);saveFav()}
 function bind(){
-  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{const t=b.dataset.tile;if(S.scene===t){S.scene=null;render();return}S.scene=t;S.page=1;S.view="result";runSearch()});
+  document.querySelectorAll("[data-tile]").forEach(b=>b.onclick=()=>{const t=b.dataset.tile;if(S.scene===t){S.scene=null;render();return}S.scene=t;S.cat=null;S.page=1;S.view="result";runSearch()});
   document.querySelectorAll("[data-tband]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.tband?null:b.dataset.tband;if(S.scene){S.page=1;S.view="result";runSearch()}else render()});
-  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>toast("準備中です（カテゴリーと DB の対応が決まってから）"));
-  document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;S.page=1;runSearch()});
-  document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{S.cat=S.cat===b.dataset.cat?null:b.dataset.cat;S.scene=null;S.page=1;S.view="result";runSearch()});
+  document.querySelectorAll("[data-fscene]").forEach(b=>b.onclick=()=>{S.scene=S.scene===b.dataset.fscene?null:b.dataset.fscene;if(S.scene)S.cat=null;S.page=1;runSearch()});
+  document.querySelectorAll("[data-rec]").forEach(b=>b.onclick=()=>{S.mode="r02";S.scene=null;S.band=null;S.cat=null;S.page=1;S.items=filterR02();S.st="results";S.detailId=+b.dataset.rec;S.detailOpen=true;S.view="result";render()});
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
   const bg=$("#bandGo"); if(bg) bg.onclick=()=>{S.scene=null;S.page=1;S.view="result";runSearch()};
-  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.page=1;runSearch()};
+  const cl=$("#clear"); if(cl) cl.onclick=()=>{S.scene=null;S.band=null;S.cat=null;S.page=1;runSearch()};
   document.querySelectorAll("[data-pg]").forEach(b=>b.onclick=()=>{S.page=+b.dataset.pg;render()});
   document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>{S.detailId=+b.dataset.detail;S.detailOpen=true;render();const d=$("#detail");if(d&&innerWidth<1100)d.scrollIntoView({block:"nearest"})});
   document.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{setFav(+b.dataset.fav);render()});
