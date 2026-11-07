@@ -492,6 +492,21 @@ class T(unittest.TestCase):
         for lab in ("数えるもの", "状態", "分野の札", "期限", "更新"):
             self.assertIn(f"<b>{lab}:</b>", how)
 
+    def test_click_shapes_links_underlined_status_borderless(self):
+        out = bp.render(model(), "x")
+        css = out.split("<style>")[1].split("</style>")[0]
+        self.assertNotIn("text-decoration:none;overflow-wrap", css)  # 題名リンクは下線を消さない
+        self.assertIn('.pg a[target="_blank"]::after', css)  # 外のサイトは ↗
+        self.assertIn("\u2197", css)
+        self.assertIn(".pg a:hover,.pg a:focus-visible{text-decoration-thickness:4px", css)
+        self.assertIn(".pg details>summary{cursor:pointer;text-decoration:underline", css)  # 内訳を開く
+        self.assertIn(".pg .st,.pg .sample{border:0;box-shadow:none}", css)  # 状態は枠なし
+        for k in ("live", "plan", "try", "merged", "late", "soon", "set"):
+            rule = [r for r in css.split("}") if f".pg .st.{k}" in r.split("{")[0] and "{" in r]
+            self.assertTrue(rule, k)
+            self.assertNotIn("border", rule[0])
+            self.assertNotIn("var(--hero)", rule[0])  # 濃い塗り（ボタンの形）にしない
+
     def test_now_section_contents_and_order(self):
         out = bp.render(model(), "x")
         al = out[out.index('id="al"'):out.index('class="pgrid"')]
