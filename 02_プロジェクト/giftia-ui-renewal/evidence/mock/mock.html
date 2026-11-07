@@ -158,7 +158,7 @@ const sp=t=>`<span class="sp">${t}</span>`;
 const TAX='<span class="tax">（税込）</span>';
 
 /* 検索中の回る表示。「あかぷさんの顔」の画像が届いたら、ここ1か所だけ差し替える（#39-2） */
-const spinnerHTML=()=>`<div class="spinner" aria-hidden="true"></div>`;
+const spinnerHTML=()=>`<img class="spinner" src="akapu.png" alt="" width="96" height="96" style="display:block;border:0;border-radius:50%;width:96px;height:96px;object-fit:cover">`;
 
 /* SP-01 予算の正規化・検証（設計「予算欄の正規化」）。空欄は予算なし（#38・#39-4'）。戻り値: 数 / null=予算なし / NaN=入力エラー */
 function parseBudget(raw){
