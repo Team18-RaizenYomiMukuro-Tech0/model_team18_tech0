@@ -117,10 +117,42 @@ class T(unittest.TestCase):
         self.assertTrue(all(x["author"] in set(NAMES.values()) | {bp.OTHER} for x in allp))  # 名前の対応表に無い人は「その他」
         self.assertIn(bp.OTHER, {x["author"] for x in allp})
 
+    def _many(self):
+        iss = []
+        for n in range(1, 41):  # だーあさ 15件 / レージ 12件 / りゅうちゃん 3件 / 他 10件。番号が大きいほど新しい
+            u = "Hiroki0023" if n % 4 in (0, 1) and n <= 30 else "matsuki24335" if n in (3, 7, 11) else "re-ji-tech0" if n % 4 in (2, 3) and n <= 30 else "stranger"
+            iss.append({"number": n, "title": f"PR {n}", "state": "closed", "html_url": f"https://github.com/o/r/pull/{n}",
+                        "user": {"login": u}, "pull_request": {"merged_at": f"2026-10-{(n % 28) + 1:02d}T0{n % 10}:00:00Z"}, "labels": []})
+        return bp.build_model(iss, [], NAMES, dt.date(2026, 11, 5))
+
+    def test_pool_is_ten_per_member_plus_overall(self):
+        m = self._many()
+        pool = m["merged_pool"]
+        self.assertEqual(len({x["number"] for x in pool}), len(pool))  # 重複なし
+        for who in ("hiroki0023", "re-ji-tech0"):
+            self.assertEqual(sum(1 for x in pool if x["who"] == who), 10)
+        self.assertLessEqual(sum(1 for x in pool if x["who"] == "matsuki24335"), 10)
+        self.assertLessEqual(len(pool), 10 + 3 * 10)
+        self.assertEqual(sum(1 for x in pool if x["top"]), 10)
+        for x in m["merged_prs"]:
+            self.assertIn(x["number"], {y["number"] for y in pool})
+        # 「その他」は全体の最近10件にいるときだけ
+        self.assertTrue(all(x["top"] for x in pool if x["who"] == "none"))
+
+    def test_rows_carry_who_and_filter_js_limits_table(self):
+        out = bp.render(self._many(), "x")
+        a = out.index('id="prs"')
+        self.assertIn('data-who="hiroki0023"', out[a:])
+        self.assertIn('id="prn"', out)
+        self.assertIn('#prs tbody', out)
+        self.assertIn('data-top', out.split("<script>", 1)[1])
+        self.assertEqual(out[a:].count('data-top="0" hidden>'), out[a:].count('data-top="0"'))  # 全員表示では全体の10件だけ見える
+
     def test_prs_table_and_sort_hooks(self):
         out = bp.render(model(), "x")
         a = out.index('id="prs"')
-        self.assertEqual(out[a:].count("<tr data-a="), 10)
+        self.assertGreaterEqual(out[a:].count("<tr data-a="), 10)
+        self.assertEqual(out[a:].count('data-top="1"'), 10)  # 「全員」で見える行は全体の最近10件
         self.assertIn('data-k="a">担当者', out)
         self.assertIn('aria-sort="descending"', out)  # 既定はマージ日時の新しい順
         self.assertIn('id="prs"', out.split("<script>")[0])

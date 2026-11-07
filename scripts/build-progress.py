@@ -141,7 +141,8 @@ def build_model(issues, milestones, names, today):
             u = (p.get("user") or {}).get("login")
             when = dt.datetime.fromisoformat(t.replace("Z", "+00:00")).astimezone(JST)
             merged_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
-                               "author": names.get(u, OTHER), "at": when})
+                               "author": names.get(u, OTHER), "at": when,
+                               "who": u.lower() if u in names else "none"})
     review_prs = []
     for p in prs:
         if p["state"] == "open" and not p.get("draft"):
@@ -150,12 +151,20 @@ def build_model(issues, milestones, names, today):
                                "author": names.get(u, OTHER), "who": u.lower() if u in names else "none"})
     review_prs.sort(key=lambda x: x["number"], reverse=True)
     merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
+    # 表に入れる行: 全体の最近10件 + 各メンバーの最近10件（重複は1行）。top=全体の最近10件に入る行
+    pool = {}
+    for x in merged_prs[:RECENT_PRS]:
+        pool[x["number"]] = dict(x, top=True)
+    for m in names:
+        for x in [y for y in merged_prs if y["who"] == m.lower()][:RECENT_PRS]:
+            pool.setdefault(x["number"], dict(x, top=False))
+    merged_pool = sorted(pool.values(), key=lambda x: (x["at"], x["number"]), reverse=True)
     merged_prs = merged_prs[:RECENT_PRS]
     members = [{"id": k.lower(), "name": v} for k, v in names.items()]
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
-            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "review_prs": review_prs,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -225,11 +234,11 @@ def render_prs(prs):
     if not prs:
         return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
     rows = "".join(
-        f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}">'
+        f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}" data-who="{e(x.get("who", "none"))}" data-top="{1 if x.get("top", True) else 0}"{"" if x.get("top", True) else " hidden"}>'
         f'<td data-label="PR"><a href="{e(safe_url(x["url"]))}">#{x["number"]}</a></td>'
         f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
         f'<td data-label="マージ日時">{x["at"].strftime("%Y-%m-%d %H:%M")}</td></tr>' for x in prs)
-    return ('<section class="pcard" id="prs"><h3 style="margin:0">直近マージ済み PR（%d件）</h3>'
+    return ('<section class="pcard" id="prs"><h3 style="margin:0">直近マージ済み PR（<span id="prn">%d</span>件）</h3>'
             '<div class="sortbar" role="group" aria-label="並べ替え">並べ替え:'
             '<button type="button" data-k="t" aria-pressed="true">マージ日時</button>'
             '<button type="button" data-k="a" aria-pressed="false">担当者</button></div>'
@@ -237,7 +246,7 @@ def render_prs(prs):
             '<th>PR</th><th>タイトル</th>'
             '<th aria-sort="none"><button type="button" data-k="a">担当者 <span aria-hidden="true">⇅</span></button></th>'
             '<th aria-sort="descending"><button type="button" data-k="t">マージ日時（JST） <span aria-hidden="true">▼</span></button></th>'
-            '</tr></thead><tbody>%s</tbody></table></div></section>') % (len(prs), rows)
+            '</tr></thead><tbody>%s</tbody></table></div></section>') % (sum(1 for x in prs if x.get("top", True)), rows)
 
 
 def md(d):
@@ -319,7 +328,8 @@ function ok(i){return bs.some(function(b){return b.getAttribute("data-id")===i})
 function st(){var i="";try{i=decodeURIComponent(location.hash.slice(1)).toLowerCase()}catch(e){}if(i&&ok(i))return i;try{i=localStorage.getItem(K)||""}catch(e){i=""}return ok(i)?i:""}
 function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});
 [].forEach.call(document.querySelectorAll("section.pcard[data-who]"),function(c){c.hidden=!!i&&c.getAttribute("data-who")!==i});
-var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}}
+var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}
+var tb=document.querySelector("#prs tbody");if(tb){var c=0;[].forEach.call(tb.rows,function(r){var h=i?r.getAttribute("data-who")!==i:r.getAttribute("data-top")!=="1";r.hidden=h;if(!h)c++});var pn=document.getElementById("prn");if(pn)pn.textContent=c}}
 bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}try{history.replaceState(null,"",i?"#"+i:location.pathname+location.search)}catch(e){}show(i)})});
 window.addEventListener("hashchange",function(){show(st())});show(st())})();"""
 
@@ -394,7 +404,7 @@ def render(model, updated, sample=False):
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body + render_prs(model.get("merged_prs", [])), updated, sample, mem)
+        return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", []))), updated, sample, mem)
     pc = pct(model["done"], model["total"])
     parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["done"]} / {model["total"]}）</span></p>'
              f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div></div>',
@@ -406,7 +416,7 @@ def render(model, updated, sample=False):
                      + "".join(render_stage(s, model["name_of"]) for s in model["stages"]) + "</ul></section>")
     if not model["total"]:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
-    parts.append(render_prs(model.get("merged_prs", [])))
+    parts.append(render_prs(model.get("merged_pool", model.get("merged_prs", []))))
     return page("\n".join(parts), updated, sample, mem)
 
 
