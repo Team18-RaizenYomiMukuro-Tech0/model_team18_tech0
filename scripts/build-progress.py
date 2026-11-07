@@ -4,6 +4,10 @@
 GitHub の Issue とマイルストーンを API で読み、担当者ごとの進み具合を HTML 1枚にする。
   - 数えるのは Issue だけ（完了＝閉じた Issue）。PR は Issue にぶら下げて表示するだけで数えない
   - 期限・遅延はマイルストーン（段階）の due_on（日本時間の日付）
+  - 未完了の Issue の状態は3つ: 未着手（つながる PR なし）／作業中（Draft の PR あり）／レビュー待ち（Ready の PR あり）。
+    つながりは PR 本文の「Closes #n」（CLOSE_RE）で判定
+  - 一番上に「遅れ・期限が近い」（期限切れ、または期限の2日前以内の未完了 Issue）
+  - 上部の名前ボタンで担当者ごとに絞れる（#名前 で開くと最初から絞れる）
   - 担当者欄に出すのは munder/progress-names.json に載っている人（アカウント名 → 表示名）だけ。
     それ以外のアカウントや担当なしの Issue は「担当未定」1枠にまとめる（数えはする）
 
@@ -26,6 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLOSE_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)", re.I)
 NO_ASSIGNEE = "担当未定"
 NO_MILESTONE = "段階なし"
+SOON_DAYS = 2  # 期限の何日前から「近い」にするか
 
 
 def api_get(repo, path, token):
@@ -73,17 +78,21 @@ def build_model(issues, milestones, names, today):
         for n in set(CLOSE_RE.findall(p.get("body") or "")):
             linked.setdefault(int(n), []).append(
                 {"number": p["number"], "title": p["title"], "url": p["html_url"],
-                 "state": "merged" if merged else "open"})
+                 "state": "merged" if merged else ("draft" if p.get("draft") else "open")})
     rows = []
     for i in real:
         ms = i.get("milestone")
         d = due.get(ms["number"]) if ms else None
         done = i["state"] == "closed"
         late = (today - d).days if (d and not done and today > d) else 0
+        left = (d - today).days if (d and not done and today <= d) else None
+        prs_of = linked.get(i["number"], [])
+        status = "done" if done else ("review" if any(x["state"] == "open" for x in prs_of)
+                                      else "wip" if any(x["state"] == "draft" for x in prs_of) else "todo")
         logins = [a["login"] for a in i.get("assignees") or [] if a["login"] in names] or [None]
         rows.append({"number": i["number"], "title": i["title"], "url": i["html_url"], "done": done,
-                     "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late,
-                     "assignees": logins, "prs": linked.get(i["number"], [])})
+                     "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late, "left": left,
+                     "status": status, "assignees": logins, "prs": prs_of})
     people = {}
     for r in rows:
         for login in r["assignees"]:
@@ -100,7 +109,22 @@ def build_model(issues, milestones, names, today):
     for m in milestones:  # Issue が0件の段階も出す
         stages.setdefault(m["title"], {"title": m["title"], "due": due[m["number"]], "done": 0, "total": 0})
     stage_list = sorted(stages.values(), key=lambda s: (s["due"] is None, s["due"] or today, s["title"]))
-    return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows)}
+    prev = None
+    for s in stage_list:  # 期間: 前の段階の翌日〜期限
+        s["start"] = prev + dt.timedelta(days=1) if (prev and s["due"]) else None
+        s["left"] = (s["due"] - today).days if s["due"] else None
+        if s["due"]:
+            prev = s["due"]
+    open_rows = [r for r in rows if not r["done"]]
+    alerts = sorted((r for r in open_rows if r["late"] or (r["left"] is not None and r["left"] <= SOON_DAYS)),
+                    key=lambda r: (r["due"], r["number"]))
+    counts = {k: sum(1 for r in open_rows if r["status"] == k) for k in ("todo", "wip", "review")}
+    members = [{"id": k.lower(), "name": v} for k, v in names.items()]
+    for p in order:
+        p["id"] = p["login"].lower() if p["login"] else "none"
+    return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
+            "alerts": alerts, "counts": counts, "members": members,
+            "name_of": {k: v for k, v in names.items()}}
 
 
 def pct(done, total):
@@ -115,24 +139,35 @@ def safe_url(u):
     return u if u.startswith("https://github.com/") else "#"
 
 
+STATUS = {"done": ("live", "完了"), "todo": ("plan", "未着手"), "wip": ("set", "作業中"), "review": ("live", "レビュー待ち")}
+
+
 def due_badge(r):
-    if r["done"]:
-        return '<span class="st live">完了</span>'
-    if not r["due"]:
-        return '<span class="st plan">期限未設定</span>'
+    """期限の警告札。期限切れ（遅延）と、期限の2日前以内だけ出る"""
+    if r["done"] or not r["due"]:
+        return ""
     if r["late"]:
         return f'<span class="st late">遅延 {r["late"]}日</span>'
-    return '<span class="st set">進行中</span>'
+    if r["left"] is not None and r["left"] <= SOON_DAYS:
+        left = r["left"]
+        return f'<span class="st soon">{"今日が期限" if left == 0 else "期限まであと %d日" % left}</span>'
+    return ""
 
 
-def render_row(r):
+def render_row(r, who=None):
     prs = "".join(
         f'<a class="pr {x["state"]}" href="{e(safe_url(x["url"]))}">PR #{x["number"]}'
-        f'{"（マージ済み）" if x["state"] == "merged" else "（レビュー中）"}</a>' for x in r["prs"])
+        f'{"（マージ済み）" if x["state"] == "merged" else "（作業中）" if x["state"] == "draft" else "（レビュー待ち）"}</a>'
+        for x in r["prs"])
     due = f'期限 {r["due"].month}/{r["due"].day}' if r["due"] else "期限なし"
     cls = "row done" if r["done"] else "row"
-    return (f'<li class="{cls}"><div class="rt"><a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
-            f'<div class="rm">{due_badge(r)}<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
+    k, label = STATUS[r["status"]]
+    unset = '<span class="st plan">期限未設定</span>' if (not r["done"] and not r["due"]) else ""
+    names = "".join(f'<span class="chip">{e(n)}</span>' for n in (who or []))
+    ids = " ".join(a.lower() if a else "none" for a in r["assignees"])
+    return (f'<li class="{cls}" data-who="{e(ids)}"><div class="rt"><a href="{e(safe_url(r["url"]))}">#{r["number"]} {e(r["title"])}</a></div>'
+            f'<div class="rm"><span class="st {k}">{label}</span>{due_badge(r)}{unset}{names}'
+            f'<span class="chip">{e(r["stage"])}</span><span class="chip">{due}</span>{prs}</div></li>')
 
 
 def render_person(p):
@@ -140,7 +175,7 @@ def render_person(p):
     total = len(p["rows"])
     pc = pct(done, total)
     rows = sorted(p["rows"], key=lambda r: (r["done"], -r["late"], r["number"]))
-    return (f'<section class="pcard"><div class="ph"><span class="av" aria-hidden="true">{e(p["name"][:1])}</span>'
+    return (f'<section class="pcard" data-who="{e(p["id"])}"><div class="ph"><span class="av" aria-hidden="true">{e(p["name"][:1])}</span>'
             f'<div><h3>{e(p["name"])}</h3>'
             + (f'<p class="lg">{e(p["login"])}</p>' if p["login"] and p["login"] != p["name"] else "")
             + f'</div><div class="num"><b>{pc}%</b><span>完了 {done} ／ 未完了 {total - done}</span></div></div>'
@@ -148,11 +183,27 @@ def render_person(p):
             f'<ul class="rows">{"".join(render_row(r) for r in rows)}</ul></section>')
 
 
+def md(d):
+    return f"{d.month}/{d.day}"
+
+
 def render_stage(s):
     pc = pct(s["done"], s["total"])
-    due = f'期限 {s["due"].month}/{s["due"].day}' if s["due"] else "期限未設定"
-    return (f'<li><span class="sn">{e(s["title"])}</span><span class="chip">{due}</span>'
-            f'<div class="bar"><i style="width:{pc}%"></i></div><span class="sv">{s["done"]}／{s["total"]}（{pc}%）</span></li>')
+    if s["due"]:
+        period = f"{md(s['start'])}〜{md(s['due'])}" if s["start"] else f"〜{md(s['due'])}"
+        if s["total"] and s["done"] == s["total"]:
+            left = "完了"
+        elif s["left"] > 0:
+            left = f"残り {s['left']}日"
+        elif s["left"] == 0:
+            left = "今日が期限"
+        else:
+            left = f"期限切れ {-s['left']}日"
+    else:
+        period, left = "期限未設定", ""
+    return (f'<li><span class="sn">{e(s["title"])}</span><span class="chip">{period}</span>'
+            f'<div class="bar"><i style="width:{pc}%"></i></div>'
+            f'<span class="sv">{s["done"]}／{s["total"]}（{pc}%）{"　" + left if left else ""}</span></li>')
 
 
 CSS = """
@@ -170,7 +221,11 @@ CSS = """
 .row{border:var(--bw1) solid var(--line);border-radius:var(--r1);padding:var(--s2) var(--s3);background:var(--tint)}.row.done{opacity:.72}
 .rt{font-weight:800;font-size:var(--fs-m);overflow-wrap:anywhere}.rm{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;align-items:center}
 .chip{border:var(--bw1) solid var(--kac);border-radius:var(--rp);padding:0 10px;font:800 var(--fs-xs)/1.8 var(--body)}
-.st.late{background:var(--warn);color:var(--ctext);border:var(--bw1) solid var(--warnbd)}
+.st.late{background:var(--hero);color:var(--onhero);border:var(--bw1) solid var(--line)}
+.st.soon{background:var(--warn);color:var(--ctext);border:var(--bw1) solid var(--warnbd)}
+[hidden]{display:none!important}
+.none{margin:0;font-weight:800}
+#who li{padding:0}#who button{font:inherit;color:inherit;background:transparent;border:0;border-radius:var(--rp);padding:0 12px;cursor:pointer}#who button[aria-pressed="true"]{background:var(--hero);color:var(--onhero)}
 .st.set{background:var(--m1);color:#12091F;border:var(--bw1) solid var(--line)}
 .pr{font-size:var(--fs-xs);font-weight:800}
 .stg2 li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s3);align-items:center}.stg2 .bar{grid-column:1/-1}.sn{font-weight:800}.sv{font-size:var(--fs-xs);color:var(--csub)}
@@ -180,7 +235,28 @@ CSS = """
 """
 
 
-def page(body, updated, sample=False):
+def who_buttons(members):
+    """名前ボタン（全員＋表示名）。JS が使えないときは出さない（hidden のまま）"""
+    if not members:
+        return ""
+    btns = '<li><button type="button" data-id="" aria-pressed="true" hidden>全員</button></li>' + "".join(
+        f'<li><button type="button" data-id="{e(m["id"])}" aria-pressed="false" hidden>{e(m["name"])}</button></li>'
+        for m in members)
+    return f'<ul class="meta" id="who" aria-label="担当者で絞る">{btns}</ul>'
+
+
+# 名前ボタンで絞る。#名前（ASCII の id）で開くと最初から絞れる。localStorage は使えなくても動く
+FILTER_JS = """(function(){var w=document.getElementById("who");if(!w)return;var bs=[].slice.call(w.querySelectorAll("button")),K="progress-who";
+function ok(i){return bs.some(function(b){return b.getAttribute("data-id")===i})}
+function st(){var i="";try{i=decodeURIComponent(location.hash.slice(1)).toLowerCase()}catch(e){}if(i&&ok(i))return i;try{i=localStorage.getItem(K)||""}catch(e){i=""}return ok(i)?i:""}
+function show(i){bs.forEach(function(b){b.hidden=false;b.setAttribute("aria-pressed",b.getAttribute("data-id")===i?"true":"false")});
+[].forEach.call(document.querySelectorAll("section.pcard[data-who]"),function(c){c.hidden=!!i&&c.getAttribute("data-who")!==i});
+var al=document.getElementById("al");if(al){var n=0;[].forEach.call(al.querySelectorAll("li[data-who]"),function(l){var h=!!i&&(" "+l.getAttribute("data-who")+" ").indexOf(" "+i+" ")<0;l.hidden=h;if(!h)n++});var z=al.querySelector(".none");if(z)z.hidden=n>0}}
+bs.forEach(function(b){b.addEventListener("click",function(){var i=b.getAttribute("data-id");try{localStorage.setItem(K,i)}catch(e){}try{history.replaceState(null,"",i?"#"+i:location.pathname+location.search)}catch(e){}show(i)})});
+window.addEventListener("hashchange",function(){show(st())});show(st())})();"""
+
+
+def page(body, updated, sample=False, members=()):
     return f"""<!doctype html>
 <html lang="ja">
 <head>
@@ -203,28 +279,40 @@ def page(body, updated, sample=False):
 <p class="lead">担当者ごとの Issue の進み具合。GitHub から自動で作られる。</p>
 <ul class="meta"><li>更新: {e(updated)}</li><li>数えるのは Issue だけ</li></ul>
 {'<p class="sample-note">ダミーデータの表示例です。実際の Issue ではありません。</p>' if sample else ''}
+{who_buttons(members)}
 </div></header>
 <main class="kb"><div class="pg">
 {body}
-<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue を閉じた／開いたとき・毎朝1回（日本時間）。</p>
+<p class="note">数え方: 完了＝閉じた Issue。PR は Issue にぶら下げて出すだけで数えない（PR 本文の「Closes #番号」でひも付く）。状態は、つながる PR がなければ未着手、Draft の PR があれば作業中、Ready の PR があればレビュー待ち。期限・遅延は段階（マイルストーン）の期限。更新: main へのマージ時・Issue の開閉や担当・段階の変更のとき・毎朝1回（日本時間）。</p>
 </div></main>
 <script src="kb/kb.js" defer></script>
+<script>{FILTER_JS}</script>
 </body>
 </html>
 """
 
 
 def render(model, updated, sample=False):
+    mem = model.get("members", [])
     if not model["total"] and not model["stages"]:
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
-        return page(body, updated, sample)
+        return page(body, updated, sample, mem)
     pc = pct(model["done"], model["total"])
-    late = sum(1 for p in model["people"] for r in p["rows"] if r["late"])
+    late = sum(1 for r in model["alerts"] if r["late"])
     parts = [f'<div class="sum"><div><b>{pc}%</b><span>全体の完了</span></div>'
              f'<div><b>{model["done"]}</b><span>完了</span></div>'
              f'<div><b>{model["total"] - model["done"]}</b><span>未完了</span></div>'
-             f'<div><b>{late}</b><span>遅れている</span></div></div>']
+             f'<div><b>{late}</b><span>遅れている</span></div></div>',
+             f'<div class="sum"><div><b>{model["counts"]["todo"]}</b><span>未着手</span></div>'
+             f'<div><b>{model["counts"]["wip"]}</b><span>作業中</span></div>'
+             f'<div><b>{model["counts"]["review"]}</b><span>レビュー待ち</span></div></div>']
+    alerts = "".join(render_row(r, [model["name_of"].get(a, NO_ASSIGNEE) if a else NO_ASSIGNEE for a in r["assignees"]])
+                     for r in model["alerts"])
+    parts.insert(0, '<section class="pcard" id="al"><h3 style="margin:0">遅れ・期限が近い</h3>'
+                    f'<ul class="rows">{alerts}</ul>'
+                    f'<p class="none"{" hidden" if alerts else ""}>なし</p>'
+                    '<p class="sv" style="margin:0;font-size:var(--fs-xs)">未完了で、期限切れ（ピンク）と、期限の2日前以内（黄）の Issue。期限は段階の期限。</p></section>')
     if model["stages"]:
         parts.append('<section class="stg2"><h3 style="margin:0">段階ごと</h3><ul>'
                      + "".join(render_stage(s) for s in model["stages"]) + "</ul></section>")
@@ -232,7 +320,7 @@ def render(model, updated, sample=False):
         parts += [render_person(p) for p in model["people"]]
     else:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
-    return page("\n".join(parts), updated, sample)
+    return page("\n".join(parts), updated, sample, mem)
 
 
 def error_page(msg, updated):
