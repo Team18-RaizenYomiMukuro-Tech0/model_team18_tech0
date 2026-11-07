@@ -411,10 +411,14 @@ class T(unittest.TestCase):
         for tok, hexv in (("m1", "#FFD700"), ("m2", "#40E0D0"), ("m3", "#FF69B4")):
             self.assertIn("--%s:%s" % (tok, hexv), kb)
         self.assertIn("var(--m1) 0 25%,var(--m2) 25% 50%,var(--m3) 50% 75%,var(--m1) 75%,var(--m2) 87.5%,var(--m3) 100%", hub)
-        self.assertIn("linear-gradient(to right,var(--m1),var(--m2),var(--m3))", hub)  # STAGE 4 の文字・枠は白でなく同じ3色のグラデーション
+        self.assertIn("linear-gradient(to right,var(--m1),var(--m2),var(--m3))", hub)  # STAGE 4 の札のふちは同じ3色のグラデーション（文字のグラデ塗りはしない）
+        self.assertNotIn("background-clip:text", hub)
+        self.assertIn("background:var(--band)", hub)  # 札の地は濃い紺
         self.assertNotIn("#fff 75% 100%", hub)
-        self.assertIn("\\u{1F3C1}", open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read())  # 右端はゴールの旗
-        self.assertIn(".stg2 li.w4{--c:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}", out)  # 白でなく黄→青緑→桃（ハブのゲージと同じ値）
+        self.assertIn("class=\"glow\"", open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read())  # 右端は魔界の門（扉は進み具合で開く）
+        self.assertIn(".stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}", out)  # 紺の地＋3色のふち・白文字
+        self.assertIn(".stg2 li.w4 .bar{background:#2A1B3D}.stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}", out)  # バーは紺の地、溜まった分だけ3色
+        self.assertIn(".stg2 li[class] .sn{white-space:nowrap}", out)
         self.assertIn(".stg2 li[class] .bar{background:#3F3158}", out)  # 暗い棒の地の上で3色が見える
 
     def test_area_badges(self):
