@@ -375,7 +375,10 @@ function request(ok){
 }
 
 /* ---------- 描画 ---------- */
+let lastView=null;
 function render(){
+  if(S.view==="top"&&lastView!=="top")S.catOpen=false;/* #62-1: トップに戻ったら閉じた状態から */
+  lastView=S.view;
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
   $("#stateBtns").hidden=S.view==="share"; $("#shareBtns").hidden=S.view!=="share";
   document.querySelectorAll("[data-ds]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.ds===S.dstate));
@@ -590,7 +593,7 @@ document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
   if(S.view==="share"&&!S.shItems&&S.shState==="ok"){openShare(SHID.ok)}
   else if(S.view==="result"&&S.st==="initial"&&!S.items.length){S.scene=S.scene||"送別";S.mode="r01";S.items=rank(null,"送別");S.st="results";S.detailId=S.items[0].id;render()}
   else render()});
-document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375")});
+document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375");S.catOpen=false;/* #62-2: 幅を変えたら閉じた状態から */render()});
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
