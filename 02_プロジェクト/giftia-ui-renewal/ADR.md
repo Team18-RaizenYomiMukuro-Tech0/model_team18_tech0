@@ -62,7 +62,7 @@
   - 検索エンジンに載せない: `robots.txt` で全拒否、`X-Robots-Tag: noindex`。API は画面のドメインからの通信だけ受け付ける（CORS）
   - URL は 〜.azurewebsites.net（独自ドメインは買わない）。データは授業のサンプル（架空）だけ
   - 配置: コードのままデプロイ（コンテナは使わない）。Application Insights はオフ。Azure のログは追加でオンにしない。uvicorn は `--no-access-log`
-  - DB: アプリ用 `giftia_app`（既存の表は SELECT、`share_links` は SELECT・INSERT）。管理用アカウントは作らず、CREATE・DROP・テスト行の削除は配られたアカウントで手で。パスワードは Azure のアプリの設定
+  - DB: （つなぎ方は決め中。`giftia_app` は配られたアカウントでは作れない。一括確認28。#67）アプリ用 `giftia_app`（既存の表は SELECT、`share_links` は SELECT・INSERT）。管理用アカウントは作らず、CREATE・DROP・テスト行の削除は配られたアカウントで手で。パスワードは Azure のアプリの設定
   - 実機確認: 公開後に iPhone（Safari）・Android（Chrome）で共有ページを1回ずつ。確認用のリンクは当日中に手で消す
   - 費用: 見込み0円。週に1回、すべて無料のプランのままか確かめる。見られれば予算アラート（例 500円）
 - 他案の扱いと理由: 手元の PC だけで動かす案は、本人が外部公開を選んだため不採用
