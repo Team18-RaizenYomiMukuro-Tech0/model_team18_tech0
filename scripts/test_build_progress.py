@@ -342,6 +342,14 @@ class T(unittest.TestCase):
         m2 = bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5))
         self.assertIn("レビュー: 未指定", bp.now_section(m2))
 
+    def test_review_pr_unlisted_reviewer_shows_other_not_login(self):
+        d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
+        m = bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5), {21: ["staff-account"]})
+        p = [x for x in m["review_prs"] if x["number"] == 21][0]
+        self.assertEqual(p["reviewers"], [bp.OTHER])
+        self.assertNotIn("staff-account", bp.now_section(m))
+        self.assertEqual(p["who"].split(), ["re-ji-tech0"])  # 一覧に無い人のボタンは無い
+
     def test_recent_prs_ten_default_newest_first_and_others(self):
         prs = model()["merged_prs"]
         self.assertEqual(len(prs), 10)  # 13件マージ済みのうち新しい10件

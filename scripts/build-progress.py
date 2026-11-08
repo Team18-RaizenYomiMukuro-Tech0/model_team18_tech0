@@ -199,7 +199,7 @@ def build_model(issues, milestones, names, today, reviewers=None):
             rv = (reviewers or {}).get(p["number"], [])
             who = ([u.lower()] if u in names else []) + [x.lower() for x in rv if x in names and x.lower() != (u or "").lower()]
             review_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
-                               "author": names.get(u, OTHER), "reviewers": [names.get(x, x) for x in rv],
+                               "author": names.get(u, OTHER), "reviewers": [names.get(x, OTHER) for x in rv],
                                "who": " ".join(who) or "none"})
     review_prs.sort(key=lambda x: x["number"], reverse=True)
     merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
