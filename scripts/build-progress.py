@@ -41,8 +41,8 @@ NO_MILESTONE = "段階なし"
 SOON_DAYS = 2  # 期限の何日前から「近い」にするか
 RECENT_PRS = 10
 OTHER = "その他"  # 表示名の対応表に無い PR 作者
-# 題の頭の印: [B1]・[B2b]（番号の後ろに英小文字）・[F・R1]（札は先頭の P/B/F/T、表示する番号は「・」の後ろの R1）。[R1] だけ・[X1] は読まない
-AREA_PAT = r"^\s*\[(?P<a>[PBFT])(?:・(?P<rc>R\d+)|(?P<n>\d+[a-z]?))\]"
+# 題の頭の印: [B1]・[B2b]（番号の後ろに英小文字）・[F・R1]・[B・O1]・[P・K1]（札は先頭の P/B/F/T、表示する番号は「・」の後ろの 英大文字1字＋数字）。[R1] だけ・[X1]・[F・1]・[F・o1] は読まない
+AREA_PAT = r"^\s*\[(?P<a>[PBFT])(?:・(?P<rc>[A-Z]\d+)|(?P<n>\d+[a-z]?))\]"
 AREA_RE = re.compile(AREA_PAT)
 AREAS = {"P": "PM", "B": "DB・API", "F": "画面", "T": "テスト"}  # Issue 題の頭文字 → 領域
 # 題の頭の [B2] → 分野の札。AREA_RE と違い番号まで取り、残りの題名を返す
@@ -569,10 +569,14 @@ LOGIN_RE = re.compile(r"@([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)")
 AREA_ORDER = {"P": 0, "B": 1, "F": 2, "T": 3}
 
 
-def code_key(code):
-    """番号は数として（B2 < B2b < B10）。R1 は数字 1 として同じ分野の中に並ぶ"""
-    m = re.match(r"[A-Z](\d+)([a-z]?)", code)
-    return (int(m.group(1)), m.group(2)) if m else (0, "")
+def code_key(area, code):
+    """同じ分野の中の並び: 分野の番号（B1 < B2 < B2b < B10）が先、「・」つきの番号（R1・O1・K1）は後ろで文字順→数の順"""
+    m = re.match(r"([A-Z])(\d+)([a-z]?)$", code)
+    if not m:
+        return (2, "", 0, "")
+    if m.group(1) == area:
+        return (0, "", int(m.group(2)), m.group(3))
+    return (1, m.group(1), int(m.group(2)), "")
 OTHER_PHASE = "その他"
 
 
@@ -617,7 +621,7 @@ def build_issues_quick(model, issues, names, updated_at, sample=False):
             "assignees": disp([a["login"] for a in i.get("assignees") or []]),
             "reviewers": disp(reviewers(i.get("body"))),
             "closed": i["state"] == "closed", "url": safe_url(i["html_url"]) if safe_url(i["html_url"]) != "#" else "",
-            "_k": (AREA_ORDER.get(area, 9), *code_key(code), i["number"])})
+            "_k": (AREA_ORDER.get(area, 9), *code_key(area, code), i["number"])})
     for p in phases + [other]:
         p["issues"].sort(key=lambda x: x["_k"])
         for x in p["issues"]:
