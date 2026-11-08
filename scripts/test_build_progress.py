@@ -225,6 +225,36 @@ class T(unittest.TestCase):
         m = bp.build_model(issues, milestones, NAMES, dt.date(2026, 11, 5))
         return bp.build_issues_quick(m, issues, NAMES, "2026-11-05T00:00:00+09:00")
 
+    def test_area_code_forms(self):
+        # 読める3形: [B1]・[F・R1]（札は F、番号は R1）・[B2b]（英小文字つき）
+        self.assertEqual(bp.area_split("[B1] 土台"), ("B", "B1", "土台"))
+        self.assertEqual(bp.area_split("[F・R1] 共通ヘッダー"), ("F", "R1", "共通ヘッダー"))
+        self.assertEqual(bp.area_split("[B2b] 続き"), ("B", "B2b", "続き"))
+        self.assertEqual(bp.area_split("  [T10]  空白あり"), ("T", "T10", "空白あり"))
+        # 読めない形は None（札なし・題はそのまま）
+        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・1] R が無い", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
+            self.assertIsNone(bp.area_split(bad), bad)
+            self.assertIsNone(bp.AREA_RE.match(bad), bad)
+        # 札の HTML（画面）。R1 は札 F の色で R1 と出す
+        h, rest = bp.title_parts("[F・R1] 共通ヘッダー", True)
+        self.assertEqual((h, rest), ('<span class="ar ar-F">R1</span>', "共通ヘッダー"))
+        self.assertEqual(bp.title_parts("[B2b] 続き", True)[0], '<span class="ar ar-B">B2b</span>')
+        self.assertEqual(bp.title_parts("[R1] だけ", True), ("", "[R1] だけ"))
+        # 領域の数（担当者カードの札）にも入る
+        ms = [{"number": 1, "title": "1 一", "due_on": "2026-11-07T00:00:00Z"}]
+        def i(n, title):
+            return {"number": n, "title": title, "state": "open", "html_url": "https://github.com/o/r/issues/%d" % n,
+                    "milestone": {"number": 1, "title": "1 一"}, "body": "", "assignees": [{"login": "Hiroki0023"}]}
+        data = [i(1, "[B1] a"), i(2, "[F・R1] b"), i(3, "[B2b] c"), i(4, "[R1] d"), i(5, "[X1] e"), i(6, "[B10] f"), i(7, "[B2] g")]
+        m = bp.build_model(data, ms, NAMES, dt.date(2026, 11, 5))
+        self.assertEqual({r["number"]: r["area"] for r in m["stages"][0]["rows"]},
+                         {1: "B", 2: "F", 3: "B", 4: None, 5: None, 6: "B", 7: "B"})
+        # issues-quick.json の code・area。並びは B1 < B2 < B2b < B10、F の R1、読めない形は最後
+        q, _ = self._quick(data, ms)
+        got = [(x["n"], x["code"], x["area"], x["title"]) for x in q["phases"][0]["issues"]]
+        self.assertEqual(got, [(1, "B1", "B", "a"), (7, "B2", "B", "g"), (3, "B2b", "B", "c"), (6, "B10", "B", "f"),
+                               (2, "R1", "F", "b"), (4, "", "", "[R1] d"), (5, "", "", "[X1] e")])
+
     def test_issues_quick_shape_order_codes_reviewers(self):
         ms = [{"number": 1, "title": "1 一", "due_on": "2026-11-07T00:00:00Z"}, {"number": 2, "title": "2 二", "due_on": "2026-11-11T00:00:00Z"},
               {"number": 3, "title": "3 空", "due_on": None}]

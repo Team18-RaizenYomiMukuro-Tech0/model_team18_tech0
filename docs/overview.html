@@ -166,7 +166,7 @@ function names(a){return Array.isArray(a)?a.filter(function(v){return typeof v==
 var RA={R1:"F",R2:"F",R3:"F",R4:"F",R5:"B",R6:"F",R7:"F",R8:"F",R9:"F",R10:"B",R11:"T",B2b:"B"};
 function row(it){var li=mk("li",it.closed?"done":""),code=it.code,area=it.area,ti=String(it.title||"");
 if(typeof code!=="string"||!code){var tm=/^\[([A-Za-z]+\d+[a-z]?)\]\s*/.exec(ti);if(tm&&RA[tm[1]]){code=tm[1];area=RA[code];ti=ti.slice(tm[0].length)}}
-if(/^[PBFT]$/.test(area)&&typeof code==="string"&&/^[A-Za-z]+\d+[a-z]?$/.test(code))li.appendChild(mk("span","ak ak-"+area,code));
+if(/^[PBFT]$/.test(area)&&typeof code==="string"&&/^(?:[PBFT]\d+[a-z]?|R\d+)$/.test(code))li.appendChild(mk("span","ak ak-"+area,code));
 if(typeof it.url==="string"&&it.url.indexOf("https://github.com/")===0){var a=mk("a",null,"#"+it.n);a.href=it.url;a.target="_blank";a.rel="noopener";a.appendChild(mk("span","xl",X));a.lastChild.setAttribute("aria-hidden","true");a.appendChild(mk("span","vh","（別タブで開く）"));li.appendChild(a)}
 else li.appendChild(mk("b",null,"#"+it.n));
 li.appendChild(mk("span","qt-t",ti));
