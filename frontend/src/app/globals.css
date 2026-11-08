@@ -1,0 +1,115 @@
+/* 土台の最小スタイル（色はモック mock.html のヘッダーに合わせた仮置き。全体の色の設計は T2 の確認後に別 Issue） */
+:root {
+  --bg: #f4f1ee;
+  --paper: #fff;
+  --ink: #3a3331;
+  --line: #e8dfd9;
+  --peach: #fdeee6;
+  --coral: #ee6c4d;
+  --muted: #f5f2ef;
+  --bd2: #8a7d75;
+  --badge-bg: #fbe3d9;
+  --badge-ink: #a2402a;
+  --rm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 system-ui, "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+main { padding: 16px; }
+header.top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 8px 16px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.logo i {
+  display: inline-block;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--coral);
+  border-radius: 4px;
+}
+.logo i::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: -2px;
+  width: 2px;
+  height: 22px;
+  background: var(--coral);
+}
+.hsearch {
+  display: flex;
+  flex: 1 1 180px;
+  max-width: 420px;
+  border: 1px solid var(--bd2);
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.hsearch input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  background: var(--muted);
+  font: inherit;
+}
+.hsearch input::placeholder { color: #8a7d75; }
+.spacer { flex: 1; }
+.hbtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--rm);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hbtn:hover { background: var(--peach); }
+.hbtn[aria-disabled="true"] { cursor: default; }
+.hbtn .tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+@media (max-width: 480px) {
+  header.top { padding: 8px 12px; gap: 4px 4px; }
+  .logo { order: 1; font-size: 18px; margin-right: auto; }
+  .logo i { width: 18px; height: 18px; }
+  .logo i::after { left: 6px; height: 18px; }
+  .hbtn { order: 2; gap: 2px; min-width: 40px; padding: 4px 3px; }
+  .hbtn .t { font-size: 10.5px; }
+  .hbtn .tag { padding: 0 4px; font-size: 9px; }
+  .hsearch { order: 3; flex: 1 1 100%; max-width: none; }
+  .spacer { display: none; }
+}
