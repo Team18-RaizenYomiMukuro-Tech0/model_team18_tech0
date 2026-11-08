@@ -1,0 +1,34 @@
+/* F1: 検索ページの入力と状態の見た目（globals.css は触らない。R1 の PR #167 と衝突させないため、この部品の中だけで完結させる） */
+.form { display: grid; gap: 20px; max-width: 720px; }
+.h { margin: 0 0 8px; font-size: 17px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--rm);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.btn:hover { background: var(--peach); }
+/* 選んだボタン: 白い字で 4.5 以上のコントラスト（#b8422a と白で約 5.4）。✓ も付けて色だけに頼らない */
+.btn[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+.status { min-height: 56px; }
+.result { margin: 0; font-size: 17px; }
+.empty { margin: 0; padding: 16px; border-radius: var(--rm); background: var(--muted); text-align: center; }
+.error { padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.retry {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--rm);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
