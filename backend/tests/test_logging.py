@@ -1,6 +1,7 @@
 # 完了条件 #5（NF-35、N-13）: ログは 時刻・API・結果だけ。IP・ブラウザ情報・入力値・共有リンクの識別子は出ない
 import logging
 import re
+import types
 from typing import Annotated
 
 import pytest
@@ -73,6 +74,21 @@ def test_logging_has_only_time_api_result(caplog: pytest.LogCaptureFixture, capf
     everything = re.sub(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", "", everything, flags=re.MULTILINE)  # 時刻の「:」を IPv6 と取り違えない
     for f in forbidden:
         assert not re.search(f, everything), f
+
+
+def _boom() -> None:
+    raise ValueError("x")
+
+
+def test_where_is_file_name_only_for_posix_and_windows_paths() -> None:
+    for path in ("C:\\Users\\a\\backend\\tests\\test_logging.py", "/home/a/backend/tests/test_logging.py"):
+        fn = types.FunctionType(_boom.__code__.replace(co_filename=path), {})
+        try:
+            fn()
+        except ValueError as e:
+            assert logging_setup._where(e) == f"test_logging.py:{_boom.__code__.co_firstlineno + 1} _boom"
+        else:
+            raise AssertionError
 
 
 def test_uvicorn_access_log_is_off() -> None:
