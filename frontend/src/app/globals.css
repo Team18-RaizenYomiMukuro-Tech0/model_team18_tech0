@@ -107,7 +107,7 @@ header.top {
   .logo { order: 1; font-size: 18px; margin-right: auto; }
   .logo i { width: 18px; height: 18px; }
   .logo i::after { left: 6px; height: 18px; }
-  .hbtn { order: 2; gap: 2px; min-width: 40px; padding: 4px 3px; }
+  .hbtn { order: 2; gap: 2px; min-width: 44px; padding: 4px 3px; }
   .hbtn .t { font-size: 10.5px; }
   .hbtn .tag { padding: 0 4px; font-size: 9px; }
   .hsearch { order: 3; flex: 1 1 100%; max-width: none; }
