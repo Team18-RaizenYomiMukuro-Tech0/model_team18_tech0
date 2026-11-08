@@ -201,6 +201,7 @@ th{background:var(--card)}
       <span class="ids">SP-05 ／ D-05, D-07, D-08 ／ F-04 ／ AC-01</span></div>
     <div class="side">
       <div class="node err"><b>作成の失敗・10秒で打ち切り</b><small>「失敗しました。もう一度お試しください」と再試行。失敗ならリンクは作られない（打ち切り後に裏で作られることは許す）。</small><span class="ids">SP-05 ／ #30 C</span></div>
+      <div class="node warn"><b>11件以上</b><small>作らずに入力エラー（選ぶ数を減らす）。</small><span class="ids">SP-05 ／ N-06</span></div>
       <div class="node warn"><b>選び直す</b><small>選び直したら、同じ選び方でも毎回新しいリンク。作成済みのリンクの中身は変えない。</small><span class="ids">SP-07 ／ D-05</span></div>
     </div>
   </div>
@@ -211,7 +212,7 @@ th{background:var(--card)}
       <small>サイトの外の操作。Aさんがコピーしたリンクを自分でLINEに貼る前提。LINEへ直接送る共有ボタン・LINE連携は文書にありません。</small>
       <span class="ids">要求.md 体験(2)「候補を送れ」</span></div>
     <div class="side">
-      <div class="node pend"><b>外部公開の承認待ち（ADR-004）</b><small>承認まで公開しないので、仲間の実機のスマホから開く流れは、承認後でなければ試せない。仕様 AC-02 は「スマホ幅の画面」と書く。</small><span class="ids">ADR-004 ／ 運営相談</span></div>
+      <div class="node"><b>外部公開 ADR-004（承認済み）</b><small>公開後（11/12〜）に実機スマホで1回ずつ開く。仕様 AC-02 は「スマホ幅の画面」と書く。</small><span class="ids">ADR-004</span></div>
     </div>
   </div>
   <div class="arrow">↓</div>
@@ -224,7 +225,7 @@ th{background:var(--card)}
       <div class="node err"><b>期限切れ</b><small>作成から720時間（ちょうどまでは有効）を1秒でも過ぎたら、商品は出さず「このリンクは期限切れです」だけ。</small><span class="ids">SP-06 ／ 410</span></div>
       <div class="node err"><b>見つからない／表示の失敗</b><small>「リンクが見つかりません」／「失敗しました。もう一度お試しください」＋再試行。</small><span class="ids">SP-06 ／ 404, 500</span></div>
       <div class="node warn"><b>販売終了・在庫なしの商品</b><small>作成時点の名前・価格は出したまま、「この商品は販売終了しました」／「在庫なし」を足す。</small><span class="ids">SP-06 ／ #32-5</span></div>
-      <div class="node pend"><b>ログインの入口は「準備中」</b><small>運営承認まで。リンクを開くのにログインは要らない。</small><span class="ids">#26</span></div>
+      <div class="node"><b>ログインの入口は「準備中」</b><small>本番には作らない（ADR-005）。リンクを開くのにログインは要らない。</small><span class="ids">#26 ／ #65</span></div>
     </div>
   </div>
   <div class="arrow">↓</div>
@@ -303,8 +304,8 @@ th{background:var(--card)}
 
   <h3>B. リンクを作る　POST /api/share-links　{ product_ids:[…] }</h3>
   <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>検証</b><small>1件以上・型・商品が存在すること。</small><span class="ids">D-05 ／ SP-05</span></div>
-    <div class="side"><div class="node err"><b>422</b><small>empty_selection / invalid_product_ids</small></div></div>
+    <div class="node api"><span class="tag api">API</span><b>検証</b><small>product_ids 1〜10件・商品が存在すること。</small><span class="ids">D-05 ／ SP-05</span></div>
+    <div class="side"><div class="node err"><b>422</b><small>empty_selection / too_many_items / invalid_product_ids</small></div></div>
   </div>
   <div class="arrow">↓</div>
   <div class="row">
@@ -316,10 +317,10 @@ th{background:var(--card)}
   <div class="arrow">↓</div>
   <div class="row">
     <div class="node db"><span class="tag db">DB</span><b>share_links に1行 INSERT</b>
-      <small>share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }</small>
+      <small>share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at／is_test。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }</small>
       <span class="ids">D-07 ／ DATA-02</span></div>
     <div class="side">
-      <div class="node pend"><b>JSON 型が使えるか（未決E）</b><small>班の MySQL のバージョン未確認。使えなければ TEXT に JSON 文字列。</small></div>
+      <div class="node pend"><b>MySQL 8.4.9 の JSON 型を使う</b><small>items は JSON 型。</small></div>
       <div class="node err"><b>500・10秒超過</b><small>失敗なら行は作られない。打ち切り後に裏で作られることは許す。</small></div>
     </div>
   </div>
@@ -346,8 +347,8 @@ th{background:var(--card)}
 
   <div class="box"><b>全体の枠（図の外側）</b>
     <div class="cols" style="margin-top:6px">
-      <div class="node pend"><b>配置（Azure）・公開URL</b><small>ADR-004 運営承認待ち。承認までは手元のPCで開発・テスト。</small></div>
-      <div class="node pend"><b>ログイン（認証）</b><small>運営承認待ち。入口は「準備中」。</small></div>
+      <div class="node pend"><b>配置（Azure）・公開URL</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。公開先のドメインは Azure が付ける 〜.azurewebsites.net（#65）。</small></div>
+      <div class="node pend"><b>ログイン（認証）</b><small>本番に作らない（ADR-005）。入口は「準備中」。</small></div>
       <div class="node"><b>テスト用の差し替え</b><small>時計（Clock）と DB 実行口（Db）はテストのコードからだけ差し替え。入口は作らない。</small><span class="ids">D-11, D-12</span></div>
     </div>
   </div>
@@ -387,7 +388,7 @@ th{background:var(--card)}
   <div class="cols" style="margin-top:12px">
     <div class="node gap"><b>期限切れの前に知らせる／延長する</b><small>文書にあるのは「選び直したら新しいリンクを作る」（SP-07）だけ。延長・通知・再発行の入口は未記載。</small></div>
     <div class="node gap"><b>リンクを無効にする操作</b><small>作った人が途中で取り消す操作は文書にありません（アプリの機能としての削除は作らない、とだけ設計に記載）。</small></div>
-    <div class="node pend"><b>公開の範囲</b><small>外部公開（ADR-004）が承認されるまで、リンクは手元のPCからだけ。</small></div>
+    <div class="node"><b>公開の範囲</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。</small></div>
   </div>
 </section>
 
