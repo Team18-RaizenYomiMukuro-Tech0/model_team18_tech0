@@ -5,7 +5,7 @@
 - 決定: 運営回答 2026-11-08「DB のアカウント」と追記（`inputs/運営回答_2026-11-08.md`、キックオフ #65・#66・#68・#70）。**管理用アカウントも、アプリ用の `giftia_app` も作らない（案A）**。表の作成（CREATE TABLE）・期間後の表の削除（DROP）・テスト行の削除は、配られたアカウントで手で行う。公開版のアプリも、同じ配られたアカウントでつなぐ。
 - 対応: 実装計画 B2、テスト設計 H-17・NF-18・NF-19・NF-09・E-08。
 - 状態: **下書き**。DB には接続していない。ここに書いたコマンドは1つも実行していない（実行前に未確認の点が下の「穴」にある）。
-- 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #28（証明書）。
+- 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #71（DB 名の固定・SSL は certifi の公開の証明書の束。設計 未決O の案Q。#28 の証明書ファイルは使わない）。
 
 ## 0. 共通の準備
 
@@ -14,26 +14,23 @@
 | 環境変数 | 中身 |
 | --- | --- |
 | `GIFTIA_DB_HOST` | DB のホスト名 |
-| `GIFTIA_DB_NAME` | DB 名（`giftia_t501`） |
 | `GIFTIA_ADMIN_USER` | 配られたアカウントのユーザー名（手元で手順を行うときの名前。アプリは `GIFTIA_DB_USER` で同じ値を受ける） |
 | `GIFTIA_ADMIN_PASSWORD` | 配られたアカウントのパスワード |
-| `GIFTIA_DB_SSL_CA` | 証明書ファイル。#28 の値は `C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem` |
 
 PowerShell で設定する（値は自分で入れる。履歴に残したくなければ `Read-Host -AsSecureString` を使う）:
 
 ```powershell
 $env:GIFTIA_DB_HOST = "<ホスト名>"
-$env:GIFTIA_DB_NAME = "giftia_t501"
 $env:GIFTIA_ADMIN_USER = "<配られたユーザー>"
 $env:GIFTIA_ADMIN_PASSWORD = "<配られたパスワード>"
-$env:GIFTIA_DB_SSL_CA = "C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem"
+$ca = python -c "import certifi; print(certifi.where())"   # 公開の証明書の束（certifi）の場所
 ```
 
-接続は SSL 必須、証明書とホスト名を検証する（`VERIFY_IDENTITY`）。以降の SQL は `mysql` コマンドラインで流す。共通の接続コマンド（`MYSQL_PWD` はこのシェルの中だけ）:
+DB 名は手作業の手順では `giftia_t501` と直接書く（環境変数にしない。#71-3）。接続は SSL 必須。証明書は certifi の公開の束（`$ca`）で、ホスト名も確かめる（`VERIFY_IDENTITY`）。証明書ファイルは配らない・置かない。以降の SQL は `mysql` コマンドラインで流す。共通の接続コマンド（`MYSQL_PWD` はこのシェルの中だけ）:
 
 ```powershell
 $env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
-mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA
+mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia_t501 --ssl-mode=VERIFY_IDENTITY --ssl-ca=$ca
 ```
 
 接続確認（これが出なければ先へ進まない）:
@@ -97,16 +94,15 @@ SELECT COUNT(*) FROM share_links;
 
 **配られたアカウントのパスワードを Azure に置く**（公開版をつなぐとき。担当者が手で行う）:
 
-1. Azure の App Service の「環境変数」（アプリの設定）に、次の5つを入れる。値はこの文書・リポジトリ・Issue・チャットに書かない。
+1. Azure の App Service の「環境変数」（アプリの設定）に、次の3つ（ホスト・ユーザー・パスワード）を入れる。値はこの文書・リポジトリ・Issue・チャットに書かない。
 
    | 名前 | 中身 |
    | --- | --- |
    | `GIFTIA_DB_HOST` | DB のホスト名 |
-   | `GIFTIA_DB_NAME` | `giftia_t501` |
    | `GIFTIA_DB_USER` | 配られたアカウントのユーザー名 |
    | `GIFTIA_DB_PASSWORD` | 配られたアカウントのパスワード |
-   | `GIFTIA_DB_SSL_CA` | 証明書ファイルの置き場所（App Service 上のパス。証明書の実体の置き方は設計・配置の担当が決める。仕様に書かれていません） |
 
+   DB 名（`giftia_t501`）はコードの定数、SSL の証明書は certifi の公開の束で、どちらも環境変数に置かない（#71-1・2）。
 2. 「保存」して、アプリを再起動する。
 3. 確かめ: 公開 URL で候補が表示される（DB につながっている）。`/api` の応答やエラーの文に、ホスト名・ユーザー名・パスワード・証明書のパスが出ていない。リポジトリを検索して、パスワードの値が無い（`git grep` で値の一部を探す。手元で行い、結果に値を貼らない）。
 4. 手元の `.env` は `.gitignore` に入っているものだけ使う。コミット前に `git status` で `.env` が出ないことを確かめる。
@@ -196,7 +192,7 @@ SHOW TABLES;
 
 ```powershell
 $env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
-mysqldump --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA --no-tablespaces $env:GIFTIA_DB_NAME share_links > share_links_backup.sql
+mysqldump --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --ssl-mode=VERIFY_IDENTITY --ssl-ca=$ca --no-tablespaces giftia_t501 share_links > share_links_backup.sql
 ```
 
   控えのファイルは**コミットしない**（保存先はリポジトリの外にする）。
