@@ -1,13 +1,14 @@
 # main.py — チームの API（土台と、接続確認の窓口）
-# 起動：uvicorn main:app --reload --no-access-log   （標準のアクセスログは IP を出すので止める。設計.md N-13）
+# 起動（手元）：uvicorn main:app --reload --no-access-log   （標準のアクセスログは IP を出すので止める。設計.md N-13）
+# 起動（Azure）：backend/startup.sh（同じく --no-access-log）
 import os
 from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 import logging_setup
+import publish
 from db import Db, get_db
 
 load_dotenv()
@@ -15,9 +16,9 @@ load_dotenv()
 app = FastAPI(title="Team18 API")
 logging_setup.install(app)  # 時刻・API・結果だけのログ（N-13）
 
-# 画面（http://localhost:3000）から呼べるようにする。許可する URL は .env の CORS_ORIGINS
-origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET"], allow_headers=["*"])
+# 公開版: 全応答に X-Robots-Tag（noindex）、CORS は公開した画面の送信元 1 つだけ（未設定なら許さない。N-07・D-16）。
+# 手元の開発では、画面が Next.js の rewrites で /api/* を同じ送信元から呼ぶので、CORS は開けない
+publish.install(app, publish.parse_allowed_origin(os.environ.get(publish.ALLOWED_ORIGIN_ENV)))
 
 
 @app.get("/api/health")

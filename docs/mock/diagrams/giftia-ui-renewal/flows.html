@@ -282,7 +282,7 @@ th{background:var(--card)}
       <small>候補の商品IDだけ。注文のうち推定シーン＝送別かつ会社宛て。0件の商品は回数0。</small>
       <span class="ids">D-04 ／ DATA-01</span></div>
     <div class="side">
-      <div class="node pend"><b>注文テーブルの列の実名・会社宛ての見分け方（未決1）</b><small>DB 接続後に Exhibit 4 の実物で確認。</small></div>
+      <div class="node"><b>注文テーブルの列・会社宛ての見分け方（決定済み。#60）</b><small>シーンは product_scenes.scene_tag、会社宛ては orders.ship_to_type='会社'、送別の回数は orders.estimated_scene='送別'。</small></div>
     </div>
   </div>
   <div class="arrow">↓</div>
@@ -320,7 +320,7 @@ th{background:var(--card)}
       <small>share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at／is_test。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }</small>
       <span class="ids">D-07 ／ DATA-02</span></div>
     <div class="side">
-      <div class="node pend"><b>MySQL 8.4.9 の JSON 型を使う</b><small>items は JSON 型。</small></div>
+      <div class="node"><b>MySQL 8.4.9 の JSON 型を使う</b><small>items は JSON 型。</small></div>
       <div class="node err"><b>500・10秒超過</b><small>失敗なら行は作られない。打ち切り後に裏で作られることは許す。</small></div>
     </div>
   </div>
@@ -347,8 +347,8 @@ th{background:var(--card)}
 
   <div class="box"><b>全体の枠（図の外側）</b>
     <div class="cols" style="margin-top:6px">
-      <div class="node pend"><b>配置（Azure）・公開URL</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。公開先のドメインは Azure が付ける 〜.azurewebsites.net（#65）。</small></div>
-      <div class="node pend"><b>ログイン（認証）</b><small>本番に作らない（ADR-005）。入口は「準備中」。</small></div>
+      <div class="node"><b>配置（Azure）・公開URL（11/11 まで。O1 #132）</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。公開先のドメインは Azure が付ける 〜.azurewebsites.net（#65）。</small></div>
+      <div class="node"><b>ログイン（認証）</b><small>本番に作らない（ADR-005）。入口は「準備中」。</small></div>
       <div class="node"><b>テスト用の差し替え</b><small>時計（Clock）と DB 実行口（Db）はテストのコードからだけ差し替え。入口は作らない。</small><span class="ids">D-11, D-12</span></div>
     </div>
   </div>

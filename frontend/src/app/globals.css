@@ -113,3 +113,31 @@ header.top {
   .hsearch { order: 3; flex: 1 1 100%; max-width: none; }
   .spacer { display: none; }
 }
+
+/* R7 #116: 画像の確認用の表示・検索中 */
+.imgcheck { max-width: 960px; margin: 0 auto; }
+.imgcheck h1 { font-size: 22px; margin: 4px 0; }
+.imgcheck h2 { font-size: 16px; margin: 24px 0 8px; }
+.imgcheck .note { margin: 0; color: #5c514d; font-size: 14px; }
+.hero-box { overflow: hidden; border-radius: 12px; }
+.hero-box img { display: block; width: 100%; height: auto; max-height: 280px; object-fit: cover; }
+.cats, .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cats { grid-template-columns: repeat(5, 1fr); }
+.cats li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 13px; }
+.cards { grid-template-columns: repeat(5, 1fr); }
+.cards .card { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 13px; }
+.pic { position: relative; }
+.pic img { display: block; width: 100%; height: auto; border-radius: 8px; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
+.searching { display: inline-flex; align-items: center; gap: 10px; padding: 8px 4px; }
+.searching .spin img { display: block; border-radius: 50%; animation: spin 1.2s linear infinite; }
+.searching .ring { display: block; width: 40px; height: 40px; border: 5px solid var(--badge-bg); border-top-color: var(--coral); border-radius: 50%; animation: spin 1s linear infinite; }
+.spin-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .searching .spin { display: none; }
+  .spin-text { position: static; width: auto; height: auto; clip-path: none; font-weight: 700; }
+}
+@media (max-width: 480px) {
+  .cats, .cards { grid-template-columns: repeat(2, 1fr); }
+}

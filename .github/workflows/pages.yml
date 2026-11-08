@@ -2,6 +2,7 @@
 #  - docs/ の手書きページをそのままコピーし、5文書（02_プロジェクト/*/ の .md）を scripts/build-docs5.py で HTML にして docs5/ に置く
 #  - 5文書の HTML はビルド時に生成するだけで、コミットしない（書くのは .md だけ）
 #  - 進捗ページ progress.html は scripts/build-progress.py が GitHub の Issue・マイルストーンから作る（読み取りのみ。秘匿値は使わない）
+#  - PR を出した・閉じたときも公開（main のコードだけを使う。PR のコードは動かさない）
 #  - main への push・Issue の開閉・毎朝1回（日本時間 6:00）・手動実行で公開する。PR では「ビルドが通るか」だけ確かめ、公開はしない
 # 前提: リポジトリ設定 Pages の Source を「GitHub Actions」にしておく（PR では設定しない。マージ後に god が行う）。
 name: Pages 公開
@@ -17,6 +18,11 @@ on:
       - "scripts/build-progress.py"
       - "munder/progress-names.json"
       - ".github/workflows/pages.yml"
+  # PR を出した・閉じたとき等も公開し、進捗ページの「いま動くこと」にレビュー待ちの PR を出す。
+  # pull_request_target は main のコードで動く。注意: PR の head を checkout しない（actions/checkout に ref を指定しない。
+  # PR のコードを取り出さない・動かさない）。この workflow が読むのは main のファイルと GitHub の API の一覧だけ。
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, converted_to_draft, review_requested, closed]
   # 進捗ページの更新: Issue を開閉したとき、担当や段階（マイルストーン）を変えたとき
   issues:
     types: [opened, closed, reopened, assigned, unassigned, milestoned, demilestoned]
@@ -67,6 +73,7 @@ jobs:
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        # pull_request（ビルド確認のみ）以外は公開する。pull_request_target もここに含まれる
         if: github.event_name != 'pull_request'
         with:
           path: _site
@@ -74,6 +81,7 @@ jobs:
   deploy:
     name: 公開する
     needs: build
+    # pull_request（ビルド確認のみ）以外は公開する。pull_request_target もここに含まれる
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:

@@ -76,6 +76,31 @@ def api_get(repo, path, token):
         page += 1
 
 
+def api_get_one(repo, path, token):
+    """1件の JSON を読む（読み取りのみ）"""
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{repo}/{path}",
+        headers={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28",
+                 **({"Authorization": f"Bearer {token}"} if token else {})},
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def fetch_reviewers(repo, issues, token):
+    """レビュー待ち PR（open・Draft でない）の requested_reviewers を {番号: [login]} で返す。
+    Issue 一覧の API には入っていないので、PR ごとに pulls API で読む。失敗した PR は空として扱う"""
+    out = {}
+    for p in issues:
+        if "pull_request" in p and p["state"] == "open" and not p.get("draft"):
+            try:
+                d = api_get_one(repo, f"pulls/{p['number']}", token)
+                out[p["number"]] = [r["login"] for r in d.get("requested_reviewers", []) if r.get("login")]
+            except Exception as ex:
+                print(f"warning: PR #{p['number']} のレビュアーを読めませんでした: {type(ex).__name__}", file=sys.stderr)
+    return out
+
+
 def load_names(path):
     try:
         with open(path, encoding="utf-8") as f:
@@ -92,7 +117,7 @@ def jst_date(iso):
     return d.astimezone(JST).date()
 
 
-def build_model(issues, milestones, names, today):
+def build_model(issues, milestones, names, today, reviewers=None):
     due = {m["number"]: jst_date(m.get("due_on")) for m in milestones}
     prs = [i for i in issues if "pull_request" in i]
     real = [i for i in issues if "pull_request" not in i]
@@ -171,8 +196,11 @@ def build_model(issues, milestones, names, today):
     for p in prs:
         if p["state"] == "open" and not p.get("draft"):
             u = (p.get("user") or {}).get("login")
+            rv = (reviewers or {}).get(p["number"], [])
+            who = ([u.lower()] if u in names else []) + [x.lower() for x in rv if x in names and x.lower() != (u or "").lower()]
             review_prs.append({"number": p["number"], "title": p["title"], "url": p["html_url"],
-                               "author": names.get(u, OTHER), "who": u.lower() if u in names else "none"})
+                               "author": names.get(u, OTHER), "reviewers": [names.get(x, OTHER) for x in rv],
+                               "who": " ".join(who) or "none"})
     review_prs.sort(key=lambda x: x["number"], reverse=True)
     merged_prs.sort(key=lambda x: (x["at"], x["number"]), reverse=True)
     # 表に入れる行: 全体の最近10件 + 各メンバーの最近10件（重複は1行）。top=全体の最近10件に入る行
@@ -510,7 +538,8 @@ def now_section(model):
     shown = {r["number"] for r in model["alerts"]}
     for p in model["review_prs"]:
         items.append(f'<li class="row" data-who="{e(p["who"])}"><div class="rt">👀 <a {ext(p["url"])}>PR #{p["number"]} {e(p["title"])}</a></div>'
-                     f'<div class="rm"><span class="st live">レビュー待ち</span><span class="chip">{e(p["author"])}</span></div></li>')
+                     f'<div class="rm"><span class="st live">レビュー待ち</span><span class="chip">作成: {e(p["author"])}</span>'
+                     f'<span class="chip">レビュー: {e("・".join(p["reviewers"]) or "未指定")}</span></div></li>')
     for p in model["people"]:
         for r in p["rows"]:
             if r["status"] == "merged" and r["number"] not in shown:
@@ -658,12 +687,14 @@ def main():
             with open(a.data, encoding="utf-8") as f:
                 d = json.load(f)
             issues, milestones = d["issues"], d["milestones"]
+            reviewers = {p["number"]: [r["login"] for r in p.get("requested_reviewers", [])] for p in issues}
         else:
             repo = os.environ["GITHUB_REPOSITORY"]
             token = os.environ.get("GITHUB_TOKEN")
             issues = api_get(repo, "issues?state=all", token)
             milestones = api_get(repo, "milestones?state=all", token)
-        model = build_model(issues, milestones, load_names(a.names), today)
+            reviewers = fetch_reviewers(repo, issues, token)
+        model = build_model(issues, milestones, load_names(a.names), today, reviewers)
         text = render(model, updated, sample=bool(a.data))
         summary = build_summary(model, updated_at, sample=bool(a.data))
         quick, hidden = build_issues_quick(model, issues, load_names(a.names), updated_at, sample=bool(a.data))

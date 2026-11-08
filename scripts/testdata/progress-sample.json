@@ -152,6 +152,7 @@
   },
   {
    "number": 21,
+   "requested_reviewers": [{"login": "Hiroki0023"}],
    "title": "feat: API の骨組み",
    "state": "open",
    "html_url": "https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/issues/21",

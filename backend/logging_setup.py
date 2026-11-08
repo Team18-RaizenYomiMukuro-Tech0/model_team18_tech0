@@ -5,6 +5,7 @@
 # 例外のときは、種類と場所だけ（リクエストの中身・接続情報・秘密情報は出さない）。
 # uvicorn の標準のアクセスログ（IP を出す）は止める。起動は `uvicorn main:app --no-access-log` でも止める（#65）。
 import logging
+import ntpath
 import sys
 import traceback
 from collections.abc import Awaitable, Callable
@@ -62,7 +63,7 @@ def _where(ex: BaseException) -> str:
     if not tb:
         return "-"
     f = tb[-1]
-    return f"{f.filename.rsplit('/', 1)[-1]}:{f.lineno} {f.name}"
+    return f"{ntpath.basename(f.filename)}:{f.lineno} {f.name}"
 
 
 def install(app: FastAPI) -> None:
