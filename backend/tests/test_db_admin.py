@@ -51,3 +51,10 @@ def test_report_masks_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GIFTIA_DB_PASSWORD", "s3cretpw")
     rep = db_admin.Report("0")
     assert rep.scrub("someuser@db.example.invalid s3cretpw") == "<伏せ>@<伏せ> <伏せ>"
+
+
+def test_marked_row_insert_is_the_only_marked_write() -> None:
+    assert "Bt" in db_admin.STEPS
+    assert db_admin.SQL_BT.rstrip(";").endswith("UTC_TIMESTAMP(), 1)")
+    assert "'BBBBBBBBBBBBBBBBBBBBBB'" in db_admin.SQL_BT
+    assert db_admin.SQL_B.rstrip(";").endswith("UTC_TIMESTAMP(), 0)")

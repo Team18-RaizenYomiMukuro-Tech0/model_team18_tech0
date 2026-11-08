@@ -1,6 +1,6 @@
 # db_admin.py — DB管理手順.md の SQL を、mysql コマンドなしで1手順ずつ流す道具（B2 / Issue #56）
 # 使い方（backend フォルダで、仮想環境に入ってから）:
-#   python scripts/db_admin.py <手順>      手順 = 0 | A | 1 | B | B5 | 3 | 4 | C
+#   python scripts/db_admin.py <手順>      手順 = 0 | A | 1 | B | Bt | B5 | 3 | 4 | C
 # 決まり:
 # - SQL は DB管理手順.md と一字一句同じ（tests/test_db_admin.py が手順書と照合する）。手順書に無い SQL は足さない。
 # - 接続先は database.py の giftia_t501（定数）。引数・環境変数では変えられない。SSL は certifi＋ホスト名の確認（#71）。
@@ -66,6 +66,8 @@ SQL_B_PRE = [
 ]
 SQL_B = """INSERT INTO share_links (share_id, items, created_at, is_test)
 VALUES ('AAAAAAAAAAAAAAAAAAAAAA', JSON_ARRAY(JSON_OBJECT('product_id','G0001','name','テスト','price',1000,'reason','手順書の確認用')), UTC_TIMESTAMP(), 0);"""
+SQL_BT = """INSERT INTO share_links (share_id, items, created_at, is_test)
+VALUES ('BBBBBBBBBBBBBBBBBBBBBB', JSON_ARRAY(JSON_OBJECT('product_id','G0001','name','テスト','price',1000,'reason','手順書の確認用')), UTC_TIMESTAMP(), 1);"""
 SQL_B_POST = [
     "SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;",
     "SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';",
@@ -93,7 +95,7 @@ SQL_4_PRE = ["SELECT COUNT(*) FROM share_links;", "SHOW TABLES;"]
 SQL_4 = "DROP TABLE share_links;"
 SQL_4_POST = ["SHOW TABLES LIKE 'share_links';", "SHOW TABLES;"]
 
-STEPS = ["0", "A", "1", "B", "B5", "3", "4", "C"]
+STEPS = ["0", "A", "1", "B", "Bt", "B5", "3", "4", "C"]
 
 
 class Report:
@@ -263,6 +265,21 @@ def step_b(conn: Any, rep: Report) -> None:
     run_many(conn, rep, SQL_B_POST)
 
 
+def step_bt(conn: Any, rep: Report) -> None:
+    """手順B の1b: 印あり（is_test = 1）の行を1行置く。手順3 が消す対象"""
+    check_database(conn, rep)
+    if not table_exists(conn):
+        raise SystemExit("share_links がありません。先に手順1を行ってください")
+    run(conn, rep, SQL_B_POST[0])
+    rep.say("これから実行する文（is_test = 1 の確認用の行を1行置く）:")
+    rep.sql(SQL_BT)
+    confirm(rep, "印ありの確認用の行を1行入れます。")
+    with conn.cursor() as cur:
+        cur.execute(SQL_BT)
+    conn.commit()
+    run(conn, rep, SQL_B_POST[0])
+
+
 def step_b5(conn: Any, rep: Report) -> None:
     check_database(conn, rep)
     pre = run(conn, rep, SQL_B_PRE[0])
@@ -349,6 +366,7 @@ HANDLERS: dict[str, Callable[[Any, Report], None]] = {
     "A": step_a,
     "1": step_1,
     "B": step_b,
+    "Bt": step_bt,
     "B5": step_b5,
     "3": step_3,
     "4": step_4,

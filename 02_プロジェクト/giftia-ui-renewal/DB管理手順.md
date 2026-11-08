@@ -33,7 +33,7 @@ $env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
 mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia_t501 --ssl-mode=VERIFY_IDENTITY --ssl-ca=$ca
 ```
 
-**mysql コマンドの代わりに、Python の道具を使ってもよい。** `backend/scripts/db_admin.py` が、この手順書の手順0・A・1・B・B5（手順Bの確認用の行を消す）・3・4・C の SQL を、手順書と一字一句同じに流す（SQL は変えていない。`tests/test_db_admin.py` が手順書と照合する）。`backend` フォルダで仮想環境に入り、`python scripts/db_admin.py <手順>` の形で1手順ずつ動かす。接続先は `giftia_t501` 固定（引数・環境変数では変えられない）、SSL は certifi＋ホスト名の確認、接続情報は `backend/.env`（`GIFTIA_DB_HOST`・`GIFTIA_DB_USER`・`GIFTIA_DB_PASSWORD`）から読み、画面にもファイルにも出さない。書き込む手順（1・B・B5・3・4）は、先に `SELECT DATABASE()` と対象の SELECT の結果を出し、`yes` と入力するまで書き込まない。記録は `evidence/db/<日付>_<手順>.md` に保存される（ホスト・ユーザーは `<伏せ>`）。
+**mysql コマンドの代わりに、Python の道具を使ってもよい。** `backend/scripts/db_admin.py` が、この手順書の手順0・A・1・B・Bt（手順Bの1b。印ありの行を置く）・B5（手順Bの5。印なしの確認用の行を消す）・3・4・C の SQL を、手順書と一字一句同じに流す（SQL は変えていない。`tests/test_db_admin.py` が手順書と照合する）。`backend` フォルダで仮想環境に入り、`python scripts/db_admin.py <手順>` の形で1手順ずつ動かす。接続先は `giftia_t501` 固定（引数・環境変数では変えられない）、SSL は certifi＋ホスト名の確認、接続情報は `backend/.env`（`GIFTIA_DB_HOST`・`GIFTIA_DB_USER`・`GIFTIA_DB_PASSWORD`）から読み、画面にもファイルにも出さない。書き込む手順（1・B・Bt・B5・3・4）は、先に `SELECT DATABASE()` と対象の SELECT の結果を出し、`yes` と入力するまで書き込まない。記録は `evidence/db/<日付>_<手順>.md` に保存される（ホスト・ユーザーは `<伏せ>`）。
 
 接続確認（これが出なければ先へ進まない）:
 
@@ -261,10 +261,18 @@ INSERT INTO share_links (share_id, items, created_at, is_test)
 VALUES ('AAAAAAAAAAAAAAAAAAAAAA', JSON_ARRAY(JSON_OBJECT('product_id','G0001','name','テスト','price',1000,'reason','手順書の確認用')), UTC_TIMESTAMP(), 0);
 ```
 
-2. アプリのテスト（テストのコードが `is_test = 1` の行を作る）を流す。API に `is_test: 1` を含めて送っても 0 のままであること（アプリ側のテスト。`share_links` を SELECT して確かめる）。
+1b. 続けて、印あり（`is_test = 1`）の行を1行置く（B2 完了条件 2。手順3が消す対象。形は上と同じで、`share_id` だけ別の架空の値、`is_test` は 1）。
+
+```sql
+INSERT INTO share_links (share_id, items, created_at, is_test)
+VALUES ('BBBBBBBBBBBBBBBBBBBBBB', JSON_ARRAY(JSON_OBJECT('product_id','G0001','name','テスト','price',1000,'reason','手順書の確認用')), UTC_TIMESTAMP(), 1);
+```
+
+
+2. （アプリができた後）アプリのテスト（テストのコードが `is_test = 1` の行を作る）を流す。API に `is_test: 1` を含めて送っても 0 のままであること（アプリ側のテスト。`share_links` を SELECT して確かめる）。
 3. 手順3を実行する（先に件数と中身の SELECT、そのあと `DELETE … WHERE is_test = 1`）。
 4. 確かめ（合格の基準）:
-   - 印の付いた行（`is_test = 1`）だけが消え、手順の1で置いた印なしの行は残る。
+   - 印の付いた行（`is_test = 1`。手順の1b で置いた行）だけが消え、手順の1で置いた印なしの行は残る（B2 完了条件 4）。手順3の前の `GROUP BY` は 0 が1行・1 が1行、後は 0 が1行だけ。
    - 後片付けの後の `share_links` の件数が、テストを始める前と同じ。
    - （アプリ用アカウントが無いので、DB の権限での拒否の確認（NF-09）はできない。手順2 の影響を参照。）
 
