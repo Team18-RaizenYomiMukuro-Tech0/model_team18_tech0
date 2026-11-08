@@ -585,7 +585,6 @@ function openShare(id){
 /* ヘッダー・レビューバー */
 $("#bFav").onclick=()=>{S.panel=S.panel==="fav"?null:"fav";render()};
 $("#bCart").onclick=()=>{S.panel=S.panel==="cart"?null:"cart";render()};
-$("#bLogin").onclick=()=>toast("準備中です（運営の承認後に作ります）");
 $("#ov").onclick=e=>{if(e.target.id==="ov"){S.panel=null;render()}};
 $("#home").onclick=()=>{S.view="top";S.panel=null;render()};
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
