@@ -30,6 +30,13 @@
 - 置くもの：主要フロー図・画面遷移図・ER図。
 - 形：Mermaid を書いた `.md`。GitHub の画面で図として見える。
 
+## いま置いてあるもの（Giftia UI/UX リニューアル）
+
+- クリックで動くモック: `clickable/giftia-ui-renewal/mock.html`（検索中の画像 `akapu.png` も同じ場所）
+- 主要フローの図: `diagrams/giftia-ui-renewal/flows.html`
+- 見た目の確認用スクリーンショット: `screenshots/giftia-ui-renewal/`
+- 以前は `02_プロジェクト/giftia-ui-renewal/evidence/mock/` にあった。見せる場所と原本を `docs/mock/` に一本化した（#80）。
+
 ## 守ること
 
 - 実データ・秘匿値は載せない。架空データだけを使う。ここは公開サイトに出る。

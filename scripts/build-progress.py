@@ -41,10 +41,20 @@ NO_MILESTONE = "段階なし"
 SOON_DAYS = 2  # 期限の何日前から「近い」にするか
 RECENT_PRS = 10
 OTHER = "その他"  # 表示名の対応表に無い PR 作者
-AREA_RE = re.compile(r"^\s*\[([PBFT])\d+\]")
+# 題の頭の印: [B1]・[B2b]（番号の後ろに英小文字）・[F・R1]（札は先頭の P/B/F/T、表示する番号は「・」の後ろの R1）。[R1] だけ・[X1] は読まない
+AREA_PAT = r"^\s*\[(?P<a>[PBFT])(?:・(?P<rc>R\d+)|(?P<n>\d+[a-z]?))\]"
+AREA_RE = re.compile(AREA_PAT)
 AREAS = {"P": "PM", "B": "DB・API", "F": "画面", "T": "テスト"}  # Issue 題の頭文字 → 領域
 # 題の頭の [B2] → 分野の札。AREA_RE と違い番号まで取り、残りの題名を返す
-AREA_TITLE_RE = re.compile(r"^\s*\[([PBFT]\d+)\]\s*(.*)$", re.S)
+AREA_TITLE_RE = re.compile(AREA_PAT + r"\s*(?P<t>.*)$", re.S)
+
+
+def area_split(title):
+    """題の頭の印を (分野 P/B/F/T, 表示する番号 B1・B2b・R1, 残りの題名) に分ける。読めなければ None"""
+    m = AREA_TITLE_RE.match(title)
+    if not m:
+        return None
+    return m.group("a"), m.group("rc") or m.group("a") + m.group("n"), m.group("t")
 # 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）
 WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
 
@@ -110,7 +120,7 @@ def build_model(issues, milestones, names, today):
         logins = [a["login"] for a in i.get("assignees") or [] if a["login"] in names] or [None]
         rows.append({"number": i["number"], "title": i["title"], "url": i["html_url"], "done": done,
                      "stage": ms["title"] if ms else NO_MILESTONE, "due": d, "late": late, "left": left,
-                     "status": status, "area": am.group(1) if am else None,
+                     "status": status, "area": am.group("a") if am else None,
                      "assignees": logins, "prs": prs_of})
     people = {}
     for r in rows:
@@ -218,10 +228,10 @@ def due_badge(r):
 
 def title_parts(title, badge):
     """分野の札にするとき（badge）は (札の HTML, 残りの題名)。頭に [P1] などが無ければ札なしで題名そのまま"""
-    m = AREA_TITLE_RE.match(title) if badge else None
+    m = area_split(title) if badge else None
     if not m:
         return "", title
-    return f'<span class="ar ar-{m.group(1)[0]}">{m.group(1)}</span>', m.group(2)
+    return f'<span class="ar ar-{m[0]}">{m[1]}</span>', m[2]
 
 
 def render_row(r, who=None, mark="", extra="", badge=False):
@@ -557,6 +567,12 @@ def build_summary(model, updated_at, sample=False):
 REVIEWER_RE = re.compile(r"^##[ \t]*👀[ \t]*Reviewer[^\n]*\n(.*?)(?=^##[ \t]|\Z)", re.S | re.M)
 LOGIN_RE = re.compile(r"@([A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)")
 AREA_ORDER = {"P": 0, "B": 1, "F": 2, "T": 3}
+
+
+def code_key(code):
+    """番号は数として（B2 < B2b < B10）。R1 は数字 1 として同じ分野の中に並ぶ"""
+    m = re.match(r"[A-Z](\d+)([a-z]?)", code)
+    return (int(m.group(1)), m.group(2)) if m else (0, "")
 OTHER_PHASE = "その他"
 
 
@@ -594,14 +610,14 @@ def build_issues_quick(model, issues, names, updated_at, sample=False):
         target = by_title.get(ms["title"]) if ms else other
         if target is None:
             target = other
-        m = AREA_TITLE_RE.match(i["title"])
-        code, title = (m.group(1), m.group(2)) if m else ("", i["title"])
+        m = area_split(i["title"])
+        area, code, title = m if m else ("", "", i["title"])
         target["issues"].append({
-            "n": i["number"], "code": code, "area": code[:1], "title": title,
+            "n": i["number"], "code": code, "area": area, "title": title,
             "assignees": disp([a["login"] for a in i.get("assignees") or []]),
             "reviewers": disp(reviewers(i.get("body"))),
             "closed": i["state"] == "closed", "url": safe_url(i["html_url"]) if safe_url(i["html_url"]) != "#" else "",
-            "_k": (AREA_ORDER.get(code[:1], 9), int(code[1:]) if code else 0, i["number"])})
+            "_k": (AREA_ORDER.get(area, 9), *code_key(code), i["number"])})
     for p in phases + [other]:
         p["issues"].sort(key=lambda x: x["_k"])
         for x in p["issues"]:
