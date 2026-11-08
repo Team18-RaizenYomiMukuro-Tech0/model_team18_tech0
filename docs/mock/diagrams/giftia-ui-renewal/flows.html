@@ -27,11 +27,11 @@ p.lead{margin:0 0 12px;color:var(--sub);font-size:13px}
 /* tabs (CSS only) */
 input.tab{position:absolute;opacity:0;pointer-events:none}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
-.tabs label{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;font-size:14px}
-#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs label{padding:8px 14px;border:2px solid var(--ink);border-radius:999px;font-weight:700;background:var(--card);cursor:pointer;font-size:14px}
+#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3],#t4:checked~.tabs label[for=t4]{background:#FFD700;color:#2A1B3D;border-color:#2A1B3D;box-shadow:3px 3px 0 #2A1B3D}
 input.tab:focus-visible~.tabs label{outline:2px solid var(--ui)}
 .panel{display:none}
-#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3{display:block}
+#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3,#t4:checked~.p4{display:block}
 /* legend */
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:var(--sub);margin:4px 0 8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -83,6 +83,52 @@ th{background:var(--card)}
   .tl .seg.s1{border-radius:10px 10px 0 0!important}
   .tl .seg.s3{border-radius:0 0 10px 10px!important}
 }
+
+/* ER図（ハブの色・太枠・ずらし影・札） */
+.erwrap{--ew-bg:#E3D8F3;--ew-card:#fff;--ew-ink:#2A1B3D;--ew-sub:#54476B;--ew-line:#2A1B3D;--ew-sh:#2A1B3D;--ew-dot:rgba(42,27,61,.07);--ew-stripe:rgba(42,27,61,.16);--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;
+  background:var(--ew-bg) radial-gradient(var(--ew-dot) 1px,transparent 1.3px);background-size:auto,12px 12px;color:var(--ew-ink);border:2px solid var(--ew-line);border-radius:12px;box-shadow:3px 3px 0 var(--ew-sh);padding:20px 10px 12px}
+@media (prefers-color-scheme:dark){.erwrap{--ew-bg:#2A1B3D;--ew-card:#3F3158;--ew-ink:#fff;--ew-sub:#E3D8F3;--ew-line:#E3D8F3;--ew-sh:rgba(0,0,0,.55);--ew-dot:rgba(255,255,255,.12);--ew-stripe:rgba(255,255,255,.22)}}
+.erg{position:relative;width:880px;height:680px;margin:0 auto}
+.erl{position:absolute;left:0;top:0;pointer-events:none}
+.erl .ln{fill:none;stroke:var(--ew-line);stroke-width:2}
+.erl .ml{fill:none;stroke:var(--ew-line);stroke-width:2}
+.pl{position:absolute;transform:translate(-50%,-100%);margin-top:-3px;background:var(--ew-card);border:1.5px solid var(--ew-line);border-radius:999px;padding:0 6px;font-size:10.5px;font-weight:800;line-height:1.35;text-align:center;white-space:nowrap}
+.pl:has(br){border-radius:10px;transform:translate(-50%,-50%);margin-top:0}
+.tb{position:absolute;width:216px;background:var(--ew-card);border:2px solid var(--ew-line);border-radius:12px;box-shadow:3px 3px 0 var(--ew-sh);overflow:hidden}
+.tb h4{margin:0;height:34px;display:flex;align-items:center;gap:6px;padding:0 8px;border-bottom:2px solid var(--ew-line);color:#2A1B3D;font-size:13px;line-height:1}
+.tb h4 b{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.tb h4 small{font-size:10.5px;font-weight:700;color:#2A1B3D;opacity:.85;white-space:nowrap}
+.tb.g1 h4{background:var(--m1)}.tb.g2 h4{background:var(--m2)}.tb.g3 h4{background:var(--m3)}
+.tb.gp{border-style:dashed;background:transparent;box-shadow:none}
+.tb.gp h4{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--ew-stripe) 6px 8px);color:var(--ew-ink)}
+.tb.gp h4 small{color:var(--ew-ink)}
+.tb .st{margin-left:auto;font-size:10.5px;font-weight:800;padding:0 8px;border-radius:999px;background:var(--m3);color:#2A1B3D}
+.tb ul{list-style:none;margin:0;padding:0}
+.tb li{display:flex;align-items:center;gap:4px;height:22px;padding:0 8px;font-size:11px;line-height:1;border-top:1px dashed rgba(127,110,150,.45)}
+.tb li:first-child{border-top:0}
+.tb code{font-family:ui-monospace,Consolas,monospace;font-size:11px;font-weight:700;color:var(--ew-ink)}
+.tb li i{font-style:normal;font-size:10px;color:var(--ew-sub);margin-left:auto;white-space:nowrap}
+.k{font-style:normal;font-size:9.5px;font-weight:800;line-height:1.5;padding:0 5px;border-radius:999px;border:1.5px solid var(--ew-line);white-space:nowrap}
+.k.pk{background:#2A1B3D;color:#fff;border-color:#2A1B3D}
+.k.fk{background:var(--ew-card);color:var(--ew-ink)}
+.fkm{display:none}
+.erk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 6px 6px}
+.erc{background:var(--ew-card);border:2px solid var(--ew-line);border-radius:12px;box-shadow:3px 3px 0 var(--ew-sh);padding:10px 12px;font-size:12.5px;line-height:1.6;min-width:0}
+.erc h5{margin:0 0 4px;font-size:13px}
+.erc p{margin:0 0 6px;color:var(--ew-sub)}
+.erc ul{margin:0;padding-left:18px;color:var(--ew-sub)}
+.erc li{margin:2px 0}
+.erc ul code{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--ew-ink);word-break:break-all}
+.sw2{display:inline-block;width:22px;height:12px;border:2px dashed var(--ew-line);border-radius:4px;vertical-align:-2px;background:repeating-linear-gradient(135deg,transparent 0 4px,var(--ew-stripe) 4px 6px)}
+@media (max-width:959px){
+  .erg{width:auto;height:auto;display:flex;flex-direction:column;gap:14px}
+  .erl,.pl{display:none}
+  .tb{position:static;width:auto;height:auto!important}
+  .tb li code{font-size:12px}
+  .fkm{display:block;margin:0;padding:6px 8px;font-size:11.5px;line-height:1.5;color:var(--ew-sub);border-top:2px solid var(--ew-line);word-break:break-all}
+  .erk{grid-template-columns:1fr;margin:16px 0 4px}
+  .erwrap{padding:14px 10px 10px}
+}
 </style>
 </head>
 <body>
@@ -104,10 +150,12 @@ th{background:var(--card)}
 <input class="tab" type="radio" name="tab" id="t1" checked>
 <input class="tab" type="radio" name="tab" id="t2">
 <input class="tab" type="radio" name="tab" id="t3">
+<input class="tab" type="radio" name="tab" id="t4">
 <div class="tabs" role="tablist">
   <label for="t1">① 顧客視点</label>
   <label for="t2">② システム視点</label>
   <label for="t3">③ 共有リンクの状態</label>
+  <label for="t4">④ ER図（DB）</label>
 </div>
 
 <!-- ============ 図1 顧客視点 ============ -->
@@ -336,6 +384,29 @@ th{background:var(--card)}
     <div class="node gap"><b>期限切れの前に知らせる／延長する</b><small>文書にあるのは「選び直したら新しいリンクを作る」（SP-07）だけ。延長・通知・再発行の入口は未記載。</small></div>
     <div class="node gap"><b>リンクを無効にする操作</b><small>作った人が途中で取り消す操作は文書にありません（アプリの機能としての削除は作らない、とだけ設計に記載）。</small></div>
     <div class="node pend"><b>公開の範囲</b><small>外部公開（ADR-004）が承認されるまで、リンクは手元のPCからだけ。</small></div>
+  </div>
+</section>
+
+<!-- ============ 図4 ER図 ============ -->
+<section class="panel p4" aria-label="ER図">
+  <h2>④ ER図：班の DB のテーブルとつながり</h2>
+  <p class="lead">正本は backend/db_schema.md（check_db.py の出力）。テーブル7つ・外部キー7本。点線の表は設計.md DATA-02 の新テーブルで、まだ作っていない（予定）。</p>
+  <div class="erwrap">
+    <div class="erg"><svg class="erl" width="880" height="680" viewBox="0 0 880 680" aria-hidden="true"><defs><marker id="erone" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="0" refY="7" orient="auto"><path class="ml" d="M8 1V13"/></marker><marker id="ercrow" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="14" refY="7" orient="auto"><path class="ml" d="M0 7L14 1M0 7H14M0 7L14 13"/></marker></defs><path class="ln" d="M140 122 V240" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M248 285 H304" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V329 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V141 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V557 H248" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M32 45 H14 V579 H32" marker-start="url(#erone)" marker-end="url(#ercrow)"/></svg><span class="pl" style="left:140px;top:181px">注文する</span><span class="pl" style="left:276px;top:285px">含む</span><span class="pl" style="left:554px;top:329px">注文される</span><span class="pl" style="left:554px;top:45px">シーンタグ<br>を持つ</span><span class="pl" style="left:554px;top:141px">事実を持つ</span><span class="pl" style="left:404px;top:557px">レビューされる</span><span class="pl" style="left:14px;top:320px">書く</span><div class="tb g1" style="left:32px;top:0px;height:122px"><h4><b>users</b><small>利用者</small></h4><ul><li><code>user_id</code><i>varchar(20)</i><em class="k pk">PK</em></li><li><code>age_group</code><i>varchar(10)</i></li><li><code>gender</code><i>varchar(10)</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g1" style="left:32px;top:240px;height:210px"><h4><b>orders</b><small>注文</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>ordered_at</code><i>datetime</i></li><li><code>gift_purpose</code><i>varchar(20) ・空可</i></li><li><code>estimated_scene</code><i>varchar(20)</i></li><li><code>recipient_key</code><i>varchar(16)</i></li><li><code>ship_to_type</code><i>varchar(10)</i></li><li><code>total_amount</code><i>int</i></li></ul><p class="fkm">FK: orders.user_id → users.user_id</p></div><div class="tb g1" style="left:304px;top:240px;height:144px"><h4><b>order_items</b><small>注文の明細</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>line_no</code><i>int</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>quantity</code><i>int</i></li><li><code>unit_price</code><i>int</i></li></ul><p class="fkm">FK: order_items.order_id → orders.order_id ／ order_items.product_id → products.product_id</p></div><div class="tb g2" style="left:656px;top:0px;height:364px"><h4><b>products</b><small>商品</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em></li><li><code>product_name</code><i>varchar(100)</i></li><li><code>category</code><i>varchar(30)</i></li><li><code>price</code><i>int</i></li><li><code>brand</code><i>varchar(50)</i></li><li><code>description</code><i>text</i></li><li><code>size</code><i>varchar(100) ・空可</i></li><li><code>delivery_days</code><i>int</i></li><li><code>gift_wrap</code><i>tinyint(1)</i></li><li><code>message_card</code><i>tinyint(1)</i></li><li><code>rating</code><i>decimal(2,1) ・空可</i></li><li><code>review_count</code><i>int</i></li><li><code>sales_count</code><i>int</i></li><li><code>stock</code><i>int</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g2" style="left:304px;top:0px;height:78px"><h4><b>product_scenes</b><small>商品のシーンタグ</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>scene_tag</code><i>varchar(20)</i><em class="k pk">PK</em></li></ul><p class="fkm">FK: product_scenes.product_id → products.product_id</p></div><div class="tb g2" style="left:304px;top:96px;height:122px"><h4><b>product_facts</b><small>商品の事実</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>fact</code><i>varchar(30)</i><em class="k pk">PK</em></li><li><code>value</code><i>int</i></li><li><code>source</code><i>varchar(30)</i></li></ul><p class="fkm">FK: product_facts.product_id → products.product_id</p></div><div class="tb g3" style="left:32px;top:490px;height:166px"><h4><b>reviews</b><small>レビュー</small></h4><ul><li><code>review_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>rating</code><i>int</i></li><li><code>comment</code><i>text ・空可</i></li><li><code>posted_at</code><i>date</i></li></ul><p class="fkm">FK: reviews.product_id → products.product_id ／ reviews.user_id → users.user_id</p></div><div class="tb gp" style="left:656px;top:470px;height:122px"><h4><b>share_links</b><span class="st">予定</span></h4><ul><li><code>share_id</code><i>CHAR(22)</i><em class="k pk">PK</em></li><li><code>items</code><i>JSON</i></li><li><code>created_at</code><i>DATETIME</i></li><li><code>is_test</code><i>TINYINT(1)</i></li></ul><p class="fkm">予定の表。既存の表との線は引かない（既存は変更しない）。</p></div></div>
+    <div class="erk">
+      <div class="erc"><h5>見かた</h5>
+        <p><em class="k pk">PK</em> 主キー　<em class="k fk">FK</em> 外部キー　空可 ＝ 空を許す。線の端は、縦棒が「1つ」の側、三つ又が「多数」の側。</p>
+        <p><span class="sw2"></span> 点線の表は予定（B2 #56・B2b #127）。既存の表との線は引かない（既存は変更しない）。</p>
+      </div>
+      <div class="erc"><h5>アプリの DB 権限（設計.md D-19・N-04）</h5>
+        <ul><li>アプリは <b>users</b> を <b>SELECT しない</b>（ログインの答えが来たら見直す）</li>
+        <li>既存の6つは <b>SELECT</b> だけ（INSERT・UPDATE・DELETE・DDL なし）</li>
+        <li><b>share_links</b> は <b>SELECT・INSERT</b> だけ（UPDATE・DELETE・DDL なし）</li></ul>
+      </div>
+      <div class="erc"><h5>テーブル同士のつながり（外部キー7本）</h5>
+        <ul><li><code>order_items.order_id → orders.order_id（注文が含む）</code></li><li><code>order_items.product_id → products.product_id（商品が注文される）</code></li><li><code>orders.user_id → users.user_id（利用者が注文する）</code></li><li><code>product_facts.product_id → products.product_id（商品が事実を持つ）</code></li><li><code>product_scenes.product_id → products.product_id（商品がシーンタグを持つ）</code></li><li><code>reviews.product_id → products.product_id（商品がレビューされる）</code></li><li><code>reviews.user_id → users.user_id（利用者が書く）</code></li></ul>
+      </div>
+    </div>
   </div>
 </section>
 
