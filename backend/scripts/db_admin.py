@@ -138,7 +138,12 @@ class Report:
 
     def save(self) -> Path:
         EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
-        path = EVIDENCE_DIR / f"{date.today().isoformat()}_{self.step}.md"
+        stem = f"{date.today().isoformat()}_{self.step}"
+        path = EVIDENCE_DIR / f"{stem}.md"
+        n = 2
+        while path.exists():  # 既存の記録を上書きしない
+            path = EVIDENCE_DIR / f"{stem}_{n}.md"
+            n += 1
         header = [
             f"# DB 手順 {self.step} の実行記録",
             "",
@@ -219,8 +224,13 @@ def snapshot(conn: Any, rep: Report) -> dict[str, Any]:
     for t in EXISTING_TABLES:
         r = run(conn, rep, SQL_A_COUNT.replace("<既存テーブル>", t))
         counts[t] = int(next(iter(r[0].values())))
+    # 比べる対象は既存7表だけ。share_links 自身の列は除く（作った後の C が不合格になるため）
     return {
-        "columns": [{k: str(v) for k, v in c.items()} for c in cols],
+        "columns": [
+            {k: str(v) for k, v in c.items()}
+            for c in cols
+            if str(c["TABLE_NAME"]) in EXISTING_TABLES
+        ],
         "counts": counts,
     }
 
@@ -335,7 +345,10 @@ def step_4(conn: Any, rep: Report) -> None:
 
 def latest_snapshot() -> dict[str, Any]:
     """手順A の最新の記録から、控え（JSON）を読む"""
-    files = sorted(EVIDENCE_DIR.glob("*_A.md"))
+    files = sorted(
+        (f for f in EVIDENCE_DIR.glob("*.md") if re.search(r"_A(_\d+)?\.md$", f.name)),
+        key=lambda f: f.stat().st_mtime,
+    )
     if not files:
         raise SystemExit("手順A の記録がありません。先に A を実行してください")
     text = files[-1].read_text(encoding="utf-8")
