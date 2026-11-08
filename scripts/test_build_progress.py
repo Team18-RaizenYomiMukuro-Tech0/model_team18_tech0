@@ -231,8 +231,13 @@ class T(unittest.TestCase):
         self.assertEqual(bp.area_split("[F・R1] 共通ヘッダー"), ("F", "R1", "共通ヘッダー"))
         self.assertEqual(bp.area_split("[B2b] 続き"), ("B", "B2b", "続き"))
         self.assertEqual(bp.area_split("  [T10]  空白あり"), ("T", "T10", "空白あり"))
+        # 「・」の後ろは 英大文字1字＋数字（R1 以外も）
+        self.assertEqual(bp.area_split("[B・O1] 題"), ("B", "O1", "題"))
+        self.assertEqual(bp.area_split("[P・K1] 題"), ("P", "K1", "題"))
+        self.assertEqual(bp.area_split("[T・O4] 題"), ("T", "O4", "題"))
+        self.assertEqual(bp.area_split("[B・L12] 題"), ("B", "L12", "題"))
         # 読めない形は None（札なし・題はそのまま）
-        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・1] R が無い", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
+        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・o1] 小文字", "[F・RR1] 2字", "[F・O1b] 小文字つき", "[F・1] R が無い", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
             self.assertIsNone(bp.area_split(bad), bad)
             self.assertIsNone(bp.AREA_RE.match(bad), bad)
         # 札の HTML（画面）。R1 は札 F の色で R1 と出す
@@ -254,6 +259,19 @@ class T(unittest.TestCase):
         got = [(x["n"], x["code"], x["area"], x["title"]) for x in q["phases"][0]["issues"]]
         self.assertEqual(got, [(1, "B1", "B", "a"), (7, "B2", "B", "g"), (3, "B2b", "B", "c"), (6, "B10", "B", "f"),
                                (2, "R1", "F", "b"), (4, "", "", "[R1] d"), (5, "", "", "[X1] e")])
+
+    def test_area_code_letter_order_in_issues_quick(self):
+        ms = [{"number": 1, "title": "1 一", "due_on": "2026-11-07T00:00:00Z"}]
+        def i(n, title):
+            return {"number": n, "title": title, "state": "open", "html_url": "https://github.com/o/r/issues/%d" % n,
+                    "milestone": {"number": 1, "title": "1 一"}, "body": "", "assignees": [{"login": "Hiroki0023"}]}
+        data = [i(1, "[B・R2] a"), i(2, "[B・O1] b"), i(3, "[B10] c"), i(4, "[B・L1] d"), i(5, "[B・R1] e"), i(6, "[B2b] f"),
+                i(7, "[P・K1] g"), i(8, "[P・O2] h"), i(9, "[T・O4] i"), i(10, "[B・R10] j")]
+        q, _ = self._quick(data, ms)
+        got = [(x["code"], x["area"]) for x in q["phases"][0]["issues"]]
+        # 分野の順（P→B→T）。同じ分野は 分野の番号 → 文字順の「・」つき（L1 < O1 < R1 < R2 < R10）
+        self.assertEqual(got, [("K1", "P"), ("O2", "P"), ("B2b", "B"), ("B10", "B"), ("L1", "B"), ("O1", "B"),
+                               ("R1", "B"), ("R2", "B"), ("R10", "B"), ("O4", "T")])
 
     def test_issues_quick_shape_order_codes_reviewers(self):
         ms = [{"number": 1, "title": "1 一", "due_on": "2026-11-07T00:00:00Z"}, {"number": 2, "title": "2 二", "due_on": "2026-11-11T00:00:00Z"},
