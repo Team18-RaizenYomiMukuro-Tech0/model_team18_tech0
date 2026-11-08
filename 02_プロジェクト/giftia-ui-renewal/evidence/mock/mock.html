@@ -474,7 +474,7 @@ function resultHTML(){
   h+=`</div>${detailHTML()}</div>`;
   return h+afterResults();
 }
-function afterResults(){ return (S.picked.size||S.creating||S.link||S.st==="results")?chosenHTML()+sharebar():"" }
+function afterResults(){ return (S.picked.size||S.creating||S.link)?chosenHTML()+sharebar():"" }
 function chosenHTML(){
   const a=[...S.picked.values()];
   return `<section class="chosen" aria-label="選んだ候補"><b>選んだ候補（${a.length}件）</b>${sp("SP-04 #39-3")}
