@@ -33,4 +33,4 @@ export function productImage(category: string): string | null {
 
 // 検索中の「あかぷさん」画像（レージが後で渡す）。届いたら frontend/public/akapu/ に置き、
 // ここを "/akapu/akapu.png" のように書き換える1か所だけで差し替わる。null のあいだは CSS の回る輪を出す。
-export const AKAPU_IMAGE: string | null = null;
+export const AKAPU_IMAGE: string | null = "/akapu/akapu.png";
