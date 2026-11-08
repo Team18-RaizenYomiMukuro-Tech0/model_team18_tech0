@@ -1,10 +1,11 @@
 # DB 管理手順（下書き）
 
 - 対象: 要件 N-09、決定 inputs/キックオフ記録.md #35 8-2。
-- 実行者: レージが手で行う。使うのは**管理用アカウント**で、アプリ用アカウントでは行わない。
+- 実行者: 担当者が手で行う（承認後）。使うのは運営から**配られたアカウント**で、アプリ用の `giftia_app` では行わない。
+- 決定: 運営回答 2026-11-08「DB のアカウント」と追記（`inputs/運営回答_2026-11-08.md`、キックオフ #65・#66・#68・#70）。**管理用アカウントも、アプリ用の `giftia_app` も作らない（案A）**。表の作成（CREATE TABLE）・期間後の表の削除（DROP）・テスト行の削除は、配られたアカウントで手で行う。公開版のアプリも、同じ配られたアカウントでつなぐ。
 - 対応: 実装計画 B2、テスト設計 H-17・NF-18・NF-19・NF-09・E-08。
 - 状態: **下書き**。DB には接続していない。ここに書いたコマンドは1つも実行していない（実行前に未確認の点が下の「穴」にある）。
-- 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #28（証明書）。
+- 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #71（DB 名の固定・SSL は certifi の公開の証明書の束。設計 未決O の案Q。#28 の証明書ファイルは使わない）。
 
 ## 0. 共通の準備
 
@@ -13,28 +14,23 @@
 | 環境変数 | 中身 |
 | --- | --- |
 | `GIFTIA_DB_HOST` | DB のホスト名 |
-| `GIFTIA_DB_NAME` | DB 名（`giftia_t501`） |
-| `GIFTIA_ADMIN_USER` | 管理用アカウントのユーザー名 |
-| `GIFTIA_ADMIN_PASSWORD` | 管理用アカウントのパスワード |
-| `GIFTIA_DB_USER` | アプリ用アカウントのユーザー名（権限を与える相手） |
-| `GIFTIA_DB_SSL_CA` | 証明書ファイル。#28 の値は `C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem` |
+| `GIFTIA_ADMIN_USER` | 配られたアカウントのユーザー名（手元で手順を行うときの名前。アプリは `GIFTIA_DB_USER` で同じ値を受ける） |
+| `GIFTIA_ADMIN_PASSWORD` | 配られたアカウントのパスワード |
 
 PowerShell で設定する（値は自分で入れる。履歴に残したくなければ `Read-Host -AsSecureString` を使う）:
 
 ```powershell
 $env:GIFTIA_DB_HOST = "<ホスト名>"
-$env:GIFTIA_DB_NAME = "giftia_t501"
-$env:GIFTIA_ADMIN_USER = "<管理用ユーザー>"
-$env:GIFTIA_ADMIN_PASSWORD = "<管理用パスワード>"
-$env:GIFTIA_DB_USER = "<アプリ用ユーザー>"
-$env:GIFTIA_DB_SSL_CA = "C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem"
+$env:GIFTIA_ADMIN_USER = "<配られたユーザー>"
+$env:GIFTIA_ADMIN_PASSWORD = "<配られたパスワード>"
+$ca = python -c "import certifi; print(certifi.where())"   # 公開の証明書の束（certifi）の場所
 ```
 
-接続は SSL 必須、証明書とホスト名を検証する（`VERIFY_IDENTITY`）。以降の SQL は `mysql` コマンドラインで流す。共通の接続コマンド（`MYSQL_PWD` はこのシェルの中だけ）:
+DB 名は手作業の手順では `giftia_t501` と直接書く（環境変数にしない。#71-3）。接続は SSL 必須。証明書は certifi の公開の束（`$ca`）で、ホスト名も確かめる（`VERIFY_IDENTITY`）。証明書ファイルは配らない・置かない。以降の SQL は `mysql` コマンドラインで流す。共通の接続コマンド（`MYSQL_PWD` はこのシェルの中だけ）:
 
 ```powershell
 $env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
-mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA
+mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia_t501 --ssl-mode=VERIFY_IDENTITY --ssl-ca=$ca
 ```
 
 接続確認（これが出なければ先へ進まない）:
@@ -44,7 +40,7 @@ SELECT CURRENT_USER(), DATABASE(), VERSION(), @@have_ssl;
 SHOW STATUS LIKE 'Ssl_cipher';
 ```
 
-- 確かめ方: `CURRENT_USER()` が管理用アカウント、`DATABASE()` が `giftia_t501`、`Ssl_cipher` が空でない。
+- 確かめ方: `CURRENT_USER()` が配られたアカウント、`DATABASE()` が `giftia_t501`、`Ssl_cipher` が空でない。
 - `VERSION()` は `8.4.9-azure` のはず（#54-1。読み取りで確認済み）。JSON 型を使う。違うバージョンが出たら止まって相談する（5.7 未満なら手順1の `items` を `TEXT` にする）。
 - 作業が終わったら `Remove-Item Env:MYSQL_PWD, Env:GIFTIA_ADMIN_PASSWORD`。
 
@@ -88,55 +84,39 @@ SELECT COUNT(*) FROM share_links;
 - `COUNT(*)` が 0。
 - 既存テーブルの一覧が増減していないこと（`SHOW TABLES;` を実行前後で比べる）。
 
-## 2. アプリ用アカウントに権限を与える
+## 2. アプリ用アカウントは作らない（案A）
 
-設計.md N-04 の権限表のとおり。既存テーブルは `SELECT` だけ、`share_links` は `SELECT`・`INSERT` だけ。
+**この手順は行わない。** `giftia_app` を作る・権限を付ける SQL は載せない。
 
-**実行前の確認**
+- 決定: 「`giftia_app` は作らず、配られたアカウントで公開版をつなぐ形」（#70。運営メンバーの Hiroki が了承。#68 でレージが案A を選んだ）。
+- 理由: 配られたアカウントには `CREATE USER` と `GRANT OPTION` が無く、`giftia_app` を作れず権限も付けられない（穴4）。運営は元々案A の前提で権限を付与している（#68）。データは授業の架空データで、壊れても問題ない（#68）。ただし、このアカウントで壊せるのは自班の `giftia_t501` だけでなく、ほかの班の `giftia_t502`〜`t506` も含む。だからアプリはコードで接続先を `giftia_t501` に固定し、書き込みを `share_links` への INSERT だけに縛る（#70 の2）。
+- 影響: アプリが使うアカウントは、DB 側では `giftia_t501%` に SELECT・INSERT・UPDATE・DELETE・CREATE・DROP などの権限を持つ。N-04 の権限表（既存表 SELECT のみ、`share_links` は SELECT・INSERT のみ）は **DB の権限では守れない**。守るのはアプリのコードの側（SQL を作る部分を `Db` に集め、`SELECT` と `share_links` への `INSERT` だけを書く。設計.md D-12・D-13）。DB の権限で `UPDATE`・`DELETE` を拒否する確かめ（NF-09）は、今の DB ではできない。この扱いの文書化は設計・テスト設計の担当に任せる（この手順書では決めない）。
 
-```sql
-SHOW GRANTS FOR '<アプリ用ユーザー>'@'<ホスト指定>';
-SHOW TABLES;
-```
+**配られたアカウントのパスワードを Azure に置く**（公開版をつなぐとき。担当者が手で行う）:
 
-- アプリ用アカウントが存在すること。現在の権限をメモしておく（戻すときに使う）。
-- `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（#54 の読み取り結果 `backend/db_schema.md`（ブランチ feat/issue-50-db-ssl-verify）の7つのうち `users` を除く6つに与える: order_items・orders・product_facts・product_scenes・products・reviews・users。実行前に `SHOW TABLES` と一致するか確かめる）。
+1. Azure の App Service の「環境変数」（アプリの設定）に、次の3つ（ホスト・ユーザー・パスワード）を入れる。値はこの文書・リポジトリ・Issue・チャットに書かない。
 
-**実行**（`<…>` を埋めてから流す。ユーザーとホストは環境変数ではなく SQL に直接書く）
+   | 名前 | 中身 |
+   | --- | --- |
+   | `GIFTIA_DB_HOST` | DB のホスト名 |
+   | `GIFTIA_DB_USER` | 配られたアカウントのユーザー名 |
+   | `GIFTIA_DB_PASSWORD` | 配られたアカウントのパスワード |
 
-```sql
--- 既存テーブルごとに1行ずつ（`users` を除く6つ。#58-9）（DB 全体への GRANT SELECT ON giftia_t501.* は `users` にも付くので使わない。
--- N-04 の表どおり、テーブルごとに書く）
-GRANT SELECT ON giftia_t501.order_items TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.orders TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.product_facts TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.product_scenes TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.products TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.reviews TO '<アプリ用ユーザー>'@'<ホスト指定>';
+   DB 名（`giftia_t501`）はコードの定数、SSL の証明書は certifi の公開の束で、どちらも環境変数に置かない（#71-1・2）。
+2. 「保存」して、アプリを再起動する。
+3. 確かめ: 公開 URL で候補が表示される（DB につながっている）。`/api` の応答やエラーの文に、ホスト名・ユーザー名・パスワード・証明書のパスが出ていない。リポジトリを検索して、パスワードの値が無い（`git grep` で値の一部を探す。手元で行い、結果に値を貼らない）。
+4. 手元の `.env` は `.gitignore` に入っているものだけ使う。コミット前に `git status` で `.env` が出ないことを確かめる。
 
-GRANT SELECT, INSERT ON giftia_t501.share_links TO '<アプリ用ユーザー>'@'<ホスト指定>';
-FLUSH PRIVILEGES;
-```
+**漏れたとき**（パスワードをリポジトリ・チャット・画面などに出してしまった、またはそう疑うとき）:
 
-**実行後の確かめ方**
-
-```sql
-SHOW GRANTS FOR '<アプリ用ユーザー>'@'<ホスト指定>';
-```
-
-- 出力に `INSERT`・`UPDATE`・`DELETE`・`CREATE`・`DROP`・`ALTER`・`INDEX`・`ALL PRIVILEGES`・`GRANT OPTION` が**ない**こと。`share_links` の行は `SELECT, INSERT` だけ。
-- 実際の拒否は、アプリ用アカウントで次を流して確かめる（設計.md N-04 の確かめ方）:
-
-```powershell
-$env:MYSQL_PWD = "<アプリ用パスワード。このシェルの中だけ>"
-mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_DB_USER --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA -e "DELETE FROM share_links WHERE 1=0; UPDATE share_links SET items=items WHERE 1=0;"
-```
-
-- 期待: `DELETE command denied` / `UPDATE command denied` のエラーになる（`WHERE 1=0` なので、通ってしまっても行は消えない）。既存テーブルへの `INSERT`/`UPDATE`/`DELETE` も同様に拒否されること（`WHERE 1=0` を付けて、テーブル名を入れて試す）。
+1. すぐ、運営（Hiroki など）に連絡し、**配られたアカウントのパスワードを替えてもらう**。この手順書では替えない（`ALTER USER` の権限・可否が回答に無いため。仕様に書かれていません）。
+2. 替わるまでの間、必要なら公開を止める（App Service を停止）。
+3. 新しいパスワードを受け取ったら、Azure の環境変数 `GIFTIA_DB_PASSWORD` と手元の `.env` を更新し、再起動する。古い値が残っている場所（履歴・メモ・コミット）を探して消す。コミットに入った場合は、履歴の書き換えが要るかどうかをレージと相談する。
+4. 何が・いつ漏れたか、替えた日時を `evidence/db/<YYYY-MM-DD>_漏えい対応.md` に残す（値は書かない）。
 
 ## 3. テスト行だけを消す
 
-N-09:「テスト用の印の付いた行だけ」を管理用アカウントで消す。
+N-09:「テスト用の印の付いた行だけ」を配られたアカウントで消す。
 
 印は列 `is_test`（1 がテスト行）。印の付いた行だけを消し、印のない行（0）は消さない（設計.md N-09）。
 
@@ -172,6 +152,30 @@ SELECT COUNT(*) FROM share_links WHERE is_test = 1;   -- 0
 SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;  -- 1 の行が無い。0 の件数は実行前と同じ
 ```
 
+### 3b. 実機確認で作ったリンクの削除（当日中）
+
+運営回答: 公開後、iPhone（Safari）と Android（Chrome）で共有ページを1回ずつ開く。確かめるために作ったリンクは **ID（`share_id`）を控えておき、確認した当日中に**、配られたアカウントで手で消す。実機から作ったリンクは `is_test = 0` なので、手順3の条件では消えない。`share_id` で指定する。
+
+**実行前の確認**
+
+```sql
+SELECT share_id, created_at, is_test FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');
+```
+
+- 控えた ID の件数と一致すること（他の行が混じっていない）。
+
+**実行**
+
+```sql
+DELETE FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');
+```
+
+**実行後の確かめ方**
+
+```sql
+SELECT COUNT(*) FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');   -- 0
+```
+
 ## 4. 元に戻す（DROP TABLE）
 
 N-09: DB は共有リンク用テーブルを消せば元どおり（既存テーブルは変えていない）。**中の行は戻らない**。
@@ -183,12 +187,12 @@ SELECT COUNT(*) FROM share_links;
 SHOW TABLES;
 ```
 
-- 消してよいと、レージ本人が決めたこと。行が残っていれば、先に控えを取るか、捨ててよいことを確かめる（本物の共有リンクが入っていないか）。
+- 期間（11/12〜12/12）が終わっていること、または戻すと決めたこと（決めた人はレージ）。行が残っていれば、先に控えを取るか、捨ててよいことを確かめる（本物の共有リンクが入っていないか）。
 - 控えが必要なとき（任意）:
 
 ```powershell
 $env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
-mysqldump --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA --no-tablespaces $env:GIFTIA_DB_NAME share_links > share_links_backup.sql
+mysqldump --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --ssl-mode=VERIFY_IDENTITY --ssl-ca=$ca --no-tablespaces giftia_t501 share_links > share_links_backup.sql
 ```
 
   控えのファイルは**コミットしない**（保存先はリポジトリの外にする）。
@@ -208,11 +212,29 @@ SHOW TABLES LIKE 'share_links';   -- 空
 SHOW TABLES;                      -- 実行前の一覧から share_links が消えただけ
 ```
 
-- アプリ用アカウントの権限の掃除（任意）: テーブルを消すと、その `share_links` への権限の記録だけ残ることがある。不要なら `REVOKE SELECT, INSERT ON giftia_t501.share_links FROM '<アプリ用ユーザー>'@'<ホスト指定>';`。ただしテーブルが無いと REVOKE が失敗する DB もあるので、失敗しても害はない。
+
+## 5. 12/12 の後片付け（DB 側）
+
+運営回答: 期間は 11/12〜12/12。12/12 に App Service を止め、作ったリソースを削除する。DB 側の片付けは、**アプリを止めた後**に、配られたアカウントで手で行う（承認後に担当者が実行）。`giftia_app` は作らないので、アカウントの削除は無い。
+
+順番:
+
+1. アプリ（App Service）を止める（Azure 側。この手順書の対象外）。
+2. 実機確認で作ったリンクが残っていないか確かめる（手順3b。当日中に消してあるはず）。
+3. 手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
+4. Azure のアプリの設定（環境変数）は App Service の削除で消える。手元の `.env` から配られたアカウントの値を消す。
+
+**実行後の確かめ方**
+
+```sql
+SHOW TABLES;     -- 既存の7つだけ（share_links が無い）
+```
+
+- 既存テーブルの定義・件数が、下の「A. 作る前の控え」と同じこと。
 
 ## 確かめ（NF-18・NF-19・B2 の完了条件）
 
-手順1〜4を実際に流すとき、次の順で確かめて `evidence/` に残す。DB への書き込みは管理用アカウントの手順1〜4だけで、アプリ用アカウントでは拒否の確認だけを行う。
+手順1〜4を実際に流すとき、次の順で確かめて `evidence/` に残す。DB への書き込みは配られたアカウントの手順1〜4だけで、アプリ用アカウントでは拒否の確認だけを行う。
 
 ### A. 作る前の控え（手順1の直前）
 
@@ -230,7 +252,7 @@ SELECT table_name, table_rows FROM information_schema.tables
 
 ### B. NF-18 テスト行の印と後片付け
 
-1. 手順1・2の後、管理用アカウントで印なし（`is_test = 0`）の行を1行置く（テスト前からあった本物の行の代わり。架空の値）。
+1. 手順1の後、配られたアカウントで印なし（`is_test = 0`）の行を1行置く（テスト前からあった本物の行の代わり。架空の値）。
 
 ```sql
 INSERT INTO share_links (share_id, items, created_at, is_test)
@@ -242,7 +264,7 @@ VALUES ('AAAAAAAAAAAAAAAAAAAAAA', JSON_ARRAY(JSON_OBJECT('product_id','G0001','n
 4. 確かめ（合格の基準）:
    - 印の付いた行（`is_test = 1`）だけが消え、手順の1で置いた印なしの行は残る。
    - 後片付けの後の `share_links` の件数が、テストを始める前と同じ。
-   - アプリ用アカウントでは行を消せない（手順2の拒否の確認。NF-09）。
+   - （アプリ用アカウントが無いので、DB の権限での拒否の確認（NF-09）はできない。手順2 の影響を参照。）
 
 ```sql
 SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;
@@ -276,6 +298,22 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 
 ## 穴（未確認・決まっていないこと）
 
-1. **管理用アカウント・アプリ用アカウントのホスト指定・Azure の制限**: 運営相談の「相談3: DB のアカウントと権限」の返事待ち。それまで空欄のまま。
+1. **アプリ用アカウントの接続元**: 案A（#70）で閉じた。`giftia_app` を作らないので、`'giftia_app'@'<ホスト指定>'` の指定は要らない。
 2. **MySQL のバージョン**: `8.4.9-azure` で JSON 型を使うと決定済み（#54-1）。穴ではなくなった。手順0の `VERSION()` で一致を確かめる。
-3. **既存テーブルの実名**: 7つあるうち、`users` を除く6つに SELECT を与える（#58-9。ログインの答えが来たら見直す）。実行前の `SHOW TABLES` で一致を確かめる。
+3. **既存テーブルの実名**: 手順2 をやめたので、表ごとの権限付与は無い。既存の7つは手順A の控えの対象（実行前の `SHOW TABLES` で一致を確かめる）。
+4. **配られたアカウントの権限**（2026-11-08、`SHOW GRANTS FOR CURRENT_USER;` だけを実行して確認。ユーザー名・ホストは伏せる）:
+
+   | 権限 | 対象 | あるか |
+   | --- | --- | --- |
+   | `SELECT` `INSERT` `UPDATE` `DELETE` | `giftia_t501%` の全表（`.*`） | ある |
+   | `CREATE` `DROP` | 同上 | ある |
+   | `INDEX` `ALTER` `REFERENCES` `CREATE TEMPORARY TABLES` `LOCK TABLES` `CREATE VIEW` `SHOW VIEW` | 同上 | ある |
+   | `CREATE USER` | 全体（`*.*`） | **ない**（全体の権限は `USAGE` だけ） |
+   | `GRANT OPTION` | どの対象にも | **ない** |
+
+   - 対象は DB 名のパターン `giftia_t501%`（ほかに同じ形のパターンが5つ、`t502`〜`t506`）。`giftia_t501` はこのパターンに入る。
+   - **実行できる手順**: 手順1（`CREATE TABLE`）、手順3・3b（`DELETE`）、手順4（`DROP TABLE`）、手順B のテスト行の `INSERT`、手順0 の接続確認。
+   - **実行できない手順（案A で不要になった）**: `CREATE USER 'giftia_app'`・`GRANT …`・`DROP USER`。案A（#70）で行わないと決めたので、この穴は閉じた。
+   - 影響: 手順2 の「影響」を参照（アプリも同じ強い権限でつなぐ）。
+   - 参考: 配られたアカウントは `UPDATE` も持つので、手順3 の `DELETE` の条件（`is_test = 1`）を必ず先に SELECT で確かめる。
+5. **Azure の制限**: 配られたアカウントで `CREATE TABLE`・`DROP TABLE` が通るかは、実機で一度確かめる前提（権限の一覧では通るはず）。
