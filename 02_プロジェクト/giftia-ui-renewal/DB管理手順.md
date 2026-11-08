@@ -353,5 +353,19 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 1. **アプリ用アカウントのホスト指定**（`'giftia_app'@'<ホスト指定>'` の `<ホスト指定>`）: 仕様に書かれていません。運営回答にもありません。Azure の App Service からの接続元との関係で決まる。決まるまで空欄。
 2. **MySQL のバージョン**: `8.4.9-azure` で JSON 型を使うと決定済み（#54-1）。穴ではなくなった。手順0の `VERSION()` で一致を確かめる。
 3. **既存テーブルの実名**: 7つあるうち、`users` を除く6つに SELECT を与える（#58-9。ログインの答えが来たら見直す）。実行前の `SHOW TABLES` で一致を確かめる。
-4. **配られたアカウントの権限**: CREATE・DROP・CREATE USER・GRANT・DELETE が付いているかは、運営回答に書かれていません。付いていなければ手順1〜5は途中で止まる（そのときは止まって相談する）。
+4. **配られたアカウントの権限**（2026-11-08、`SHOW GRANTS FOR CURRENT_USER;` だけを実行して確認。ユーザー名・ホストは伏せる）:
+
+   | 権限 | 対象 | あるか |
+   | --- | --- | --- |
+   | `SELECT` `INSERT` `UPDATE` `DELETE` | `giftia_t501%` の全表（`.*`） | ある |
+   | `CREATE` `DROP` | 同上 | ある |
+   | `INDEX` `ALTER` `REFERENCES` `CREATE TEMPORARY TABLES` `LOCK TABLES` `CREATE VIEW` `SHOW VIEW` | 同上 | ある |
+   | `CREATE USER` | 全体（`*.*`） | **ない**（全体の権限は `USAGE` だけ） |
+   | `GRANT OPTION` | どの対象にも | **ない** |
+
+   - 対象は DB 名のパターン `giftia_t501%`（ほかに同じ形のパターンが5つ、`t502`〜`t506`）。`giftia_t501` はこのパターンに入る。
+   - **実行できる手順**: 手順1（`CREATE TABLE`）、手順3・3b（`DELETE`）、手順4（`DROP TABLE`）、手順B のテスト行の `INSERT`、手順0 の接続確認。
+   - **実行できない手順**: 手順2 の `CREATE USER 'giftia_app'` と `GRANT …`（`CREATE USER` と `GRANT OPTION` が無い）、手順5 の `DROP USER`（`CREATE USER` 権限が要る）。
+   - 影響: `giftia_app` を配られたアカウントでは作れず、権限も与えられない。運営が `giftia_app` を作る、または `CREATE USER` と `GRANT OPTION` を付ける必要がある。どちらにするかは運営回答に書かれていません（運営への確認事項）。確認が取れるまで、手順2・5 は実行しない。
+   - 参考: 配られたアカウントは `UPDATE` も持つので、手順3 の `DELETE` の条件（`is_test = 1`）を必ず先に SELECT で確かめる。
 5. **Azure の制限**: `FLUSH PRIVILEGES` や `REQUIRE SSL` の可否は、実機で一度確かめる前提。
