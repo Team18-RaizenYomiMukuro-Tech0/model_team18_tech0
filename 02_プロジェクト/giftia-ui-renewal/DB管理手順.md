@@ -1,7 +1,8 @@
 # DB 管理手順（下書き）
 
 - 対象: 要件 N-09、決定 inputs/キックオフ記録.md #35 8-2。
-- 実行者: レージが手で行う。使うのは**管理用アカウント**で、アプリ用アカウントでは行わない。
+- 実行者: 担当者が手で行う（承認後）。使うのは運営から**配られたアカウント**で、アプリ用の `giftia_app` では行わない。
+- 決定: 運営回答 2026-11-08「DB のアカウント」（`inputs/運営回答_2026-11-08.md`、#65・#66）。**配られたアカウントは作らない**。表の作成（CREATE TABLE）・期間後の表の削除（DROP）・テスト行の削除は、配られたアカウントで手で行う。
 - 対応: 実装計画 B2、テスト設計 H-17・NF-18・NF-19・NF-09・E-08。
 - 状態: **下書き**。DB には接続していない。ここに書いたコマンドは1つも実行していない（実行前に未確認の点が下の「穴」にある）。
 - 依拠: 設計.md DATA-02（列）、N-04（権限表）、キックオフ #28（証明書）。
@@ -14,9 +15,9 @@
 | --- | --- |
 | `GIFTIA_DB_HOST` | DB のホスト名 |
 | `GIFTIA_DB_NAME` | DB 名（`giftia_t501`） |
-| `GIFTIA_ADMIN_USER` | 管理用アカウントのユーザー名 |
-| `GIFTIA_ADMIN_PASSWORD` | 管理用アカウントのパスワード |
-| `GIFTIA_DB_USER` | アプリ用アカウントのユーザー名（権限を与える相手） |
+| `GIFTIA_ADMIN_USER` | 配られたアカウントのユーザー名 |
+| `GIFTIA_ADMIN_PASSWORD` | 配られたアカウントのパスワード |
+| `GIFTIA_APP_PASSWORD` | `giftia_app` に付けるパスワード（手順2。ここで作ったものを Azure のアプリ設定に置く。リポジトリ・文書には入れない） |
 | `GIFTIA_DB_SSL_CA` | 証明書ファイル。#28 の値は `C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem` |
 
 PowerShell で設定する（値は自分で入れる。履歴に残したくなければ `Read-Host -AsSecureString` を使う）:
@@ -24,9 +25,9 @@ PowerShell で設定する（値は自分で入れる。履歴に残したくな
 ```powershell
 $env:GIFTIA_DB_HOST = "<ホスト名>"
 $env:GIFTIA_DB_NAME = "giftia_t501"
-$env:GIFTIA_ADMIN_USER = "<管理用ユーザー>"
-$env:GIFTIA_ADMIN_PASSWORD = "<管理用パスワード>"
-$env:GIFTIA_DB_USER = "<アプリ用ユーザー>"
+$env:GIFTIA_ADMIN_USER = "<配られたユーザー>"
+$env:GIFTIA_ADMIN_PASSWORD = "<配られたパスワード>"
+$env:GIFTIA_APP_PASSWORD = "<長いランダムな文字列。自分で作る>"
 $env:GIFTIA_DB_SSL_CA = "C:\Users\自分\certs\DigiCertGlobalRootG2.crt.pem"
 ```
 
@@ -44,7 +45,7 @@ SELECT CURRENT_USER(), DATABASE(), VERSION(), @@have_ssl;
 SHOW STATUS LIKE 'Ssl_cipher';
 ```
 
-- 確かめ方: `CURRENT_USER()` が管理用アカウント、`DATABASE()` が `giftia_t501`、`Ssl_cipher` が空でない。
+- 確かめ方: `CURRENT_USER()` が配られたアカウント、`DATABASE()` が `giftia_t501`、`Ssl_cipher` が空でない。
 - `VERSION()` は `8.4.9-azure` のはず（#54-1。読み取りで確認済み）。JSON 型を使う。違うバージョンが出たら止まって相談する（5.7 未満なら手順1の `items` を `TEXT` にする）。
 - 作業が終わったら `Remove-Item Env:MYSQL_PWD, Env:GIFTIA_ADMIN_PASSWORD`。
 
@@ -88,18 +89,34 @@ SELECT COUNT(*) FROM share_links;
 - `COUNT(*)` が 0。
 - 既存テーブルの一覧が増減していないこと（`SHOW TABLES;` を実行前後で比べる）。
 
-## 2. アプリ用アカウントに権限を与える
+## 2. アプリ用アカウント `giftia_app` を足し、権限を与える
+
+運営回答: アプリ用に `giftia_app` を足す。既存の表は SELECT、`share_links` は SELECT・INSERT。UPDATE・DELETE は付けない。`users` は SELECT も付けない（#58-9）。
+
+**`<ホスト指定>` は仕様に書かれていません**（運営回答にもありません）。決まるまで空欄のまま。
+
+**パスワードの扱い**: `giftia_app` のパスワードは Azure のアプリの設定（環境変数）に置く（名前は `GIFTIA_DB_PASSWORD`、ユーザー名は `GIFTIA_DB_USER` ＝ `giftia_app`）。リポジトリ・文書・Issue には入れない。手元の `.env` は `.gitignore` に入っているものだけ使う。
+
+**アカウントを作る**（権限を与える前に1回）:
+
+```powershell
+$env:MYSQL_PWD = $env:GIFTIA_ADMIN_PASSWORD
+mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA -e "CREATE USER 'giftia_app'@'<ホスト指定>' IDENTIFIED BY '$env:GIFTIA_APP_PASSWORD' REQUIRE SSL;"
+```
+
+- 実行前の確認: `SELECT user, host FROM mysql.user WHERE user = 'giftia_app';` が空であること（`mysql.user` が読めない場合は `SHOW GRANTS FOR 'giftia_app'@'<ホスト指定>';` がエラーになること）。
+- 実行後の確かめ: 同じ SELECT で1行出る。パスワードは画面・履歴に出さない。
 
 設計.md N-04 の権限表のとおり。既存テーブルは `SELECT` だけ、`share_links` は `SELECT`・`INSERT` だけ。
 
 **実行前の確認**
 
 ```sql
-SHOW GRANTS FOR '<アプリ用ユーザー>'@'<ホスト指定>';
+SHOW GRANTS FOR 'giftia_app'@'<ホスト指定>';
 SHOW TABLES;
 ```
 
-- アプリ用アカウントが存在すること。現在の権限をメモしておく（戻すときに使う）。
+- `giftia_app` が存在すること（上で作った後）。現在の権限をメモしておく（戻すときに使う）。
 - `SHOW TABLES` の結果から、既存テーブルの名前を全部控える（#54 の読み取り結果 `backend/db_schema.md`（ブランチ feat/issue-50-db-ssl-verify）の7つのうち `users` を除く6つに与える: order_items・orders・product_facts・product_scenes・products・reviews・users。実行前に `SHOW TABLES` と一致するか確かめる）。
 
 **実行**（`<…>` を埋めてから流す。ユーザーとホストは環境変数ではなく SQL に直接書く）
@@ -107,21 +124,21 @@ SHOW TABLES;
 ```sql
 -- 既存テーブルごとに1行ずつ（`users` を除く6つ。#58-9）（DB 全体への GRANT SELECT ON giftia_t501.* は `users` にも付くので使わない。
 -- N-04 の表どおり、テーブルごとに書く）
-GRANT SELECT ON giftia_t501.order_items TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.orders TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.product_facts TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.product_scenes TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.products TO '<アプリ用ユーザー>'@'<ホスト指定>';
-GRANT SELECT ON giftia_t501.reviews TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.order_items TO 'giftia_app'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.orders TO 'giftia_app'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.product_facts TO 'giftia_app'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.product_scenes TO 'giftia_app'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.products TO 'giftia_app'@'<ホスト指定>';
+GRANT SELECT ON giftia_t501.reviews TO 'giftia_app'@'<ホスト指定>';
 
-GRANT SELECT, INSERT ON giftia_t501.share_links TO '<アプリ用ユーザー>'@'<ホスト指定>';
+GRANT SELECT, INSERT ON giftia_t501.share_links TO 'giftia_app'@'<ホスト指定>';
 FLUSH PRIVILEGES;
 ```
 
 **実行後の確かめ方**
 
 ```sql
-SHOW GRANTS FOR '<アプリ用ユーザー>'@'<ホスト指定>';
+SHOW GRANTS FOR 'giftia_app'@'<ホスト指定>';
 ```
 
 - 出力に `INSERT`・`UPDATE`・`DELETE`・`CREATE`・`DROP`・`ALTER`・`INDEX`・`ALL PRIVILEGES`・`GRANT OPTION` が**ない**こと。`share_links` の行は `SELECT, INSERT` だけ。
@@ -129,14 +146,14 @@ SHOW GRANTS FOR '<アプリ用ユーザー>'@'<ホスト指定>';
 
 ```powershell
 $env:MYSQL_PWD = "<アプリ用パスワード。このシェルの中だけ>"
-mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_DB_USER --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA -e "DELETE FROM share_links WHERE 1=0; UPDATE share_links SET items=items WHERE 1=0;"
+mysql --host=$env:GIFTIA_DB_HOST --user=giftia_app --database=$env:GIFTIA_DB_NAME --ssl-mode=VERIFY_IDENTITY --ssl-ca=$env:GIFTIA_DB_SSL_CA -e "DELETE FROM share_links WHERE 1=0; UPDATE share_links SET items=items WHERE 1=0;"
 ```
 
 - 期待: `DELETE command denied` / `UPDATE command denied` のエラーになる（`WHERE 1=0` なので、通ってしまっても行は消えない）。既存テーブルへの `INSERT`/`UPDATE`/`DELETE` も同様に拒否されること（`WHERE 1=0` を付けて、テーブル名を入れて試す）。
 
 ## 3. テスト行だけを消す
 
-N-09:「テスト用の印の付いた行だけ」を管理用アカウントで消す。
+N-09:「テスト用の印の付いた行だけ」を配られたアカウントで消す。
 
 印は列 `is_test`（1 がテスト行）。印の付いた行だけを消し、印のない行（0）は消さない（設計.md N-09）。
 
@@ -172,6 +189,30 @@ SELECT COUNT(*) FROM share_links WHERE is_test = 1;   -- 0
 SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;  -- 1 の行が無い。0 の件数は実行前と同じ
 ```
 
+### 3b. 実機確認で作ったリンクの削除（当日中）
+
+運営回答: 公開後、iPhone（Safari）と Android（Chrome）で共有ページを1回ずつ開く。確かめるために作ったリンクは **ID（`share_id`）を控えておき、確認した当日中に**、配られたアカウントで手で消す。実機から作ったリンクは `is_test = 0` なので、手順3の条件では消えない。`share_id` で指定する。
+
+**実行前の確認**
+
+```sql
+SELECT share_id, created_at, is_test FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');
+```
+
+- 控えた ID の件数と一致すること（他の行が混じっていない）。
+
+**実行**
+
+```sql
+DELETE FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');
+```
+
+**実行後の確かめ方**
+
+```sql
+SELECT COUNT(*) FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');   -- 0
+```
+
 ## 4. 元に戻す（DROP TABLE）
 
 N-09: DB は共有リンク用テーブルを消せば元どおり（既存テーブルは変えていない）。**中の行は戻らない**。
@@ -183,7 +224,7 @@ SELECT COUNT(*) FROM share_links;
 SHOW TABLES;
 ```
 
-- 消してよいと、レージ本人が決めたこと。行が残っていれば、先に控えを取るか、捨ててよいことを確かめる（本物の共有リンクが入っていないか）。
+- 期間（11/12〜12/12）が終わっていること、または戻すと決めたこと（決めた人はレージ）。行が残っていれば、先に控えを取るか、捨ててよいことを確かめる（本物の共有リンクが入っていないか）。
 - 控えが必要なとき（任意）:
 
 ```powershell
@@ -208,11 +249,44 @@ SHOW TABLES LIKE 'share_links';   -- 空
 SHOW TABLES;                      -- 実行前の一覧から share_links が消えただけ
 ```
 
-- アプリ用アカウントの権限の掃除（任意）: テーブルを消すと、その `share_links` への権限の記録だけ残ることがある。不要なら `REVOKE SELECT, INSERT ON giftia_t501.share_links FROM '<アプリ用ユーザー>'@'<ホスト指定>';`。ただしテーブルが無いと REVOKE が失敗する DB もあるので、失敗しても害はない。
+- アプリ用アカウントの権限の掃除（任意）: テーブルを消すと、その `share_links` への権限の記録だけ残ることがある。不要なら `REVOKE SELECT, INSERT ON giftia_t501.share_links FROM 'giftia_app'@'<ホスト指定>';`。ただしテーブルが無いと REVOKE が失敗する DB もあるので、失敗しても害はない。
+
+## 5. 12/12 の後片付け（DB 側）
+
+運営回答: 期間は 11/12〜12/12。12/12 に App Service を止め、作ったリソースを削除する。DB 側の片付けは、**アプリを止めた後**に、配られたアカウントで手で行う（承認後に担当者が実行）。
+
+順番:
+
+1. アプリ（App Service）を止める（Azure 側。この手順書の対象外）。
+2. 手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
+3. `giftia_app` を削除する（下）。
+4. Azure のアプリ設定に置いた `giftia_app` のパスワードは、App Service の削除で消える。手元の `.env` にあるものも消す。
+
+**実行前の確認**
+
+```sql
+SHOW GRANTS FOR 'giftia_app'@'<ホスト指定>';
+SHOW TABLES LIKE 'share_links';    -- 手順4の後なので空
+```
+
+**実行**
+
+```sql
+DROP USER 'giftia_app'@'<ホスト指定>';
+```
+
+**実行後の確かめ方**
+
+```sql
+SHOW GRANTS FOR 'giftia_app'@'<ホスト指定>';   -- エラー（アカウントが無い）
+SHOW TABLES;                                    -- 既存の7つだけ
+```
+
+- 既存テーブルの定義・件数が、下の「A. 作る前の控え」と同じこと。
 
 ## 確かめ（NF-18・NF-19・B2 の完了条件）
 
-手順1〜4を実際に流すとき、次の順で確かめて `evidence/` に残す。DB への書き込みは管理用アカウントの手順1〜4だけで、アプリ用アカウントでは拒否の確認だけを行う。
+手順1〜4を実際に流すとき、次の順で確かめて `evidence/` に残す。DB への書き込みは配られたアカウントの手順1〜4だけで、アプリ用アカウントでは拒否の確認だけを行う。
 
 ### A. 作る前の控え（手順1の直前）
 
@@ -230,7 +304,7 @@ SELECT table_name, table_rows FROM information_schema.tables
 
 ### B. NF-18 テスト行の印と後片付け
 
-1. 手順1・2の後、管理用アカウントで印なし（`is_test = 0`）の行を1行置く（テスト前からあった本物の行の代わり。架空の値）。
+1. 手順1・2の後、配られたアカウントで印なし（`is_test = 0`）の行を1行置く（テスト前からあった本物の行の代わり。架空の値）。
 
 ```sql
 INSERT INTO share_links (share_id, items, created_at, is_test)
@@ -276,6 +350,8 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 
 ## 穴（未確認・決まっていないこと）
 
-1. **管理用アカウント・アプリ用アカウントのホスト指定・Azure の制限**: 運営相談の「相談3: DB のアカウントと権限」の返事待ち。それまで空欄のまま。
+1. **アプリ用アカウントのホスト指定**（`'giftia_app'@'<ホスト指定>'` の `<ホスト指定>`）: 仕様に書かれていません。運営回答にもありません。Azure の App Service からの接続元との関係で決まる。決まるまで空欄。
 2. **MySQL のバージョン**: `8.4.9-azure` で JSON 型を使うと決定済み（#54-1）。穴ではなくなった。手順0の `VERSION()` で一致を確かめる。
 3. **既存テーブルの実名**: 7つあるうち、`users` を除く6つに SELECT を与える（#58-9。ログインの答えが来たら見直す）。実行前の `SHOW TABLES` で一致を確かめる。
+4. **配られたアカウントの権限**: CREATE・DROP・CREATE USER・GRANT・DELETE が付いているかは、運営回答に書かれていません。付いていなければ手順1〜5は途中で止まる（そのときは止まって相談する）。
+5. **Azure の制限**: `FLUSH PRIVILEGES` や `REQUIRE SSL` の可否は、実機で一度確かめる前提。
