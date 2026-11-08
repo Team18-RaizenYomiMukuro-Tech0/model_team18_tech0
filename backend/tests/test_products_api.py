@@ -103,7 +103,6 @@ def test_invalid(fd9_db: SpyDb) -> None:
     """I-34・I-38・NF-39: 不正な値は 422（DB は呼ばない）。空の price_band・budget は無視。DB の行数は変わらない"""
     cases: list[tuple[Params, str]] = [
         ([("scene", "取引先")], "invalid_scene"),
-        ([("scene", "")], "invalid_scene"),
         ([("scene", "送別' OR '1'='1")], "invalid_scene"),
         ([("price_band", "abc")], "invalid_price_band"),
         (
@@ -129,6 +128,7 @@ def test_invalid(fd9_db: SpyDb) -> None:
         _, base = get(client, [("scene", "送別")])
         for extra in (
             [("price_band", "")],
+            [("page", "")],
             [("budget", "4500")],
             [("budget", "")],
             [("price_band", ""), ("budget", "4500")],
@@ -136,6 +136,11 @@ def test_invalid(fd9_db: SpyDb) -> None:
             status, body = get(client, [("scene", "送別"), *extra])
             assert status == 200 and body == base, extra
         assert fd9_db.row_count() == before
+        # 空の scene= は指定なし、空の page= は 1 ページ目（キックオフ記録 80）
+        _, everything = get(client, [])
+        assert get(client, [("scene", "")]) == (200, everything)
+        assert get(client, [("page", "")]) == (200, everything)
+        assert get(client, [("scene", ""), ("page", "")]) == (200, everything)
     check_category()  # カテゴリーの OR・重なり・空の扱い（完了条件 #5）
 
 

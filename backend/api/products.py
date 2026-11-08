@@ -17,8 +17,7 @@ from ranking import order_by_score
 
 router = APIRouter()
 
-# 1 ページの件数（設計.md D-28・N-14 は「config の値」。config.py は Issue #115 の触るファイルに無いので、ここに置く。PR に記載）
-PAGE_SIZE = 12
+PAGE_SIZE = SETTINGS.PAGE_SIZE  # 1 ページの件数（D-28・N-14。config の値）
 
 SCENES = ("お礼", "誕生日", "送別")
 PRICE_BANDS: dict[str, tuple[int, int]] = {  # 税込の整数。下限・上限を含む（#49-1）
@@ -89,7 +88,7 @@ def list_products(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any:
     q = request.query_params  # budget など、ここで読まない名前は無視する（#51-4）
 
     scene: str | None = None
-    if "scene" in q:
+    if q.get("scene", "") != "":  # 空（scene=）はシーンの指定なし（決定。キックオフ記録 80）
         scene = q["scene"]
         if scene not in SCENES:
             return _error("invalid_scene", "scene は お礼・誕生日・送別 のどれかです")
@@ -114,7 +113,7 @@ def list_products(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any:
             categories.append(value)
 
     page = 1
-    if "page" in q:
+    if q.get("page", "") != "":  # 空（page=）は 1 ページ目（決定。キックオフ記録 80）
         raw = q["page"]
         if re.fullmatch(r"[0-9]+", raw, re.ASCII) is None or int(raw) < 1:
             return _error("invalid_page", "page は 1 以上の整数です")
