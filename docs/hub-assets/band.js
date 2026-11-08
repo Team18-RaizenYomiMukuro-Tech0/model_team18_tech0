@@ -9,11 +9,11 @@ function md(x){var m=/^\d{4}-(\d{2})-(\d{2})/.exec(x||"");return m?(+m[1])+"/"+(
 function mk(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function num(v){return typeof v==="number"&&isFinite(v)&&v>=0}
 fetch("progress-summary.json",{cache:"no-cache"}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
-var ph=j&&j.phases;if(!Array.isArray(ph))throw 0;var st=[];ph.forEach(function(p){var m=p&&typeof p.title==="string"&&/^([1-4])(?!\d)/.exec(p.title);if(m&&!st[m[1]-1])st[m[1]-1]=p});ph=st;if(ph.length!==4)throw 0;for(var q=0;q<4;q++)if(!ph[q])throw 0;if(!num(j.closed)||!num(j.total)||j.total<=0)throw 0;
-ph.forEach(function(p){if(!p||!num(p.closed)||!num(p.total))throw 0});
+var ph=j&&j.phases;if(!Array.isArray(ph))throw 0;var st=[];ph.forEach(function(p){var m=p&&typeof p.title==="string"&&/^([1-4])(?!\d)/.exec(p.title);if(m&&!st[m[1]-1])st[m[1]-1]=p});ph=st;if(ph.length!==4)throw 0;for(var q=0;q<4;q++)if(!ph[q])throw 0;ph.forEach(function(p){if(!p||!num(p.closed)||!num(p.total))throw 0});
+var tc=0,tt=0;ph.forEach(function(p){tc+=p.closed;tt+=p.total});if(tt<=0)throw 0;
 var jst=new Date(Date.now()+9*36e5).toISOString().slice(0,10);
 var all=0,ch=0,seg=[];ph.forEach(function(p,i){if(p.total){var cl=p.closed/p.total*25,mo=num(p.merged_open)?Math.min(p.merged_open/p.total*25,25-cl):0;all+=cl;if(mo>0){ch+=mo;seg.push([i*25+cl,mo,i>0&&cl<.5])}}});
-all=Math.round(all);ch=Math.round(ch);var pct=Math.round(j.closed/j.total*100);
+all=Math.round(all);ch=Math.round(ch);var pct=Math.round(tc/tt*100);
 var cur=-1;ph.forEach(function(p,i){if(cur<0&&typeof p.start==="string"&&typeof p.due==="string"&&p.start<=jst&&jst<=p.due)cur=i});
 if(cur<0)ph.forEach(function(p,i){if(cur<0&&p.total>0&&p.closed<p.total)cur=i});
 document.getElementById("gz-all").textContent="全体 "+pct+"%";
