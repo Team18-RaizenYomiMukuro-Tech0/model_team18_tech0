@@ -15,6 +15,7 @@ class Settings:
     SHARE_EXPIRY_HOURS: int = 720  # SP-06 共有リンクの有効時間
     SHARE_ID_LENGTH: int = 22  # SP-05 共有リンクの識別子の長さ
     REQUEST_TIMEOUT_SECONDS: int = 10  # #29-14 サーバーの DB 問い合わせの上限（E-13）
+    PAGE_SIZE: int = 12  # D-28・N-14 絞り込み API の1ページの件数（決定。キックオフ記録 80）
     SHARE_REQUEST_MAX_LENGTH: int = 50  # N-06 重複込みの配列の長さの上限（決定。キックオフ記録 76）
 
 
