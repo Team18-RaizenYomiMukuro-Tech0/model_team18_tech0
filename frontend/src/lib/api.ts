@@ -18,6 +18,13 @@ export type CandidateItem = {
   reason: string;
 };
 
+// D-16 D-33: API の呼び出し先の頭。公開版は画面と API が別ホストなので、ビルド時の NEXT_PUBLIC_API_BASE を付ける。
+// 未設定（空）なら相対パス（手元の開発は next.config.ts の rewrites が /api/* を FastAPI に渡す）。
+// 画面から API を呼ぶ所は、必ずこの関数を通す。末尾の / は除く。
+export function apiUrl(path: string, base: string | undefined = process.env.NEXT_PUBLIC_API_BASE): string {
+  return `${(base ?? "").trim().replace(/\/+$/, "")}${path}`;
+}
+
 export type SearchParams = { scene: Scene; priceBand: PriceBand | null };
 
 export type SearchState =
@@ -33,7 +40,7 @@ type FetchLike = (url: string, init: { signal: AbortSignal }) => Promise<{ ok: b
 export function candidatesUrl(p: SearchParams): string {
   const q = new URLSearchParams({ scene: p.scene });
   if (p.priceBand) q.set("price_band", p.priceBand);
-  return `/api/candidates?${q.toString()}`;
+  return apiUrl(`/api/candidates?${q.toString()}`);
 }
 
 // 検索の実行役。run のたびに「最新の1回」だけが画面に反映される（古い応答は捨てる。AC-11、E-12）。
