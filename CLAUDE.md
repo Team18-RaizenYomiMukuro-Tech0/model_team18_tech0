@@ -61,5 +61,14 @@
 <!-- auto:mistakes start -->
 ## よくあるミス（自動更新・手書き禁止）
 
-（まだ繰り返しているミスはありません。週1要約 `scripts/weekly-digest.py` がここを更新する）
+発生2回以上の型（2026-11-09 の週1要約。詳細は `01_ナレッジ/mistakes/`）:
+
+- 一時ディレクトリのパスが無くなっている（9回）— 使う直前に `mkdir -p`、絶対パスで書く → `tmp-path-vanished.md`
+- zsh の glob が一致せず止まる（5回）— glob・`?` を含む引数はクォートする → `zsh-glob-no-match.md`
+- サンドボックスや証明書で外部通信が失敗（4回）— 許可ドメインの承認を取る → `sandbox-network-denied.md`
+- git 管理外の場所で git/gh を実行（3回）— リポジトリのルートへ `cd` する → `non-git-dir-command.md`
+- macOS(BSD) と GNU のコマンド差（3回）— `sed -i ''` を使う → `macos-bsd-command-diff.md`
+- gh の使い方違い・ブランチ保護（3回）— ラベルとチェックを先に確認 → `gh-usage-and-branch-policy.md`
+- ブランチ状態を確認せず git を実行（3回）— 実行前に `git status` → `git-branch-state-conflict.md`
+- Python モジュール（PIL）が無い（2回）— 実行前に import で確認 → `python-module-missing.md`
 <!-- auto:mistakes end -->
