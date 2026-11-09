@@ -47,13 +47,16 @@ else
   git worktree add -q -b "${BRANCH}" "${WT}" origin/main
   RUN_DIR="${WT}"
   PROMPT_FILE="${WT}/01_ナレッジ/weekly-digest-prompt.md"
-  MODE_NOTE="作業ツリー ${WT}（ブランチ ${BRANCH} は作成済み。ブランチの作成・切り替えはしない）の中で、01_ナレッジ/ と CLAUDE.md を編集する。生ログは ${REPO}/01_ナレッジ/_inbox/ にあり、読む・処理後に ${REPO}/01_ナレッジ/_inbox/archive/ へ mv するだけ（作業ツリーの外なので git の対象にならない）。"
+  MODE_NOTE="作業ツリー ${WT}（ブランチ ${BRANCH} は作成済み。ブランチの作成・切り替えはしない）の中で、01_ナレッジ/ と CLAUDE.md を編集する。生ログは ${REPO}/01_ナレッジ/_inbox/ にあり、読む・処理後に ${REPO}/01_ナレッジ/_inbox/archive/ へ mv するだけ（作業ツリーの外なので git の対象にならない）。git commit と git push はそれぞれ単独の Bash 呼び出しで実行し、&&・;・| で他のコマンドとつながない（つなぐと許可の照合に外れて承認待ちで止まる。無人実行では誰も承認できない）。push は 「git push -u origin ${BRANCH}」 の1文だけを打つ（HEAD や -q を使わない）。gh pr create / gh pr edit も単独で実行する。"
   ALLOWED=(
     Read Glob Grep Write Edit
     "Bash(git add 01_ナレッジ/*)"
     "Bash(git add CLAUDE.md)"
     "Bash(git commit *)"
     "Bash(git push -u origin ${BRANCH})"
+    "Bash(git push -q -u origin ${BRANCH})"
+    "Bash(git push -u origin HEAD)"
+    "Bash(git push -q -u origin HEAD)"
     "Bash(git status*)" "Bash(git diff*)" "Bash(git log*)"
     "Bash(gh pr create *)"
     "Bash(gh pr edit *--add-label needs-human*)"
@@ -81,4 +84,10 @@ claude -p "$PROMPT" \
   --add-dir "${REPO}" \
   --output-format text
 
+# コミットがあるのに origin に無い（push で止まった）なら、失敗として残す（ログの「end」だけでは気づけないため）
+if [ -z "$DRY" ] && [ "$(git -C "${REPO}" rev-list --count "origin/main..${BRANCH}" 2>/dev/null || echo 0)" -gt 0 ] \
+  && ! git -C "${REPO}" ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+  echo "[$(date -Iseconds)] 失敗: ブランチ ${BRANCH} にコミットがあるが origin に無い（push されていない）。手動で push して PR を作る"
+  exit 1
+fi
 echo "[$(date -Iseconds)] digest end"
