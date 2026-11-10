@@ -13,7 +13,21 @@ HTML = brr.build(MD, "o/r", "abcdef1234567")
 
 class T(unittest.TestCase):
     def test_cards_for_sections_2_to_6(self):
-        self.assertEqual(re.findall(r'<section class="rr-card" id="s(\d)"', HTML), ["2", "3", "4", "5", "6"])
+        self.assertEqual(re.findall(r'<section class="rr-card[^"]*" id="s(\d)"', HTML), ["0", "2", "3", "4", "5", "6"])
+
+    def test_aim_card_is_first_above_the_flow(self):
+        self.assertLess(HTML.index('id="s0"'), HTML.index('id="s2"'))
+        self.assertLess(HTML.index('id="s0"'), HTML.index('<ol class="rr-flow"'))
+        self.assertIn("rr-aim", HTML.split('id="s0"')[0][-40:])
+        s0 = HTML.split('id="s0"')[1].split('id="s2"')[0]
+        self.assertEqual(s0.count("<li>"), 3)  # 狙い・目指す姿・守ること
+        for w in ("承認待ちで作業が止まっていた", "人は判断が要る PR", "証拠がない PR は承認しない。迷ったら人に回す。"):
+            self.assertIn(w, s0)
+
+    def test_sections_1_to_6_unchanged_in_md(self):
+        secs = brr.sections(MD)
+        self.assertIn("扱うのはメンバー3人", secs[1][1])
+        self.assertTrue(secs[2][0].startswith("自動レビューの流れ"))
 
     def test_label_table_rows_come_from_md(self):
         sec6 = brr.sections(MD)[6][1]

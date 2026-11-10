@@ -22,7 +22,8 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = "00_ルール/PRレビュー規定.md"
-SHOWN = (2, 3, 4, 5, 6)  # カードにする節（§1 は対象の説明なので出さない）
+SHOWN = (2, 3, 4, 5, 6)  # 流れ図のあとに並べるカードにする節（§1 は対象の説明なので出さない）
+AIM = 0  # §0 狙い。ページの一番上に目立つカードで出す（無ければ出さない）
 
 _spec = importlib.util.spec_from_file_location("bd5", Path(__file__).with_name("build-docs5.py"))
 bd5 = importlib.util.module_from_spec(_spec)
@@ -33,6 +34,8 @@ FLOW_NEEDS = {2: ["ai-review:doing", "Draft"], 4: ["ai-approved", "needs-human",
 
 CSS = """
 .rr-lead{margin:0 0 var(--s4);font-size:var(--fs-m);color:var(--sub)}
+.rr-card.rr-aim{border-left:12px solid var(--hero)}
+.rr-aim h2{font-size:1.3rem}
 .rr-card{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);margin:var(--s4) 0}
 .rr-card h2{margin:0 0 var(--s2);font:800 1.15rem/var(--lh-t) var(--body);display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
 .rr-card h2 .no{display:inline-grid;place-items:center;min-width:2em;height:2em;border-radius:50%;background:var(--hbg);color:var(--htext);box-shadow:3px 3px 0 var(--hsh);font-size:.85rem}
@@ -129,11 +132,12 @@ def build(text, repo, commit):
             if w not in secs[n][0] + secs[n][1]:
                 raise SystemExit(f"{SRC} §{n} に「{w}」が無いので、流れ図が古い可能性があります。scripts/build-review-rule.py の図を見直してください")
     cards = []
-    for n in SHOWN:
+    for n in ((AIM,) if AIM in secs else ()) + SHOWN:
         title, extra = split_title(secs[n][0])
         md = (extra + "\n\n" if extra else "") + secs[n][1]
         flow = FLOW if n == 2 else ""
-        cards.append(f'<section class="rr-card" id="s{n}"><h2><span class="no">{n}</span>{html.escape(title)}</h2>{flow}{bd5.render(fix_md(md))}</section>')
+        cls = " rr-aim" if n == AIM else ""
+        cards.append(f'<section class="rr-card{cls}" id="s{n}"><h2><span class="no">{n}</span>{html.escape(title)}</h2>{flow}{bd5.render(fix_md(md))}</section>')
     short = commit[:7] if commit else "不明"
     blob = f"https://github.com/{repo}/blob/{commit}/{quote(SRC)}" if repo and commit else ""
     link = f'<a href="{blob}">{html.escape(SRC)}</a>' if blob else f"<code>{html.escape(SRC)}</code>"
@@ -148,7 +152,7 @@ def build(text, repo, commit):
     page = (head +
             '<header class="kb-band"><div class="kb-in">\n<div class="kb-nav"><a href="hub.html">← 開発ハブ</a></div>\n'
             f'<h1>PR レビューのルール</h1>\n<p class="lead">{html.escape(lead_of(text))}</p>\n</div></header>\n'
-            '<main class="kb">\n<p class="rr-lead">下の内容は <code>00_ルール/PRレビュー規定.md</code> の §2〜§6 です（要約せず、規定の文をそのまま出しています）。</p>\n'
+            '<main class="kb">\n<p class="rr-lead">下の内容は <code>00_ルール/PRレビュー規定.md</code> の §0 と §2〜§6 です（要約せず、規定の文をそのまま出しています）。</p>\n'
             + "\n".join(cards) +
             f'\n<p class="src">元の規定: {link}<br>表示中のコミット: <code>{html.escape(short)}</code>（このページは .md から自動生成。直接は編集しません）</p>\n'
             '</main>\n<footer class="kb-foot"><a href="hub.html">← 開発ハブに戻る</a></footer>\n</body>\n</html>\n')
