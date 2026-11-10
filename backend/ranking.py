@@ -46,3 +46,25 @@ def order_by_score(
     """点数の高い順。同点は商品ID順（R-02。送別回数は数えない。#46-2・#50-3）"""
     scores = score_products(items)
     return sorted(scores, key=lambda pid: (-scores[pid], pid))
+
+
+# SP-02 D-01 D-02 手順5・6
+def candidate_pool(scores: dict[str, Fraction], limit: int) -> list[str]:
+    """送別回数を数える範囲: 点数の上位 limit 件と、limit 位と同点の商品（点数→商品ID順）"""
+    ordered = sorted(scores, key=lambda pid: (-scores[pid], pid))
+    if len(ordered) <= limit:
+        return ordered
+    cutoff = scores[ordered[limit - 1]]
+    return [pid for pid in ordered if scores[pid] >= cutoff]
+
+
+# SP-02 D-01 D-02 手順5
+def top_by_score_then_count(
+    scores: dict[str, Fraction],
+    counts: dict[str, int],
+    pool: Sequence[str],
+    limit: int,
+) -> list[str]:
+    """点数の高い順 → 同点は送別回数の多い順 → なお同じなら商品ID順。上位 limit 件"""
+    ordered = sorted(pool, key=lambda pid: (-scores[pid], -counts.get(pid, 0), pid))
+    return ordered[:limit]
