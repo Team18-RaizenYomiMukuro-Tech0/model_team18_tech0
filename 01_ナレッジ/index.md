@@ -25,6 +25,7 @@
 - [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 3回
 - [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 3回
 - [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 3回
+- [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
 - [Python のモジュールが無い（PIL）](mistakes/python-module-missing.md) — 2回
 
 ## 画面・運用の決まり
