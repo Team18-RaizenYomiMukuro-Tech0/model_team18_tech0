@@ -358,6 +358,15 @@ class T(unittest.TestCase):
             self.assertIn('target="_blank" rel="noopener"', m.group(1))
             self.assertIn('<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span>', m.group(2))
 
+    def test_hub_link_rows_are_text_only_links(self):
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        rows = re.findall(r'<ul class="ms off" aria-label="(?:GitHub|モック・図)">(.*?)</ul>', hub)
+        items = [li for r in rows for li in re.findall(r"<li class=\"on\">(.*?)</li>", r)]
+        self.assertEqual(len(items), 5)  # GitHub 3行 + モック・図 2行
+        for li in items:
+            self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a target="_blank" rel="noopener" href="[^"]+">[^<]+<span class="xl"')  # アイコンはリンクの外
+            self.assertNotIn("<time>", li)  # 右端の → は無い
+
     def test_recent_prs_ten_default_newest_first_and_others(self):
         prs = model()["merged_prs"]
         self.assertEqual(len(prs), 10)  # 13件マージ済みのうち新しい10件
