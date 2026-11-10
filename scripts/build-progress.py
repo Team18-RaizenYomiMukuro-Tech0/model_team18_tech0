@@ -329,8 +329,8 @@ def render_prs(prs, members=()):
         return '<section class="pcard"><h3 style="margin:0">直近マージ済み PR</h3><p class="none">まだありません</p></section>'
     rows = "".join(
         f'<tr data-a="{e(x["author"])}" data-t="{x["at"].isoformat()}" data-who="{e(x.get("who", "none"))}" data-top="{1 if x.get("top", True) else 0}"{"" if x.get("top", True) else " hidden"}>'
-        f'<td data-label="PR"><a {ext(x["url"])}>#{x["number"]}</a></td>'
-        f'<td data-label="タイトル">{e(x["title"])}</td><td data-label="担当者">{e(x["author"])}</td>'
+        f'<td data-label="PR">#{x["number"]}</td>'
+        f'<td data-label="タイトル"><a {ext(x["url"])}>{e(x["title"])}<span class="vh">（別タブで開く）</span></a></td><td data-label="担当者">{e(x["author"])}</td>'
         f'<td data-label="マージ日時">{x["at"].strftime("%m/%d %H:%M")}</td></tr>' for x in prs)
     who_row = ('<ul class="meta" id="prwho" aria-label="PR を担当者で絞る">'
                + "".join(f'<li><button type="button" data-id="{e(i)}" aria-pressed="{"true" if i == "" else "false"}" hidden>{e(n)}</button></li>'
@@ -430,6 +430,7 @@ CSS = """
 .howto{font-size:var(--fs-s);color:var(--sub)}.howto>summary{cursor:pointer;font-weight:800}.howto ul{margin:var(--s2) 0 0;padding-left:1.4em}.howto li{margin:2px 0}
 /* 押せる所の形は3つだけ: ボタン（濃い塗り＋→）／リンク（下線。外へは ↗。hover・focus で下線を太く）／状態（枠なしの薄い塗り。押せない） */
 .pg a{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .pg a[target="_blank"]::after{content:" ↗";content:" ↗" / "";font-size:.85em;text-decoration:none;display:inline-block}
 .pg a:hover,.pg a:focus-visible{text-decoration-thickness:4px;background:var(--tint)}
 .pg details>summary{cursor:pointer;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}.pg details>summary:hover,.pg details>summary:focus-visible{text-decoration-thickness:4px;background:var(--tint)}

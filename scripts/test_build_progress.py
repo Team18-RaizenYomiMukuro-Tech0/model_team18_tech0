@@ -358,6 +358,28 @@ class T(unittest.TestCase):
             self.assertIn('target="_blank" rel="noopener"', m.group(1))
             self.assertIn('<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span>', m.group(2))
 
+    def test_merged_pr_table_title_is_the_only_link(self):
+        d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
+        m = bp.build_model(d["issues"], d["milestones"], NAMES, dt.date(2026, 11, 5))
+        h = bp.render_prs(m["merged_pool"], m["members"])
+        rows = re.findall(r"<tr data-a=.*?</tr>", h, re.S)
+        self.assertTrue(rows)
+        for r in rows:
+            self.assertEqual(r.count("<a "), 1)  # 行のリンクはタイトルの1か所だけ
+            self.assertRegex(r, r'<td data-label="PR">#\d+</td>')  # 番号はただの文字
+            self.assertRegex(r, r'<td data-label="タイトル"><a href="https://github.com/[^"]+" target="_blank" rel="noopener">[^<]+<span class="vh">（別タブで開く）</span></a></td>')
+            self.assertNotIn("<td data-label=\"担当者\"><a", r)
+
+    def test_overview_quick_row_title_is_the_only_link(self):
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        row = ov[ov.index("function row(it)"):ov.index("function link()")]
+        self.assertIn('mk("b",null,"#"+it.n)', row)  # 番号はただの文字
+        self.assertIn('var a=mk("a","qt-t",ti)', row)  # タイトルがリンク
+        self.assertEqual(row.count('mk("a"'), 1)  # リンクは1か所
+        self.assertLess(row.index('mk("b",null,"#"+it.n)'), row.index('mk("a","qt-t",ti)'))
+        self.assertIn('mk("span","qt-ok","✓済")', row)  # ✓済・担当はリンクの外
+        self.assertIn('mk("small","qt-w"', row)
+
     def test_hub_link_rows_are_text_only_links(self):
         hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
         rows = re.findall(r'<ul class="ms off" aria-label="(?:GitHub|モック・図)">(.*?)</ul>', hub)
