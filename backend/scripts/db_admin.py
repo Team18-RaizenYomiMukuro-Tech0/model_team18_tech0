@@ -5,7 +5,7 @@
 # - SQL は DB管理手順.md と一字一句同じ（tests/test_db_admin.py が手順書と照合する）。手順書に無い SQL は足さない。
 # - 接続先は database.py の giftia_t501（定数）。引数・環境変数では変えられない。SSL は certifi＋ホスト名の確認（#71）。
 # - 接続情報は backend/.env から読む。画面にもファイルにも出さない（出力のホスト・ユーザー・パスワードは <伏せ> にする）。
-# - 書き込む手順（1・B・B5・3・4）は、先に SELECT DATABASE() と対象の SELECT の結果を出し、yes の入力を待つ。
+# - 書き込む手順（1・B・Bt・B5・3・4）は、先に SELECT DATABASE() と対象の SELECT の結果を出し、yes の入力を待つ。
 # - 出力は 02_プロジェクト/giftia-ui-renewal/evidence/db/<日付>_<手順>.md に保存する。
 import json
 import os
