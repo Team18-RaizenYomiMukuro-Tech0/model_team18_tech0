@@ -1,5 +1,6 @@
 # GitHub Pages への自動公開。
 #  - docs/ の手書きページをそのままコピーし、5文書（02_プロジェクト/*/ の .md）を scripts/build-docs5.py で HTML にして docs5/ に置く
+#  - PR レビュー規定（00_ルール/PRレビュー規定.md）も scripts/build-review-rule.py で review-rule.html にする（コミットしない）
 #  - 5文書の HTML はビルド時に生成するだけで、コミットしない（書くのは .md だけ）
 #  - 進捗ページ progress.html は scripts/build-progress.py が GitHub の Issue・マイルストーンから作る（読み取りのみ。秘匿値は使わない）
 #  - PR を出した・閉じたときも公開（main のコードだけを使う。PR のコードは動かさない）
@@ -15,6 +16,8 @@ on:
     paths:
       - "02_プロジェクト/**"
       - "scripts/build-docs5.py"
+      - "scripts/build-review-rule.py"
+      - "00_ルール/PRレビュー規定.md"
       - "scripts/build-progress.py"
       - "munder/progress-names.json"
       - ".github/workflows/pages.yml"
@@ -67,6 +70,8 @@ jobs:
           # 手書きの静的ページ。docs/ がまだ無くてもビルドは通る
           if [ -d docs ]; then cp -R docs/. _site/; fi
           python scripts/build-docs5.py --out _site
+          # PR レビューのルール（00_ルール/PRレビュー規定.md から作る）
+          python scripts/build-review-rule.py --out _site
           # 進捗ページ（失敗しても公開は止めない。取得できなかった旨のページになる）
           python scripts/build-progress.py --out _site
           # Jekyll による処理を止める（アンダースコア始まりの案件フォルダ _template を公開するため）
