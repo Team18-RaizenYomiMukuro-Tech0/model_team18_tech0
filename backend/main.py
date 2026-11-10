@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI
 
 import logging_setup
 import publish
+from api.products import router as products_router
 from db import Db, get_db
 
 load_dotenv()
@@ -19,6 +20,7 @@ logging_setup.install(app)  # 時刻・API・結果だけのログ（N-13）
 # 公開版: 全応答に X-Robots-Tag（noindex）、CORS は公開した画面の送信元 1 つだけ（未設定なら許さない。N-07・D-16）。
 # 手元の開発では、画面が Next.js の rewrites で /api/* を同じ送信元から呼ぶので、CORS は開けない
 publish.install(app, publish.parse_allowed_origin(os.environ.get(publish.ALLOWED_ORIGIN_ENV)))
+app.include_router(products_router)  # GET /api/products（R-02 の絞り込み。D-28）
 
 
 @app.get("/api/health")

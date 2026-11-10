@@ -15,6 +15,18 @@
 - [ナレッジ自動吸い上げ＆再発防止の設計](自動吸い上げ設計.md) — 失敗の吸い上げから再発防止までの設計（2026-10-19。現状との差は未確認）
 - `deploy-checklist.md` — 週1要約が自動で書く（手で編集しない）
 
+## ミスの型（週1要約が更新。発生回数の多い順）
+
+- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 32回。記録のノイズの可能性（要確認）
+- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 9回
+- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 5回
+- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 4回
+- [git 管理外のディレクトリで git/gh を実行している](mistakes/non-git-dir-command.md) — 3回
+- [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 3回
+- [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 3回
+- [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 3回
+- [Python のモジュールが無い（PIL）](mistakes/python-module-missing.md) — 2回
+
 ## 画面・運用の決まり
 
 - [ハブの見た目の決まり](ハブの見た目の決まり.md) — 押せる所の形3つ・STAGE 4 の表示・早見表の自動生成（2026-11-07）

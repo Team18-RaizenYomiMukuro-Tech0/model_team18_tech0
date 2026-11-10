@@ -72,13 +72,16 @@ try {
     $RunDir = $Wt
     $WtFwd = $Wt -replace '\\', '/'
     $PromptFile = Join-Path $Wt '01_ナレッジ\weekly-digest-prompt.md'
-    $ModeNote = "作業ツリー $WtFwd（ブランチ $Branch は作成済み。ブランチの作成・切り替えはしない）の中で、01_ナレッジ/ と CLAUDE.md を編集する。生ログは $RepoFwd/01_ナレッジ/_inbox/ にあり、読む・処理後に $RepoFwd/01_ナレッジ/_inbox/archive/ へ mv するだけ（作業ツリーの外なので git の対象にならない）。"
+    $ModeNote = "作業ツリー $WtFwd（ブランチ $Branch は作成済み。ブランチの作成・切り替えはしない）の中で、01_ナレッジ/ と CLAUDE.md を編集する。生ログは $RepoFwd/01_ナレッジ/_inbox/ にあり、読む・処理後に $RepoFwd/01_ナレッジ/_inbox/archive/ へ mv するだけ（作業ツリーの外なので git の対象にならない）。git commit と git push はそれぞれ単独の Bash 呼び出しで実行し、&&・;・| で他のコマンドとつながない（つなぐと許可の照合に外れて承認待ちで止まる。無人実行では誰も承認できない）。push は 「git push -u origin $Branch」 の1文だけを打つ（HEAD や -q を使わない）。gh pr create / gh pr edit も単独で実行する。"
     $Allowed = @(
       'Read', 'Glob', 'Grep', 'Write', 'Edit',
       'Bash(git add 01_ナレッジ/*)',
       'Bash(git add CLAUDE.md)',
       'Bash(git commit *)',
       "Bash(git push -u origin $Branch)",
+      "Bash(git push -q -u origin $Branch)",
+      'Bash(git push -u origin HEAD)',
+      'Bash(git push -q -u origin HEAD)',
       'Bash(git status*)', 'Bash(git diff*)', 'Bash(git log*)',
       'Bash(gh pr create *)',
       'Bash(gh pr edit *--add-label needs-human*)',
