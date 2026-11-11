@@ -26,6 +26,7 @@
 - [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 3回
 - [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 3回
 - [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
+- [証拠が完了条件と違うのに ○ にする・Draft で止める・パスを書き違える](mistakes/evidence-and-review-slips.md) — 3回（2026-11-11〜12。手書き）
 - [Python のモジュールが無い（PIL）](mistakes/python-module-missing.md) — 2回
 
 ## 画面・運用の決まり
