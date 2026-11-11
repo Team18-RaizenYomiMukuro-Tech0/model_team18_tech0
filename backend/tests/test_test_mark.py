@@ -65,8 +65,15 @@ def test_env_cannot_change_mark(client: TestClient, monkeypatch: pytest.MonkeyPa
     assert client.post("/mark").json() == {"is_test": 0}
 
 
-# SP-05 / D-19: conftest の差し替えフィクスチャで 1 になり、終わると 0 に戻る
-def test_fixture_toggles_main_app_override(test_mark_on: None) -> None:
+# SP-05 / D-19: conftest の差し替えフィクスチャで 1 になる
+def test_fixture_sets_override(test_mark_on: None) -> None:
     import main
 
     assert main.app.dependency_overrides[get_test_mark]() == 1
+
+
+# SP-05 / D-19: 上のテストが終わった後は差し替えが残らず 0 に戻る（ファイル内の順に実行）
+def test_fixture_override_is_removed_after() -> None:
+    import main
+
+    assert get_test_mark not in main.app.dependency_overrides
