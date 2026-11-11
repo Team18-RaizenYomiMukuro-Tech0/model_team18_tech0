@@ -1,5 +1,5 @@
 // `npm test` は src の *.test.ts をすべて、`npm test -- formatPrice` は名前に formatPrice を含むものだけ動かす。
-// 道具は Node 標準の node:test（新しいライブラリは足さない）。テストの道具の最終決定は T1（#）。
+// 道具は Node 標準の node:test（新しいライブラリは足さない）。テストの道具は T1（#54）で node:test に決定。
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
