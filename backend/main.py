@@ -11,6 +11,7 @@ import logging_setup
 import publish
 from api.candidates import router as candidates_router
 from api.products import router as products_router
+from api.share_links import router as share_links_router
 from db import Db, get_db
 
 load_dotenv()
@@ -23,6 +24,7 @@ logging_setup.install(app)  # 時刻・API・結果だけのログ（N-13）
 publish.install(app, publish.parse_allowed_origin(os.environ.get(publish.ALLOWED_ORIGIN_ENV)))
 app.include_router(candidates_router)  # GET /api/candidates（R-01 の候補。D-01）
 app.include_router(products_router)  # GET /api/products（R-02 の絞り込み。D-28）
+app.include_router(share_links_router)  # POST /api/share-links（共有リンクの作成。D-05）
 
 
 @app.get("/api/health")
