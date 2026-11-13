@@ -1,11 +1,12 @@
 # share_links.py — POST /api/share-links（設計.md D-05・D-07・D-15、DATA-02、仕様 SP-05・SP-07）
-# 選んだ商品 ID から、作成時点の商品名・価格・理由を保存した共有リンクを 1 件作る。取得（GET）は B6。
+# 選んだ商品 ID から、作成時点の商品名・価格・理由を保存した共有リンクを 1 件作る（POST）。
+# GET /api/share-links/{share_id}（D-06、SP-06）は保存した値を返し、販売終了・在庫なしだけ開いた時点で商品テーブルを確かめる。
 #  - 本文は商品 ID だけ。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
 #  - 検査の順: 型 → 配列の長さ（50）→ 重複を除く → 0 件 → 11 件以上 → 存在確認（U-33、NF-13）。
 #  - 書き込みは share_links への INSERT 1 回だけ（Db.insert_share_link。N-04）。SQL はプレースホルダ。
 #  - 時刻は Clock（D-11）、テスト用の印は get_test_mark（D-19）から受け取る。
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 
@@ -22,8 +23,9 @@ from api.candidates import (
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, DbError, get_db
+from expiry import is_expired
 from reasons import build_reason
-from share_id import new_share_id
+from share_id import SHARE_ID_RE, new_share_id
 from share_mark import get_test_mark
 
 router = APIRouter()
@@ -33,6 +35,9 @@ SELECT_PRODUCTS_HEAD = (
     "FROM products p WHERE p.product_id IN ("
 )
 SELECT_PRODUCTS_TAIL = ")"
+SELECT_SHARE_LINK = "SELECT share_id, items, created_at FROM share_links WHERE share_id = %s"
+SELECT_STOCK_HEAD = "SELECT p.product_id, p.stock FROM products p WHERE p.product_id IN ("
+SELECT_STOCK_TAIL = ")"
 INSERT_SHARE_LINK = "INSERT INTO share_links (share_id, items, created_at, is_test) VALUES (%s, %s, %s, %s)"
 
 MAX_ID_RETRIES = 3  # 識別子が衝突したら作り直す（DATA-02）。乱数 122 ビットなので実際には起きない
@@ -136,3 +141,65 @@ async def create_share_link(
     if isinstance(ids, JSONResponse):
         return ids
     return await run_in_threadpool(_create, ids, db, clock, mark)
+
+
+def _not_found() -> JSONResponse:
+    return JSONResponse({"error": {"code": "not_found", "message": "リンクが見つかりません"}}, status_code=404)
+
+
+def _parse_created_at(value: Any) -> datetime:
+    """DB の created_at（MySQL は datetime、偽の DB は文字列）を、時間帯なし（UTC）の時刻にする"""
+    if isinstance(value, datetime):
+        return value
+    return datetime.strptime(str(value), "%Y-%m-%d %H:%M:%S")  # UTC の秒まで（DATA-02）
+
+
+def _read(share_id: str, db: Db, clock: Clock) -> JSONResponse:
+    if SHARE_ID_RE.fullmatch(share_id) is None:  # 形式が不正なら DB を引かずに、該当なしと同じ応答（D-06）
+        return _not_found()
+    rows = db.fetch_all(SELECT_SHARE_LINK, (share_id,))
+    if not rows:
+        return _not_found()
+    created = _parse_created_at(rows[0]["created_at"])
+    if is_expired(created, clock.now()):  # 期限切れなら商品は返さず、商品テーブルも見ない（#30 G）
+        return JSONResponse({"error": {"code": "expired", "message": "このリンクは期限切れです"}}, status_code=410)
+
+    raw = rows[0]["items"]
+    stored: list[dict[str, Any]] = json.loads(raw) if isinstance(raw, str | bytes) else raw
+    stocks: dict[str, Any] = {}
+    if stored:
+        marks = ", ".join(["%s"] * len(stored))
+        sql = SELECT_STOCK_HEAD + marks + SELECT_STOCK_TAIL
+        stocks = {str(r["product_id"]): r["stock"] for r in db.fetch_all(sql, tuple(i["product_id"] for i in stored))}
+
+    items = []
+    for item in stored:  # 保存した並び（選んだ順）のまま。名前・価格・理由は保存値（SP-06）
+        pid = item["product_id"]
+        if pid not in stocks:
+            status = "discontinued"  # 商品テーブルに無い＝販売終了
+        elif stocks[pid] is None or stocks[pid] < 1:
+            status = "out_of_stock"  # 在庫 0（NULL も在庫なしとして扱う。R-02 と同じ）
+        else:
+            status = "available"
+        items.append(
+            {"product_id": pid, "status": status, "name": item["name"], "price": item["price"], "reason": item["reason"]}
+        )
+    expires = created + timedelta(hours=SETTINGS.SHARE_EXPIRY_HOURS)
+    return JSONResponse(
+        {
+            "created_at": created.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "expires_at": expires.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "items": items,
+        }
+    )
+
+
+# SP-06 D-06 D-11
+@router.get("/api/share-links/{share_id}", response_model=None)
+async def get_share_link(
+    share_id: str,
+    db: Annotated[Db, Depends(get_db)],
+    clock: Annotated[Clock, Depends(get_clock)],
+) -> Any:
+    """共有リンクを開く。DB の呼び出しは別スレッドで行い、待ち中も他の要求を止めない"""
+    return await run_in_threadpool(_read, share_id, db, clock)
