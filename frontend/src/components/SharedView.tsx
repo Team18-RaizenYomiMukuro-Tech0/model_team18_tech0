@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { fetchShared, itemNote, type SharedResult } from "@/lib/sharedLink";
-import { Searching } from "./Searching";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -25,7 +24,11 @@ export function SharedView({ shareId }: Readonly<{ shareId: string }>) {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>贈りもの候補</h1>
-      {!r && <Searching />}
+      {!r && (
+        <p role="status" className={styles.msg}>
+          読み込み中
+        </p>
+      )}
       {r?.status === "ok" && (
         <>
           <p className={styles.lead}>作成時点の商品名・価格です</p>
