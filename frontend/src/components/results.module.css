@@ -1,0 +1,34 @@
+/* R6 検索結果（カード・ページ送り・詳細の欄）。globals.css は触らない */
+.layout { display: grid; gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
+@media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; } }
+.results { display: grid; gap: 16px; min-width: 0; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card { position: relative; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); }
+.card[data-selected="true"] { border: 2px solid #b8422a; }
+.body { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 8px 8px 52px; color: var(--ink); text-decoration: none; font-size: 14px; }
+.heartpos { position: absolute; right: 6px; bottom: 6px; }
+.pic { position: relative; display: block; }
+.pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
+.badge { align-self: flex-start; padding: 0 8px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-ink); font-size: 12px; font-weight: 700; }
+.name { font-weight: 700; }
+.price { font-weight: 700; }
+.meta { color: #5c514d; font-size: 13px; }
+.pager { display: grid; gap: 8px; justify-items: center; }
+.range { margin: 0; font-size: 14px; }
+.pages { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.pg { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); text-decoration: none; }
+.pg[aria-current="page"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+.empty { margin: 0; padding: 16px; border-radius: var(--rm); background: var(--muted); text-align: center; }
+.deterr { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
+.btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+/* 詳細の欄: 広い幅では右に置き、画面内に収める（下端が切れない）。狭い幅では結果の上に出す */
+.detail { padding: 14px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); min-width: 0; order: -1; }
+@media (min-width: 900px) { .detail { order: 0; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; } }
+.detbody { display: grid; gap: 6px; }
+.detname { margin: 0; font-size: 18px; }
+.stockout { align-self: flex-start; padding: 0 10px; border-radius: 999px; background: #3a3331; color: #fff; font-size: 13px; font-weight: 700; }
+.dt { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
+.favrow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
