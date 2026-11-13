@@ -1,0 +1,53 @@
+# 画面（frontend/）を Azure App Service（Web アプリ）にデプロイする
+name: Build and deploy Node.js app to Azure Web App - gen13-app-step3-1-5181-fe
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/main_gen13-app-step3-1-5181-fe.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+      - name: npm install, build, and test
+        env:
+          NEXT_PUBLIC_API_BASE: ${{ vars.NEXT_PUBLIC_API_BASE }}
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      - name: Zip artifact for deployment
+        run: zip -qr ../release.zip . -x '.next/cache/*'
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: release.zip
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'gen13-app-step3-1-5181-fe'
+          slot-name: 'Production'
+          package: release.zip
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5CEA344BF203474FB3C46A303F55A75B }}
