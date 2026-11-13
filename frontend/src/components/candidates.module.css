@@ -28,3 +28,7 @@
 .over { margin: 0; padding: 10px 12px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
 .create { justify-self: start; background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
 .create:disabled { background: var(--muted); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; }
+.share { display: grid; gap: 8px; }
+.sharelink { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.url { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; user-select: all; }
+.copymsg { flex-basis: 100%; min-height: 1.2em; }
