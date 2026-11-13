@@ -74,6 +74,17 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/guard-worktree-remove.py\"; fi; done; exit 0"
+          }
+        ]
+      }
+    ],
     "PostToolUseFailure": [
       {
         "matcher": "Bash",
