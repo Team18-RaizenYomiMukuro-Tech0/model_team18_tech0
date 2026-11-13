@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { SCENES, SearchRunner, type Scene, type SearchState } from "@/lib/api";
 import { PRICE_BANDS, togglePriceBand, type PriceBand } from "@/lib/priceBand";
+import { CandidateList } from "./CandidateList";
 import { SearchStatus } from "./SearchStatus";
+import { SelectedList } from "./SelectedList";
 import styles from "./search.module.css";
 
 // SP-01 D-08 F-01 #50-1 #51-1: 検索ページの入力。価格帯（任意）とシーンのボタン。「候補を出す」ボタンは置かない。
@@ -66,6 +68,8 @@ export function SearchForm() {
       <div className={styles.status} aria-live="polite">
         <SearchStatus state={state} priceBand={band} onRetry={() => scene && run(scene, band)} />
       </div>
+      {state.status === "results" && <CandidateList items={state.items} />}
+      <SelectedList />
     </div>
   );
 }

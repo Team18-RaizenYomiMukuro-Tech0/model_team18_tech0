@@ -1,0 +1,30 @@
+/* F2 候補のカード・「選んだ候補」の欄。globals.css は触らない */
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1000px) { .cards { grid-template-columns: repeat(5, 1fr); } }
+.card { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); font-size: 14px; }
+.card[data-picked="true"] { border: 2px solid #b8422a; padding: 7px; }
+.rank { align-self: flex-start; font-weight: 700; font-size: 15px; }
+.pic { position: relative; display: block; }
+.pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
+.badge { align-self: flex-start; padding: 0 8px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-ink); font-size: 12px; font-weight: 700; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.price { font-weight: 700; }
+.reason { color: #5c514d; font-size: 13px; overflow-wrap: anywhere; }
+.pick, .remove, .create { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.pick { margin-top: auto; }
+.remove { flex-shrink: 0; white-space: nowrap; }
+.pick:hover, .remove:hover { background: var(--peach); }
+/* 選択中: 白い字で 4.5 以上のコントラスト。✓ も付けて色だけに頼らない */
+.pick[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.selected { display: grid; gap: 12px; margin-top: 24px; padding: 16px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); max-width: 720px; }
+.sh { margin: 0; font-size: 17px; }
+.count { font-weight: 400; margin-left: 4px; }
+.sel { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.selrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.selbody { display: grid; gap: 2px; min-width: 0; }
+.over { margin: 0; padding: 10px 12px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
+.create { justify-self: start; background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+.create:disabled { background: var(--muted); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; }
