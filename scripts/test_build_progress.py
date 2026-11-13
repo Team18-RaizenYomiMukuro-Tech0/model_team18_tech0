@@ -29,17 +29,21 @@ class T(unittest.TestCase):
                     "milestone": ms, "assignees": []}
         ms = [{"number": 1, "title": "1 5文書", "due_on": "2026-11-07T00:00:00Z"},
               {"number": 3, "title": "3 実装②", "due_on": "2026-11-15T00:00:00Z"},
-              {"number": 5, "title": "5 公開期間", "due_on": "2026-12-12T00:00:00Z"}]
+              {"number": 5, "title": "5 公開期間", "due_on": "2026-12-12T00:00:00Z"},
+              {"number": 6, "title": "K キット改善", "due_on": None}]
         issues = [iss(1, ms[0], "closed"), iss(2, ms[1]), iss(3, ms[1], "closed"), iss(4, ms[2], "closed"),
-                  iss(5, ms[2]), iss(6, ms[2]), iss(7, None), iss(8, None, "closed")]
+                  iss(5, ms[2]), iss(6, ms[2]), iss(7, None), iss(8, None, "closed"),
+                  iss(9, ms[3]), iss(10, ms[3], "closed"), iss(11, ms[3])]
         m = bp.build_model(issues, ms, NAMES, dt.date(2026, 11, 13))
-        self.assertEqual((m["total"], m["done"]), (8, 4))  # 全 Issue（担当者カードなどはこれまでどおり）
+        self.assertEqual((m["total"], m["done"]), (11, 5))  # 全 Issue（担当者カードなどはこれまでどおり）
         self.assertEqual((m["hub_done"], m["hub_total"]), (2, 3))
         self.assertEqual((m["public_done"], m["public_total"], m["has_public"]), (1, 3, True))
         self.assertEqual((m["nomile_done"], m["nomile_total"]), (1, 2))
+        self.assertEqual((m["kit_done"], m["kit_total"], m["has_kit"]), (1, 3, True))
         out = bp.render(m, "x")
         self.assertIn("全体 67% <span>（完了 2 / 3）</span>", out)
         self.assertIn("公開期間 1/3", out)
+        self.assertIn("キット改善 1/3", out)
         self.assertIn("マイルストーンなし 1/2", out)
 
     def test_late_uses_milestone_due_jst(self):
