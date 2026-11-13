@@ -58,34 +58,39 @@ MERMAID_VERSION = "11.4.0"
 MERMAID_URL = f"https://cdn.jsdelivr.net/npm/mermaid@{MERMAID_VERSION}/dist/mermaid.esm.min.mjs"
 
 CSS = """
-:root{--bg:#fff;--fg:#1f2328;--muted:#59636e;--line:#d1d9e0;--soft:#f6f8fa;--accent:#0969da;--decided:#fff8c5;--decided-line:#d4a72c}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif}
-main{max-width:60rem;margin:0 auto;padding:0 16px 48px}
-a{color:var(--accent)}
-nav.docs{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:4px 14px;flex-wrap:wrap;align-items:center;z-index:5}
-nav.docs a{text-decoration:none;padding:2px 8px;border-radius:6px}
-nav.docs a[aria-current=page]{background:var(--soft);font-weight:700;border:1px solid var(--line)}
-nav.docs .home{margin-right:auto}
-h1{font-size:1.7rem;line-height:1.4;margin:1.4rem 0 .6rem}
-h2{font-size:1.25rem;margin:2rem 0 .6rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
-h3{font-size:1.05rem;margin:1.4rem 0 .4rem}
-.table-wrap{overflow-x:auto;margin:.8rem 0}
-table{border-collapse:collapse;font-size:.92rem;line-height:1.55;min-width:100%}
-th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}
-th{background:var(--soft);white-space:nowrap}
-tr:target td,tr:target th{background:var(--decided)}
-blockquote{margin:.8rem 0;padding:.2rem 1rem;border-left:4px solid var(--line);color:var(--muted)}
-code{background:var(--soft);padding:.1em .35em;border-radius:4px;font-size:.9em}
-pre{background:var(--soft);padding:12px;border-radius:6px;overflow-x:auto}
-pre code{background:none;padding:0}
-pre.mermaid{background:none;text-align:center}
-.decided{background:var(--decided);border:1px solid var(--decided-line);border-radius:8px;padding:.6rem 1rem;margin:1rem 0}
-.decided>h2{font-size:1rem;margin:.2rem 0 .4rem;border:0;padding:0}
-footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+/* 見た目は docs/kb/kb.css（ハブ・ナレッジ記事・review-rule.html と共通）。ここは 5文書だけに要る分（タブ・本文・決まったこと・表のスクロール）を足す */
+.kb{max-width:60rem}
+.kb-nav{flex-wrap:wrap;justify-content:flex-start;gap:var(--s2) var(--s3)}
+.kb-nav a{border-bottom-color:transparent;padding:2px 8px;border-radius:var(--r1)}
+.kb-nav a.home{margin-right:auto;border-bottom-color:var(--btxt)}
+.kb-nav a[aria-current=page]{border:var(--bw1) solid var(--btxt);background:rgba(255,255,255,.14)}
+.kb h2{margin:var(--s5) 0 var(--s2);padding-bottom:var(--s2);border-bottom:var(--bw1) dashed var(--kac);font:800 1.3rem/var(--lh-t) var(--body);scroll-margin-top:12px}
+.kb h3{margin:var(--s4) 0 var(--s2);font:800 var(--fs-l)/var(--lh-t) var(--body)}
+.kb h4,.kb h5{margin:var(--s3) 0 var(--s1);font:800 var(--fs-m)/var(--lh-t) var(--body)}
+.kb p{margin:var(--s2) 0}
+.kb ul,.kb ol{padding-left:1.5em}
+.kb li{margin:var(--s1) 0}
+.kb>*+*{margin-top:0}
+.kb blockquote{margin:var(--s3) 0;padding:var(--s2) var(--s4);background:var(--card);color:var(--csub);border:var(--bw1) solid var(--line);border-left:8px solid var(--kac);border-radius:var(--r1)}
+.kb blockquote p{margin:var(--s1) 0}
+.table-wrap{overflow-x:auto;margin:var(--s3) 0;background:var(--card);color:var(--ctext);border:var(--bw1) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1)}
+.table-wrap table{display:table;width:100%;min-width:100%;font-size:var(--fs-s);line-height:1.6}
+.table-wrap thead{display:table-header-group}.table-wrap tbody{display:table-row-group}
+.table-wrap tr{display:table-row;padding:0;border:0}
+.table-wrap th,.table-wrap td{display:table-cell;border:0;border-top:var(--bw1) solid color-mix(in srgb,var(--ctext) 14%,transparent);padding:6px 12px;vertical-align:top;text-align:left;overflow-wrap:normal}
+.table-wrap th{border-top:0;white-space:nowrap}
+.table-wrap td::before{display:none}
+tr:target td,tr:target th{background:var(--warn);color:var(--text)}
+pre{margin:var(--s3) 0}
+pre.mermaid{background:var(--card);border-color:var(--line);text-align:center}
+.decided{background:var(--warn);color:var(--text);border:var(--bw1) solid var(--warnbd);border-left:12px solid var(--warnbd);border-radius:var(--r2);padding:var(--s3) var(--s4);margin:var(--s4) 0}
+.decided>h2{font:800 var(--fs-m)/1.6 var(--body);margin:0 0 var(--s2);border:0;padding:0}
+.decided .table-wrap{box-shadow:none}
 ul.projects{list-style:none;padding:0}
-ul.projects li{margin:.4rem 0}
-@media (max-width:600px){body{font-size:15px}h1{font-size:1.4rem}}
+ul.projects li{margin:var(--s2) 0;padding:var(--s3) var(--s4);background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1)}
+.kb a.idlink,.kb a.idref{font-weight:800}
+.kb-foot{line-height:1.8}
+@media(max-width:700px){.kb h2{font-size:1.15rem}}
 """
 
 
@@ -250,12 +255,27 @@ def page(title, body, nav_html, footer_html, mermaid, up="../"):
             'mermaid.initialize({startOnLoad:true,theme:"default"});'
             "</script>"
         )
-    return (
-        "<!doctype html>\n<html lang=\"ja\">\n<head>\n<meta charset=\"utf-8\">\n"
-        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
-        f"<title>{html.escape(title)}</title>\n" + icon_links(up) + f"<style>{CSS}</style>\n</head>\n<body>\n"
-        + externalize(f"{nav_html}\n<main>\n{body}\n<footer>{footer_html}</footer>\n</main>\n") + f"{script}\n</body>\n</html>\n"
+    # 帯（docs/kb/kb.css の .kb-band）＋本文（.kb）＋フッター（.kb-foot）。手本は scripts/build-review-rule.py
+    m = re.match(r"\s*<h1>(.*?)</h1>(.*)", body, re.S)
+    h1, rest = (m.group(1), m.group(2)) if m else (html.escape(title), body)
+    if not nav_html:
+        nav_html = '<a class="home" href="../hub.html">← 開発ハブ</a>'
+    else:
+        nav_html = nav_html.replace('<nav class="docs" aria-label="5文書">', "").replace("</nav>", "")
+    head = (
+        '<!doctype html>\n<html lang="ja">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="color-scheme" content="light">\n'
+        f"<title>{html.escape(title)}</title>\n" + icon_links(up)
+        + '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+        '<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">\n'
+        f'<link rel="stylesheet" href="{up}kb/kb.css">\n<style>{CSS}</style>\n</head>\n<body>\n'
     )
+    band = (
+        f'<header class="kb-band"><div class="kb-in">\n<nav class="kb-nav" aria-label="5文書">{nav_html}</nav>\n'
+        f'<h1>{h1}</h1>\n</div></header>\n'
+    )
+    main = f'<main class="kb">\n{rest}\n</main>\n<footer class="kb-foot">{footer_html}</footer>\n'
+    return head + externalize(band + main) + f"{script}\n</body>\n</html>\n"
 
 
 def build_project(project, out_root, repo, commit):
