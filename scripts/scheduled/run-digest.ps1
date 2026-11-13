@@ -1,4 +1,4 @@
-# 週1要約（無人実行・Windows 版）。タスクスケジューラから呼ぶ。手動の動作確認は -DryRun。
+﻿# 週1要約（無人実行・Windows 版）。タスクスケジューラから呼ぶ。手動の動作確認は -DryRun。
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\run-digest.ps1 [-DryRun]
 # run-digest.sh（Mac 版）と同じ動作。許可ツールは下の $Allowed に限る。--dangerously-skip-permissions は使わない。
 # 生ログ 01_ナレッジ/_inbox/ はコミット・push しない（.gitignore 済み。git add は 01_ナレッジ/ 配下の指定ファイルのみ）。
