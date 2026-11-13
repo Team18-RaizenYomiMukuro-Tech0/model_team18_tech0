@@ -19,6 +19,7 @@
 .btn[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
 .status { min-height: 56px; }
 .result { margin: 0; font-size: 17px; }
+.catnote { margin-left: 12px; font-size: 14px; font-weight: 400; color: var(--ink); }
 .empty { margin: 0; padding: 16px; border-radius: var(--rm); background: var(--muted); text-align: center; }
 .error { padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .retry {

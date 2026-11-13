@@ -7,11 +7,11 @@ const P = (s: string) => parseSearchQuery(new URLSearchParams(s));
 
 test("searchQuery #85: price_band・category（くり返し）・page・product を読む", () => {
   assert.deepEqual(P("price_band=3000to4999&category=食品&category=コスメ&page=2&product=G0007"), {
-    priceBand: "3000to4999", categories: ["食品", "コスメ"], page: 2, product: "G0007",
+    scene: null, priceBand: "3000to4999", categories: ["食品", "コスメ"], page: 2, product: "G0007",
   });
 });
 test("searchQuery: 何も無ければ条件なし・1ページ目", () => {
-  assert.deepEqual(P(""), { priceBand: null, categories: [], page: 1, product: null });
+  assert.deepEqual(P(""), { scene: null, priceBand: null, categories: [], page: 1, product: null });
 });
 test("searchQuery: 範囲外のページ番号・形の違う値は無いものとして読む（範囲外のページは API が1ページ目を返す。#46-5）", () => {
   assert.equal(P("page=99").page, 99); // 範囲外かどうかは API が決める

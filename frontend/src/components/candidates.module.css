@@ -3,6 +3,8 @@
 @media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1000px) { .cards { grid-template-columns: repeat(5, 1fr); } }
 .card { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); font-size: 14px; }
+a.name { color: inherit; }
+.card[data-selected="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
 .card[data-picked="true"] { border: 2px solid #b8422a; padding: 7px; }
 .rank { align-self: flex-start; font-weight: 700; font-size: 15px; }
 .pic { position: relative; display: block; }

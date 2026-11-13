@@ -25,7 +25,7 @@ export function apiUrl(path: string, base: string | undefined = process.env.NEXT
   return `${(base ?? "").trim().replace(/\/+$/, "")}${path}`;
 }
 
-export type SearchParams = { scene: Scene; priceBand: PriceBand | null };
+export type SearchParams = { scene: Scene; priceBand: PriceBand | null; categories?: readonly string[] };
 
 export type SearchState =
   | { status: "initial" }
@@ -40,6 +40,7 @@ type FetchLike = (url: string, init: { signal: AbortSignal }) => Promise<{ ok: b
 export function candidatesUrl(p: SearchParams): string {
   const q = new URLSearchParams({ scene: p.scene });
   if (p.priceBand) q.set("price_band", p.priceBand);
+  for (const c of p.categories ?? []) q.append("category", c); // 選んだ数だけくり返す（#55-1）
   return apiUrl(`/api/candidates?${q.toString()}`);
 }
 
