@@ -3,16 +3,16 @@ import assert from "node:assert/strict";
 import { initialState, reducer, type AppState, type Candidate } from "./selection.ts";
 
 // U-47 D-32 SP-04 #46-1: 選んだ候補は画面移動・R-01⇄R-02 の切り替えのあとも残り、再読込（新しい状態）で消える。
-const A: Candidate = { productId: 1, name: "綿の店 ふわり ガーゼタオルセット", price: 4000, reason: "職場の送別で48回選ばれています。" };
-const B: Candidate = { productId: 2, name: "日本酒 小瓶 3本", price: 5400 };
+const A: Candidate = { productId: "G0001", name: "綿の店 ふわり ガーゼタオルセット", price: 4000, reason: "職場の送別で48回選ばれています。" };
+const B: Candidate = { productId: "G0002", name: "日本酒 小瓶 3本", price: 5400 };
 const R01 = [A, B];
-const R02 = [B, { productId: 3, name: "山の香 ほうじ茶ギフト", price: 4100 }];
+const R02 = [B, { productId: "G0003", name: "山の香 ほうじ茶ギフト", price: 4100 }];
 
 test("appState U-47: A・B を選ぶと選んだ順に入る", () => {
   let s: AppState = initialState;
   s = reducer(s, { type: "pick", item: A });
   s = reducer(s, { type: "pick", item: B });
-  assert.deepEqual([...s.picked.keys()], [1, 2]);
+  assert.deepEqual([...s.picked.keys()], ["G0001", "G0002"]);
 });
 
 test("appState U-47: トップ→検索結果→R-02 の12件→再びR-01 と結果が替わっても A・B は残る", () => {
@@ -22,8 +22,8 @@ test("appState U-47: トップ→検索結果→R-02 の12件→再びR-01 と�
   s = reducer(s, { type: "setLastR01", items: R01 });
   s = reducer(s, { type: "setLastR01", items: R02 }); // R-02 に切り替え
   s = reducer(s, { type: "setLastR01", items: R01 }); // 再びシーンを押す
-  assert.deepEqual([...s.picked.keys()], [1, 2]);
-  assert.deepEqual(s.picked.get(1), A); // 選んだ時点の表示用の情報もそのまま
+  assert.deepEqual([...s.picked.keys()], ["G0001", "G0002"]);
+  assert.deepEqual(s.picked.get("G0001"), A); // 選んだ時点の表示用の情報もそのまま
   assert.deepEqual(s.lastR01, R01);
 });
 
@@ -41,7 +41,7 @@ test("appState SP-04: 同じ商品IDをもう一度選んでも1件。外すと�
   s = reducer(s, { type: "pick", item: A });
   s = reducer(s, { type: "pick", item: A });
   assert.equal(s.picked.size, 1);
-  s = reducer(s, { type: "unpick", productId: 1 });
+  s = reducer(s, { type: "unpick", productId: "G0001" });
   assert.equal(s.picked.size, 0);
 });
 

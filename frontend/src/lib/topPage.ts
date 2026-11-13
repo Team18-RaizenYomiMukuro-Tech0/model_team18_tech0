@@ -5,7 +5,7 @@ import { REQUEST_TIMEOUT_MS, apiUrl, type Scene } from "./api.ts";
 
 export const RECOMMEND_COUNT = 4; // おすすめは条件なしの先頭4件（#53-1）
 
-export type SearchTarget = { scene?: Scene | null; priceBand?: PriceBand | null; category?: string | null; productId?: number | null };
+export type SearchTarget = { scene?: Scene | null; priceBand?: PriceBand | null; category?: string | null; productId?: string | null };
 
 // 検索結果 `/search` へ渡す条件の組み立て。設計 D-26 に書いてあるのは category と price_band。
 // scene と product のクエリ名は文書に無く、案（API の名前と同じ scene、商品は product）。変えるのはこの1か所だけ。
@@ -35,7 +35,7 @@ export function categoryToggle(open: boolean): { expanded: boolean; mark: "▼" 
 }
 
 // おすすめ: GET /api/products を条件なしで呼んだ先頭4件（D-26）
-export type RecommendedItem = { product_id: number; name: string; price: number; category: string; rating: number | null; review_count: number | null; high_rating: boolean };
+export type RecommendedItem = { product_id: string; name: string; price: number; category: string; rating: number | null; review_count: number | null; high_rating: boolean };
 export function pickRecommended(items: readonly RecommendedItem[]): RecommendedItem[] {
   return items.slice(0, RECOMMEND_COUNT);
 }

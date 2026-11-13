@@ -7,9 +7,9 @@ import { initialState, reducer, type AppState as State, type Candidate } from ".
 type Api = {
   picked: readonly Candidate[];
   lastR01: readonly Candidate[] | null;
-  isPicked: (productId: number) => boolean;
+  isPicked: (productId: string) => boolean;
   pick: (item: Candidate) => void;
-  unpick: (productId: number) => void;
+  unpick: (productId: string) => void;
   setLastR01: (items: readonly Candidate[]) => void;
 };
 

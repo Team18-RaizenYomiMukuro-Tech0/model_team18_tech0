@@ -10,7 +10,7 @@ export const SCENES: readonly Scene[] = ["お礼", "誕生日", "送別"];
 
 // D-01 の応答の1件分（画面が使う分だけ）
 export type CandidateItem = {
-  product_id: number;
+  product_id: string;
   name: string;
   price: number;
   category: string;

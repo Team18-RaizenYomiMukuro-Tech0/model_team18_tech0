@@ -4,7 +4,7 @@ import type { SearchQuery } from "./searchQuery.ts";
 // D-28 D-29 SP-11 SP-12: 検索結果（R-02）の商品一覧と詳細の取得。budget は送らない。10秒で打ち切る。
 
 export type Product = {
-  product_id: number;
+  product_id: string;
   name: string;
   price: number;
   category: string;
@@ -26,8 +26,8 @@ export function productsUrl(q: Pick<SearchQuery, "priceBand" | "categories" | "p
   return apiUrl(`/api/products${s ? `?${s}` : ""}`);
 }
 
-export function productUrl(id: number): string {
-  return apiUrl(`/api/products/${id}`);
+export function productUrl(id: string): string {
+  return apiUrl(`/api/products/${encodeURIComponent(id)}`);
 }
 
 export type Fetched<T> = { status: "ok"; data: T } | { status: "notfound" } | { status: "error" };

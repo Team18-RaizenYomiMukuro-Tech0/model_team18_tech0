@@ -8,22 +8,22 @@ export const FAVORITES_KEY = "giftia:favorites";
 
 export type StoreLike = { getItem(k: string): string | null; setItem(k: string, v: string): void };
 
-// 保存の読み出し。壊れた値・使えない保存は空として扱う。商品IDは正の整数だけ、重複は除く（最初の出現順）
-export function loadFavorites(storage: StoreLike | null): number[] {
+// 保存の読み出し。壊れた値・使えない保存は空として扱う。商品IDは空でない文字列だけ、重複は除く（最初の出現順）
+export function loadFavorites(storage: StoreLike | null): string[] {
   try {
     const raw = storage?.getItem(FAVORITES_KEY);
     if (!raw) return [];
     const v: unknown = JSON.parse(raw);
     if (!Array.isArray(v)) return [];
-    const out: number[] = [];
-    for (const x of v) if (typeof x === "number" && Number.isInteger(x) && x > 0 && !out.includes(x)) out.push(x);
+    const out: string[] = [];
+    for (const x of v) if (typeof x === "string" && x !== "" && !out.includes(x)) out.push(x);
     return out;
   } catch {
     return [];
   }
 }
 
-export function saveFavorites(storage: StoreLike | null, ids: readonly number[]): void {
+export function saveFavorites(storage: StoreLike | null, ids: readonly string[]): void {
   try {
     storage?.setItem(FAVORITES_KEY, JSON.stringify(ids));
   } catch {
@@ -33,19 +33,19 @@ export function saveFavorites(storage: StoreLike | null, ids: readonly number[])
 
 export type FavoritesStore = {
   subscribe: (cb: () => void) => () => void;
-  getSnapshot: () => readonly number[];
-  has: (id: number) => boolean;
-  add: (id: number) => void;
-  remove: (id: number) => void;
-  toggle: (id: number) => void;
+  getSnapshot: () => readonly string[];
+  has: (id: string) => boolean;
+  add: (id: string) => void;
+  remove: (id: string) => void;
+  toggle: (id: string) => void;
 };
 
 // storage は関数で渡す（保存が使えないとき null を返す）。読み出しは最初に使うときの1回
 export function createFavoritesStore(getStorage: () => StoreLike | null): FavoritesStore {
-  let ids: readonly number[] | null = null;
+  let ids: readonly string[] | null = null;
   const listeners = new Set<() => void>();
-  const current = (): readonly number[] => (ids ??= loadFavorites(getStorage()));
-  const set = (next: readonly number[]) => {
+  const current = (): readonly string[] => (ids ??= loadFavorites(getStorage()));
+  const set = (next: readonly string[]) => {
     ids = next;
     saveFavorites(getStorage(), next);
     listeners.forEach((l) => l());
@@ -77,10 +77,10 @@ function browserStorage(): StoreLike | null {
 
 export const favoritesStore = createFavoritesStore(browserStorage);
 
-const EMPTY: readonly number[] = [];
+const EMPTY: readonly string[] = [];
 
 // 画面から使う入口。サーバーでの描画は空、ブラウザで保存を読む（ハイドレーションの食い違いを避ける）
 export function useFavorites() {
   const ids = useSyncExternalStore(favoritesStore.subscribe, favoritesStore.getSnapshot, () => EMPTY);
-  return { ids, has: (id: number) => ids.includes(id), toggle: favoritesStore.toggle, remove: favoritesStore.remove, add: favoritesStore.add };
+  return { ids, has: (id: string) => ids.includes(id), toggle: favoritesStore.toggle, remove: favoritesStore.remove, add: favoritesStore.add };
 }

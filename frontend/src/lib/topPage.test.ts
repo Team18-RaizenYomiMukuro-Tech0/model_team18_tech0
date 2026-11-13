@@ -21,7 +21,7 @@ test("topPage U-45: 「この価格帯の商品を見る」は、シーン未選
 });
 test("topPage U-45: カテゴリーのタイル → そのカテゴリー1つだけ。おすすめ → 商品を指定", () => {
   assert.equal(buildSearchHref({ category: "食品" }), "/search?category=%E9%A3%9F%E5%93%81");
-  assert.equal(buildSearchHref({ productId: 7 }), "/search?product=7");
+  assert.equal(buildSearchHref({ productId: "G0007" }), "/search?product=G0007");
 });
 test("topPage U-46: 開閉ボタンの aria-expanded は、閉じていれば false、開けば true。印は ▼ から ▲", () => {
   assert.deepEqual(categoryToggle(false), { expanded: false, mark: "▼" });
@@ -29,10 +29,10 @@ test("topPage U-46: 開閉ボタンの aria-expanded は、閉じていれば fa
 });
 test("topPage U-45: おすすめは先頭4件", () => {
   const items: RecommendedItem[] = Array.from({ length: 12 }, (_, i) => ({
-    product_id: i + 1, name: `商品${i + 1}`, price: 1000, category: "食品", rating: null, review_count: null, high_rating: false,
+    product_id: `G${String(i + 1).padStart(4, "0")}`, name: `商品${i + 1}`, price: 1000, category: "食品", rating: null, review_count: null, high_rating: false,
   }));
   assert.equal(RECOMMEND_COUNT, 4);
-  assert.deepEqual(pickRecommended(items).map((x) => x.product_id), [1, 2, 3, 4]);
+  assert.deepEqual(pickRecommended(items).map((x) => x.product_id), ["G0001", "G0002", "G0003", "G0004"]);
   assert.equal(pickRecommended(items.slice(0, 2)).length, 2);
 });
 
@@ -44,7 +44,7 @@ test("topPage #86: おすすめの取得 通信の失敗・HTTP の失敗・形�
   assert.deepEqual(await fetchRecommended(async () => res(true, { nothing: 1 })), { status: "error" });
 });
 test("topPage #86: おすすめの取得 成功は先頭4件。もう一度（再取得）で復旧する", async () => {
-  const body = { items: Array.from({ length: 12 }, (_, i) => ({ product_id: i + 1, name: "x", price: 1, category: "食品", rating: null, review_count: null, high_rating: false })) };
+  const body = { items: Array.from({ length: 12 }, (_, i) => ({ product_id: `G${String(i + 1).padStart(4, "0")}`, name: "x", price: 1, category: "食品", rating: null, review_count: null, high_rating: false })) };
   let fail = true;
   const f = async () => (fail ? res(false, {}) : res(true, body));
   assert.equal((await fetchRecommended(f)).status, "error");
