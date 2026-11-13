@@ -1,0 +1,17 @@
+/* F4 共有ページ（SP-06 D-09 N-15）。globals.css は触らない */
+.page { display: grid; gap: 16px; max-width: 720px; margin: 0 auto; min-width: 0; }
+.title { margin: 0; font-size: 22px; line-height: 1.4; }
+.lead { margin: 0; color: var(--ink); font-size: 14px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.item { display: grid; gap: 4px; padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--rm); min-width: 0; overflow-wrap: anywhere; }
+.name { margin: 0; font-size: 16px; line-height: 1.5; }
+.price { margin: 0; font-weight: 700; }
+.reason { margin: 0; }
+.note { margin: 0; font-weight: 700; color: #7a1812; }
+/* 注記（N-15）: 12px、文字と背景の差は WCAG AA の 4.5:1 以上（#5c514c は背景 #f4f1ee に対して約 7:1） */
+.public { margin: 0; font-size: 12px; line-height: 1.5; color: #5c514c; }
+.msg { padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--rm); }
+.msg p { margin: 0; }
+.msgmain { font-weight: 700; margin-bottom: 4px !important; }
+.err { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
+.btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
