@@ -2,20 +2,27 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { emptyMessageR02, fetchJson, isProductList, productsUrl, type Fetched, type ProductList } from "@/lib/products";
-import { parseSearchQuery, searchHref } from "@/lib/searchQuery";
+import { emptyMessageR02, fetchJson, isProductList, type Fetched, type ProductList } from "@/lib/products";
+import { searchMode } from "@/lib/searchMode";
+import { parseSearchQuery, searchHref, type SearchQuery } from "@/lib/searchQuery";
+import { CandidateResults } from "./CandidateResults";
 import { DetailPanel } from "./DetailPanel";
 import { Pagination } from "./Pagination";
 import { ProductCard } from "./ProductCard";
 import { Searching } from "./Searching";
 import styles from "./results.module.css";
 
-// SP-11 SP-12 D-27 F-13 F-16: 検索結果 `/search` の R-02（シーンなし）の12件ずつ。シーンありの R-01 の10件は R3 で載せる。
+// SP-11 SP-12 D-27 F-13 F-16 F-19: 検索結果 `/search`。シーンがあれば R-01 の10件（CandidateResults。GET /api/candidates）、
+// 無ければ R-02 の12件ずつ（GET /api/products）。どちらを呼ぶかは searchMode（#51-2）。
 // URL のクエリは GET /api/products と同じ名前（#85）。product があれば、その商品の詳細の欄を開く。条件ボタンは R8。
 export function SearchResults() {
   const params = useSearchParams();
   const q = useMemo(() => parseSearchQuery(new URLSearchParams(params.toString())), [params]);
-  const url = productsUrl(q);
+  return q.scene ? <CandidateResults q={q} /> : <ProductResults q={q} />;
+}
+
+function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
+  const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
   const [tries, setTries] = useState(0);
 
