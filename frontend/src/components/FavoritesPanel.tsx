@@ -41,7 +41,7 @@ export function FavoritesButton() {
 
 function FavoritesPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   const { ids, remove } = useFavorites();
-  const [found, setFound] = useState<Record<number, Lookup>>({});
+  const [found, setFound] = useState<Record<string, Lookup>>({});
   const closeBtn = useRef<HTMLButtonElement>(null);
 
   // 開いたときに名前・価格を取る（まだ取っていない商品だけ）

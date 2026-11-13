@@ -4,7 +4,7 @@
 // お気に入り・カートは保存側が正なので、ここには写さない。
 
 export type Candidate = {
-  productId: number;
+  productId: string;
   name: string;
   price: number;
   reason?: string; // R-01 の候補だけが持つ（R-02 の商品には無い）
@@ -14,13 +14,13 @@ export type Candidate = {
 
 export type AppState = {
   // 選んだ順（最初に選んだ順。SP-05 の「最初の出現順」と同じ）。キーは商品ID
-  picked: ReadonlyMap<number, Candidate>;
+  picked: ReadonlyMap<string, Candidate>;
   lastR01: readonly Candidate[] | null;
 };
 
 export type Action =
   | { type: "pick"; item: Candidate }
-  | { type: "unpick"; productId: number }
+  | { type: "unpick"; productId: string }
   | { type: "setLastR01"; items: readonly Candidate[] };
 
 export const initialState: AppState = { picked: new Map(), lastR01: null };

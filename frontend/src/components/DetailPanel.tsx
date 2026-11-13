@@ -12,8 +12,8 @@ import styles from "./results.module.css";
 // SP-12 F-14 F-16 D-29 #53-5 #54-6 #55-4 #58-10: 検索結果の右の詳細の欄。
 // 商品名・画像・価格（税込）・評価（件数）・「高評価の商品」・配送日数・ラッピング・商品の特徴・セット内容・「カートに入れる」と「お気に入りに追加」。
 // 値が無い項目は出さない。在庫0は「在庫なし」。取得が通信の失敗なら「商品の情報を読み込めませんでした」と「もう一度」、404 なら「この商品は見つかりません」だけ。
-export function DetailPanel({ productId }: Readonly<{ productId: number }>) {
-  const [state, setState] = useState<{ id: number; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
+export function DetailPanel({ productId }: Readonly<{ productId: string }>) {
+  const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
 
   useEffect(() => {

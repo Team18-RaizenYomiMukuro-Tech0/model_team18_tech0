@@ -7,7 +7,7 @@ type Res = { ok: boolean; json: () => Promise<unknown> };
 const flush = async () => {
   for (let i = 0; i < 5; i++) await Promise.resolve();
 };
-const OK = { items: [{ product_id: 1, name: "テスト商品", price: 4000, category: "食品", high_rating: true, reason: "理由" }], count: 1 };
+const OK = { items: [{ product_id: "G0001", name: "テスト商品", price: 4000, category: "食品", high_rating: true, reason: "理由" }], count: 1 };
 const last = (s: SearchState[]) => s[s.length - 1].status;
 
 // 偽の fetch: delay ミリ秒後に応答する。signal が中止されたら失敗する
