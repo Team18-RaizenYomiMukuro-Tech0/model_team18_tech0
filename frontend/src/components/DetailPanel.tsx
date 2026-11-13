@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { productImage } from "@/lib/images";
 import { fetchJson, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail } from "@/lib/products";
+import { cartStore } from "@/state/cart";
 import { HeartButton } from "./HeartButton";
 import { Searching } from "./Searching";
 import styles from "./results.module.css";
@@ -85,8 +86,8 @@ function Body({ p }: Readonly<{ p: ProductDetail }>) {
         </p>
       )}
       <div className={styles.actions}>
-        {/* カートの保存は R9（SP-14）。ここでは置くだけ */}
-        <button type="button" className={styles.btn}>
+        {/* R9 D-31: 押すと giftia:cart に追加（同じ商品は数量+1）。ヘッダーのカートの数が増える */}
+        <button type="button" className={styles.btn} onClick={() => cartStore.add(p.product_id)}>
           カートに入れる
         </button>
         <span className={styles.favrow}>

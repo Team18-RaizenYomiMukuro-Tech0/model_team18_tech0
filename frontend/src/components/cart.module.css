@@ -1,0 +1,8 @@
+/* R9 カート（パネルの中身）。外枠は favorites.module.css と同じ。globals.css は触らない */
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--rm); }
+.qty { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.qty input { width: 4.5em; min-height: 44px; padding: 4px 8px; border: 1px solid var(--bd2); border-radius: var(--rm); font: inherit; text-align: right; }
+.unavail { width: 100%; padding: 0 10px; border-radius: 999px; background: #3a3331; color: #fff; font-size: 13px; font-weight: 700; }
+.total { margin: 12px 0 8px; font-size: 16px; }
+.order { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid #8f321e; border-radius: var(--rm); background: #b8422a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.msg { margin: 8px 0 0; min-height: 1.2em; }
