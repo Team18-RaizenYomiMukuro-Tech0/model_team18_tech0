@@ -10,7 +10,7 @@ export type SearchQuery = { priceBand: PriceBand | null; categories: string[]; p
 const CATEGORY_NAMES: readonly string[] = CATEGORIES.map((c) => c.name);
 
 function idParam(v: string | null): string | null {
-  return v !== null && v.trim() !== "" ? v : null;
+  return v !== null && /^[A-Z][0-9]{1,9}$/.test(v) ? v : null; // D-29 と backend の PRODUCT_ID_RE と同じ形
 }
 
 function posInt(v: string | null): number | null {

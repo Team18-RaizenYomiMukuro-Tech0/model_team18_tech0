@@ -20,7 +20,10 @@ test("searchQuery: 範囲外のページ番号・形の違う値は無いもの�
   assert.equal(P("page=1.5").page, 1);
   assert.equal(P("price_band=bad").priceBand, null);
   assert.deepEqual(P("category=食品&category=ない&category=食品").categories, ["食品"]);
-  assert.equal(P("product=").product, null); // 空は「無い」。空でない文字列はそのまま読む（存在しない ID は詳細 API が 404）
+  assert.equal(P("product=x").product, null); // D-29 の形（英大文字1字＋数字1〜9桁）に合わないものは「無い」
+  assert.equal(P("product=").product, null);
+  assert.equal(P("product=g0001").product, null);
+  assert.equal(P("product=G0007").product, "G0007");
 });
 test("searchQuery: ページ送りの URL は同じ条件のまま page だけ替わる。1ページ目は page を付けない", () => {
   const s = P("price_band=3000to4999&category=食品");
