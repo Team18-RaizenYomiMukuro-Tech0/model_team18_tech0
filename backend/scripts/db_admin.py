@@ -6,10 +6,13 @@
 # - 接続先は database.py の giftia_t501（定数）。引数・環境変数では変えられない。SSL は certifi＋ホスト名の確認（#71）。
 # - 接続情報は backend/.env から読む。画面にもファイルにも出さない（出力のホスト・ユーザー・パスワードは <伏せ> にする）。
 # - 書き込む手順（1・B・Bt・B5・3・4）は、先に SELECT DATABASE() と対象の SELECT の結果を出し、yes の入力を待つ。
-# - 出力は 02_プロジェクト/giftia-ui-renewal/evidence/db/<日付>_<手順>.md に保存する。
+# - 出力は 02_プロジェクト/giftia-ui-renewal/evidence/db/<日付>_<手順>.md に保存する。git worktree の中から動かしても、
+#   保存先は本体のフォルダ（git rev-parse --git-common-dir の親）に固定する（作業フォルダの削除で記録が消えないように。#219）。
+#   最後に「コミットしていない記録: <パス>」を出す（コミットは別途、人が行う）。
 import json
 import os
 import re
+import subprocess
 import sys
 from collections.abc import Callable
 from datetime import date
@@ -20,9 +23,24 @@ BACKEND = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND))
 import database  # backend/database.py（接続の作り方をアプリと同じにする）
 
-EVIDENCE_DIR = (
-    BACKEND.parent / "02_プロジェクト" / "giftia-ui-renewal" / "evidence" / "db"
-)
+
+def main_root(start: Path = BACKEND) -> Path:
+    """本体のフォルダ（git rev-parse --git-common-dir の親）。git が使えないときは今の作業フォルダの親"""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=start,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return start.parent
+    return (start / out).resolve().parent if out else start.parent
+
+
+EVIDENCE_DIR = main_root() / "02_プロジェクト" / "giftia-ui-renewal" / "evidence" / "db"
 EXPECTED_VERSION_PREFIX = "8.4.9"  # 手順0: 違うバージョンが出たら止まる（#54-1）
 # 手順A: 既存テーブルの7つ（#54）。SHOW TABLES と一致しなければ止まる。
 EXISTING_TABLES = [
@@ -154,6 +172,13 @@ class Report:
         ]
         path.write_text("\n".join(header + self.lines) + "\n", encoding="utf-8")
         return path
+
+
+def save_report(rep: Report) -> Path:
+    """記録を保存し、最後に保存先を知らせる（コミットはしない。作業フォルダを消す前に別途コミットする）"""
+    path = rep.save()
+    print(f"コミットしていない記録: {path}")
+    return path
 
 
 def run(conn: Any, rep: Report, statement: str) -> list[dict[str, Any]]:
@@ -398,16 +423,15 @@ def main(argv: list[str]) -> int:
         HANDLERS[step](conn, rep)
     except SystemExit as e:
         rep.say(f"止まりました: {e}")
-        rep.save()
+        save_report(rep)
         raise
     except Exception as e:  # noqa: BLE001  # DB のエラー文に接続情報が入ることがあるので、伏せて出す
         rep.say(f"エラー: {type(e).__name__}: {e}")
-        rep.save()
+        save_report(rep)
         return 1
     finally:
         conn.close()
-    path = rep.save()
-    print(f"→ {path.name} に保存しました")
+    save_report(rep)  # 最後の行は「コミットしていない記録: <パス>」
     return 0
 
 
