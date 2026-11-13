@@ -1,5 +1,5 @@
 /* F1: 検索ページの入力と状態の見た目（globals.css は触らない。R1 の PR #167 と衝突させないため、この部品の中だけで完結させる） */
-.form { display: grid; gap: 20px; max-width: 720px; }
+.form { display: grid; gap: 20px; }
 .h { margin: 0 0 8px; font-size: 17px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn {

@@ -8,6 +8,8 @@ export type Candidate = {
   name: string;
   price: number;
   reason?: string; // R-01 の候補だけが持つ（R-02 の商品には無い）
+  category?: string; // F2: 選んだ時点の表示用の情報（設計.md「『選んだ候補』の欄」）
+  highRating?: boolean;
 };
 
 export type AppState = {
