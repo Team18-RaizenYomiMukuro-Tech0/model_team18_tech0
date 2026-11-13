@@ -1,5 +1,5 @@
 import type { PriceBand } from "./priceBand.ts";
-import type { Scene } from "./api.ts";
+import { REQUEST_TIMEOUT_MS, apiUrl, type Scene } from "./api.ts";
 
 // D-26 SP-09 #50-1 #51-1 #53-1 #53-3 #54-5 #54-8 #61: トップの組み立てロジック（React を使わない純粋な部分）。
 
@@ -38,4 +38,23 @@ export function categoryToggle(open: boolean): { expanded: boolean; mark: "▼" 
 export type RecommendedItem = { product_id: number; name: string; price: number; category: string; rating: number | null; review_count: number | null; high_rating: boolean };
 export function pickRecommended(items: readonly RecommendedItem[]): RecommendedItem[] {
   return items.slice(0, RECOMMEND_COUNT);
+}
+
+// おすすめの取得（D-26、キックオフ記録 #86）。失敗（通信の失敗・10秒超過・HTTP の失敗・形の違う応答）は error。
+// 画面は error のとき「おすすめの商品を読み込めませんでした」と「もう一度」を出す
+export type RecommendedResult = { status: "ok"; items: RecommendedItem[] } | { status: "error" };
+export async function fetchRecommended(fetchImpl: typeof fetch = fetch): Promise<RecommendedResult> {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetchImpl(apiUrl("/api/products"), { signal: abort.signal });
+    if (!res.ok) return { status: "error" };
+    const b = (await res.json()) as { items?: unknown };
+    if (!Array.isArray(b.items)) return { status: "error" };
+    return { status: "ok", items: pickRecommended(b.items as RecommendedItem[]) };
+  } catch {
+    return { status: "error" };
+  } finally {
+    clearTimeout(timer);
+  }
 }

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { RECOMMEND_COUNT, bandLinkHref, buildSearchHref, categoryToggle, onBandPress, pickRecommended, type RecommendedItem } from "./topPage.ts";
+import { RECOMMEND_COUNT, bandLinkHref, buildSearchHref, categoryToggle, fetchRecommended, onBandPress, pickRecommended, type RecommendedItem } from "./topPage.ts";
 
 // U-45 U-46 S-52〜S-56 D-26: タイルと価格帯ボタンの押し方から、検索結果へ渡す条件が組み立てられる
 test("topPage U-45: シーンのタイルだけ → シーンだけ。価格帯を先に選んでいれば価格帯つき", () => {
@@ -34,4 +34,22 @@ test("topPage U-45: おすすめは先頭4件", () => {
   assert.equal(RECOMMEND_COUNT, 4);
   assert.deepEqual(pickRecommended(items).map((x) => x.product_id), [1, 2, 3, 4]);
   assert.equal(pickRecommended(items.slice(0, 2)).length, 2);
+});
+
+// キックオフ記録 #86: おすすめの取得が失敗したら error（見出しの下に「読み込めませんでした」と「もう一度」）。もう一度で復旧できる
+const res = (ok: boolean, body: unknown) => ({ ok, json: async () => body }) as unknown as Response;
+test("topPage #86: おすすめの取得 通信の失敗・HTTP の失敗・形の違う応答は error", async () => {
+  assert.deepEqual(await fetchRecommended(async () => { throw new Error("network"); }), { status: "error" });
+  assert.deepEqual(await fetchRecommended(async () => res(false, {})), { status: "error" });
+  assert.deepEqual(await fetchRecommended(async () => res(true, { nothing: 1 })), { status: "error" });
+});
+test("topPage #86: おすすめの取得 成功は先頭4件。もう一度（再取得）で復旧する", async () => {
+  const body = { items: Array.from({ length: 12 }, (_, i) => ({ product_id: i + 1, name: "x", price: 1, category: "食品", rating: null, review_count: null, high_rating: false })) };
+  let fail = true;
+  const f = async () => (fail ? res(false, {}) : res(true, body));
+  assert.equal((await fetchRecommended(f)).status, "error");
+  fail = false; // 復旧して「もう一度」
+  const r = await fetchRecommended(f);
+  assert.equal(r.status, "ok");
+  assert.equal(r.status === "ok" && r.items.length, 4);
 });

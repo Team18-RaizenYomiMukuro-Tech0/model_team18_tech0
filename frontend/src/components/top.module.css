@@ -45,3 +45,4 @@
   .rec { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 481px) and (max-width: 760px) { .rec { grid-template-columns: repeat(2, 1fr); } .cats { grid-template-columns: repeat(3, 1fr); } }
+.recerr { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
