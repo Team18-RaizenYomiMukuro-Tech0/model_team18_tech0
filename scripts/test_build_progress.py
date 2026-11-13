@@ -22,6 +22,26 @@ class T(unittest.TestCase):
         m = model()
         self.assertEqual((m["total"], m["done"]), (9, 2))
 
+    def test_total_counts_only_hub_stages(self):
+        """全体 % は開発ハブ（band.js）と同じ: 題が 1〜4 で始まるマイルストーンの Issue だけ。5 とマイルストーンなしは別に数える"""
+        def iss(n, ms, state="open"):
+            return {"number": n, "title": f"t{n}", "state": state, "html_url": f"https://github.com/a/b/issues/{n}",
+                    "milestone": ms, "assignees": []}
+        ms = [{"number": 1, "title": "1 5文書", "due_on": "2026-11-07T00:00:00Z"},
+              {"number": 3, "title": "3 実装②", "due_on": "2026-11-15T00:00:00Z"},
+              {"number": 5, "title": "5 公開期間", "due_on": "2026-12-12T00:00:00Z"}]
+        issues = [iss(1, ms[0], "closed"), iss(2, ms[1]), iss(3, ms[1], "closed"), iss(4, ms[2], "closed"),
+                  iss(5, ms[2]), iss(6, ms[2]), iss(7, None), iss(8, None, "closed")]
+        m = bp.build_model(issues, ms, NAMES, dt.date(2026, 11, 13))
+        self.assertEqual((m["total"], m["done"]), (8, 4))  # 全 Issue（担当者カードなどはこれまでどおり）
+        self.assertEqual((m["hub_done"], m["hub_total"]), (2, 3))
+        self.assertEqual((m["public_done"], m["public_total"], m["has_public"]), (1, 3, True))
+        self.assertEqual((m["nomile_done"], m["nomile_total"]), (1, 2))
+        out = bp.render(m, "x")
+        self.assertIn("全体 67% <span>（完了 2 / 3）</span>", out)
+        self.assertIn("公開期間 1/3", out)
+        self.assertIn("マイルストーンなし 1/2", out)
+
     def test_late_uses_milestone_due_jst(self):
         rows = {r["number"]: r for p in model()["people"] for r in p["rows"]}
         self.assertEqual(rows[3]["late"], 5)  # 期限 10/31(JST)、今日 11/5 → 5日
@@ -594,7 +614,8 @@ class T(unittest.TestCase):
         self.assertNotIn("Issue の進み具合", head)  # 説明文は一番下の注記へ
         self.assertIn("ダミーデータの表示例", head)  # サンプルの札は --data のときだけ残る
         self.assertNotIn("ダミーデータの表示例", bp.render(model(), "x")[:3000])
-        self.assertIn("全体 22% <span>（完了 2 / 9）</span>", out)
+        self.assertIn("全体 25% <span>（完了 2 / 8）</span>", out)  # マイルストーン 1〜4 の 8 件だけ（ハブと同じ）。段階なしの 1 件は別の行
+        self.assertIn("マイルストーンなし 0/1", out)
         self.assertNotIn('class="sum"', out)  # 数字タイルは無い
         self.assertNotIn(">未着手<", out.split("</header>")[1].split('id="al"')[0])
         tail = out.split('<p class="note">')[1]
@@ -640,7 +661,7 @@ class T(unittest.TestCase):
         self.assertIn("レージ", al.split("👀")[1])  # 作者は表示名
         pos = [out.index(k) for k in ('id="al"', 'class="pgrid"', 'class="stg2"', 'id="prs"')]
         self.assertEqual(pos, sorted(pos))  # いま動くこと → 担当者カード → 段階 → 直近 PR
-        self.assertTrue(out.index('id="al"') < out.index("全体 22%") + 400)
+        self.assertTrue(out.index('id="al"') < out.index("全体 25%") + 400)
 
     def test_now_section_merged_but_open_and_empty(self):
         i = {"number": 1, "title": "t", "state": "open", "html_url": "https://github.com/a/b/issues/1",
