@@ -57,6 +57,10 @@ def area_split(title):
     return m.group("a"), m.group("rc") or m.group("a") + m.group("n"), m.group("t")
 # 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）
 WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
+# 段階のうち、全体 % に数えるのは題が 1〜4 で始まるマイルストーンだけ（ハブの霊力ゲージ docs/hub-assets/band.js と同じ定義。
+# 題の頭の数字が同じ段階が複数あれば、期限順で最初の 1 つだけ。「5 公開期間」とマイルストーンなしは数えず、別の行で出す）
+HUB_STAGE_RE = re.compile(r"^([1-4])(?!\d)")
+PUBLIC_STAGE_RE = re.compile(r"^5(?!\d)")
 
 
 def api_get(repo, path, token):
@@ -215,7 +219,20 @@ def build_model(issues, milestones, names, today, reviewers=None):
     members = [{"id": k.lower(), "name": v} for k, v in names.items()]
     for p in order:
         p["id"] = p["login"].lower() if p["login"] else "none"
+    hub, seen = [], set()
+    for s in stage_list:
+        m = HUB_STAGE_RE.match(s["title"]) if s["title"] != NO_MILESTONE else None
+        if m and m.group(1) not in seen:
+            seen.add(m.group(1))
+            hub.append(s)
+    public = [s for s in stage_list if s["title"] != NO_MILESTONE and PUBLIC_STAGE_RE.match(s["title"])]
+    nomile = [r for r in rows if r["stage"] == NO_MILESTONE]
+    hub_total = sum(s["total"] for s in hub)
+    hub_done = sum(s["done"] for s in hub)
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
+            "hub_total": hub_total, "hub_done": hub_done,
+            "public_total": sum(s["total"] for s in public), "public_done": sum(s["done"] for s in public), "has_public": bool(public),
+            "nomile_total": len(nomile), "nomile_done": sum(r["done"] for r in nomile),
             "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "today_counts": today_counts, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
@@ -386,7 +403,7 @@ CSS = """
 .bar i{display:block;height:100%;background:var(--m2)}
 .pcard,.stg2,.empty{background:var(--card);color:var(--ctext);border:var(--bw2) solid var(--line);border-radius:var(--r2);box-shadow:var(--sh1);padding:var(--s3) var(--s4);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s3)}
 .ph{display:flex;align-items:center;gap:var(--s3)}.ph h3{margin:0;font:800 var(--fs-l)/var(--lh-t) var(--body)}.kb-band{padding-bottom:var(--s4)}.kb-band .kb-nav{margin-bottom:var(--s2)}.upd{margin:2px 0 0;font:800 var(--fs-xs)/1.6 var(--body)}.kb-band .meta{margin-top:var(--s2)}
-.allbar{margin:0}.allbar p{margin:0 0 4px;font-weight:800}.allbar span{font-weight:500;color:var(--sub);font-size:var(--fs-s)}
+.allbar{margin:0}.allbar p{margin:0 0 4px;font-weight:800}.allbar span{font-weight:500;color:var(--sub);font-size:var(--fs-s)}.allbar .allx{margin:4px 0 0;font-weight:500;color:var(--sub);font-size:var(--fs-s)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--s3);align-items:start}
 .pcard details>summary{cursor:pointer;font:800 var(--fs-s)/2 var(--body)}.pcard details[open]>summary{margin-bottom:var(--s2)}
 .st.merged{background:var(--tint);color:var(--ctext);border:var(--bw1) solid var(--kac)}
@@ -557,9 +574,15 @@ def render(model, updated, sample=False):
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
         return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])), updated, sample, mem)
-    pc = pct(model["done"], model["total"])
-    parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["done"]} / {model["total"]}）</span></p>'
-             f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div></div>',
+    pc = pct(model["hub_done"], model["hub_total"])  # 開発ハブの「全体」と同じ数え方（マイルストーン 1〜4 の Issue だけ）
+    extra = ""
+    if model["has_public"]:
+        extra += f'公開期間 {model["public_done"]}/{model["public_total"]}'
+    if model["nomile_total"]:
+        extra += ("　" if extra else "") + f'マイルストーンなし {model["nomile_done"]}/{model["nomile_total"]}'
+    extra = f'<p class="allx">{extra}（全体の % には数えない）</p>' if extra else ""
+    parts = [f'<div class="allbar"><p>全体 {pc}% <span>（完了 {model["hub_done"]} / {model["hub_total"]}）</span></p>'
+             f'<div class="bar" role="img" aria-label="全体 {pc}%"><i style="width:{pc}%"></i></div>' + extra + '</div>',
              now_section(model)]
     if model["total"]:
         parts.append('<div class="pgrid">' + "".join(render_person(p) for p in model["people"]) + "</div>")
