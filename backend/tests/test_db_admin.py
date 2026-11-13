@@ -1,5 +1,6 @@
 # test_db_admin.py — scripts/db_admin.py の SQL が DB管理手順.md と一字一句同じか照合する（DB には接続しない）
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Self
@@ -104,3 +105,68 @@ def test_save_never_overwrites(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     assert first != second
     assert first.exists()
     assert second.exists()
+
+
+def git(cwd: Path, *args: str) -> None:
+    subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+    )
+
+
+def test_evidence_dir_is_main_folder_from_worktree(tmp_path: Path) -> None:
+    """#219: 本体のフォルダからも git worktree の中からも、記録の保存先は本体のフォルダ（git-common-dir の親）"""
+    main = tmp_path / "main"
+    (main / "backend").mkdir(parents=True)
+    git(main, "init", "-q")
+    (main / "backend" / "x.txt").write_text("x", encoding="utf-8")
+    git(main, "add", ".")
+    git(main, "commit", "-q", "-m", "init")
+    work = tmp_path / "work"
+    git(main, "worktree", "add", "-q", str(work), "-b", "t")
+    assert db_admin.main_root(main / "backend") == main.resolve()
+    assert db_admin.main_root(work / "backend") == main.resolve()
+
+
+def test_main_root_falls_back_without_git(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def no_git(*a: object, **k: object) -> None:
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(subprocess, "run", no_git)
+    backend = tmp_path / "backend"
+    backend.mkdir()
+    assert db_admin.main_root(backend) == tmp_path
+
+
+def test_evidence_dir_constant() -> None:
+    assert db_admin.EVIDENCE_DIR == db_admin.main_root() / "02_プロジェクト" / "giftia-ui-renewal" / "evidence" / "db"
+
+
+def test_main_prints_uncommitted_record_last(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """成功でも、止まったときでも、最後の行は「コミットしていない記録: <パス>」。DB には接続しない（偽の接続）"""
+
+    class FakeConn:
+        def close(self) -> None:
+            return None
+
+    def ok(conn: Any, rep: db_admin.Report) -> None:
+        rep.say("確認")
+
+    def stop(conn: Any, rep: db_admin.Report) -> None:
+        raise SystemExit("止める理由")
+
+    monkeypatch.setattr(db_admin, "EVIDENCE_DIR", tmp_path)
+    monkeypatch.setattr(database, "get_connection", lambda: FakeConn())
+    monkeypatch.setitem(db_admin.HANDLERS, "0", ok)
+    assert db_admin.main(["db_admin.py", "0"]) == 0
+    last = capsys.readouterr().out.strip().splitlines()[-1]
+    assert last.startswith("コミットしていない記録: ") and last.endswith(".md")
+    assert Path(last.split(": ", 1)[1]).parent == tmp_path
+    monkeypatch.setitem(db_admin.HANDLERS, "0", stop)
+    with pytest.raises(SystemExit):
+        db_admin.main(["db_admin.py", "0"])
+    assert capsys.readouterr().out.strip().splitlines()[-1].startswith("コミットしていない記録: ")
