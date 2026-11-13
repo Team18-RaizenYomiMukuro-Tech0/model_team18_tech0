@@ -61,6 +61,7 @@ WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
 # 題の頭の数字が同じ段階が複数あれば、期限順で最初の 1 つだけ。「5 公開期間」とマイルストーンなしは数えず、別の行で出す）
 HUB_STAGE_RE = re.compile(r"^([1-4])(?!\d)")
 PUBLIC_STAGE_RE = re.compile(r"^5(?!\d)")
+KIT_STAGE_RE = re.compile(r"^K(?![A-Za-z0-9])")  # 「K キット改善」。全体 % には数えず、別の行で出す
 
 
 def api_get(repo, path, token):
@@ -226,12 +227,14 @@ def build_model(issues, milestones, names, today, reviewers=None):
             seen.add(m.group(1))
             hub.append(s)
     public = [s for s in stage_list if s["title"] != NO_MILESTONE and PUBLIC_STAGE_RE.match(s["title"])]
+    kit = [s for s in stage_list if s["title"] != NO_MILESTONE and KIT_STAGE_RE.match(s["title"])]
     nomile = [r for r in rows if r["stage"] == NO_MILESTONE]
     hub_total = sum(s["total"] for s in hub)
     hub_done = sum(s["done"] for s in hub)
     return {"people": order, "stages": stage_list, "total": len(rows), "done": sum(r["done"] for r in rows),
             "hub_total": hub_total, "hub_done": hub_done,
             "public_total": sum(s["total"] for s in public), "public_done": sum(s["done"] for s in public), "has_public": bool(public),
+            "kit_total": sum(s["total"] for s in kit), "kit_done": sum(s["done"] for s in kit), "has_kit": bool(kit),
             "nomile_total": len(nomile), "nomile_done": sum(r["done"] for r in nomile),
             "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "today_counts": today_counts, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
@@ -578,6 +581,8 @@ def render(model, updated, sample=False):
     extra = ""
     if model["has_public"]:
         extra += f'公開期間 {model["public_done"]}/{model["public_total"]}'
+    if model["has_kit"]:
+        extra += ("　" if extra else "") + f'キット改善 {model["kit_done"]}/{model["kit_total"]}'
     if model["nomile_total"]:
         extra += ("　" if extra else "") + f'マイルストーンなし {model["nomile_done"]}/{model["nomile_total"]}'
     extra = f'<p class="allx">{extra}（全体の % には数えない）</p>' if extra else ""
