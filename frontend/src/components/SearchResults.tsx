@@ -1,38 +1,46 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { emptyMessageR02, fetchJson, isProductList, type Fetched, type ProductList } from "@/lib/products";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { emptyMessageR02, type Fetched, type ProductList } from "@/lib/products";
+import { ProductRunner } from "@/lib/searchRequest";
 import { searchMode } from "@/lib/searchMode";
 import { parseSearchQuery, searchHref, type SearchQuery } from "@/lib/searchQuery";
 import { CandidateResults } from "./CandidateResults";
 import { DetailPanel } from "./DetailPanel";
 import { Pagination } from "./Pagination";
 import { ProductCard } from "./ProductCard";
+import { SearchConditions } from "./SearchConditions";
 import { Searching } from "./Searching";
 import styles from "./results.module.css";
 
 // SP-11 SP-12 D-27 F-13 F-16 F-19: 検索結果 `/search`。シーンがあれば R-01 の10件（CandidateResults。GET /api/candidates）、
 // 無ければ R-02 の12件ずつ（GET /api/products）。どちらを呼ぶかは searchMode（#51-2）。
-// URL のクエリは GET /api/products と同じ名前（#85）。product があれば、その商品の詳細の欄を開く。条件ボタンは R8。
+// URL のクエリは GET /api/products と同じ名前（#85）。product があれば、その商品の詳細の欄を開く。条件ボタンは SearchConditions（R8）。
 export function SearchResults() {
   const params = useSearchParams();
   const q = useMemo(() => parseSearchQuery(new URLSearchParams(params.toString())), [params]);
-  return q.scene ? <CandidateResults q={q} /> : <ProductResults q={q} />;
+  return (
+    <>
+      <SearchConditions q={q} />
+      {q.scene ? <CandidateResults q={q} /> : <ProductResults q={q} />}
+    </>
+  );
 }
 
 function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
   const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
-  const [tries, setTries] = useState(0);
+  const runner = useRef<ProductRunner | null>(null);
 
   useEffect(() => {
-    const abort = new AbortController();
-    fetchJson(url, isProductList, abort.signal).then((r) => {
-      if (!abort.signal.aborted) setRes({ url, r });
-    });
-    return () => abort.abort(); // 続けて操作したら、古い条件の応答は捨てる
-  }, [url, tries]);
+    const r = new ProductRunner((u, v) => setRes({ url: u, r: v }));
+    runner.current = r;
+    return () => r.cancel();
+  }, []);
+  useEffect(() => {
+    runner.current?.run(url); // 続けて条件を変えたら、古い条件の応答は捨てる・10秒で打ち切る（ProductRunner）
+  }, [url]);
 
   const r = res.url === url ? res.r : null;
   const detailId = q.product;
@@ -47,10 +55,7 @@ function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
             <button
               type="button"
               className={styles.btn}
-              onClick={() => {
-                setRes({ url: "", r: null });
-                setTries(tries + 1);
-              }}
+              onClick={() => runner.current?.run(url)}
             >
               再試行
             </button>
