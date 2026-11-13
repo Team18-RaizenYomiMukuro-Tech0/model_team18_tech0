@@ -1,4 +1,4 @@
-# 週1要約を Windows のタスクスケジューラに登録・解除・確認する（毎週月曜 09:00）。管理者権限は要らない（自分のユーザーのタスクとして登録する）。
+﻿# 週1要約を Windows のタスクスケジューラに登録・解除・確認する（毎週月曜 09:00）。管理者権限は要らない（自分のユーザーのタスクとして登録する）。
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts\scheduled\register-digest-task.ps1 -Action Register
 #   -Action: Register（登録・上書き） / Unregister（解除） / Status（状態確認。省略時） / RunNow（今すぐ1回）
 # 未検証: Windows 実機では動かしていない（01_ナレッジ/定期実行の導入手順_Windows.md 参照）。

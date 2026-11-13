@@ -93,6 +93,7 @@ Mac 版と同じ（[[定期実行の導入手順]] の「許可ツール」の�
 | `claude` / `gh` / `git` が見つからない（ログに出る） | タスク実行時の PATH が違う | `run-digest.ps1` の先頭近くの `$env:PATH = ...` に、`Get-Command claude` で出た場所のフォルダを足す |
 | `python` を打つとストアが開く | ストアのエイリアス | §1 の最後の注意。`py --version` が通ればそれでもよい（hook は `py` も探す） |
 | 日本語が文字化けする | 文字コード | ログは `Get-Content ... -Encoding UTF8` で開く。メモ帳で開くときは UTF-8 を選ぶ |
+| `-DryRun` で `Get-Content : 引数が null であるため、パラメーター 'Path' にバインドできません` が出る。ログの日本語が `莉企ｱ…` のように化け、スクリプトの中身がログに出る | Windows PowerShell 5.1 は、BOM（先頭の印）の無い UTF-8 の `.ps1` を Shift-JIS として読む。日本語の文字列の区切りが崩れる（2026-11-13、レージの Windows 11 で確認） | `scripts/scheduled/*.ps1` は BOM 付き UTF-8 で保存する（直し済み）。`.ps1` を編集するときも BOM を消さない |
 | フォルダ名に日本語・空白があるパス | クローン先が `C:\Users\山田 太郎\...` など | 動かないときは `C:\work\model_team18_tech0` のような半角英数字だけのパスに clone し直す（見立て・未検証） |
 | `locked: ... (already running)` で終わる | 前回の実行が途中で止まりロックが残った | 走っていないことを確認して `Remove-Item -Recurse $env:LOCALAPPDATA\munder-scheduled\digest.lock` |
 | タスクは登録できたが走らない | スリープ中／ログオフ中 | ログオン中でないと走らない。ログオフ中・シャットダウン中の分は、次にログオンしたときに1回走る設定（`StartWhenAvailable`）。実機では未確認。`-Action Status` の `LastTaskResult` を見る（0 が成功） |
