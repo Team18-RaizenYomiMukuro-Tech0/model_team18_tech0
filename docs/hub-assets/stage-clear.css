@@ -1,0 +1,66 @@
+/* 「3 実装②」完了の演出（白・黒・グレーの 2 色＋網点。絵はすべてオリジナルの図形。画像ファイルなし） */
+#sc{--k:#000;--w:#fff;--g:#8a8a8a;position:fixed;inset:0;z-index:2147483000;overflow:hidden;color:var(--w);font:800 16px/1.2 "M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;cursor:pointer;opacity:1;transition:opacity .35s ease}
+#sc.out{opacity:0;pointer-events:none}
+#sc .ly{position:absolute;inset:0;display:none}
+#sc .ly .ly{display:block}
+#sc .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#sc .skip{position:absolute;right:12px;bottom:10px;z-index:5;font-size:12px;font-weight:500;line-height:1;color:var(--w);background:rgba(0,0,0,.6);border:1px solid var(--w);border-radius:999px;padding:5px 12px}
+/* 集中線・網点 */
+#sc .lines{background:repeating-conic-gradient(from 0deg at 50% 50%,var(--w) 0 .9deg,transparent .9deg 3.6deg);-webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 20%,#000 75%);mask-image:radial-gradient(circle at 50% 50%,transparent 20%,#000 75%)}
+#sc .lines.dk{background:repeating-conic-gradient(from 0deg at 50% 50%,var(--k) 0 1.1deg,transparent 1.1deg 4.2deg);-webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 14%,#000 70%);mask-image:radial-gradient(circle at 50% 50%,transparent 14%,#000 70%)}
+#sc .dots{background-image:radial-gradient(var(--w) 2.2px,transparent 2.6px);background-size:16px 16px;opacity:.3;-webkit-mask-image:linear-gradient(180deg,#000 0,transparent 45%,transparent 60%,#000 100%);mask-image:linear-gradient(180deg,#000 0,transparent 45%,transparent 60%,#000 100%)}
+/* 縁取りの太い文字 */
+#sc .oln{position:absolute;left:0;right:0;text-align:center;line-height:1;letter-spacing:.04em;color:var(--w);paint-order:stroke fill;-webkit-text-stroke:.09em var(--k)}
+/* ---- 段 1: 暗転・札がひび割れる・ゴゴゴ ---- */
+#sc[data-s="1"] .s1{display:block}
+#sc .s1 .dim{background:rgba(0,0,0,.85);animation:sc-dim .5s ease-out both}
+#sc .s1 .lines{opacity:.16}
+#sc .plate{position:absolute;left:50%;top:26%;width:min(620px,86vw);height:min(220px,30vw);margin-left:calc(min(620px,86vw)/-2)}
+#sc .half{position:absolute;inset:0}
+#sc .half>div{position:absolute;inset:0;background:var(--w);color:var(--k);border:min(10px,1.6vw) solid var(--k);border-radius:min(26px,4vw);display:flex;align-items:center;justify-content:center;font-size:min(120px,17vw);letter-spacing:.02em;white-space:nowrap}
+#sc .half.a{clip-path:polygon(0 0,50% 0,46% 22%,54% 46%,44% 70%,53% 100%,0 100%);animation:sc-ha 1s .45s cubic-bezier(.5,0,.9,.5) both}
+#sc .half.b{clip-path:polygon(50% 0,100% 0,100% 100%,53% 100%,44% 70%,54% 46%,46% 22%);animation:sc-hb 1s .45s cubic-bezier(.5,0,.9,.5) both}
+#sc .sh{position:absolute;background:var(--w);border:2px solid var(--k);clip-path:polygon(0 0,100% 20%,40% 100%)}
+#sc .s1 .sh{left:50%;top:50%;animation:sc-fall 1s .5s ease-in both}
+#sc .gogo{top:56%;font-size:min(150px,18vw);transform:rotate(-3deg);text-shadow:.07em .07em 0 var(--g);animation:sc-gogo .09s linear infinite alternate}
+@keyframes sc-dim{from{background:rgba(0,0,0,0)}}
+@keyframes sc-ha{0%{transform:none}25%{transform:translate(-2%,2%) rotate(-2deg)}100%{transform:translate(-14%,150%) rotate(-24deg);opacity:.9}}
+@keyframes sc-hb{0%{transform:none}25%{transform:translate(2%,4%) rotate(2deg)}100%{transform:translate(16%,170%) rotate(30deg);opacity:.9}}
+@keyframes sc-fall{from{transform:translate(0,0) rotate(0)}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r))}}
+@keyframes sc-gogo{from{transform:translate(-4px,-2px) rotate(-3.4deg)}to{transform:translate(5px,3px) rotate(-2.6deg)}}
+/* ---- 段 2: 黒地に白い大きな文字 ---- */
+#sc[data-s="2"] .s2{display:block;background:var(--k)}
+#sc .s2 .big{top:50%;margin-top:-.5em;font-size:min(250px,20vw);letter-spacing:.06em;text-shadow:0 0 .16em rgba(255,255,255,.35);-webkit-text-stroke:0;animation:sc-slam .35s cubic-bezier(.2,1.4,.4,1) both}
+#sc .s2 .bar{position:absolute;left:50%;top:calc(50% + min(135px,11vw));width:min(900px,86vw);height:8px;margin-left:calc(min(900px,86vw)/-2);background:var(--g);transform-origin:left;animation:sc-bar .5s .3s ease-out both}
+@keyframes sc-slam{from{transform:scale(1.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes sc-bar{from{transform:scaleX(0)}}
+/* ---- 段 3: 閃光・集中線・揺れ・破片 ---- */
+#sc[data-s="3"] .s3{display:block;animation:sc-shake .12s linear infinite}
+#sc .s3 .bg{background:radial-gradient(circle at 50% 50%,#fff 0,#fff 22%,#e6e6e6 55%,#b8b8b8 100%)}
+#sc .s3 .ring{position:absolute;left:50%;top:50%;width:min(240px,34vw);height:min(240px,34vw);margin:calc(min(240px,34vw)/-2) 0 0 calc(min(240px,34vw)/-2);inset:auto;border:8px solid var(--k);border-radius:50%;display:block;animation:sc-ring 1s ease-out both}
+#sc .s3 .flash{background:radial-gradient(circle at 50% 50%,#fff 0,rgba(255,255,255,.9) 14%,rgba(255,255,255,0) 40%);animation:sc-flash .9s ease-out both}
+#sc .s3 .sh{left:50%;top:50%;animation:sc-burst 1.2s ease-out both}
+#sc .s3 .sh.k{background:var(--k);border-color:var(--k)}
+@keyframes sc-shake{0%{transform:translate(0,0)}25%{transform:translate(-7px,5px)}50%{transform:translate(6px,-6px)}75%{transform:translate(-4px,-4px)}100%{transform:translate(5px,4px)}}
+@keyframes sc-ring{from{transform:scale(.2);opacity:1}to{transform:scale(7);opacity:0}}
+@keyframes sc-flash{from{transform:scale(.3);opacity:1}to{transform:scale(2.4);opacity:.65}}
+@keyframes sc-burst{from{transform:translate(0,0) rotate(0) scale(.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1.3);opacity:.9}}
+/* ---- 段 4: 光の翼・STAGE 4 ---- */
+#sc[data-s="4"] .s4{display:block}
+#sc .s4 .bg{background:linear-gradient(180deg,#0a0a0a,#2b2b2b)}
+#sc .s4 .glow{background:radial-gradient(ellipse 60% 55% at 50% 42%,rgba(255,255,255,.55),rgba(255,255,255,.12) 50%,transparent 75%);animation:sc-glow 1.6s ease-out both}
+#sc .s4 svg.wings{position:absolute;left:0;top:50%;width:100%;height:auto;transform:translateY(-62%);overflow:visible}
+#sc .s4 .wl,#sc .s4 .wr{animation:sc-wing 1s ease-out both}
+#sc .s4 .wl{transform-origin:640px 360px}
+#sc .s4 .wr{transform-origin:640px 360px}
+#sc .plate4{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);background:var(--w);color:var(--k);border:6px solid var(--k);border-radius:18px;box-shadow:10px 10px 0 var(--g);padding:.25em .8em;text-align:center;font-size:clamp(22px,5vw,64px);line-height:1.25;letter-spacing:.04em;max-width:90vw;animation:sc-plate .5s .35s ease-out both}
+#sc .plate4 span{display:inline-block;white-space:nowrap}
+@keyframes sc-glow{from{opacity:0}to{opacity:1}}
+@keyframes sc-wing{from{transform:scaleX(.1);opacity:0}to{transform:none;opacity:.96}}
+@keyframes sc-plate{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+/* ---- 動きを減らす設定: 「STAGE 4 評価・受入へ」の文字だけを静かに出して消す ---- */
+#sc.calm{background:rgba(0,0,0,.72);opacity:0;transition:opacity .6s ease;display:flex;align-items:center;justify-content:center}
+#sc.calm.on{opacity:1}
+#sc.calm .plate4{position:static;transform:none;animation:none;box-shadow:none;margin:0 16px}
+#sc.calm .ly,#sc.calm .skip{display:none}
+html.sc-lock,html.sc-lock body{overflow:hidden}
