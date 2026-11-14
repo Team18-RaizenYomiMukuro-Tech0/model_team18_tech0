@@ -15,6 +15,8 @@ CREATE TABLE products (
   product_id TEXT PRIMARY KEY, product_name TEXT, category TEXT, price INTEGER, rating REAL,
   review_count INTEGER, delivery_days INTEGER, gift_wrap INTEGER, stock INTEGER);
 CREATE TABLE product_scenes (product_id TEXT, scene_tag TEXT);
+CREATE TABLE orders (order_id TEXT PRIMARY KEY, estimated_scene TEXT, ship_to_type TEXT, gift_purpose TEXT);
+CREATE TABLE order_items (order_id TEXT, product_id TEXT);
 """
 
 Product = dict[str, Any]

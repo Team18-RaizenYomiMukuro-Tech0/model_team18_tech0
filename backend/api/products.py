@@ -5,14 +5,17 @@
 #  - 入力の検証は DB に問い合わせる前に行う（不正なら DB を呼ばない）。
 import math
 import re
+from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 
+from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db
+from decision import arrives_on, scene_count_value, scene_counts, today_jst
 from ranking import order_by_score
 
 router = APIRouter()
@@ -66,7 +69,10 @@ def _to_decimal(value: Any) -> Decimal | None:
     return None if value is None else Decimal(str(value))
 
 
-def _item(row: dict[str, Any]) -> dict[str, Any]:
+def _item(
+    row: dict[str, Any], today: date, scene: str | None = None, scene_n: int | None = None
+) -> dict[str, Any]:
+    """D-28 の 1 件分。arrives_on は今日（日本時間）＋配送日数、scene_count はシーンを付けたときだけ（D-34）"""
     rating = _to_decimal(row["rating"])
     wrap = row["gift_wrap"]
     return {
@@ -79,11 +85,17 @@ def _item(row: dict[str, Any]) -> dict[str, Any]:
         "delivery_days": row["delivery_days"],
         "wrapping": None if wrap is None else bool(wrap),
         "high_rating": _high_rating(rating),
+        "arrives_on": arrives_on(today, row["delivery_days"]),
+        "scene_count": scene_count_value(scene, scene_n),
     }
 
 
 @router.get("/api/products", response_model=None)
-def list_products(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any:
+def list_products(
+    request: Request,
+    db: Annotated[Db, Depends(get_db)],
+    clock: Annotated[Clock, Depends(get_clock)],
+) -> Any:
     """絞り込み。不正な値は 422（invalid_scene / invalid_price_band / invalid_category / invalid_page）"""
     q = request.query_params  # budget など、ここで読まない名前は無視する（#51-4）
 
@@ -147,7 +159,9 @@ def list_products(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any:
     if page > last_page:  # 最後のページを超えたら 1 ページ目（#46-5）
         page = 1
     chosen = ordered[(page - 1) * PAGE_SIZE : page * PAGE_SIZE]
-    items = [_item(by_id[pid]) for pid in chosen]
+    today = today_jst(clock.now())
+    counts = scene_counts(db, scene, chosen) if scene is not None else {}  # シーンがあるとき 12 件分を 1 本で数える（D-34）
+    items = [_item(by_id[pid], today, scene, counts.get(pid, 0)) for pid in chosen]
     return {
         "items": items,
         "count": len(items),

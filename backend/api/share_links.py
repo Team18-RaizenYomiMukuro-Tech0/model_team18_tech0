@@ -14,15 +14,10 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
-from api.candidates import (
-    COUNT_SENDOFF_HEAD,
-    COUNT_SENDOFF_TAIL,
-    SENDOFF_SCENE,
-    SENDOFF_SHIP_TO,
-)
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, DbError, get_db
+from decision import scene_counts
 from expiry import is_expired
 from reasons import build_reason
 from share_id import SHARE_ID_RE, new_share_id
@@ -81,10 +76,7 @@ def _create(ids: list[str], db: Db, clock: Clock, mark: int) -> JSONResponse:
     if any(pid not in by_id for pid in unique):
         return _invalid()
 
-    counts: dict[str, int] = {}
-    sql = COUNT_SENDOFF_HEAD + marks + COUNT_SENDOFF_TAIL
-    for r in db.fetch_all(sql, (SENDOFF_SCENE, SENDOFF_SHIP_TO, *unique)):
-        counts[str(r["product_id"])] = int(r["n"])
+    counts = scene_counts(db, "送別", unique)  # 共有リンクの文は第1弾のとおり送別の回数（SP-03）
 
     items = []
     for pid in unique:
