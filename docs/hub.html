@@ -126,7 +126,8 @@ a:not(.btn):hover,a:not(.btn):focus-visible{text-decoration-thickness:3px}
 (function(){
 var E=["2026-11-07","2026-11-11","2026-11-15","2026-11-18","2026-11-21","2026-11-24"],S=[null,"2026-11-08","2026-11-12","2026-11-15","2026-11-19","2026-11-24"],N=["5文書","実装①","実装②","実装③","評価・受入","発表"];
 var t=new Date(Date.now()+9*36e5).toISOString().slice(0,10),d=function(a){return Math.round((Date.parse(a)-Date.parse(t))/864e5)};
-var c=-1,i;for(i=0;i<6;i++){if(E[i]>=t){c=i;break}}
+var c=-1,i;for(i=0;i<6;i++){if((S[i]===null||S[i]<=t)&&t<=E[i])c=i}  // 期間が重なる日（11/15）は後の段（実装③）を今にする
+if(c<0)for(i=0;i<6;i++){if(E[i]>=t){c=i;break}}
 var li=document.querySelectorAll(".mp li");if(c>=0&&li[c])li[c].className="now";
 var e=document.getElementById("cd-end"),n=document.getElementById("cd-next");
 function put(el,a,b,x,y){el.textContent="";el.appendChild(document.createTextNode(a));var m=document.createElement("b");m.textContent=b;el.appendChild(m);el.appendChild(document.createTextNode(x))}

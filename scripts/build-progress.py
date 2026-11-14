@@ -392,8 +392,7 @@ def render_stage(s, name_of, now=False):
     wz = WAZA.get(wm.group(1)) if wm else None
     cls = f' class="w{wm.group(1).replace(".", "")}{" now" if now else ""}"' if wz else (' class="now"' if now else "")
     waza = f" <b>{wz}</b>" if wz else ""
-    here = '<span class="hr">いまここ</span>' if now else ""  # 今いる段（ステージのカードの「いまここ」と同じ考え方）
-    return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span>{here}<span class="chip">{period}</span>'
+    return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span><span class="chip">{period}</span>'
             f'<div class="bar"><i style="width:{pc}%"></i></div>'
             f'<span class="sv">{progress}{"　" + left if left else ""}</span>'
             + (f'<details><summary>内訳を開く（{s["total"]}件）</summary><ul class="srows">'
@@ -446,9 +445,9 @@ CSS = """
 .stg2 li[class] .sn{white-space:nowrap}
 .stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}
 .stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
-/* 3.5 実装③（聖光気）は専用の色 #B388FF（段 3 のピンクと段 4 の虹の間を思わせる薄い紫。1〜4 の色と区別できる）。今いる段は枠と「いまここ」 */
+/* 3.5 実装③（聖光気）は専用の色 #B388FF（段 3 のピンクと段 4 の虹の間を思わせる薄い紫。1〜4 の色と区別できる）。今いる段は枠だけ（札は付けない。PM 11/15） */
 .stg2 li.w35{--c:#B388FF}.stg2 li.w35 .bar{height:8px;border:0;background:var(--tint)}.stg2 li.w35 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}
-.stg2 li.now{outline:var(--bw2) solid var(--line);outline-offset:3px;border-radius:var(--r1)}.stg2 li .hr{display:inline-block;justify-self:start;padding:0 8px;border-radius:var(--rp);background:var(--ctext);color:#fff;font:800 var(--fs-xs)/1.7 var(--body);white-space:nowrap}
+.stg2 li.now{outline:var(--bw2) solid var(--line);outline-offset:3px;border-radius:var(--r1)}
 @media(max-width:600px){.stg2>ul>li{grid-template-columns:minmax(0,1fr)}.stg2>ul>li .chip{justify-self:start}}
 .ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
 .chip.ar{margin-right:0;border-color:currentColor}
