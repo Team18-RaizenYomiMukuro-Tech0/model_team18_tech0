@@ -52,4 +52,6 @@ jobs:
           app-name: 'gen13-app-step3-1-5181-fe'
           slot-name: 'Production'
           package: release.zip
+          # 古い .next/cache（作り置きの /search）が残って新しい版を隠すため、デプロイ前に配置先の既存ファイルを消す
+          clean: true
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5CEA344BF203474FB3C46A303F55A75B }}
