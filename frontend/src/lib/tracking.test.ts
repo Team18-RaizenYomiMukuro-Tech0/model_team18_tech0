@@ -60,11 +60,17 @@ const ids = { visitId: "A".repeat(22), visitorId: "B".repeat(22) };
 test("U-81 本文: 段ごとに入る項目だけ。名前・メール・IP・ブラウザの情報・商品ID・検索語・is_test が無い", () => {
   assert.deepEqual(buildEventBody(ids, 1, { entry: "top", scene: "お礼", has_voice: true, zero_cond: "price" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 1, entry: "top" });
   assert.deepEqual(buildEventBody(ids, 2, { scene: "送別", entry: "top" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 2, scene: "送別" });
-  assert.deepEqual(buildEventBody(ids, 3, { scene: "誕生日", has_voice: false }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 3, scene: "誕生日", has_voice: false });
+  assert.deepEqual(buildEventBody(ids, 3, { scene: "誕生日", has_voice: false }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 3, scene: "誕生日", has_voice: 0 });
   for (const step of [4, 5, 6] as const) assert.deepEqual(Object.keys(buildEventBody(ids, step, { scene: "お礼", entry: "top", has_voice: true })).sort(), ["step", "visit_id", "visitor_id"]);
   assert.deepEqual(buildEventBody(ids, 7, { zero_cond: "both", scene: "お礼" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 7, zero_cond: "both" });
   const all = JSON.stringify([1, 2, 3, 4, 5, 6, 7].map((s) => buildEventBody(ids, s as 1, { scene: "お礼", has_voice: true, entry: "top", zero_cond: "price" })));
   for (const bad of ["is_test", "product", "query", "name", "mail", "ip", "user"]) assert.ok(!all.includes(`"${bad}`), bad);
+});
+
+test("U-81 has_voice は 0／1（真偽値ではない）。声が 1 件以上なら 1", () => {
+  assert.equal(buildEventBody(ids, 3, { has_voice: true }).has_voice, 1);
+  assert.equal(buildEventBody(ids, 3, { has_voice: false }).has_voice, 0);
+  assert.ok(!("has_voice" in buildEventBody(ids, 3, {}))); // 無ければ送らない
 });
 
 test("U-81 test_key はテストの訪問のときだけ（通常の本文に無い）。64文字まで", () => {

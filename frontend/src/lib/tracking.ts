@@ -75,11 +75,11 @@ export function touchVisit(storage: StorageLike | null, now: number, random: (n:
 
 // U-81: 本文に入るのは visit_id・visitor_id・step・scene・has_voice・entry・zero_cond と、テストの訪問のときだけ test_key。
 // scene は段2・3、has_voice は段3、entry は段1、zero_cond は段7だけ。is_test を入れる経路は無い（付くのは test_key の一致だけ。サーバー側）。
-// has_voice の本文の型（true/false か 1/0 か）は設計に書かれていない。サーバー（D6 #283）が受ける型に合わせる
+// has_voice は 0／1（設計 D-40 の値の対応。声が 1 件以上あれば 1。DB は TINYINT(1)）で送る
 export function buildEventBody(ids: Ids, step: EventStep, extra: EventExtra = {}, testKey: string | null = null): Record<string, unknown> {
   const body: Record<string, unknown> = { visit_id: ids.visitId, visitor_id: ids.visitorId, step };
   if (SCENE_STEPS.includes(step) && extra.scene) body.scene = extra.scene;
-  if (step === 3 && typeof extra.has_voice === "boolean") body.has_voice = extra.has_voice;
+  if (step === 3 && typeof extra.has_voice === "boolean") body.has_voice = extra.has_voice ? 1 : 0;
   if (step === 1 && extra.entry) body.entry = extra.entry;
   if (step === 7 && extra.zero_cond) body.zero_cond = extra.zero_cond;
   if (testKey) body.test_key = testKey.slice(0, TEST_KEY_MAX);
