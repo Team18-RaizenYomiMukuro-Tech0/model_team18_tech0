@@ -35,7 +35,7 @@ mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia
 
 **mysql コマンドの代わりに、Python の道具を使ってもよい。** `backend/scripts/db_admin.py` が、この手順書の手順0・A・1・B・Bt（手順Bの1b。印ありの行を置く）・B5（手順Bの5。印なしの確認用の行を消す）・3・4・C の SQL を、手順書と一字一句同じに流す（SQL は変えていない。`tests/test_db_admin.py` が手順書と照合する）。`backend` フォルダで仮想環境に入り、`python scripts/db_admin.py <手順>` の形で1手順ずつ動かす。接続先は `giftia_t501` 固定（引数・環境変数では変えられない）、SSL は certifi＋ホスト名の確認、接続情報は `backend/.env`（`GIFTIA_DB_HOST`・`GIFTIA_DB_USER`・`GIFTIA_DB_PASSWORD`）から読み、画面にもファイルにも出さない。書き込む手順（1・B・Bt・B5・3・4）は、先に `SELECT DATABASE()` と対象の SELECT の結果を出し、`yes` と入力するまで書き込まない。記録は `evidence/db/<日付>_<手順>.md` に保存される（ホスト・ユーザーは `<伏せ>`）。
 
-第2弾で足した手順 1b・1c（表の作成）・3c・3d・5b（記録の行を消す）・4a（表を消す）は、`db_admin.py` には入れていない。PM が `mysql` コマンドで、配られたアカウントで手で流す（コードの変更になるので、道具に足すかは別に決める）。
+第2弾で足した手順 1b・1c（表の作成）・3c・3d・5b（記録の行を消す）・5c（表を消す）は、`db_admin.py` には入れていない。PM が `mysql` コマンドで、配られたアカウントで手で流す（コードの変更になるので、道具に足すかは別に決める）。
 
 接続確認（これが出なければ先へ進まない）:
 
@@ -340,35 +340,6 @@ SELECT COUNT(*) FROM share_links;   -- 実行前と同じ
 
 - 期限切れのリンクの行そのものは、アプリの決定どおり消さない（`share_links` は手順 3・5 の対象）。
 
-## 4a. 第2弾の表を消す（DROP TABLE。サイトを止めた後だけ）
-
-`usage_events`・`share_likes` を表ごと消す。**アプリ（Functions・App Service）が止まった後だけ**流す。動いている間に流すと、共有ページの取得（設計 D-06 の `LEFT JOIN share_likes`）が 500 になる（NF-55）。評価・発表のあとの記録削除は、表を残して行を消す手順 5b を使う。手順 4（`DROP TABLE share_links`）の**直前**に流す。
-
-**実行前の確認**
-
-```sql
-SELECT COUNT(*) FROM usage_events;
-SELECT COUNT(*) FROM share_likes;
-SHOW TABLES;
-```
-
-- アプリが止まったこと（止めるのは講師側）。通過率の控え（手順 5b ①）が `evidence/` にあること。
-
-**実行**
-
-```sql
-DROP TABLE usage_events;
-DROP TABLE share_likes;
-```
-
-（`IF EXISTS` は付けない。）`usage_events`・`share_likes` は外部キーを張らない（設計 D-38・D-40）ので、順番で失敗はしない。
-
-**実行後の確かめ方**
-
-```sql
-SHOW TABLES;   -- usage_events・share_likes が無い。ほかの表は変わらない
-```
-
 ## 4. 元に戻す（DROP TABLE）
 
 N-09: DB は共有リンク用テーブルを消せば元どおり（既存テーブルは変えていない）。**中の行は戻らない**。
@@ -414,12 +385,12 @@ SHOW TABLES;                      -- 実行前の一覧から share_links が消
 
 1. アプリ（Functions・App Service）が止まったことを確かめる（止めるのは講師側。この手順書の対象外。講師が止める時期は未決）。
 2. 実機確認で作ったリンクが残っていないか確かめる（手順3b。当日中に消してあるはず）。
-3. 手順 5b（`usage_events`・`share_likes` の行を消す。通過率の結果を先に `evidence/` に残す。サイトが動いている間はこれだけ）。アプリが止まった後に、手順 4a（第2弾の2表の DROP）、続けて手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
+3. 手順 5b（`usage_events`・`share_likes` の行を消す。通過率の結果を先に `evidence/` に残す。サイトが動いている間はこれだけ）。アプリが止まった後に、手順 5c（第2弾の2表の DROP）、続けて手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
 4. Azure のアプリの設定（環境変数）は、リソースの削除（講師側）で消える。手元の `.env` から配られたアカウントの値を消す。
 
 ### 5b. 評価・発表のあとに、計測といいねの行を消す（M-2）
 
-- 評価が終わるまで残し、**発表の後**に消す（M-2「記録を消す」＝行を消す）。**表は消さない**。サイトはまだ動いていて、共有ページの取得（設計 D-06 は `share_links LEFT JOIN share_likes`）が `share_likes` を読むので、表ごと消すと第1弾の共有ページが 500 になる（NF-55「消した後もサイトが動く」にも反する）。表を消すのはサイトを止めた後だけ（手順 4a）。
+- 評価が終わるまで残し、**発表の後**に消す（M-2「記録を消す」＝行を消す）。**表は消さない**。サイトはまだ動いていて、共有ページの取得（設計 D-06 は `share_links LEFT JOIN share_likes`）が `share_likes` を読むので、表ごと消すと第1弾の共有ページが 500 になる（NF-55「消した後もサイトが動く」にも反する）。表を消すのはサイトを止めた後だけ（手順 5c）。
 - 順番: ①通過率の SELECT（設計 D-41）の結果を `evidence/` に残す ②実行前の確認 ③消す。
 - 12/12 の後片付け（手順 5）の前に行う。
 
@@ -451,6 +422,35 @@ SHOW TABLES;                         -- 表は残っている（usage_events・s
 ```
 
 - 共有ページ（既存の共有リンク）がまだ開けること（`share_likes` が空でもいいね数 0 で表示される）。
+
+### 5c. 表を消す（DROP TABLE。公開期間の後。サイトを止めた後だけ）
+
+`usage_events`・`share_likes` を表ごと消す。**アプリ（Functions・App Service）が止まった後だけ**流す。動いている間に流すと、共有ページの取得（設計 D-06 の `LEFT JOIN share_likes`）が 500 になる（NF-55）。発表の後の記録削除は、表を残して行を消す手順 5b を使う。この手順 5c は公開期間の後（手順 4 と同じ時）で、手順 4（`DROP TABLE share_links`）より**前**に流す。
+
+**実行前の確認**
+
+```sql
+SELECT COUNT(*) FROM usage_events;
+SELECT COUNT(*) FROM share_likes;
+SHOW TABLES;
+```
+
+- アプリが止まったこと（止めるのは講師側）。通過率の控え（手順 5b ①）が `evidence/` にあること。
+
+**実行**
+
+```sql
+DROP TABLE usage_events;
+DROP TABLE share_likes;
+```
+
+（`IF EXISTS` は付けない。）`usage_events`・`share_likes` は外部キーを張らない（設計 D-38・D-40）ので、順番で失敗はしない。
+
+**実行後の確かめ方**
+
+```sql
+SHOW TABLES;   -- usage_events・share_likes が無い。ほかの表は変わらない
+```
 
 **実行後の確かめ方（手順 5 の全体）**
 
