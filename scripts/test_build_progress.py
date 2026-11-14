@@ -260,8 +260,13 @@ class T(unittest.TestCase):
         self.assertEqual(bp.area_split("[P・K1] 題"), ("P", "K1", "題"))
         self.assertEqual(bp.area_split("[T・O4] 題"), ("T", "O4", "題"))
         self.assertEqual(bp.area_split("[B・L12] 題"), ("B", "L12", "題"))
+        # 「-数字」「英小文字1字」が続く形も読む（札に出す文字はそのまま）
+        self.assertEqual(bp.area_split("[P・W4-1] 題"), ("P", "W4-1", "題"))
+        self.assertEqual(bp.area_split("[T・W4-2b] 題"), ("T", "W4-2b", "題"))
+        self.assertEqual(bp.area_split("[P・T3b] 題"), ("P", "T3b", "題"))
+        self.assertEqual(bp.area_split("[F・O1b] 題"), ("F", "O1b", "題"))
         # 読めない形は None（札なし・題はそのまま）
-        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・o1] 小文字", "[F・RR1] 2字", "[F・O1b] 小文字つき", "[F・1] R が無い", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
+        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・o1] 小文字", "[F・RR1] 2字", "[F・W4-] 数字が無い", "[F・W-1] 数字が無い", "[F・1] R が無い", "[F・W4-2bb] 小文字2字", "[F・W4-2B] 大文字", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
             self.assertIsNone(bp.area_split(bad), bad)
             self.assertIsNone(bp.AREA_RE.match(bad), bad)
         # 札の HTML（画面）。R1 は札 F の色で R1 と出す
@@ -374,13 +379,14 @@ class T(unittest.TestCase):
         self.assertNotIn("staff-account", bp.now_section(m))
         self.assertEqual(p["who"].split(), ["re-ji-tech0"])  # 一覧に無い人のボタンは無い
 
-    def test_hub_daily_cards_open_in_new_tab(self):
+    def test_hub_daily_cards_open_in_same_tab(self):
         hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
         for h in ("overview.html", "progress.html"):
             m = re.search(r'<a ([^>]*)href="%s">(.*?)</a>' % re.escape(h), hub)
             self.assertIsNotNone(m, h)
-            self.assertIn('target="_blank" rel="noopener"', m.group(1))
-            self.assertIn('<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span>', m.group(2))
+            self.assertNotIn("_blank", m.group(1))  # サイトの中は同じタブ（戻るリンクがある）
+            self.assertNotIn("別タブ", m.group(2))
+            self.assertNotIn('class="xl"', m.group(2))
 
     def test_merged_pr_table_title_is_the_only_link(self):
         d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
@@ -393,6 +399,10 @@ class T(unittest.TestCase):
             self.assertRegex(r, r'<td data-label="PR">#\d+</td>')  # 番号はただの文字
             self.assertRegex(r, r'<td data-label="タイトル"><a href="https://github.com/[^"]+" target="_blank" rel="noopener">[^<]+<span class="vh">（別タブで開く）</span></a></td>')
             self.assertNotIn("<td data-label=\"担当者\"><a", r)
+
+    def test_overview_reads_same_code_forms_as_dashboard(self):
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        self.assertIn(r"[A-Z]\d+(?:-\d+)?[a-z]?", ov)  # W4-1・W4-2b・T3b も札に出す（build-progress.py の AREA_PAT と同じ形）
 
     def test_overview_quick_row_title_is_the_only_link(self):
         ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
@@ -410,8 +420,24 @@ class T(unittest.TestCase):
         items = [li for r in rows for li in re.findall(r"<li class=\"on\">(.*?)</li>", r)]
         self.assertEqual(len(items), 5)  # GitHub 3行 + モック・図 2行
         for li in items:
-            self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a target="_blank" rel="noopener" href="[^"]+">[^<]+<span class="xl"')  # アイコンはリンクの外
+            if 'href="https://' in li:  # 外のサイトは別タブ
+                self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a target="_blank" rel="noopener" href="https://[^"]+">[^<]+<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span></a>$')  # アイコンはリンクの外
+            else:  # サイトの中は同じタブ・↗なし
+                self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a href="[^"]+">[^<]+</a>$')
             self.assertNotIn("<time>", li)  # 右端の → は無い
+
+    def test_hub_site_pages_same_tab_external_new_tab(self):
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        for tag in re.findall(r'<a [^>]*>', hub):
+            href = re.search(r'href="([^"]*)"', tag).group(1)
+            if href.startswith("http") or href.endswith(".pdf"):
+                self.assertIn('target="_blank" rel="noopener"', tag, href)
+            else:
+                self.assertNotIn("_blank", tag, href)
+        for h in ("mock/clickable/giftia-ui-renewal/mock.html", "mock/diagrams/giftia-ui-renewal/flows.html"):
+            self.assertIn('<a href="%s">' % h, hub)
+            page = open(os.path.join(D, "..", "docs", h), encoding="utf-8").read()
+            self.assertIn('href="../../../hub.html">← 開発ハブに戻る</a>', page)
 
     def test_recent_prs_ten_default_newest_first_and_others(self):
         prs = model()["merged_prs"]
