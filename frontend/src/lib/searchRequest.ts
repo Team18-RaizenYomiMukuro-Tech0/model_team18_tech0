@@ -1,7 +1,8 @@
 import { fetchJson, isProductList, type Fetched, type ProductList } from "./products.ts";
 import type { Scene } from "./api.ts";
 import type { PriceBand } from "./priceBand.ts";
-import type { SearchQuery } from "./searchQuery.ts";
+import type { SearchQuery, SortKey } from "./searchQuery.ts";
+import { track, zeroCondOf, type Tracker } from "./tracking.ts";
 
 // R8 D-27 #46-1 #50-2 #55-3 F-12 F-18 I-34 I-35 E-15: 検索結果の条件の操作（純粋な部分）と、R-02 の取得の実行役。
 // 条件ボタンは押した時点で結果を出し直し、同じボタンの再押下で解除する。どの操作もページは1に戻す。
@@ -20,6 +21,8 @@ export const toggleCategory = (q: SearchQuery, name: string): SearchQuery => ({
 });
 // シーン・価格帯・カテゴリーをすべて外す。選んだ候補は画面全体の状態（D-32）にあるので触らない（#50-2、#55-3）
 export const clearConditions = (q: SearchQuery): SearchQuery => ({ ...q, scene: null, priceBand: null, categories: [], page: 1 });
+// 並びを替える。同じ条件のまま1ページ目に戻る（SP-21）
+export const setSort = (q: SearchQuery, sort: SortKey): SearchQuery => ({ ...q, sort, page: 1 });
 export const hasConditions = (q: SearchQuery): boolean => q.scene !== null || q.priceBand !== null || q.categories.length > 0;
 
 // R-02（GET /api/products）の実行役。run のたびに「最新の1回」だけが画面に反映される。
@@ -29,10 +32,13 @@ export class ProductRunner {
   private abort: AbortController | null = null;
   private readonly onChange: (url: string, r: Fetched<ProductList> | null) => void;
   private readonly fetchImpl: typeof fetch;
+  private readonly tracker: Tracker;
 
-  constructor(onChange: (url: string, r: Fetched<ProductList> | null) => void, fetchImpl: typeof fetch = (...a) => fetch(...a)) {
+  // tracker は計測（SP-34）の送り先。テストでは差し替える
+  constructor(onChange: (url: string, r: Fetched<ProductList> | null) => void, fetchImpl: typeof fetch = (...a) => fetch(...a), tracker: Tracker = track) {
     this.onChange = onChange;
     this.fetchImpl = fetchImpl;
+    this.tracker = tracker;
   }
 
   run(url: string): void {
@@ -42,8 +48,19 @@ export class ProductRunner {
     this.abort = abort;
     this.onChange(url, null);
     void fetchJson(url, isProductList, abort.signal, this.fetchImpl).then((r) => {
-      if (mine === this.token) this.onChange(url, r);
+      if (mine !== this.token) return;
+      if (r.status === "ok") this.trackResult(url, r.data.total);
+      this.onChange(url, r);
     });
+  }
+
+  // ② 結果が出たとき（0件も含む。R-02 はシーンなし）。0件のときは ⑦ に条件（価格帯・カテゴリー）を持たせて別に送る（SP-34・D-40）
+  private trackResult(url: string, total: number): void {
+    this.tracker(2);
+    if (total > 0) return;
+    const q = new URLSearchParams(url.split("?")[1] ?? "");
+    const zc = zeroCondOf({ scene: false, priceBand: !!q.get("price_band"), categories: q.getAll("category").length > 0 });
+    if (zc) this.tracker(7, { zero_cond: zc });
   }
 
   cancel(): void {

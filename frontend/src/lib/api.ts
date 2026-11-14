@@ -1,4 +1,5 @@
 import type { PriceBand } from "./priceBand.ts";
+import { track, zeroCondOf, type Tracker } from "./tracking.ts";
 
 // D-08 D-01 E-01〜E-03 E-12 #30 J #29-14: 候補の取得（GET /api/candidates）と、10秒の打ち切り。
 // 10秒は画面の定数。テストの設定で変えられない（設計.md）。
@@ -8,7 +9,14 @@ export const REQUEST_TIMEOUT_MS = 10000;
 export type Scene = "お礼" | "誕生日" | "送別";
 export const SCENES: readonly Scene[] = ["お礼", "誕生日", "送別"];
 
-// D-01 の応答の1件分（画面が使う分だけ）
+// D-34: 選んだシーンの回数（{"scene":"送別","n":12}）。回数 0 の決め手は画面が出さない
+export type SceneCount = { scene: string; n: number };
+
+// D-44: 0件のときだけ付く。はずすと何件になるか（その条件を付けていなければ null、0件なら 0）。シーンははずさない
+export type Relax = { price_band: number | null; category: number | null };
+
+// D-01 の応答の1件分（画面が使う分だけ）。delivery_days・wrapping・arrives_on・scene_count は第2弾（D-34）の項目で、
+// API 側（D2）が入るまでは来ないので省略可。delivery_days が null なら arrives_on も null
 export type CandidateItem = {
   product_id: string;
   name: string;
@@ -16,6 +24,10 @@ export type CandidateItem = {
   category: string;
   high_rating: boolean;
   reason: string;
+  delivery_days?: number | null;
+  wrapping?: boolean | null;
+  arrives_on?: string | null;
+  scene_count?: SceneCount | null;
 };
 
 // D-16 D-33: API の呼び出し先の頭。公開版は画面と API が別ホストなので、ビルド時の NEXT_PUBLIC_API_BASE を付ける。
@@ -31,7 +43,7 @@ export type SearchState =
   | { status: "initial" }
   | { status: "loading" }
   | { status: "results"; items: CandidateItem[]; count: number }
-  | { status: "empty" }
+  | { status: "empty"; relax?: Relax | null }
   | { status: "error" };
 
 type FetchLike = (url: string, init: { signal: AbortSignal }) => Promise<{ ok: boolean; json: () => Promise<unknown> }>;
@@ -52,10 +64,13 @@ export class SearchRunner {
 
   private readonly onChange: (s: SearchState) => void;
   private readonly fetchImpl: FetchLike;
+  private readonly tracker: Tracker;
 
-  constructor(onChange: (s: SearchState) => void, fetchImpl: FetchLike = (url, init) => fetch(url, init)) {
+  // tracker は計測（SP-34）の送り先。テストでは差し替える
+  constructor(onChange: (s: SearchState) => void, fetchImpl: FetchLike = (url, init) => fetch(url, init), tracker: Tracker = track) {
     this.onChange = onChange;
     this.fetchImpl = fetchImpl;
+    this.tracker = tracker;
   }
 
   run(params: SearchParams): void {
@@ -73,11 +88,17 @@ export class SearchRunner {
     this.fetchImpl(candidatesUrl(params), { signal: abort.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error("bad status");
-        const body = (await res.json()) as { items?: CandidateItem[]; count?: number };
+        const body = (await res.json()) as { items?: CandidateItem[]; count?: number; relax?: Relax | null };
         if (mine !== this.token) return;
         clearTimeout(timer);
         const items = Array.isArray(body.items) ? body.items : [];
-        this.onChange(items.length ? { status: "results", items, count: body.count ?? items.length } : { status: "empty" });
+        // ② 結果が出たとき（0件も含む）。0件のときは ⑦ に条件を持たせて別に送る（SP-34・D-40）
+        this.tracker(2, { scene: params.scene });
+        if (!items.length) {
+          const zc = zeroCondOf({ scene: true, priceBand: !!params.priceBand, categories: (params.categories ?? []).length > 0 });
+          if (zc) this.tracker(7, { zero_cond: zc });
+        }
+        this.onChange(items.length ? { status: "results", items, count: body.count ?? items.length } : { status: "empty", relax: body.relax ?? null });
       })
       .catch(() => {
         if (mine !== this.token) return;
@@ -136,10 +157,12 @@ export class ShareLinkRunner {
 
   private readonly onChange: (s: ShareState) => void;
   private readonly fetchImpl: PostFetch;
+  private readonly tracker: Tracker;
 
-  constructor(onChange: (s: ShareState) => void, fetchImpl: PostFetch = (url, init) => fetch(url, init)) {
+  constructor(onChange: (s: ShareState) => void, fetchImpl: PostFetch = (url, init) => fetch(url, init), tracker: Tracker = track) {
     this.onChange = onChange;
     this.fetchImpl = fetchImpl;
+    this.tracker = tracker;
   }
 
   create(productIds: readonly string[]): void {
@@ -172,6 +195,7 @@ export class ShareLinkRunner {
         if (!res.ok) throw new Error("bad status");
         const body = await res.json();
         if (!isShareLink(body)) throw new Error("bad body");
+        this.tracker(5); // ⑤ 共有リンクの作成に成功したとき（API が成功を返したあと。SP-34・D-40）
         finish({ status: "success", link: body });
       })
       .catch(() => finish({ status: "error", link: this.link }));
@@ -184,5 +208,57 @@ export class ShareLinkRunner {
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
     this.abort?.abort();
+  }
+}
+
+// D-39 SP-28: いいね（POST /api/share-links/{share_id}/likes）。本文は {product_id, on}（on:false は取り消し。真偽値以外は 422 invalid_on）。
+// 成功は 200 {product_id, like_count, capped}。capped:true は上限（1リンク×1候補で30回。N-17）で増えなかったとき
+// （画面は押した印を付けず、取り消しも送らない。R3）。404（見つからない・そのリンクの商品に無い）・410（期限切れ）・
+// そのほかの失敗（500・通信・10秒超過・形の違う応答）を区別する。名前・メール・IP・ブラウザの情報は送らない。
+export type LikeResult =
+  | { status: "ok"; product_id: string; like_count: number; capped: boolean }
+  | { status: "notfound" }
+  | { status: "expired" }
+  | { status: "error" };
+
+export function likeUrl(shareId: string): string {
+  return apiUrl(`/api/share-links/${encodeURIComponent(shareId)}/likes`);
+}
+
+export function likeBody(productId: string, on: boolean): string {
+  return JSON.stringify({ product_id: productId, on });
+}
+
+function isLikeBody(v: unknown): v is { product_id: string; like_count: number; capped: boolean } {
+  const o = v as Record<string, unknown> | null;
+  return !!o && typeof o.product_id === "string" && typeof o.like_count === "number" && typeof o.capped === "boolean";
+}
+
+export async function postLike(
+  shareId: string,
+  productId: string,
+  on: boolean,
+  signal?: AbortSignal,
+  fetchImpl: typeof fetch = fetch,
+): Promise<LikeResult> {
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), REQUEST_TIMEOUT_MS);
+  signal?.addEventListener("abort", () => abort.abort());
+  try {
+    const res = await fetchImpl(likeUrl(shareId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: likeBody(productId, on),
+      signal: abort.signal,
+    });
+    if (res.status === 404) return { status: "notfound" };
+    if (res.status === 410) return { status: "expired" };
+    if (!res.ok) return { status: "error" };
+    const body: unknown = await res.json();
+    return isLikeBody(body) ? { status: "ok", ...body } : { status: "error" };
+  } catch {
+    return { status: "error" };
+  } finally {
+    clearTimeout(timer);
   }
 }
