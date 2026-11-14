@@ -35,6 +35,8 @@ mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia
 
 **mysql コマンドの代わりに、Python の道具を使ってもよい。** `backend/scripts/db_admin.py` が、この手順書の手順0・A・1・B・Bt（手順Bの1b。印ありの行を置く）・B5（手順Bの5。印なしの確認用の行を消す）・3・4・C の SQL を、手順書と一字一句同じに流す（SQL は変えていない。`tests/test_db_admin.py` が手順書と照合する）。`backend` フォルダで仮想環境に入り、`python scripts/db_admin.py <手順>` の形で1手順ずつ動かす。接続先は `giftia_t501` 固定（引数・環境変数では変えられない）、SSL は certifi＋ホスト名の確認、接続情報は `backend/.env`（`GIFTIA_DB_HOST`・`GIFTIA_DB_USER`・`GIFTIA_DB_PASSWORD`）から読み、画面にもファイルにも出さない。書き込む手順（1・B・Bt・B5・3・4）は、先に `SELECT DATABASE()` と対象の SELECT の結果を出し、`yes` と入力するまで書き込まない。記録は `evidence/db/<日付>_<手順>.md` に保存される（ホスト・ユーザーは `<伏せ>`）。
 
+第2弾で足した手順 1b・1c（表の作成）・3c・3d・5b（記録の行を消す）・5c（表を消す）は、`db_admin.py` には入れていない。PM が `mysql` コマンドで、配られたアカウントで手で流す（コードの変更になるので、道具に足すかは別に決める）。
+
 接続確認（これが出なければ先へ進まない）:
 
 ```sql
@@ -85,6 +87,81 @@ SELECT COUNT(*) FROM share_links;
 - 列が `share_id`・`items`・`created_at`・`is_test` の4つで、型が上のとおり（`is_test` は `tinyint(1)`、NOT NULL、既定値 0）。`share_id` が主キー、ascii_bin。
 - `COUNT(*)` が 0。
 - 既存テーブルの一覧が増減していないこと（`SHOW TABLES;` を実行前後で比べる）。
+
+## 1b. `share_likes` を作る（CREATE TABLE。第2弾）
+
+設計.md D-38（DATA-03）のとおり。既存テーブル・`share_links` は変えない。**外部キーは付けない**（PM 11/15）。個人を示す列は持たない（N-13）。手順1の隣の手順で、作る前と後に `SHOW TABLES` と既存の表の件数を控える（手順 A・C と同じ）。
+
+**実行前の確認**
+
+```sql
+SHOW TABLES LIKE 'share_likes';
+```
+
+- 空であること（すでにあるなら作らない。中身を見て、レージが判断する）。
+
+**実行**
+
+```sql
+CREATE TABLE share_likes (
+  share_id    CHAR(22) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  product_id  VARCHAR(10) NOT NULL,
+  like_count  INT UNSIGNED NOT NULL DEFAULT 0,
+  updated_at  DATETIME NOT NULL,
+  PRIMARY KEY (share_id, product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+**実行後の確かめ方**
+
+```sql
+SHOW CREATE TABLE share_likes;
+SELECT COUNT(*) FROM share_likes;
+```
+
+- 列が `share_id`・`product_id`・`like_count`・`updated_at` の4つで、型が上のとおり。主キーが（`share_id`, `product_id`）。`COUNT(*)` が 0。
+- 既存テーブルの一覧が、`share_likes` が増えただけであること（`SHOW TABLES;` を実行前後で比べる）。
+
+## 1c. `usage_events` を作る（CREATE TABLE。第2弾）
+
+設計.md D-40（DATA-04）のとおり。外部キーは付けない。名前・メール・IP アドレス・ブラウザの情報・商品 ID・検索語・ユーザー ID の列は持たない（N-13）。`is_test` は、テストの時間帯に計測の API が付ける印（設計 D-40 の「テストの印の付け方」）。
+
+**実行前の確認**
+
+```sql
+SHOW TABLES LIKE 'usage_events';
+```
+
+- 空であること。
+
+**実行**
+
+```sql
+CREATE TABLE usage_events (
+  event_id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  visit_id    CHAR(22) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  visitor_id  CHAR(22) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  step        TINYINT UNSIGNED NOT NULL,
+  occurred_at DATETIME NOT NULL,
+  scene       VARCHAR(20) NULL,
+  has_voice   TINYINT(1) NULL,
+  entry       VARCHAR(20) NULL,
+  zero_cond   VARCHAR(20) NULL,
+  is_test     TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (event_id),
+  UNIQUE KEY uq_visit_step (visit_id, step),
+  KEY idx_occurred (occurred_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+**実行後の確かめ方**
+
+```sql
+SHOW CREATE TABLE usage_events;
+SELECT COUNT(*) FROM usage_events;
+```
+
+- 列・型・`UNIQUE KEY uq_visit_step (visit_id, step)`・`KEY idx_occurred (occurred_at)` が上のとおり。`COUNT(*)` が 0。既存テーブル・`share_links`・`share_likes` の件数が変わっていない。
 
 ## 2. アプリ用アカウントは作らない（案A）
 
@@ -178,6 +255,91 @@ DELETE FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');
 SELECT COUNT(*) FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');   -- 0
 ```
 
+### 3c. `usage_events` のテストの行だけを消す
+
+- 対象: 要件 N-16、設計 D-40。印は列 `is_test`（1 がテストの行。計測の API が、サーバーの `GIFTIA_TEST_KEY` と本文の `test_key` が一致したときに付ける。設計 D-40）。`is_test = 0` の行（本物の訪問）は消さない。
+
+**実行前の確認**
+
+```sql
+SELECT COUNT(*) FROM usage_events;
+SELECT is_test, COUNT(*) FROM usage_events GROUP BY is_test;
+SELECT visit_id, step, occurred_at FROM usage_events WHERE is_test = 1 ORDER BY occurred_at LIMIT 50;
+```
+
+- 件数が、テストで作った数と合うこと。多すぎるときは消さない。
+- `is_test = 0` の件数は、この手順で変わらないこと（実行後に同じ数）。
+- 一覧に、本物の訪問（テストの時間帯でない時刻の行）が混じっていないこと。
+
+**実行**
+
+```sql
+START TRANSACTION;
+DELETE FROM usage_events WHERE is_test = 1;
+SELECT ROW_COUNT();
+-- 件数が実行前の確認と合うなら:
+COMMIT;
+-- 合わないなら:
+-- ROLLBACK;
+```
+
+**実行後の確かめ方**
+
+```sql
+SELECT COUNT(*) FROM usage_events WHERE is_test = 1;   -- 0
+SELECT is_test, COUNT(*) FROM usage_events GROUP BY is_test;   -- 1 の行が無い。0 の件数は実行前と同じ
+```
+
+### 3d. `share_likes` のうち、テストの共有リンクの分と、期限切れの分を消す
+
+- 対象: 要件 N-17、設計 D-38・D-39。`share_likes` には `is_test` が無い。次の 3 つのどれかに当てはまる行を消す。(a) `is_test=1` の共有リンクの分（テストで作ったリンクのいいね）、(b) 作成から 720 時間を過ぎた共有リンクの分、(c) 共有リンクの行がもう無い分。
+- **順番の注意**: 手順 3（`share_links` のテスト行の削除）の**前に**この手順を流す。先に `share_links` を消すと、(a) の印が失われ、(c) になる（その場合も (c) で消せるので、消し忘れは出ない）。
+- 時刻は UTC（`created_at` はアプリのサーバー時刻の UTC。設計.md DATA-02）。MySQL の `UTC_TIMESTAMP()` を使う（手で時刻を書かない）。
+
+**実行前の確認**
+
+```sql
+SELECT COUNT(*) FROM share_likes;
+SELECT COUNT(*) AS to_delete FROM share_likes
+WHERE share_id IN (SELECT share_id FROM share_links WHERE is_test = 1)
+   OR share_id IN (SELECT share_id FROM share_links WHERE created_at < UTC_TIMESTAMP() - INTERVAL 720 HOUR)
+   OR share_id NOT IN (SELECT share_id FROM share_links);
+SELECT share_id, product_id, like_count, updated_at FROM share_likes
+WHERE share_id IN (SELECT share_id FROM share_links WHERE is_test = 1)
+   OR share_id IN (SELECT share_id FROM share_links WHERE created_at < UTC_TIMESTAMP() - INTERVAL 720 HOUR)
+   OR share_id NOT IN (SELECT share_id FROM share_links)
+ORDER BY updated_at LIMIT 50;
+```
+
+- `to_delete` が、期待する数（今回のテストで押したいいねの行数＋期限切れの分）と合うこと。**期限内の本物のリンクの行が混じっていないこと**（一覧の `share_id` を、`share_links` で `is_test=0` かつ作成から 720 時間以内か見る）。
+- `share_links` の件数・`is_test` ごとの件数は、この手順で変わらない（`share_likes` だけを消す）。
+
+**実行**
+
+```sql
+START TRANSACTION;
+DELETE FROM share_likes
+WHERE share_id IN (SELECT share_id FROM share_links WHERE is_test = 1)
+   OR share_id IN (SELECT share_id FROM share_links WHERE created_at < UTC_TIMESTAMP() - INTERVAL 720 HOUR)
+   OR share_id NOT IN (SELECT share_id FROM share_links);
+SELECT ROW_COUNT();
+-- 件数が実行前の確認の to_delete と合うなら:
+COMMIT;
+-- 合わないなら:
+-- ROLLBACK;
+```
+
+**実行後の確かめ方**
+
+```sql
+SELECT COUNT(*) FROM share_likes
+WHERE share_id IN (SELECT share_id FROM share_links WHERE is_test = 1)
+   OR share_id NOT IN (SELECT share_id FROM share_links);   -- 0
+SELECT COUNT(*) FROM share_links;   -- 実行前と同じ
+```
+
+- 期限切れのリンクの行そのものは、アプリの決定どおり消さない（`share_links` は手順 3・5 の対象）。
+
 ## 4. 元に戻す（DROP TABLE）
 
 N-09: DB は共有リンク用テーブルを消せば元どおり（既存テーブルは変えていない）。**中の行は戻らない**。
@@ -223,13 +385,77 @@ SHOW TABLES;                      -- 実行前の一覧から share_links が消
 
 1. アプリ（Functions・App Service）が止まったことを確かめる（止めるのは講師側。この手順書の対象外。講師が止める時期は未決）。
 2. 実機確認で作ったリンクが残っていないか確かめる（手順3b。当日中に消してあるはず）。
-3. 手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
+3. 手順 5b（`usage_events`・`share_likes` の行を消す。通過率の結果を先に `evidence/` に残す。サイトが動いている間はこれだけ）。アプリが止まった後に、手順 5c（第2弾の2表の DROP）、続けて手順4（`DROP TABLE share_links`）。控えが要るなら先に取る。
 4. Azure のアプリの設定（環境変数）は、リソースの削除（講師側）で消える。手元の `.env` から配られたアカウントの値を消す。
+
+### 5b. 評価・発表のあとに、計測といいねの行を消す（M-2）
+
+- 評価が終わるまで残し、**発表の後**に消す（M-2「記録を消す」＝行を消す）。**表は消さない**。サイトはまだ動いていて、共有ページの取得（設計 D-06 は `share_links LEFT JOIN share_likes`）が `share_likes` を読むので、表ごと消すと第1弾の共有ページが 500 になる（NF-55「消した後もサイトが動く」にも反する）。表を消すのはサイトを止めた後だけ（手順 5c）。
+- 順番: ①通過率の SELECT（設計 D-41）の結果を `evidence/` に残す ②実行前の確認 ③消す。
+- 12/12 の後片付け（手順 5）の前に行う。
+
+**実行前の確認**
+
+```sql
+SELECT COUNT(*) FROM usage_events;
+SELECT COUNT(*) FROM share_likes;
+SHOW TABLES;
+```
+
+- 結果の控え（通過率）が `evidence/` にあること。
+
+**実行**
+
+```sql
+DELETE FROM usage_events;
+DELETE FROM share_likes;
+```
+
+（WHERE を付けないので全行が消える。実行前の件数と見比べる。`share_links` の行は消さない。）
 
 **実行後の確かめ方**
 
 ```sql
-SHOW TABLES;     -- 既存の7つだけ（share_links が無い）
+SELECT COUNT(*) FROM usage_events;   -- 0
+SELECT COUNT(*) FROM share_likes;    -- 0
+SHOW TABLES;                         -- 表は残っている（usage_events・share_likes・share_links ほか）
+```
+
+- 共有ページ（既存の共有リンク）がまだ開けること（`share_likes` が空でもいいね数 0 で表示される）。
+
+### 5c. 表を消す（DROP TABLE。公開期間の後。サイトを止めた後だけ）
+
+`usage_events`・`share_likes` を表ごと消す。**アプリ（Functions・App Service）が止まった後だけ**流す。動いている間に流すと、共有ページの取得（設計 D-06 の `LEFT JOIN share_likes`）が 500 になる（NF-55）。発表の後の記録削除は、表を残して行を消す手順 5b を使う。この手順 5c は公開期間の後（手順 4 と同じ時）で、手順 4（`DROP TABLE share_links`）より**前**に流す。
+
+**実行前の確認**
+
+```sql
+SELECT COUNT(*) FROM usage_events;
+SELECT COUNT(*) FROM share_likes;
+SHOW TABLES;
+```
+
+- アプリが止まったこと（止めるのは講師側）。通過率の控え（手順 5b ①）が `evidence/` にあること。
+
+**実行**
+
+```sql
+DROP TABLE usage_events;
+DROP TABLE share_likes;
+```
+
+（`IF EXISTS` は付けない。）`usage_events`・`share_likes` は外部キーを張らない（設計 D-38・D-40）ので、順番で失敗はしない。
+
+**実行後の確かめ方**
+
+```sql
+SHOW TABLES;   -- usage_events・share_likes が無い。ほかの表は変わらない
+```
+
+**実行後の確かめ方（手順 5 の全体）**
+
+```sql
+SHOW TABLES;     -- 既存の7つだけ（share_links・share_likes・usage_events が無い）
 ```
 
 - 既存テーブルの定義・件数が、下の「A. 作る前の控え」と同じこと。
