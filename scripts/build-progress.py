@@ -55,11 +55,12 @@ def area_split(title):
     if not m:
         return None
     return m.group("a"), m.group("rc") or m.group("a") + m.group("n"), m.group("t")
-# 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）
+# 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）。「3.5 実装③」の名前は PM が決める（今は題のまま出す）
 WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
 # 段階のうち、全体 % に数えるのは題が 1〜4 で始まるマイルストーンだけ（ハブの霊力ゲージ docs/hub-assets/band.js と同じ定義。
-# 題の頭の数字が同じ段階が複数あれば、期限順で最初の 1 つだけ。「5 公開期間」とマイルストーンなしは数えず、別の行で出す）
-HUB_STAGE_RE = re.compile(r"^([1-4])(?!\d)")
+# 題の頭の数字が同じ段階が複数あれば、期限順で最初の 1 つだけ。「5 公開期間」とマイルストーンなしは数えず、別の行で出す。
+# 「3.5 実装③」は 3 とは別の段として数える（頭が「3.5」。「3」と読むと「3 実装②」と同じ段になり数えられなかった）
+HUB_STAGE_RE = re.compile(r"^([1-4](?:\.5)?)(?!\d)")
 PUBLIC_STAGE_RE = re.compile(r"^5(?!\d)")
 KIT_STAGE_RE = re.compile(r"^K(?![A-Za-z0-9])")  # 「K キット改善」。全体 % には数えず、別の行で出す
 
@@ -171,7 +172,9 @@ def build_model(issues, milestones, names, today, reviewers=None):
     stage_list = sorted(stages.values(), key=lambda s: (s["due"] is None, s["due"] or today, s["title"]))
     prev = None
     for s in stage_list:  # 期間: 前の段階の翌日〜期限
-        s["start"] = prev + dt.timedelta(days=1) if (prev and s["due"]) else None
+        # 「3.5 実装③」だけは前の段の期限日に始まる（ADR-007: 開発 1 日目＝11/15。実装計画も 11/15 から）
+        lag = 0 if re.match(r"^3\.5(?!\d)", s["title"]) else 1
+        s["start"] = prev + dt.timedelta(days=lag) if (prev and s["due"]) else None
         s["left"] = (s["due"] - today).days if s["due"] else None
         if s["due"]:
             prev = s["due"]
@@ -577,7 +580,7 @@ def render(model, updated, sample=False):
         body = ('<div class="empty"><h3>まだ Issue がありません</h3>'
                 '<p>Issue に担当者とマイルストーン（段階）を付けて立てると、ここに担当者ごとの進み具合が出ます。</p></div>')
         return page(body + render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])), updated, sample, mem)
-    pc = pct(model["hub_done"], model["hub_total"])  # 開発ハブの「全体」と同じ数え方（マイルストーン 1〜4 の Issue だけ）
+    pc = pct(model["hub_done"], model["hub_total"])  # 開発ハブの「全体」と同じ数え方（マイルストーン 1〜4 と 3.5 の Issue だけ）
     extra = ""
     if model["has_public"]:
         extra += f'公開期間 {model["public_done"]}/{model["public_total"]}'

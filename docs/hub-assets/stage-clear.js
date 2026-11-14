@@ -1,24 +1,29 @@
 /* 開発ハブ: 「3 実装②」の Issue がすべて閉じたあと、初めて開いたときだけ出る 4 段の演出（約 6 秒・クリックで飛ばせる）。
-   判定は progress-summary.json の phases[]（title が「3 実装②」で closed == total かつ total > 0）。
+   判定は progress-summary.json の phases[]（title が「3 実装②」で closed == total かつ total > 0。#234 の決定。出す時は変えない）。
+   演出の中の「次の段」の表示だけ、phases に「3.5 実装③」があれば「STAGE 3.5 実装③へ」、無ければ「STAGE 4 評価・受入へ」。
    見た印は localStorage（読み書きは try/catch。使えなくてもハブは普通に表示する）。 */
 (function () {
   "use strict";
   var KEY = "hub-stage3-clear-seen";
+  var NEXT = ["STAGE 4 ", "評価・受入へ"]; // 次の段の表示（3.5 実装③ があれば差し替える）
   var STEPS = [1600, 1200, 1600, 1600]; // 段 1〜4 の秒数（合計 6.0 秒）
   var CALM_MS = 2600;
 
   function seen() { try { return window.localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
   function mark() { try { window.localStorage.setItem(KEY, "1"); } catch (e) { /* 使えなくても続ける */ } }
 
+  function done(p) { return typeof p.closed === "number" && typeof p.total === "number" && p.total > 0 && p.closed === p.total; }
+  // 「3 実装②」が全部閉じたか。閉じていれば { next35: 3.5 実装③ の段があるか }、まだなら null
   function cleared(j) {
-    if (!j || !Array.isArray(j.phases)) return false;
+    if (!j || !Array.isArray(j.phases)) return null;
+    var p3 = null, has35 = false;
     for (var i = 0; i < j.phases.length; i++) {
       var p = j.phases[i];
-      if (p && typeof p.title === "string" && /^3\s*実装②/.test(p.title)) {
-        return typeof p.closed === "number" && typeof p.total === "number" && p.total > 0 && p.closed === p.total;
-      }
+      if (!p || typeof p.title !== "string") continue;
+      if (/^3\.5\s*実装③/.test(p.title)) has35 = true;
+      else if (/^3\s*実装②/.test(p.title)) p3 = p;
     }
-    return false;
+    return p3 && done(p3) ? { next35: has35 } : null;
   }
 
   function el(tag, cls, text) {
@@ -45,9 +50,9 @@
 
   function build(calm) {
     var r = el("div"); r.id = "sc"; r.setAttribute("role", "status");
-    r.appendChild(el("span", "vh", "STAGE 3 完了。STAGE 4 評価・受入へ"));
+    r.appendChild(el("span", "vh", "STAGE 3 完了。" + NEXT[0] + NEXT[1]));
     var p4 = el("div", "plate4"); p4.setAttribute("aria-hidden", "true");
-    p4.appendChild(el("span", "", "STAGE 4 ")); p4.appendChild(el("span", "", "評価・受入へ"));
+    p4.appendChild(el("span", "", NEXT[0])); p4.appendChild(el("span", "", NEXT[1]));
     if (calm) { r.className = "calm"; r.appendChild(p4); return r; }
 
     var art = el("div"); art.setAttribute("aria-hidden", "true");
@@ -119,7 +124,12 @@
     if (seen() || !window.fetch) return;
     fetch("progress-summary.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (j) { if (!cleared(j) || seen()) return; mark(); play(); })
+      .then(function (j) {
+        var c = cleared(j);
+        if (!c || seen()) return;
+        if (c.next35) NEXT = ["STAGE 3.5 ", "実装③へ"];
+        mark(); play();
+      })
       .catch(function () { /* 取れなければ何も出さない */ });
   }
   start();
