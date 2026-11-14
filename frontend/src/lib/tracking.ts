@@ -125,6 +125,35 @@ export function sendEvent(body: Record<string, unknown>, fetchImpl: PostLike = (
   }
 }
 
+// 画面の中の呼び出し点が使う型（テストでは差し替える）
+export type Tracker = (step: EventStep, extra?: EventExtra) => void;
+
+// ① 訪問の最初に開いたページの種類（D-40 の値の対応。R7）。cart・favorites は URL を持たないのでここでは返さない
+export function entryOf(pathname: string, search: string): EventEntry {
+  if (pathname === "/") return "top";
+  if (pathname === "/search") return /^[A-Z][0-9]{1,9}$/.test(new URLSearchParams(search).get("product") ?? "") ? "detail" : "search";
+  if (pathname.startsWith("/s/")) return "share";
+  return "other";
+}
+
+// ⑦ 0 件になったときの条件（D-40）。価格帯だけ→price、カテゴリーだけ→category、両方→both、どちらも無くシーンだけ→scene_only。
+// 条件が何も無い検索は全商品が出て 0 件にならないので、その組は null（記録しない）
+export function zeroCondOf(c: { scene: boolean; priceBand: boolean; categories: boolean }): ZeroCond | null {
+  if (c.priceBand && c.categories) return "both";
+  if (c.priceBand) return "price";
+  if (c.categories) return "category";
+  return c.scene ? "scene_only" : null;
+}
+
+// ① サイトに来る: 最初に開いたとき 1 回。URL の giftia_test を取り込んで URL から取り除き（K-5）、入口の種類つきで段 1 を送る。
+// 取り除いたあとの search を返す（画面は history.replaceState で URL を直す。目印が無ければ null）
+export function trackFirstLoad(loc: { pathname: string; search: string }, deps: TrackDeps = {}): { cleaned: string | null } {
+  const session = deps.session === undefined ? browserStorage("sessionStorage") : deps.session;
+  const { cleaned } = captureTestKey(loc.search, session);
+  track(1, { entry: entryOf(loc.pathname, cleaned ?? loc.search) }, { ...deps, session });
+  return { cleaned };
+}
+
 export type TrackDeps = {
   local?: StorageLike | null;
   session?: StorageLike | null;
