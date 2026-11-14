@@ -1,11 +1,11 @@
 # db_admin.py — DB管理手順.md の SQL を、mysql コマンドなしで1手順ずつ流す道具（B2 / Issue #56）
 # 使い方（backend フォルダで、仮想環境に入ってから）:
-#   python scripts/db_admin.py <手順>      手順 = 0 | A | 1 | B | Bt | B5 | 3 | 4 | C
+#   python scripts/db_admin.py <手順>      手順 = 0 | A | 1 | B | Bt | B5 | 3 | 4 | C | D
 # 決まり:
 # - SQL は DB管理手順.md と一字一句同じ（tests/test_db_admin.py が手順書と照合する）。手順書に無い SQL は足さない。
 # - 接続先は database.py の giftia_t501（定数）。引数・環境変数では変えられない。SSL は certifi＋ホスト名の確認（#71）。
 # - 接続情報は backend/.env から読む。画面にもファイルにも出さない（出力のホスト・ユーザー・パスワードは <伏せ> にする）。
-# - 書き込む手順（1・B・Bt・B5・3・4）は、先に SELECT DATABASE() と対象の SELECT の結果を出し、yes の入力を待つ。
+# - 書き込む手順（1・B・Bt・B5・3・4・D）は、先に SELECT DATABASE() と対象の SELECT の結果を出し、yes の入力を待つ。
 # - 出力は 02_プロジェクト/giftia-ui-renewal/evidence/db/<日付>_<手順>.md に保存する。git worktree の中から動かしても、
 #   保存先は本体のフォルダ（git rev-parse --git-common-dir の親）に固定する（作業フォルダの削除で記録が消えないように。#219）。
 #   最後に「コミットしていない記録: <パス>」を出す（コミットは別途、人が行う）。
@@ -109,11 +109,18 @@ SQL_3_POST = [
     "SELECT COUNT(*) FROM share_links WHERE is_test = 1;",
     "SELECT is_test, COUNT(*) FROM share_links GROUP BY is_test;",
 ]
+# 手順D（手順書 3b）: 実機確認で作ったリンクを、控えた share_id だけ消す。手順書の SQL は ID 2 個の例。
+# 実際に流す文は、入力した ID の数だけ %s を並べ、値は params で渡す（_in_clause）。
+SQL_D_SELECT = "SELECT share_id, created_at, is_test FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');"
+SQL_D_DELETE = "DELETE FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');"
+SQL_D_COUNT = "SELECT COUNT(*) FROM share_links WHERE share_id IN ('<控えた ID>', '<控えた ID>');"
+SQL_D_TOTAL = "SELECT COUNT(*) FROM share_links;"
+SHARE_ID_RE = re.compile(r"[A-Za-z0-9_-]{22}")  # 設計.md D-06 の形式
 SQL_4_PRE = ["SELECT COUNT(*) FROM share_links;", "SHOW TABLES;"]
 SQL_4 = "DROP TABLE share_links;"
 SQL_4_POST = ["SHOW TABLES LIKE 'share_links';", "SHOW TABLES;"]
 
-STEPS = ["0", "A", "1", "B", "Bt", "B5", "3", "4", "C"]
+STEPS = ["0", "A", "1", "B", "Bt", "B5", "3", "4", "C", "D"]
 
 
 class Report:
@@ -354,6 +361,70 @@ def step_3(conn: Any, rep: Report) -> None:
     run_many(conn, rep, SQL_3_POST)
 
 
+def _in_clause(template: str, n: int) -> str:
+    """手順書の SQL の `('<控えた ID>', ...)` を、n 個の %s に置き換える"""
+    return re.sub(r"\('<控えた ID>'(, '<控えた ID>')*\)", "(" + ", ".join(["%s"] * n) + ")", template)
+
+
+def parse_share_ids(text: str) -> list[str]:
+    """空白・カンマ区切りの share_id を読む。形式が違うものが 1 つでもあれば止まる。重複は 1 つにする"""
+    ids = list(dict.fromkeys(t for t in re.split(r"[\s,]+", text.strip()) if t))
+    if not ids:
+        raise SystemExit("share_id が入力されていません。何も書き込んでいません")
+    bad = [i for i in ids if SHARE_ID_RE.fullmatch(i) is None]
+    if bad:
+        raise SystemExit(f"22 文字（英数字・-・_）ではない ID があります（{len(bad)} 件）。何も書き込んでいません")
+    return ids
+
+
+def _fetch(conn: Any, rep: Report, template: str, ids: list[str]) -> list[dict[str, Any]]:
+    """手順D 用: ID は params で渡す。記録には、%s を ID に置いた文を出す"""
+    statement = _in_clause(template, len(ids))
+    rep.sql(statement.replace("%s", "'{}'").format(*ids))
+    with conn.cursor() as cur:
+        cur.execute(statement, tuple(ids))
+        rows: list[dict[str, Any]] = list(cur.fetchall())
+    rep.table(rows)
+    rep.say()
+    return rows
+
+
+def _count(rows: list[dict[str, Any]]) -> int:
+    return int(next(iter(rows[0].values())))
+
+
+def step_d(conn: Any, rep: Report) -> None:
+    """手順書 3b: 控えた share_id の行だけを消す（それ以外は消さない）"""
+    check_database(conn, rep)
+    ids = parse_share_ids(input("消す share_id を入力（複数は空白かカンマで区切る）: "))
+    rep.say(f"入力した ID: {len(ids)} 件")
+    for i in ids:
+        rep.say(f"- {i}")
+    before_total = _count(run(conn, rep, SQL_D_TOTAL))
+    rows = _fetch(conn, rep, SQL_D_SELECT, ids)
+    matched = len(rows)
+    rep.say(f"記録: 消す前の全体件数 {before_total}、該当件数 {matched}（入力 {len(ids)} 件）")
+    if matched != len(ids):
+        raise SystemExit("該当件数が入力した ID の数と合いません。消しません（何も書き込んでいません）")
+    rep.say("これから実行する文（入力した ID の行だけを消す）:")
+    rep.sql(_in_clause(SQL_D_DELETE, len(ids)).replace("%s", "'{}'").format(*ids))
+    confirm(rep, f"上の {matched} 件が、消したい行だけであることを確かめました。")
+    statement = _in_clause(SQL_D_DELETE, len(ids))
+    with conn.cursor() as cur:
+        cur.execute(statement, tuple(ids))
+        deleted = cur.rowcount
+    if deleted != matched:
+        conn.rollback()
+        raise SystemExit(f"消した件数 {deleted} が確認した件数 {matched} と違うので ROLLBACK しました")
+    conn.commit()
+    rep.say(f"消した行数: {deleted}")
+    after_total = _count(run(conn, rep, SQL_D_TOTAL))
+    after_matched = _count(_fetch(conn, rep, SQL_D_COUNT, ids))
+    rep.say(f"記録: 消した後の全体件数 {after_total}（前 {before_total}）、該当件数 {after_matched}（前 {matched}）")
+    if after_matched != 0 or after_total != before_total - matched:
+        rep.say("→ 不合格。件数が合いません。報告する")
+
+
 def step_4(conn: Any, rep: Report) -> None:
     check_database(conn, rep)
     run_many(conn, rep, SQL_4_PRE)
@@ -409,7 +480,16 @@ HANDLERS: dict[str, Callable[[Any, Report], None]] = {
     "3": step_3,
     "4": step_4,
     "C": step_c,
+    "D": step_d,
 }
+
+
+def open_connection() -> Any:
+    """接続して、自動確定（autocommit）を切る。database.get_connection() は API 用に autocommit=True（#258）なので、
+    そのままだと DELETE が実行した瞬間に確定し、手順3・D の ROLLBACK が効かない。commit は各手順が明示的に行う"""
+    conn = database.get_connection()
+    conn.autocommit(False)
+    return conn
 
 
 def main(argv: list[str]) -> int:
@@ -418,7 +498,7 @@ def main(argv: list[str]) -> int:
         return 2
     step = argv[1]
     rep = Report(step)
-    conn = database.get_connection()
+    conn = open_connection()
     try:
         HANDLERS[step](conn, rep)
     except SystemExit as e:
