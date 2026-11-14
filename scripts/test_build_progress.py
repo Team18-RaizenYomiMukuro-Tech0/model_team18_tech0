@@ -149,8 +149,13 @@ class T(unittest.TestCase):
         out = bp.render(m, "x")
         self.assertIn("全体 57% <span>（完了 4 / 7）</span>", out)
         self.assertIn("3.5 実装③", out)
-        self.assertRegex(out, r'<li class="w35"><span class="sn">3\.5 実装③ <b>聖光気</b></span>')  # 3.5 の技の名前（PM 11/15）。他の段の名前は変えない
         self.assertIn('<b>魔族覚醒</b>', out)
+        self.assertRegex(out, r'<li class="w35 now"><span class="sn">3\.5 実装③ <b>聖光気</b></span><span class="hr">いまここ</span>')  # 今いる段（11/16）の行に「いまここ」
+        self.assertEqual(out.count('class="hr"'), 1)
+        out15 = bp.render(bp.build_model(issues, ms, NAMES, dt.date(2026, 11, 15)), "x")  # 11/15 は段 3 と 3.5 の期間が重なる → 後の段
+        self.assertIn('<li class="w35 now">', out15)
+        self.assertNotIn('<li class="w3 now">', out15)
+        self.assertIn(".stg2 li.w35{--c:#B388FF}", out)  # 3.5 専用の色（段 1〜4 の色と別）
 
     def test_band_js_names_3_5_and_keeps_stage_4(self):
         """PM 11/15: 3.5 は「STAGE 3.5／聖光気／実装③（W3）／11/15〜11/18」。評価・受入は元の「STAGE 4／魔族覚醒（W4）」のまま。11/15 は 3.5 が「いまここ」"""
@@ -604,7 +609,7 @@ class T(unittest.TestCase):
         out = bp.render(model(), "x")
         sec = out[out.index('class="stg2"'):out.index('id="prs"')]
         for n, w in (("1", "霊気"), ("2", "霊丸"), ("3", "霊光波動"), ("4", "魔族覚醒")):
-            self.assertRegex(sec, r'<li class="w%s"><span class="sn">%s [^<]*<b>%s</b></span>' % (n, n, w))
+            self.assertRegex(sec, r'<li class="w%s(?: now)?"><span class="sn">%s [^<]*<b>%s</b></span>' % (n, n, w))
         self.assertIn("2 実装① <b>霊丸</b>", sec)
         self.assertIn('<li><span class="sn">段階なし</span>', sec)  # 段階の無いものは色なし・技名なし
         # 色の値はハブの霊力ゲージ（docs/hub.html）と同じ: 黄 m1 / 水色 m2 / ピンク m3 / 白

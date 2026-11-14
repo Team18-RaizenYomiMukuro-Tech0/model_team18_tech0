@@ -239,7 +239,7 @@ def build_model(issues, milestones, names, today, reviewers=None):
             "public_total": sum(s["total"] for s in public), "public_done": sum(s["done"] for s in public), "has_public": bool(public),
             "kit_total": sum(s["total"] for s in kit), "kit_done": sum(s["done"] for s in kit), "has_kit": bool(kit),
             "nomile_total": len(nomile), "nomile_done": sum(r["done"] for r in nomile),
-            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "today_counts": today_counts, "review_prs": review_prs,
+            "alerts": alerts, "counts": counts, "members": members, "merged_prs": merged_prs, "merged_pool": merged_pool, "today_counts": today_counts, "today_date": today, "review_prs": review_prs,
             "name_of": {k: v for k, v in names.items()}}
 
 
@@ -373,7 +373,7 @@ def md(d):
     return f"{d.month}/{d.day}"
 
 
-def render_stage(s, name_of):
+def render_stage(s, name_of, now=False):
     pc = pct(s["done"], s["total"])
     if s["due"]:
         period = f"{md(s['start'])}〜{md(s['due'])}" if s["start"] else f"〜{md(s['due'])}"
@@ -390,9 +390,10 @@ def render_stage(s, name_of):
     progress = f'{s["done"]}／{s["total"]}（{pc}%）' if s["total"] else "Issue なし"
     wm = re.match(r"^([1-4](?:\.5)?) ", s["title"])  # 「3.5 実装③」も技の名前を持つ（聖光気）
     wz = WAZA.get(wm.group(1)) if wm else None
-    cls = f' class="w{wm.group(1).replace(".", "")}"' if wz else ""
+    cls = f' class="w{wm.group(1).replace(".", "")}{" now" if now else ""}"' if wz else (' class="now"' if now else "")
     waza = f" <b>{wz}</b>" if wz else ""
-    return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span><span class="chip">{period}</span>'
+    here = '<span class="hr">いまここ</span>' if now else ""  # 今いる段（ステージのカードの「いまここ」と同じ考え方）
+    return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span>{here}<span class="chip">{period}</span>'
             f'<div class="bar"><i style="width:{pc}%"></i></div>'
             f'<span class="sv">{progress}{"　" + left if left else ""}</span>'
             + (f'<details><summary>内訳を開く（{s["total"]}件）</summary><ul class="srows">'
@@ -445,8 +446,9 @@ CSS = """
 .stg2 li[class] .sn{white-space:nowrap}
 .stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}
 .stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
-/* 3.5 実装③（聖光気）は段 3 と同じ色 */
-.stg2 li.w35{--c:var(--m3)}.stg2 li.w35 .bar{height:8px;border:0;background:var(--tint)}.stg2 li.w35 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}
+/* 3.5 実装③（聖光気）は専用の色 #B388FF（段 3 のピンクと段 4 の虹の間を思わせる薄い紫。1〜4 の色と区別できる）。今いる段は枠と「いまここ」 */
+.stg2 li.w35{--c:#B388FF}.stg2 li.w35 .bar{height:8px;border:0;background:var(--tint)}.stg2 li.w35 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}
+.stg2 li.now{outline:var(--bw2) solid var(--line);outline-offset:3px;border-radius:var(--r1)}.stg2 li .hr{display:inline-block;justify-self:start;padding:0 8px;border-radius:var(--rp);background:var(--ctext);color:#fff;font:800 var(--fs-xs)/1.7 var(--body);white-space:nowrap}
 @media(max-width:600px){.stg2>ul>li{grid-template-columns:minmax(0,1fr)}.stg2>ul>li .chip{justify-self:start}}
 .ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
 .chip.ar{margin-right:0;border-color:currentColor}
@@ -598,8 +600,13 @@ def render(model, updated, sample=False):
     if model["total"]:
         parts.append('<div class="pgrid">' + "".join(render_person(p) for p in model["people"]) + "</div>")
     if model["stages"]:
+        td = model.get("today_date")  # 期間が重なる日（11/15）は後の段を「いま」にする（ハブのゲージと同じ）
+        cur = None
+        for s in model["stages"]:
+            if td and s["start"] and s["due"] and s["start"] <= td <= s["due"]:
+                cur = s
         parts.append('<section class="stg2"><h3 style="margin:0">段階ごと</h3><ul>'
-                     + "".join(render_stage(s, model["name_of"]) for s in model["stages"]) + "</ul></section>")
+                     + "".join(render_stage(s, model["name_of"], s is cur) for s in model["stages"]) + "</ul></section>")
     if not model["total"]:
         parts.append('<div class="empty"><h3>まだ Issue がありません</h3><p>段階（マイルストーン）だけ作られています。</p></div>')
     parts.append(render_prs(model.get("merged_pool", model.get("merged_prs", [])), model.get("members", [])))
