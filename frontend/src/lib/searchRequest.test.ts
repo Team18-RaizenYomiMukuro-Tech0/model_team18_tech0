@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { REQUEST_TIMEOUT_MS, SearchRunner, type SearchState } from "./api.ts";
 import type { Fetched, ProductList } from "./products.ts";
 import { parseSearchQuery, searchHref } from "./searchQuery.ts";
-import { clearConditions, hasConditions, ProductRunner, toggleCategory, togglePrice, toggleScene } from "./searchRequest.ts";
+import { CONDITION_HEADINGS, clearConditions, hasConditions, ProductRunner, toggleCategory, togglePrice, toggleScene } from "./searchRequest.ts";
 
 // S-22 S-23 S-55 S-57 S-58 I-34 I-35 E-15: 条件の操作と、続けて条件を変えたときの応答の取捨。偽のタイマーで応答を遅らせる
 const Q = (s = "") => parseSearchQuery(new URLSearchParams(s));
@@ -123,4 +123,11 @@ test("searchRequest I-34: R-01 も同じ。シーンを続けて変えると、�
   const last = states[states.length - 1];
   assert.ok(last.status === "results" && last.items[0].product_id === "NEW");
   mock.timers.reset();
+});
+
+// SP-10 D-27 #255: 条件の見出しの文言（mock.html と同じ。カテゴリーは「カテゴリー」＋「（複数選べます）」で、読み上げでは続けて読まれる）
+test("conditions: 見出しは「シーン」「価格帯（税込）」「カテゴリー（複数選べます）」", () => {
+  assert.equal(CONDITION_HEADINGS.scene, "シーン");
+  assert.equal(CONDITION_HEADINGS.price, "価格帯（税込）");
+  assert.equal(CONDITION_HEADINGS.category + CONDITION_HEADINGS.categoryHint, "カテゴリー（複数選べます）");
 });
