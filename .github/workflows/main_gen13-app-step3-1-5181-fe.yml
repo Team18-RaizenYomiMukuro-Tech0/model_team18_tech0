@@ -55,3 +55,29 @@ jobs:
           # 古い .next/cache（作り置きの /search）が残って新しい版を隠すため、デプロイ前に配置先の既存ファイルを消す
           clean: true
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5CEA344BF203474FB3C46A303F55A75B }}
+      # デプロイ「成功」でも本番が古い版のことがある（古い作り置きページが古い chunk を読む）。
+      # 本番の / と /search の HTML が読む chunk が、いま送った release.zip の中にあるかを確かめる。
+      # 無ければ 30 秒おきに最大 10 回やり直し（再起動の待ち）、それでも古ければ失敗にする。
+      - name: 'Verify production serves the new build'
+        env:
+          FRONT_URL: https://gen13-app-step3-1-5181-fe-gufkevefgbfja0au.japaneast-01.azurewebsites.net
+        run: |
+          unzip -Z1 release.zip | sed -n 's#^\.next/static/chunks/##p' | grep '\.js$' | sort -u > new-chunks.txt
+          test -s new-chunks.txt || { echo "release.zip に .next/static/chunks の .js が無い"; exit 1; }
+          echo "release.zip の chunk: $(wc -l < new-chunks.txt) 本"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            stale=""
+            for page in / /search; do
+              html=$(curl -fsS --max-time 30 -H 'Cache-Control: no-cache' "$FRONT_URL$page") || { stale="$stale $page(取得失敗)"; continue; }
+              refs=$(printf '%s' "$html" | grep -o '/_next/static/chunks/[^"\\ ]*\.js' | sed -e 's#^/_next/static/chunks/##' -e 's#?.*$##' | sort -u)
+              if [ -z "$refs" ]; then stale="$stale $page(chunk の参照が無い)"; continue; fi
+              for ref in $refs; do
+                grep -qxF "$ref" new-chunks.txt || stale="$stale $page:$ref"
+              done
+            done
+            if [ -z "$stale" ]; then echo "OK: 本番の / と /search は新しい版の chunk だけを読んでいる（$attempt 回目）"; exit 0; fi
+            echo "::warning::$attempt 回目: 古い版かもしれない:$stale"
+            sleep 30
+          done
+          echo "::error::デプロイは成功したが、本番が古い版のまま。release.zip に無い chunk を読んでいる:$stale"
+          exit 1
