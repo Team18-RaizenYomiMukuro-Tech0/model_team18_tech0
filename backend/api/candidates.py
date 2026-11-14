@@ -1,7 +1,8 @@
 # candidates.py — GET /api/candidates（設計.md D-01・D-02・D-04、仕様 SP-01・SP-02）
 # シーン（必須）・価格帯（任意）・カテゴリー（任意）で候補を抽出し、ベイズ平均で順位付けして上位 10 件を返す。読み取りのみ。
 #  - SQL は固定の文。値はすべて %s と params で渡す（N-04）。入力の検証は DB に問い合わせる前に行う。
-#  - 送別回数は、順位が決まる範囲（上位 10 件と 10 位と同点）の商品だけを注文データから都度数える（D-04・手順 6）。
+#  - 選んだシーンの回数は、順位が決まる範囲（上位 10 件と 10 位と同点）の商品だけを注文データから都度数える（D-04・手順 6）。
+#    回数は同点の並びと理由の文・決め手 scene_count に使う（D-34。送別＝会社宛て、お礼、誕生日は decision.py）。
 #  - 理由の文は reasons.py（B4）。AI は使わない（ADR-003）。
 import time
 from decimal import Decimal
@@ -11,8 +12,10 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES
+from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
+from decision import arrives_on, scene_count_value, scene_counts, today_jst
 from ranking import candidate_pool, score_products, top_by_score_then_count
 from reasons import build_reason
 
@@ -31,17 +34,6 @@ SELECT_CANDIDATES = (
     "AND (%s = 0 OR p.category IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s))"
 )
 
-# 送別回数（DATA-01）: 送別・会社宛ての注文の order_items を商品ごとに数える。gift_purpose は見ない（#54-4）。
-# IN の中の「%s」は商品の数だけ並べる（値は params。SQL 文に値をつなげない）。
-COUNT_SENDOFF_HEAD = (
-    "SELECT oi.product_id AS product_id, COUNT(*) AS n "
-    "FROM order_items oi JOIN orders o ON o.order_id = oi.order_id "
-    "WHERE o.estimated_scene = %s AND o.ship_to_type = %s AND oi.product_id IN ("
-)
-COUNT_SENDOFF_TAIL = ") GROUP BY oi.product_id"
-SENDOFF_SCENE = "送別"
-SENDOFF_SHIP_TO = "会社"
-
 
 def _error(code: str, message: str) -> JSONResponse:
     return JSONResponse({"error": {"code": code, "message": message}}, status_code=422)
@@ -57,7 +49,12 @@ def _high_rating(rating: Decimal | None) -> bool:
 
 
 @router.get("/api/candidates", response_model=None)
-def list_candidates(request: Request, response: Response, db: Annotated[Db, Depends(get_db)]) -> Any:
+def list_candidates(
+    request: Request,
+    response: Response,
+    db: Annotated[Db, Depends(get_db)],
+    clock: Annotated[Clock, Depends(get_clock)],
+) -> Any:
     """候補の取得。不正な値は 422（invalid_price_band / invalid_scene / invalid_category）"""
     started = time.perf_counter()
     q = request.query_params  # budget など、ここで読まない名前は無視する（#51-4）
@@ -108,11 +105,8 @@ def list_candidates(request: Request, response: Response, db: Annotated[Db, Depe
     )
     pool = candidate_pool(scores, SETTINGS.TOP_N)
 
-    counts: dict[str, int] = {}
-    if pool:
-        sql = COUNT_SENDOFF_HEAD + ", ".join(["%s"] * len(pool)) + COUNT_SENDOFF_TAIL
-        for r in db.fetch_all(sql, (SENDOFF_SCENE, SENDOFF_SHIP_TO, *pool)):
-            counts[str(r["product_id"])] = int(r["n"])
+    counts = scene_counts(db, scene, pool)  # 1 回の集計（D-04）
+    today = today_jst(clock.now())
 
     chosen = top_by_score_then_count(scores, counts, pool, SETTINGS.TOP_N)
     items = []
@@ -127,12 +121,17 @@ def list_candidates(request: Request, response: Response, db: Annotated[Db, Depe
                 "price": r["price"],
                 "category": r["category"],
                 "high_rating": _high_rating(rating),
+                "delivery_days": r["delivery_days"],
+                "wrapping": None if wrap is None else bool(wrap),
+                "arrives_on": arrives_on(today, r["delivery_days"]),
+                "scene_count": scene_count_value(scene, counts.get(pid, 0)),
                 "reason": build_reason(
                     counts.get(pid, 0),
                     rating,
                     r["review_count"],
                     r["delivery_days"],
                     None if wrap is None else bool(wrap),
+                    scene,
                 ),
             }
         )

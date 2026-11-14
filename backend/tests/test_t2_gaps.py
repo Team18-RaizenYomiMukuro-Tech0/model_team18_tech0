@@ -52,7 +52,7 @@ def test_products_list_shape(fd9_api: TestClient) -> None:
     r = fd9_api.get("/api/products", params={"scene": "送別", "price_band": "3000to4999", "page": "1"})
     b = r.json()
     assert r.status_code == 200 and (b["count"], b["total"], b["page"], b["page_size"]) == (12, 30, 1, 12)
-    want = {"product_id", "name", "price", "category", "rating", "review_count", "delivery_days", "wrapping", "high_rating"}
+    want = {"product_id", "name", "price", "category", "rating", "review_count", "delivery_days", "wrapping", "high_rating", "arrives_on", "scene_count"}
     assert all(set(i) == want for i in b["items"])
     assert "Y5" not in [i["product_id"] for i in b["items"]]
 

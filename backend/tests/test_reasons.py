@@ -5,8 +5,8 @@ from reasons import build_reason
 
 X1 = "職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。"
 X2 = "職場の送別で12回選ばれています。評価は4.2（30件）です。3日で届きます。"
-X3 = "職場の送別での購入は、まだありません。評価は4.0（8件）です。2日で届きます。"
-X4 = "職場の送別での購入は、まだありません。評価は4.7（50件）と高めです。"
+X3 = "評価は4.0（8件）です。2日で届きます。"  # 回数 0 は回数の文を出さず、評価の文から始める（SP-03 第2弾）
+X4 = "評価は4.7（50件）と高めです。"
 
 
 # SP-03 D-03 U-12 U-13 U-29
@@ -42,3 +42,10 @@ def test_wrap() -> None:
     assert build_reason(12, Decimal("4.2"), 30, 3, False) == X2  # X2（不可）
     assert build_reason(12, Decimal("4.2"), 30, 3, None) == X2  # X5（値なし）
     assert "ラッピング" not in X2
+
+
+# SP-03 D-03 U-13 第2弾（PM 11/15 朝「理由の行を出さない」）: 材料が全部無いときは空の文字列。代わりの文言は作らない（行を出さないのは画面側）
+def test_reason_empty() -> None:
+    for scene in ("送別", "お礼", "誕生日"):
+        assert build_reason(0, None, None, None, None, scene) == ""
+        assert build_reason(0, None, 0, None, None, scene) == ""  # 件数 0 は評価の文を入れない

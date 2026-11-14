@@ -215,6 +215,35 @@ def test_count(fake: Backend) -> None:
     assert [i["product_id"] for i in items_of(fake.row(create([c, a, b])["share_id"]))] == [c, a, b]
 
 
+# SP-03 SP-05 D-05 第2弾「シーンに合わせる」（PM 11/15 朝）: scene は任意。無い・空は送別。不正は 422 invalid_scene
+def test_scene(fake: Backend) -> None:
+    db: Any = fake.db
+    for _ in range(3):
+        db.add_order("P01", "ビジネスのお礼", "個人")  # お礼は宛先を問わない（D-34）
+    db.add_order("P01", "友人への誕生日", "個人")
+    db.add_order("P01", "家族への誕生日", "個人")
+
+    def reason(body: dict[str, Any]) -> str:
+        r = post({"product_ids": ["P01"], **body})
+        assert r.status_code == 201, r.text
+        return str(items_of(fake.row(r.json()["share_id"]))[0]["reason"])
+
+    tail = "評価も4.5（20件）と高めです。2日で届き、ラッピングもできます。"
+    assert reason({"scene": "送別"}) == "職場の送別で12回選ばれていて、" + tail
+    assert reason({}) == reason({"scene": ""}) == reason({"scene": None}) == "職場の送別で12回選ばれていて、" + tail
+    assert reason({"scene": "お礼"}) == "お礼で3回選ばれていて、" + tail
+    assert reason({"scene": "誕生日"}) == "誕生日で2回選ばれていて、" + tail
+    # 回数 0 は回数の文を出さず、評価の文から始める
+    r = post({"product_ids": ["P02"], "scene": "お礼"})
+    text = str(items_of(fake.row(r.json()["share_id"]))[0]["reason"])
+    assert text.startswith("評価は") and "回選ばれて" not in text and "まだありません" not in text
+    before = fake.count()
+    for bad in ("結婚", "送別 ", 1, True, ["送別"]):
+        r = post({"product_ids": ["P01"], "scene": bad})
+        assert (r.status_code, r.json()["error"]["code"]) == (422, "invalid_scene"), bad
+    assert fake.count() == before  # 不正な scene では 1 行も作らない
+
+
 # SP-05 N-04 I-21 NF-07
 def test_invalid(fake: Backend) -> None:
     cases: list[Any] = [

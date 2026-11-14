@@ -1,7 +1,7 @@
 # share_links.py — POST /api/share-links（設計.md D-05・D-07・D-15、DATA-02、仕様 SP-05・SP-07）
 # 選んだ商品 ID から、作成時点の商品名・価格・理由を保存した共有リンクを 1 件作る（POST）。
 # GET /api/share-links/{share_id}（D-06、SP-06）は保存した値を返し、販売終了・在庫なしだけ開いた時点で商品テーブルを確かめる。
-#  - 本文は商品 ID だけ。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
+#  - 本文は商品 ID と任意の scene（無い・空は送別。不正は 422 invalid_scene。設計 D-05）。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
 #  - 検査の順: 型 → 配列の長さ（50）→ 重複を除く → 0 件 → 11 件以上 → 存在確認（U-33、NF-13）。
 #  - 書き込みは share_links への INSERT 1 回だけ（Db.insert_share_link。N-04）。SQL はプレースホルダ。
 #  - 時刻は Clock（D-11）、テスト用の印は get_test_mark（D-19）から受け取る。
@@ -14,15 +14,11 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
-from api.candidates import (
-    COUNT_SENDOFF_HEAD,
-    COUNT_SENDOFF_TAIL,
-    SENDOFF_SCENE,
-    SENDOFF_SHIP_TO,
-)
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, DbError, get_db
+from api.products import SCENES
+from decision import scene_counts
 from expiry import is_expired
 from reasons import build_reason
 from share_id import SHARE_ID_RE, new_share_id
@@ -52,8 +48,9 @@ def _invalid() -> JSONResponse:
     return _error("invalid_product_ids", "product_ids は商品IDの配列で、存在する商品だけを指定してください")
 
 
-def _parse_ids(raw: bytes) -> list[str] | JSONResponse:
-    """本文を検査して、商品 ID の並び（重複込み）を返す。型が不正なら 422（invalid_product_ids）"""
+def _parse_body(raw: bytes) -> tuple[list[str], str] | JSONResponse:
+    """本文を検査して、商品 ID の並び（重複込み）とシーンを返す。型が不正なら 422（invalid_product_ids）、
+    scene が お礼・誕生日・送別 以外なら 422（invalid_scene）。scene は任意で、無い・空なら送別（設計 D-05）"""
     try:
         body = json.loads(raw)
     except ValueError:
@@ -63,10 +60,15 @@ def _parse_ids(raw: bytes) -> list[str] | JSONResponse:
     ids: list[Any] = body["product_ids"]
     if not all(isinstance(i, str) for i in ids):  # 数値・小数・真偽値・null などは不正
         return _invalid()
-    return [str(i) for i in ids]
+    scene = body.get("scene")
+    if scene is None or scene == "":
+        scene = "送別"
+    if not isinstance(scene, str) or scene not in SCENES:
+        return _error("invalid_scene", "scene は お礼・誕生日・送別 のどれかです")
+    return [str(i) for i in ids], scene
 
 
-def _create(ids: list[str], db: Db, clock: Clock, mark: int) -> JSONResponse:
+def _create(ids: list[str], scene: str, db: Db, clock: Clock, mark: int) -> JSONResponse:
     if len(ids) > SETTINGS.SHARE_REQUEST_MAX_LENGTH:  # 重複を除く前の長さ（H-23）
         return _error("too_many_items", "選べるのは10件までです")
     unique = list(dict.fromkeys(ids))  # 最初に出てきた順で重複を除く（H-23）
@@ -81,10 +83,7 @@ def _create(ids: list[str], db: Db, clock: Clock, mark: int) -> JSONResponse:
     if any(pid not in by_id for pid in unique):
         return _invalid()
 
-    counts: dict[str, int] = {}
-    sql = COUNT_SENDOFF_HEAD + marks + COUNT_SENDOFF_TAIL
-    for r in db.fetch_all(sql, (SENDOFF_SCENE, SENDOFF_SHIP_TO, *unique)):
-        counts[str(r["product_id"])] = int(r["n"])
+    counts = scene_counts(db, scene, unique)  # 理由の文は作る時に選んでいたシーンに合わせる（SP-03・D-05）
 
     items = []
     for pid in unique:
@@ -101,6 +100,7 @@ def _create(ids: list[str], db: Db, clock: Clock, mark: int) -> JSONResponse:
                     r["review_count"],
                     r["delivery_days"],
                     None if wrap is None else bool(wrap),
+                    scene,
                 ),
             }
         )
@@ -137,10 +137,10 @@ async def create_share_link(
     mark: Annotated[int, Depends(get_test_mark)],
 ) -> Any:
     """共有リンクを毎回新しく 1 件作る。DB の呼び出しは別スレッドで行い、待ち中も他の要求を止めない"""
-    ids = _parse_ids(await request.body())
-    if isinstance(ids, JSONResponse):
-        return ids
-    return await run_in_threadpool(_create, ids, db, clock, mark)
+    parsed = _parse_body(await request.body())
+    if isinstance(parsed, JSONResponse):
+        return parsed
+    return await run_in_threadpool(_create, parsed[0], parsed[1], db, clock, mark)
 
 
 def _not_found() -> JSONResponse:

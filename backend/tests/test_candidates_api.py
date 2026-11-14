@@ -125,6 +125,10 @@ def test_item_fields_and_reason() -> None:
             "price",
             "category",
             "high_rating",
+            "delivery_days",
+            "wrapping",
+            "arrives_on",
+            "scene_count",
             "reason",
         }
         assert by["P01"]["high_rating"] is True and by["P02"]["high_rating"] is False
