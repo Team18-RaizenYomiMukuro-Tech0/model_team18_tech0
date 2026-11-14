@@ -1,10 +1,16 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { arrivesText } from "@/lib/arrival";
 import { formatPrice } from "@/lib/formatPrice";
+import { productImage } from "@/lib/images";
 import { fetchJson, isProductDetail, productUrl, type ProductDetail } from "@/lib/products";
-import { canDecrease, canIncrease, cartStore, cartTotal, normalizeQty, ORDER_DEMO_MESSAGE, stepQty, useCart } from "@/state/cart";
-import { CartChecker, type CartFound } from "@/state/cartCheck";
+import { buildSearchHref } from "@/lib/topPage";
+import { canDecrease, canIncrease, cartStore, cartTotal, normalizeQty, stepQty, useCart } from "@/state/cart";
+import { CartChecker, continueTarget, orderGate, pressOrder, rowHasProduct, type CartFound } from "@/state/cartCheck";
 import { ADDED_MESSAGE, CORRUPT_MESSAGE, cartNotice } from "@/state/cartNotice";
 import fav from "./favorites.module.css";
 import styles from "./cart.module.css";
@@ -74,7 +80,7 @@ function CartToast({ onView }: Readonly<{ onView: () => void }>) {
 }
 
 function toInfo(r: Awaited<ReturnType<typeof fetchJson<ProductDetail>>>): CartFound {
-  if (r.status === "ok") return { status: "ok", price: r.data.price, stock: r.data.status, name: r.data.name };
+  if (r.status === "ok") return { status: "ok", price: r.data.price, stock: r.data.status, name: r.data.name, category: r.data.category, arrives_on: r.data.arrives_on };
   return r.status === "notfound" ? { status: "notfound" } : { status: "error" };
 }
 
@@ -83,6 +89,8 @@ function CartPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   const [found, setFound] = useState<Readonly<Record<string, CartFound>>>({});
   const [msg, setMsg] = useState("");
   const closeBtn = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
+  const router = useRouter();
   const checker = useRef<CartChecker | null>(null);
 
   // 開いたときに確かめる（まだ確かめていない商品だけ）。閉じたら応答を捨てる。
@@ -112,6 +120,7 @@ function CartPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   }, [onClose]);
 
   const total = cartTotal(cart, found);
+  const gate = orderGate(ids, found);
   return (
     <div className={fav.overlay} onClick={onClose}>
       <aside className={fav.panel} role="dialog" aria-label="カート" onClick={(e) => e.stopPropagation()}>
@@ -127,29 +136,51 @@ function CartPanel({ onClose }: Readonly<{ onClose: () => void }>) {
           <>
             <ul className={fav.list}>
               {ids.map((id) => (
-                <CartRow key={id} id={id} qty={cart[id]} info={found[id]} onQty={(q) => setQty(id, q)} onRemove={() => remove(id)} onRetry={() => checker.current?.retry(id)} />
+                <CartRow key={id} id={id} qty={cart[id]} info={found[id]} onQty={(q) => setQty(id, q)} onRemove={() => remove(id)} onRetry={() => checker.current?.retry(id)} onOpen={onClose} />
               ))}
             </ul>
             <p className={styles.total}>
               合計 <b>{formatPrice(total)}</b>
             </p>
-            <button type="button" className={styles.order} onClick={() => setMsg(ORDER_DEMO_MESSAGE)}>
-              注文へ進む
-            </button>
-            <p role="status" className={styles.msg}>
-              {msg}
-            </p>
           </>
         )}
+        {gate.hint && <p className={styles.nobuy}>{gate.hint}</p>}
+        <button
+          type="button"
+          className={styles.order}
+          disabled={!gate.canOrder}
+          onClick={() => {
+            const m = pressOrder(ids, found);
+            if (m) setMsg(m);
+          }}
+        >
+          注文へ進む
+        </button>
+        <p role="status" className={styles.msg}>
+          {msg}
+        </p>
+        <button
+          type="button"
+          className={styles.cont}
+          onClick={() => {
+            const to = continueTarget(pathname);
+            onClose();
+            if (to) router.push(to);
+          }}
+        >
+          買い物を続ける
+        </button>
       </aside>
     </div>
   );
 }
 
-function CartRow({ id, qty, info, onQty, onRemove, onRetry }: Readonly<{ id: string; qty: number; info?: CartFound; onQty: (q: number) => void; onRemove: () => void; onRetry: () => void }>) {
+function CartRow({ id, qty, info, onQty, onRemove, onRetry, onOpen }: Readonly<{ id: string; qty: number; info?: CartFound; onQty: (q: number) => void; onRemove: () => void; onRetry: () => void; onOpen: () => void }>) {
   const [draft, setDraft] = useState<string | null>(null); // 入力中の文字。欄を離れたら確定して null に戻す
   const input = useRef<HTMLInputElement>(null);
   const name = !info ? "読み込み中…" : info.status === "ok" ? (info.name ?? id) : info.status === "notfound" ? "この商品は見つかりません" : "商品の情報を読み込めませんでした";
+  const img = rowHasProduct(info) && info.category ? productImage(info.category) : null;
+  const arrival = rowHasProduct(info) ? arrivesText(info.arrives_on) : null; // 404・読み込み失敗・届く日が無い行には出さない（SP-26）
   const unavailable = info?.status === "notfound" ? "販売終了" : info?.status === "ok" && info.stock === "out_of_stock" ? "在庫なし" : null;
   // ＋／−（SP-14 ①）。押せなくなったボタンにフォーカスが残らないよう、境界に着いたら数量の欄へ移す（キーボードだけでも続けられる。N-12）
   const step = (delta: 1 | -1) => {
@@ -160,7 +191,14 @@ function CartRow({ id, qty, info, onQty, onRemove, onRetry }: Readonly<{ id: str
   };
   return (
     <li className={styles.row}>
-      <span className={fav.nm}>{name}</span>
+      {rowHasProduct(info) && img && <Image className={styles.pic} src={img} alt="" width={48} height={48} unoptimized />}
+      {rowHasProduct(info) ? (
+        <Link className={`${fav.nm} ${styles.nmLink}`} href={buildSearchHref({ productId: id })} scroll={false} onClick={onOpen}>
+          {name}
+        </Link>
+      ) : (
+        <span className={fav.nm}>{name}</span>
+      )}
       {info?.status === "error" && (
         <button
           type="button"
@@ -175,6 +213,7 @@ function CartRow({ id, qty, info, onQty, onRemove, onRetry }: Readonly<{ id: str
       )}
       {unavailable && <span className={styles.unavail}>{unavailable}（合計に入りません）</span>}
       {info?.status === "ok" && <span>{formatPrice(info.price)}</span>}
+      {arrival && <span className={styles.arrive}>{arrival}</span>}
       <span className={styles.qty}>
         <button type="button" className={styles.step} aria-label={`${name}の数量を1減らす`} disabled={!canDecrease(qty)} onClick={() => step(-1)}>
           −
