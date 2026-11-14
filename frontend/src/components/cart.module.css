@@ -6,3 +6,11 @@
 .total { margin: 12px 0 8px; font-size: 16px; }
 .order { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid #8f321e; border-radius: var(--rm); background: #b8422a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .msg { margin: 8px 0 0; min-height: 1.2em; }
+.qty label { display: inline-flex; align-items: center; gap: 6px; }
+.step, .retry, .toastLink { min-width: 44px; min-height: 44px; padding: 4px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: #fff; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
+.step:disabled { opacity: 0.45; cursor: not-allowed; }
+.retry { width: 100%; }
+/* 通知（カートに入れました）。画面の下に出し、パネルは開かない */
+.toastBox { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; max-width: calc(100vw - 32px); }
+.toast { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--rm); background: #3a3331; color: #fff; font-size: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+.toastLink { border-color: #fff; background: transparent; color: #fff; }

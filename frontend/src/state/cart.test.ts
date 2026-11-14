@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CART_KEY, cartTotal, createCartStore, loadCart, normalizeQty, saveCart, type CartInfo, type StoreLike } from "./cart.ts";
+import { canDecrease, canIncrease, CART_KEY, cartCount, cartTotal, createCartStore, loadCart, normalizeQty, saveCart, stepQty, type CartInfo, type StoreLike } from "./cart.ts";
+import { CartChecker, type CartFound } from "./cartCheck.ts";
+import { ADDED_MESSAGE, CORRUPT_MESSAGE, NoticeController } from "./cartNotice.ts";
 
 // U-44 S-30 S-63 D-31 #50-5 #53-4 #54-9 #56-3: カート。giftia:cart は {商品ID: 数量}。追加で +1、数量は 1〜99、合計は販売終了・在庫なしを除く。
 function memory(): StoreLike & { data: Map<string, string> } {
@@ -114,4 +116,181 @@ test("cart: すべての部品が同じ store を見る（変更は購読者に�
   off();
   s.add("G0002");
   assert.equal(n, 3);
+});
+
+// U-54 D-25: ヘッダーのカートの数は商品の種類の数（数量の合計ではない）
+test("cart U-54: 1,500円×2 と 2,000円×1 を入れると、数は 2（種類の数。数量の合計 3 ではない）", () => {
+  const s = createCartStore(() => memory());
+  s.add("G0001");
+  s.add("G0001");
+  s.add("G0002");
+  assert.equal(cartCount(s.getSnapshot()), 2);
+  assert.equal(Object.values(s.getSnapshot()).reduce((a, b) => a + b, 0), 3);
+});
+
+// U-55 D-31: ＋／−
+test("cart U-55: 1 で − は押せない、99 で ＋ は押せない。2 で −→1、98 で ＋→99。境界を超えない", () => {
+  assert.equal(canDecrease(1), false);
+  assert.equal(canDecrease(2), true);
+  assert.equal(canIncrease(99), false);
+  assert.equal(canIncrease(98), true);
+  assert.equal(stepQty(2, -1), 1);
+  assert.equal(stepQty(98, 1), 99);
+  assert.equal(stepQty(1, -1), 1);
+  assert.equal(stepQty(99, 1), 99);
+});
+
+test("cart U-55: 押すたびに数量が変わり、合計が変わる", () => {
+  const s = createCartStore(() => memory());
+  s.add("G0001"); // 1
+  const info: Record<string, CartInfo> = { G0001: { status: "ok", price: 1500, stock: "available" } };
+  s.setQty("G0001", stepQty(s.getSnapshot().G0001, 1));
+  assert.equal(cartTotal(s.getSnapshot(), info), 3000);
+  s.setQty("G0001", stepQty(s.getSnapshot().G0001, -1));
+  assert.equal(cartTotal(s.getSnapshot(), info), 1500);
+});
+
+// U-56 D-31: もう一度読み込む
+const okInfo: CartFound = { status: "ok", price: 1500, stock: "available", name: "A" };
+const tick = () => new Promise((r) => setImmediate(r));
+function checker(results: Record<string, CartFound[]>) {
+  const calls: string[] = [];
+  const seen: Record<string, CartFound>[] = [];
+  const c = new CartChecker(
+    async (id) => {
+      calls.push(id);
+      return results[id].shift() as CartFound;
+    },
+    (f) => seen.push({ ...f }),
+  );
+  return { c, calls, seen };
+}
+
+test("cart U-56: 失敗の商品の「もう一度読み込む」で、その商品だけ読み直す（成功したら出る）。ほかは読み直さない", async () => {
+  const { c, calls, seen } = checker({ G1: [{ status: "error" }, okInfo], G2: [okInfo] });
+  c.check(["G1", "G2"]);
+  await tick();
+  assert.equal(seen.at(-1)?.G1?.status, "error");
+  c.retry("G1");
+  assert.equal(seen.at(-1)?.G1, undefined); // 読み込み中の表示に戻る
+  await tick();
+  assert.equal(seen.at(-1)?.G1?.status, "ok");
+  assert.deepEqual(calls, ["G1", "G2", "G1"]);
+});
+
+test("cart U-56: 読み直しも失敗なら同じ表示のまま。成功した商品・404 の商品には retry しても何もしない", async () => {
+  const { c, calls, seen } = checker({ G1: [{ status: "error" }, { status: "error" }], G2: [okInfo], G3: [{ status: "notfound" }] });
+  c.check(["G1", "G2", "G3"]);
+  await tick();
+  c.retry("G1");
+  await tick();
+  assert.equal(seen.at(-1)?.G1?.status, "error");
+  c.retry("G2");
+  c.retry("G3");
+  await tick();
+  assert.deepEqual(calls, ["G1", "G2", "G3", "G1"]);
+  assert.equal(cartTotal({ G1: 1, G2: 1 }, seen.at(-1) ?? {}), 1500); // 読めない商品は合計に入らない
+});
+
+test("cart U-56: check を重ねても確かめ済みの商品は読み直さない。dispose 後の応答は捨てる", async () => {
+  const { c, calls, seen } = checker({ G1: [okInfo], G2: [okInfo] });
+  c.check(["G1"]);
+  c.check(["G1", "G2"]);
+  c.dispose();
+  await tick();
+  assert.deepEqual(calls, ["G1", "G2"]);
+  assert.equal(seen.length, 0);
+});
+
+// U-57 D-31: 「カートに入れました」の通知
+test("cart U-57: 追加すると「カートに入れました」が出て、約3秒で消える", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const n = new NoticeController();
+  const s = createCartStore(() => memory(), n);
+  s.add("G0001");
+  assert.equal(n.getSnapshot()?.kind, "added");
+  assert.equal(ADDED_MESSAGE, "カートに入れました");
+  t.mock.timers.tick(2999);
+  assert.equal(n.getSnapshot()?.kind, "added");
+  t.mock.timers.tick(1);
+  assert.equal(n.getSnapshot(), null);
+});
+
+test("cart U-57: マウス・フォーカスが乗っている間は消えない。離れたら3秒を数え直す", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const n = new NoticeController();
+  n.show("added");
+  t.mock.timers.tick(2000);
+  n.hold(); // マウスが乗る
+  n.hold(); // Tab でフォーカスも乗る
+  t.mock.timers.tick(10000);
+  assert.notEqual(n.getSnapshot(), null);
+  n.release();
+  t.mock.timers.tick(10000);
+  assert.notEqual(n.getSnapshot(), null); // まだフォーカスが残っている
+  n.release();
+  t.mock.timers.tick(2999);
+  assert.notEqual(n.getSnapshot(), null);
+  t.mock.timers.tick(1);
+  assert.equal(n.getSnapshot(), null);
+});
+
+test("cart U-57: 続けて追加したら、新しい通知から3秒を数え直す。「カートを見る」で閉じられる", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const n = new NoticeController();
+  const s = createCartStore(() => memory(), n);
+  s.add("G0001");
+  t.mock.timers.tick(2500);
+  s.add("G0001");
+  t.mock.timers.tick(2500);
+  assert.notEqual(n.getSnapshot(), null);
+  t.mock.timers.tick(500);
+  assert.equal(n.getSnapshot(), null);
+  s.add("G0002");
+  n.dismiss();
+  assert.equal(n.getSnapshot(), null);
+});
+
+test("cart U-57: 追加の通知は store の追加だけで出る（読み出しだけでは出ない）", () => {
+  const n = new NoticeController();
+  const s = createCartStore(() => memory(), n);
+  s.getSnapshot();
+  s.setQty("G0001", 3);
+  assert.equal(n.getSnapshot(), null);
+});
+
+// U-58 D-10: 壊れた保存データ
+for (const bad of ["{abc", "[1,2]", '"x"', "null", "5"]) {
+  test(`cart U-58: 壊れた保存 ${bad} は空にして保存し直し、知らせは1回だけ`, () => {
+    const m = memory();
+    m.data.set(CART_KEY, bad);
+    const s = createCartStore(() => m);
+    assert.deepEqual({ ...s.getSnapshot() }, {});
+    assert.equal(m.data.get(CART_KEY), "{}"); // 空で保存し直された
+    assert.equal(s.takeCorruptNotice(), true);
+    assert.equal(s.takeCorruptNotice(), false); // 画面を移っても繰り返さない
+    const again = createCartStore(() => m); // 再読み込み
+    assert.deepEqual({ ...again.getSnapshot() }, {});
+    assert.equal(again.takeCorruptNotice(), false);
+  });
+}
+
+test("cart U-58: 壊れていない保存・空・保存が使えない環境では知らせない。壊れたあとも追加できる", () => {
+  const ok = memory();
+  ok.data.set(CART_KEY, '{"G0001":2}');
+  const a = createCartStore(() => ok);
+  assert.equal(a.takeCorruptNotice(), false);
+  assert.equal(a.getSnapshot().G0001, 2);
+  assert.equal(createCartStore(() => memory()).takeCorruptNotice(), false);
+  assert.equal(createCartStore(() => broken).takeCorruptNotice(), false);
+  assert.equal(createCartStore(() => null).takeCorruptNotice(), false);
+  const m = memory();
+  m.data.set(CART_KEY, "{abc");
+  const s = createCartStore(() => m);
+  s.add("G0001");
+  assert.deepEqual(JSON.parse(m.data.get(CART_KEY) ?? "null"), { G0001: 1 });
+});
+
+test("cart U-58: 知らせの文言", () => {
+  assert.equal(CORRUPT_MESSAGE, "カートを読み込めなかったため、空にしました");
 });

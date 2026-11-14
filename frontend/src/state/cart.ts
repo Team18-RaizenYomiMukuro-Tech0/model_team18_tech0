@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { cartNotice, type NoticeController } from "./cartNotice.ts";
 
 // D-31 D-10 SP-14 F-17 U-44 #50-5 #51-3 #53-4 #54-9 #56-3: カート。ブラウザ内の保存（localStorage、キー giftia:cart）だけを使う。
 // 中身は {商品ID: 数量}。数量は 1〜99。サーバーには何も送らない。保存の読み書きは例外を握る（使えない環境でも画面が壊れない）。
@@ -27,20 +28,36 @@ export function normalizeQty(raw: string, prev: number): number {
   return clamp(Number.isFinite(n) ? n : QTY_MAX);
 }
 
-// 保存の読み出し。壊れた値・使えない保存は空として扱う。数量は整数だけ 1〜99 に収めて残し、それ以外の項目は捨てる
-export function loadCart(storage: StoreLike | null): Cart {
+// 保存の読み出し。壊れた値（JSON として読めない・オブジェクトでない）は corrupt=true で空として返す（SP-14 ④）。
+// 保存が使えない・まだ何も無いのは壊れたのではない（corrupt=false）。数量は整数だけ 1〜99 に収めて残し、それ以外の項目は捨てる
+export function readCart(storage: StoreLike | null): { cart: Cart; corrupt: boolean } {
+  let raw: string | null | undefined;
   try {
-    const raw = storage?.getItem(CART_KEY);
-    if (!raw) return {};
+    raw = storage?.getItem(CART_KEY);
+  } catch {
+    return { cart: {}, corrupt: false }; // 保存を使えない
+  }
+  if (!raw) return { cart: {}, corrupt: false };
+  try {
     const v: unknown = JSON.parse(raw);
-    if (typeof v !== "object" || v === null || Array.isArray(v)) return {};
+    if (typeof v !== "object" || v === null || Array.isArray(v)) return { cart: {}, corrupt: true };
     const out: Record<string, number> = {};
     for (const [id, q] of Object.entries(v)) if (id !== "" && typeof q === "number" && Number.isInteger(q)) out[id] = clamp(q);
-    return out;
+    return { cart: out, corrupt: false };
   } catch {
-    return {};
+    return { cart: {}, corrupt: true };
   }
 }
+
+export const loadCart = (storage: StoreLike | null): Cart => readCart(storage).cart;
+
+// ＋／− ボタン（SP-14 ①）。1 で − は押せない、99 で ＋ は押せない
+export const canDecrease = (qty: number): boolean => qty > QTY_MIN;
+export const canIncrease = (qty: number): boolean => qty < QTY_MAX;
+export const stepQty = (qty: number, delta: 1 | -1): number => clamp(qty + delta);
+
+// ヘッダーのカートの数は、入っている商品の種類の数（数量の合計ではない）（SP-08、U-54）
+export const cartCount = (cart: Cart): number => Object.keys(cart).length;
 
 export function saveCart(storage: StoreLike | null, cart: Cart): void {
   try {
@@ -69,13 +86,27 @@ export type CartStore = {
   add: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
+  // 保存が壊れていて空にしたとき、1回だけ true を返す（SP-14 ④）。画面を移っても、再読み込みしても繰り返さない
+  takeCorruptNotice: () => boolean;
 };
 
 // storage は関数で渡す（保存が使えないとき null を返す）。読み出しは最初に使うときの1回
-export function createCartStore(getStorage: () => StoreLike | null): CartStore {
+// notice を渡すと、追加のたびに「カートに入れました」を出す（SP-14 ③）
+export function createCartStore(getStorage: () => StoreLike | null, notice?: NoticeController): CartStore {
   let cart: Cart | null = null;
+  let corruptPending = false;
   const listeners = new Set<() => void>();
-  const current = (): Cart => (cart ??= loadCart(getStorage()));
+  const current = (): Cart => {
+    if (cart === null) {
+      const r = readCart(getStorage());
+      cart = r.cart;
+      if (r.corrupt) {
+        saveCart(getStorage(), cart); // 空のカートとして保存し直す（次からは壊れていない）
+        corruptPending = true;
+      }
+    }
+    return cart;
+  };
   const set = (next: Cart) => {
     cart = next;
     saveCart(getStorage(), next);
@@ -87,7 +118,16 @@ export function createCartStore(getStorage: () => StoreLike | null): CartStore {
       return () => listeners.delete(cb);
     },
     getSnapshot: current,
-    add: (id) => set({ ...current(), [id]: clamp((current()[id] ?? 0) + 1) }), // 同じ商品は数量+1（2件にならない）。99 を超えない
+    add: (id) => {
+      set({ ...current(), [id]: clamp((current()[id] ?? 0) + 1) }); // 同じ商品は数量+1（2件にならない）。99 を超えない
+      notice?.show("added");
+    },
+    takeCorruptNotice: () => {
+      current();
+      const p = corruptPending;
+      corruptPending = false;
+      return p;
+    },
     setQty: (id, qty) => {
       if (id in current()) set({ ...current(), [id]: clamp(Math.trunc(qty)) });
     },
@@ -107,7 +147,7 @@ function browserStorage(): StoreLike | null {
   }
 }
 
-export const cartStore = createCartStore(browserStorage);
+export const cartStore = createCartStore(browserStorage, cartNotice);
 
 const EMPTY: Cart = {};
 
@@ -115,5 +155,5 @@ const EMPTY: Cart = {};
 export function useCart() {
   const cart = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, () => EMPTY);
   const ids = Object.keys(cart);
-  return { cart, ids, count: ids.length, add: cartStore.add, setQty: cartStore.setQty, remove: cartStore.remove };
+  return { cart, ids, count: cartCount(cart), add: cartStore.add, setQty: cartStore.setQty, remove: cartStore.remove };
 }
