@@ -89,13 +89,13 @@ def post(client: TestClient, payload: Any) -> Any:
 def test_one_row_per_step_and_duplicates_ignored(client: TestClient, db: EventDb, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GIFTIA_TEST_KEY", raising=False)
     sent = [
-        body(1, entry="search"), body(2, scene="お礼"), body(3, scene="お礼", has_voice=True), body(4), body(5), body(6),
+        body(1, entry="search"), body(2, scene="お礼"), body(3, scene="お礼", has_voice=1), body(4), body(5), body(6),
         body(7, zero_cond="both", scene="送別"),
     ]  # fmt: skip
     for b in sent:
         r = post(client, b)
         assert r.status_code == 204 and r.content == b""
-    assert post(client, body(3, scene="誕生日", has_voice=False)).status_code == 204  # 同じ訪問・同じ段の 2 回目は 204 のまま
+    assert post(client, body(3, scene="誕生日", has_voice=0)).status_code == 204  # 同じ訪問・同じ段の 2 回目は 204 のまま
     rows = db.rows()
     assert [r["step"] for r in rows] == [1, 2, 3, 4, 5, 6, 7]
     assert rows[2]["scene"] == "お礼" and rows[2]["has_voice"] == 1  # 2 回目（誕生日・声なし）は入らない
@@ -104,7 +104,7 @@ def test_one_row_per_step_and_duplicates_ignored(client: TestClient, db: EventDb
     assert all(r["occurred_at"] == "2026-11-15 03:04:05" and r["is_test"] == 0 for r in rows)
     assert all(r["visit_id"] == VISIT and r["visitor_id"] == VISITOR for r in rows)
     # 段に合わない項目は捨てる（entry は段 1、has_voice は段 3、zero_cond は段 7 だけ）
-    post(client, {**body(4, entry="top", has_voice=True, zero_cond="price", scene="送別"), "visit_id": "C" * 22})
+    post(client, {**body(4, entry="top", has_voice=1, zero_cond="price", scene="送別"), "visit_id": "C" * 22})
     last = db.rows()[-1]
     assert (last["entry"], last["has_voice"], last["zero_cond"], last["scene"]) == (None, None, None, None)
 
@@ -135,7 +135,7 @@ def test_invalid_bodies(client: TestClient, db: EventDb, monkeypatch: pytest.Mon
         {k: v for k, v in body(1).items() if k != "visit_id"}, {k: v for k, v in body(1).items() if k != "step"},
         {**body(1), "visit_id": "short"}, {**body(1), "visit_id": "A" * 23}, {**body(1), "visit_id": "A" * 21 + "="},
         {**body(1), "visitor_id": "あ" * 22}, {**body(1), "visit_id": 123},
-        body(1, entry="home"), body(1, entry="TOP"), body(7, zero_cond="none"), body(2, scene="取引先"), body(3, has_voice="yes"), body(3, has_voice=2),
+        body(1, entry="home"), body(1, entry="TOP"), body(7, zero_cond="none"), body(2, scene="取引先"), body(3, has_voice="yes"), body(3, has_voice=2), body(3, has_voice=True), body(3, has_voice=False), body(3, has_voice=1.0),
         {**body(1), "name": "山田"}, {**body(1), "email": "a@example.com"}, {**body(1), "product_id": "P01"}, {**body(1), "q": "検索語"},
         {**body(1), "test_key": "x" * 65}, {**body(1), "test_key": 123},
         [1, 2], "text", None, 5,

@@ -68,7 +68,7 @@ def parse_event(raw: bytes) -> dict[str, Any] | None:
         return None
     if zero is not None and zero not in ZERO_CONDS:
         return None
-    if voice is not None and not (isinstance(voice, int) and voice in (0, 1)):  # true／false／1／0 だけ（bool は int の仲間）
+    if voice is not None and (not isinstance(voice, int) or isinstance(voice, bool) or voice not in (0, 1)):  # 0／1 だけ（設計 D-40。true／false は 422。画面 #306 も 0／1 で送る）
         return None
     test_key = body.get("test_key")
     if test_key is not None and (not isinstance(test_key, str) or len(test_key) > SETTINGS.TEST_KEY_MAX_LENGTH):
