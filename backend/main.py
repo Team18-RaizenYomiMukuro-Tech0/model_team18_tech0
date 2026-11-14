@@ -10,6 +10,7 @@ from fastapi import Depends, FastAPI
 import logging_setup
 import publish
 from api.candidates import router as candidates_router
+from api.events import router as events_router
 from api.product_detail import router as product_detail_router
 from api.products import router as products_router
 from api.share_links import router as share_links_router
@@ -29,6 +30,7 @@ app.include_router(candidates_router)  # GET /api/candidates（R-01 の候補。
 app.include_router(products_router)  # GET /api/products（R-02 の絞り込み。D-28）
 app.include_router(product_detail_router)  # GET /api/products/{product_id}（商品の詳細。D-29）
 app.include_router(share_links_router)  # POST /api/share-links（共有リンクの作成。D-05）
+app.include_router(events_router)  # POST /api/events（計測を受ける。D-40）
 
 
 @app.get("/api/health")
