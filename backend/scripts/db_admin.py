@@ -484,13 +484,21 @@ HANDLERS: dict[str, Callable[[Any, Report], None]] = {
 }
 
 
+def open_connection() -> Any:
+    """接続して、自動確定（autocommit）を切る。database.get_connection() は API 用に autocommit=True（#258）なので、
+    そのままだと DELETE が実行した瞬間に確定し、手順3・D の ROLLBACK が効かない。commit は各手順が明示的に行う"""
+    conn = database.get_connection()
+    conn.autocommit(False)
+    return conn
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 2 or argv[1] not in STEPS:
         print(f"使い方: python scripts/db_admin.py <{' | '.join(STEPS)}>")
         return 2
     step = argv[1]
     rep = Report(step)
-    conn = database.get_connection()
+    conn = open_connection()
     try:
         HANDLERS[step](conn, rep)
     except SystemExit as e:
