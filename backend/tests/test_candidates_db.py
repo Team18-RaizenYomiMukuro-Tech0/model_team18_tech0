@@ -32,7 +32,7 @@ def test_scene_and_band(client: TestClient) -> None:
 def test_empty_combination(client: TestClient) -> None:
     """I-03・I-28: 該当なしの組み合わせは 200 で items:[]（products の確認で 0 件と分かった組み合わせ）"""
     r = client.get("/api/candidates", params={"scene": "お礼", "price_band": "under3000", "category": "家電"})
-    assert r.status_code == 200 and r.json() == {"items": [], "count": 0}
+    assert r.status_code == 200 and {k: v for k, v in r.json().items() if k != "relax"} == {"items": [], "count": 0} and "relax" in r.json()  # 0 件には助け舟の件数 relax がつく（D-44）
 
 
 def test_sendoff_count_matches_a_separate_count(client: TestClient) -> None:

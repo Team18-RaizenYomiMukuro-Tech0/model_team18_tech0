@@ -48,6 +48,35 @@ def order_by_score(
     return sorted(scores, key=lambda pid: (-scores[pid], pid))
 
 
+SORTS = ("recommend", "price_asc", "rating_desc", "delivery_asc")  # D-43。省略・空は recommend
+
+
+# SP-21 D-43
+def order_by_sort(
+    items: Sequence[tuple[str, int, Decimal | float | None, int | None, int | None]],
+    sort: str,
+) -> list[str]:
+    """(商品ID, 価格, 評価, レビュー件数, 配送日数) を D-43 の表のとおりに並べる。recommend はおすすめ順（D-02 の式）。
+    NULL は後ろ（評価の高い順・配送日数の小さい順のとき最後）。同じ値は表の次の項目、最後は商品ID順"""
+    if sort == "recommend":
+        return order_by_score([(pid, rating, count) for pid, _, rating, count, _ in items])
+
+    def rating_desc(rating: Decimal | float | None) -> tuple[int, Fraction]:
+        return (1, Fraction(0)) if rating is None else (0, -_fraction(rating))  # 評価の高い順。なしは後ろ
+
+    keys: dict[str, tuple[object, ...]] = {}
+    for pid, price, rating, count, days in items:
+        if sort == "price_asc":
+            keys[pid] = (price, rating_desc(rating), pid)
+        elif sort == "rating_desc":
+            keys[pid] = (rating_desc(rating), -(count or 0), pid)
+        elif sort == "delivery_asc":
+            keys[pid] = ((1, 0) if days is None else (0, days), rating_desc(rating), pid)
+        else:
+            raise ValueError(sort)
+    return sorted(keys, key=lambda pid: keys[pid])
+
+
 # SP-02 D-01 D-02 手順5・6
 def candidate_pool(scores: dict[str, Fraction], limit: int) -> list[str]:
     """送別回数を数える範囲: 点数の上位 limit 件と、limit 位と同点の商品（点数→商品ID順）"""

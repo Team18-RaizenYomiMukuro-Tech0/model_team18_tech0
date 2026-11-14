@@ -71,7 +71,8 @@ def test_no_price_band() -> None:
             [("price_band", ""), ("budget", "4500")],
         ):
             assert get(client, [("scene", "送別"), *extra]) == base, extra
-        assert get(client, [("scene", "お礼")]) == (200, {"items": [], "count": 0})
+        # 0 件には助け舟の件数 relax がつく（D-44）。条件を付けていないので price_band・category は null
+        assert get(client, [("scene", "お礼")]) == (200, {"items": [], "count": 0, "relax": {"price_band": None, "category": None}})
 
 
 def test_category() -> None:
