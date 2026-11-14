@@ -1,24 +1,31 @@
-/* 開発ハブ: 「3 実装②」の Issue がすべて閉じたあと、初めて開いたときだけ出る 4 段の演出（約 6 秒・クリックで飛ばせる）。
-   判定は progress-summary.json の phases[]（title が「3 実装②」で closed == total かつ total > 0）。
+/* 開発ハブ: 実装の最後の段の Issue がすべて閉じたあと、初めて開いたときだけ出る 4 段の演出（約 6 秒・クリックで飛ばせる）。
+   判定は progress-summary.json の phases[]。「3.5 実装③」があればその段（STAGE 4 完了 → STAGE 5 評価・受入へ）、無ければ「3 実装②」
+   （STAGE 3 完了 → STAGE 4 評価・受入へ）で、closed == total かつ total > 0 のとき。見た印は段ごとに別（実装② の演出を見た人にも実装③ の演出が出る）。
    見た印は localStorage（読み書きは try/catch。使えなくてもハブは普通に表示する）。 */
 (function () {
   "use strict";
-  var KEY = "hub-stage3-clear-seen";
+  var KEY3 = "hub-stage3-clear-seen";   // 実装② の演出
+  var KEY35 = "hub-stage35-clear-seen"; // 実装③（3.5）の演出
+  var N = 3; // 完了した段の番号（3.5 があれば 4）。文言に使う
   var STEPS = [1600, 1200, 1600, 1600]; // 段 1〜4 の秒数（合計 6.0 秒）
   var CALM_MS = 2600;
 
-  function seen() { try { return window.localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
-  function mark() { try { window.localStorage.setItem(KEY, "1"); } catch (e) { /* 使えなくても続ける */ } }
+  function seen(key) { try { return window.localStorage.getItem(key) === "1"; } catch (e) { return false; } }
+  function mark(key) { try { window.localStorage.setItem(key, "1"); } catch (e) { /* 使えなくても続ける */ } }
 
+  function done(p) { return typeof p.closed === "number" && typeof p.total === "number" && p.total > 0 && p.closed === p.total; }
+  // 完了した段の番号（3.5 実装③ があれば 4、無ければ 3 実装② の 3）。まだ終わっていなければ 0
   function cleared(j) {
-    if (!j || !Array.isArray(j.phases)) return false;
+    if (!j || !Array.isArray(j.phases)) return 0;
+    var p3 = null, p35 = null;
     for (var i = 0; i < j.phases.length; i++) {
       var p = j.phases[i];
-      if (p && typeof p.title === "string" && /^3\s*実装②/.test(p.title)) {
-        return typeof p.closed === "number" && typeof p.total === "number" && p.total > 0 && p.closed === p.total;
-      }
+      if (!p || typeof p.title !== "string") continue;
+      if (/^3\.5\s*実装③/.test(p.title)) p35 = p;
+      else if (/^3\s*実装②/.test(p.title)) p3 = p;
     }
-    return false;
+    if (p35) return done(p35) ? 4 : 0;
+    return p3 && done(p3) ? 3 : 0;
   }
 
   function el(tag, cls, text) {
@@ -45,9 +52,9 @@
 
   function build(calm) {
     var r = el("div"); r.id = "sc"; r.setAttribute("role", "status");
-    r.appendChild(el("span", "vh", "STAGE 3 完了。STAGE 4 評価・受入へ"));
+    r.appendChild(el("span", "vh", "STAGE " + N + " 完了。STAGE " + (N + 1) + " 評価・受入へ"));
     var p4 = el("div", "plate4"); p4.setAttribute("aria-hidden", "true");
-    p4.appendChild(el("span", "", "STAGE 4 ")); p4.appendChild(el("span", "", "評価・受入へ"));
+    p4.appendChild(el("span", "", "STAGE " + (N + 1) + " ")); p4.appendChild(el("span", "", "評価・受入へ"));
     if (calm) { r.className = "calm"; r.appendChild(p4); return r; }
 
     var art = el("div"); art.setAttribute("aria-hidden", "true");
@@ -55,7 +62,7 @@
     var s1 = el("div", "ly s1");
     s1.appendChild(el("div", "ly dim")); s1.appendChild(el("div", "ly lines"));
     var pl = el("div", "plate");
-    ["a", "b"].forEach(function (k) { var h = el("div", "half " + k); h.appendChild(el("div", "", "STAGE 3")); pl.appendChild(h); });
+    ["a", "b"].forEach(function (k) { var h = el("div", "half " + k); h.appendChild(el("div", "", "STAGE " + N)); pl.appendChild(h); });
     s1.appendChild(pl);
     s1.appendChild(shard("", "-3vw", "-6vh", "4.5vw", "4.5vw", "-12vw", "34vh", 140, 0.5));
     s1.appendChild(shard("", "2vw", "-4vh", "5vw", "5vw", "10vw", "40vh", -170, 0.55));
@@ -116,10 +123,15 @@
   }
 
   function start() {
-    if (seen() || !window.fetch) return;
+    if ((seen(KEY3) && seen(KEY35)) || !window.fetch) return;
     fetch("progress-summary.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-      .then(function (j) { if (!cleared(j) || seen()) return; mark(); play(); })
+      .then(function (j) {
+        var n = cleared(j);
+        var key = n === 4 ? KEY35 : KEY3;
+        if (!n || seen(key)) return;
+        N = n; mark(key); play();
+      })
       .catch(function () { /* 取れなければ何も出さない */ });
   }
   start();

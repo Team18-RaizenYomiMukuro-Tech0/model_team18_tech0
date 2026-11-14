@@ -38,7 +38,7 @@
 @keyframes gpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35);box-shadow:0 0 14px 5px var(--c)}}
 .gl{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:40px 32px 0 0;padding:0;list-style:none}
 .gl li{position:relative;--c:var(--m1);text-align:center;padding:4px 2px;border-radius:10px;border:2px solid transparent;line-height:1.35}
-.gl li[data-n="2"]{--c:var(--m2)}.gl li[data-n="3"]{--c:var(--m3)}.gl li[data-n="4"]{--c:#fff}
+.gl li[data-n="2"]{--c:var(--m2)}.gl li[data-n="3"]{--c:var(--m3)}.gl li[data-n="3.5"]{--c:var(--m3)}.gl li[data-n="4"]{--c:#fff}
 .gl li.now{border-color:#fff}
 .gl .no{display:block;font-size:.75rem;font-weight:800;letter-spacing:.08em;color:var(--c)}
 .gl .nm{display:block;font-size:.95rem;font-weight:800;word-break:keep-all}

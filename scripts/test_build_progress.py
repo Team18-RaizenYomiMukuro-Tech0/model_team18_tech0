@@ -127,6 +127,39 @@ class T(unittest.TestCase):
         self.assertEqual({k: sm["phases"][0][k] for k in ("title", "closed", "total")}, {"title": "1 5文書", "closed": 2, "total": 3})  # 既存のキーは変えない
         self.assertTrue(sm["sample"])
 
+    def test_stage_3_5_counts_as_its_own_stage(self):
+        """H1 #302: 「3.5 実装③」は「3 実装②」と別の段として数える（頭の数字だけで読むと同じ段 3 になり、期限の早い「3 実装②」だけが採られていた）"""
+        def iss(n, ms, state="open"):
+            return {"number": n, "title": f"t{n}", "state": state, "html_url": f"https://github.com/a/b/issues/{n}",
+                    "milestone": ms, "assignees": []}
+        ms = [{"number": 1, "title": "1 5文書", "due_on": "2026-11-07T00:00:00Z"},
+              {"number": 3, "title": "3 実装②", "due_on": "2026-11-15T00:00:00Z"},
+              {"number": 7, "title": "3.5 実装③", "due_on": "2026-11-18T00:00:00Z"},
+              {"number": 4, "title": "4 評価・受入", "due_on": "2026-11-21T00:00:00Z"}]
+        issues = [iss(1, ms[0], "closed"), iss(2, ms[1], "closed"), iss(3, ms[1], "closed"),
+                  iss(4, ms[2]), iss(5, ms[2]), iss(6, ms[2], "closed"), iss(7, ms[3])]
+        m = bp.build_model(issues, ms, NAMES, dt.date(2026, 11, 16))
+        self.assertEqual((m["hub_done"], m["hub_total"]), (4, 7))  # 3.5 の 3 件も数える
+        sm = bp.build_summary(m, "x")
+        ph = {x["title"]: x for x in sm["phases"]}
+        self.assertEqual([x["title"] for x in sm["phases"]], ["1 5文書", "3 実装②", "3.5 実装③", "4 評価・受入"])  # 期限順
+        self.assertEqual((ph["3.5 実装③"]["closed"], ph["3.5 実装③"]["total"]), (1, 3))
+        self.assertEqual((ph["3.5 実装③"]["start"], ph["3.5 実装③"]["due"]), ("2026-11-16", "2026-11-18"))  # 前の段の翌日〜期限
+        self.assertEqual((ph["4 評価・受入"]["start"], ph["4 評価・受入"]["due"]), ("2026-11-19", "2026-11-21"))
+        out = bp.render(m, "x")
+        self.assertIn("全体 57% <span>（完了 4 / 7）</span>", out)
+        self.assertIn("3.5 実装③", out)
+
+    def test_band_js_reads_3_5_as_a_stage(self):
+        """band.js の段の読み方（正規表現）が build-progress.py の HUB_STAGE_RE と同じ。3.5 を 3 と読まない"""
+        src = open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read()
+        self.assertIn(r"/^([1-4](?:\.5)?)(?!\d)/", src)
+        self.assertEqual(bp.HUB_STAGE_RE.match("3.5 実装③").group(1), "3.5")
+        self.assertEqual(bp.HUB_STAGE_RE.match("3 実装②").group(1), "3")
+        self.assertEqual(bp.HUB_STAGE_RE.match("4 評価・受入").group(1), "4")
+        self.assertIsNone(bp.HUB_STAGE_RE.match("5 公開期間"))
+        self.assertIsNone(bp.HUB_STAGE_RE.match("K キット改善"))
+
     def test_summary_gauge_fields(self):
         sm = bp.build_summary(model(), "x")
         ph = {x["title"]: x for x in sm["phases"]}
