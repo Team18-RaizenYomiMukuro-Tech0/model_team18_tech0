@@ -5,18 +5,12 @@ from test_products_filter import Product, SpyDb, client_for, product
 
 __all__ = ["CandidateDb", "Product", "client_for", "fd1", "fd1_counts", "fd2", "fd4", "fd5", "fd6", "ids", "product"]
 
-EXTRA_SCHEMA = """
-CREATE TABLE orders (order_id TEXT PRIMARY KEY, estimated_scene TEXT, ship_to_type TEXT, gift_purpose TEXT);
-CREATE TABLE order_items (order_id TEXT, product_id TEXT);
-"""
-
 
 class CandidateDb(SpyDb):
     """商品と、商品ごとの送別回数（送別・会社宛ての注文の数）を持つ偽の DB"""
 
     def __init__(self, products: list[Product], counts: dict[str, int] | None = None) -> None:
         super().__init__(products)
-        self.raw.executescript(EXTRA_SCHEMA)
         self._n = 0
         for pid, n in (counts or {}).items():
             for _ in range(n):

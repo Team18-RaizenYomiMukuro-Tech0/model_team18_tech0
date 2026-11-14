@@ -96,6 +96,7 @@ def test_null() -> None:
         assert {k for k, v in items.items() if v["high_rating"]} == {"N2", "R45", "R47"}
         assert set(items["R45"]) == {
             "product_id", "name", "price", "category", "rating", "review_count", "delivery_days", "wrapping", "high_rating",
+            "arrives_on", "scene_count",
         }  # fmt: skip
 
 

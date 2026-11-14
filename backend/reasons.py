@@ -2,7 +2,7 @@
 from decimal import Decimal
 
 from config import SETTINGS
-from reason_templates import BY_ID
+from reason_templates import BY_ID, SCENE_HEADS
 
 
 # SP-03 D-03
@@ -16,28 +16,26 @@ def format_rating(rating: Decimal | float | str) -> str:
 
 # SP-03 D-03
 def build_reason(
-    sendoff_count: int,
+    scene_count: int,
     rating: Decimal | float | str | None,
     review_count: int | None,
     delivery_days: int | None,
     wrapping: bool | None,
+    scene: str = "送別",
 ) -> str:
-    """材料の値があるものだけを、送別回数→評価→配送の順につなぐ。値は作らない。"""
+    """材料の値があるものだけを、選んだシーンの回数→評価→配送の順につなぐ。値は作らない。
+    回数 0 は回数の文を出さず、評価の文から始める（SP-03 第2弾）。scene は文の頭（送別「職場の送別で」・お礼・誕生日）"""
     rating_text = ""
     high = False
     if rating is not None and review_count is not None and review_count >= 1:
         rating_text = format_rating(rating)
         high = Decimal(str(rating)) >= Decimal(str(SETTINGS.HIGH_RATING_MIN))
     has_rating = rating_text != ""
-    connect = sendoff_count >= 1 and has_rating and high
+    connect = scene_count >= 1 and has_rating and high
 
     parts: list[str] = []
-    if sendoff_count == 0:
-        parts.append(BY_ID["TPL-03"])
-    elif connect:
-        parts.append(BY_ID["TPL-01"])
-    else:
-        parts.append(BY_ID["TPL-02"])
+    if scene_count >= 1:
+        parts.append(BY_ID["TPL-01"] if connect else BY_ID["TPL-02"])
 
     if has_rating:
         if high:
@@ -50,4 +48,4 @@ def build_reason(
     elif wrapping is True:
         parts.append(BY_ID["TPL-09"])
 
-    return "".join(parts).format(n=sendoff_count, r=rating_text, v=review_count, d=delivery_days)
+    return "".join(parts).format(head=SCENE_HEADS[scene], n=scene_count, r=rating_text, v=review_count, d=delivery_days)

@@ -55,7 +55,8 @@ def test_empty(fd1_client: TestClient) -> None:
     """U-10・I-28: 該当 0 件は空の一覧でエラーにならない（誕生日・under3000、在庫のあるお礼の商品が無いシーン）"""
     for q in ("scene=誕生日&price_band=under3000", "scene=お礼", "scene=お礼&price_band=5000plus"):
         r = fd1_client.get(f"/api/candidates?{q}")
-        assert r.status_code == 200 and r.json() == {"items": [], "count": 0}
+        body = r.json()
+        assert r.status_code == 200 and (body["items"], body["count"]) == ([], 0) and "relax" in body  # 0 件には relax（D-44）
 
 
 def test_no_price_band_top10_of_eleven() -> None:
@@ -88,5 +89,5 @@ def test_sendoff_counts_cover_only_ranked_range() -> None:
         assert ids(client, "scene=送別") == [f"R{i:02d}" for i in range(15, 5, -1)]
     counted = [params for sql, params in db.log if "COUNT(*)" in sql]
     assert len(counted) == 1
-    assert counted[0][:2] == ("送別", "会社")  # 値は params で渡す
-    assert set(counted[0][2:]) == {f"R{i:02d}" for i in range(6, 16)}  # R01〜R05 は数えない
+    assert counted[0][:4] == ("送別", "送別", 1, "会社")  # 値は params で渡す（D-04。送別は会社宛てに限る）
+    assert set(counted[0][4:]) == {f"R{i:02d}" for i in range(6, 16)}  # R01〜R05 は数えない

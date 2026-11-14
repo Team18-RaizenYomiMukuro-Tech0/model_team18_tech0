@@ -22,6 +22,8 @@ LIST_FIELDS = {
     "delivery_days",
     "wrapping",
     "high_rating",
+    "arrives_on",
+    "scene_count",
 }
 
 
@@ -65,7 +67,7 @@ def test_found(client: TestClient) -> None:
     # 絞り込み API の 1 件分と同じ項目・同じ値
     listed = client.get("/api/products", params={"scene": "送別", "price_band": "3000to4999"}).json()["items"]
     same = next(i for i in listed if i["product_id"] == "P01")
-    assert {k: body[k] for k in LIST_FIELDS} == same
+    assert {k: body[k] for k in LIST_FIELDS - {"scene_count"}} == {k: v for k, v in same.items() if k != "scene_count"}  # scene を付けない詳細は scene_count が null
     # 欠けた項目は null（P03: 評価欠損。列が無い description・size も null）
     p03 = client.get("/api/products/P03").json()
     assert (p03["rating"], p03["high_rating"], p03["description"], p03["size"]) == (None, False, None, None)
