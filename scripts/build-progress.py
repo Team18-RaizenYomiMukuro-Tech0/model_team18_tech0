@@ -172,7 +172,9 @@ def build_model(issues, milestones, names, today, reviewers=None):
     stage_list = sorted(stages.values(), key=lambda s: (s["due"] is None, s["due"] or today, s["title"]))
     prev = None
     for s in stage_list:  # 期間: 前の段階の翌日〜期限
-        s["start"] = prev + dt.timedelta(days=1) if (prev and s["due"]) else None
+        # 「3.5 実装③」だけは前の段の期限日に始まる（ADR-007: 開発 1 日目＝11/15。実装計画も 11/15 から）
+        lag = 0 if re.match(r"^3\.5(?!\d)", s["title"]) else 1
+        s["start"] = prev + dt.timedelta(days=lag) if (prev and s["due"]) else None
         s["left"] = (s["due"] - today).days if s["due"] else None
         if s["due"]:
             prev = s["due"]

@@ -144,7 +144,7 @@ class T(unittest.TestCase):
         ph = {x["title"]: x for x in sm["phases"]}
         self.assertEqual([x["title"] for x in sm["phases"]], ["1 5文書", "3 実装②", "3.5 実装③", "4 評価・受入"])  # 期限順
         self.assertEqual((ph["3.5 実装③"]["closed"], ph["3.5 実装③"]["total"]), (1, 3))
-        self.assertEqual((ph["3.5 実装③"]["start"], ph["3.5 実装③"]["due"]), ("2026-11-16", "2026-11-18"))  # 前の段の翌日〜期限
+        self.assertEqual((ph["3.5 実装③"]["start"], ph["3.5 実装③"]["due"]), ("2026-11-15", "2026-11-18"))  # 3.5 は前の段の期限日（11/15）に始まる（ADR-007）
         self.assertEqual((ph["4 評価・受入"]["start"], ph["4 評価・受入"]["due"]), ("2026-11-19", "2026-11-21"))
         out = bp.render(m, "x")
         self.assertIn("全体 57% <span>（完了 4 / 7）</span>", out)

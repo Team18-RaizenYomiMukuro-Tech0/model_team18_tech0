@@ -5,7 +5,7 @@ var gz=document.createElement("div");gz.className="gz";gz.id="gz";gz.hidden=true
 gz.innerHTML='<p class="gzt"><span id="gz-all"></span><span class="gzp" id="gz-pw" hidden></span></p><div class="gb" id="gb" role="img"><div class="gf" id="gf"></div><div class="gc" id="gc"></div></div><div class="gn" id="gn" aria-hidden="true"></div><ol class="gl" id="gl" aria-label="4つのステージ"></ol><ul class="gk"><li><i class="k1"></i>閉じた Issue</li><li id="gk-c" hidden><i class="k2"></i>溜め中（PR は合流済み・Issue は未完了）</li></ul>';
 old0.parentNode.insertBefore(gz,old0.nextSibling);
 /* 段の表: [名前,元の名前,W,期間,マイルストーン題の頭（"3.5" は「3.5 実装③」）]。3.5 の名前は PM が決める（仮の表示は「3.5 実装③」）。JSON に 3.5 が無ければ 4 段 */
-var ST=[["霊気","5文書","W1","〜11/7","1"],["霊丸","実装①","W2","11/8〜11/11","2"],["霊光波動","実装②","W3","11/12〜11/15","3"],["3.5 実装③","","","11/16〜11/18","3.5"],["魔族覚醒","評価・受入","W4","11/19〜11/21","4"]];
+var ST=[["霊気","5文書","W1","〜11/7","1"],["霊丸","実装①","W2","11/8〜11/11","2"],["霊光波動","実装②","W3","11/12〜11/15","3"],["3.5 実装③","","","11/15〜11/18","3.5"],["魔族覚醒","評価・受入","W4","11/19〜11/21","4"]];
 function md(x){var m=/^\d{4}-(\d{2})-(\d{2})/.exec(x||"");return m?(+m[1])+"/"+(+m[2]):""}
 function mk(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function num(v){return typeof v==="number"&&isFinite(v)&&v>=0}
