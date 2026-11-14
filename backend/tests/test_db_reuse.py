@@ -57,10 +57,10 @@ def keep_db(conns: list[Conn]) -> tuple[Db, list[Conn]]:
 
 @pytest.fixture(autouse=True)
 def empty_slot() -> Any:
-    dbmod._idle = None
+    dbmod._idle = []
     yield
     dbmod._warm_thread = None
-    dbmod._idle = None
+    dbmod._idle = []
 
 
 def test_connection_is_reused_across_calls() -> None:
@@ -85,7 +85,7 @@ def test_write_commits_and_keeps_connection() -> None:
 def test_lost_connection_is_replaced_once() -> None:
     stale = Conn(fail=pymysql.err.OperationalError(2006, "MySQL server has gone away"))
     d, made = keep_db([])
-    dbmod._idle = stale  # 前の要求が残した、切れた接続
+    dbmod._idle = [stale]  # 前の要求が残した、切れた接続
     assert d.fetch_all("SELECT 1") == [{"ok": 1}]
     assert stale.closed and len(made) == 1 and made[0].executed == 1  # 作り直して 1 回やり直した
 
@@ -94,7 +94,7 @@ def test_other_errors_are_not_retried_and_connection_is_closed() -> None:
     d, made = keep_db([Conn(fail=pymysql.err.ProgrammingError(1064, "syntax"))])
     with pytest.raises(dbmod.DbError, match="ProgrammingError"):
         d.fetch_all("SELECT 1")
-    assert len(made) == 1 and made[0].closed and dbmod._idle is None  # 失敗した接続は残さない
+    assert len(made) == 1 and made[0].closed and dbmod._idle == []  # 失敗した接続は残さない
 
 
 def test_error_on_fresh_connection_is_not_retried() -> None:
@@ -104,14 +104,34 @@ def test_error_on_fresh_connection_is_not_retried() -> None:
     assert len(made) == 1 and made[0].closed  # 作ったばかりの接続の失敗は、やり直さない
 
 
-def test_only_one_idle_connection_is_kept() -> None:
+def test_idle_connections_are_kept_up_to_the_limit() -> None:
+    """D-45: 残す接続は 3〜4 本（DB_IDLE_MAX）。超えて戻ってきた接続は閉じる。NF-54 の接続が足りなくならない前提"""
+    from config import SETTINGS
+
+    assert 3 <= SETTINGS.DB_IDLE_MAX <= 4
     d, made = keep_db([])
-    other = Conn()
-    dbmod._idle = other
-    # 残してある接続を使う → 戻す。同時に別の接続が戻ってきたら余った方は閉じる
+    kept = [Conn() for _ in range(SETTINGS.DB_IDLE_MAX)]
+    for c in kept:
+        dbmod._give_back(c)
     dbmod._give_back(extra := Conn())
-    assert extra.closed and dbmod._idle is other
-    assert d.fetch_all("SELECT 1") and made == [] and other.executed == 1
+    assert extra.closed and all(not c.closed for c in kept) and len(dbmod._idle) == SETTINGS.DB_IDLE_MAX
+    assert d.fetch_all("SELECT 1") and made == [] and sum(c.executed for c in kept) == 1  # 残してある接続を使う
+
+
+def test_three_parallel_requests_reuse_three_connections() -> None:
+    """詳細の画面は 3 つの API を同時に呼ぶ。3 本残っていれば、新しく接続しない"""
+    import threading
+
+    d, made = keep_db([])
+    for _ in range(3):
+        dbmod._give_back(Conn())
+    out: list[Any] = []
+    ts = [threading.Thread(target=lambda: out.append(d.fetch_all("SELECT 1"))) for _ in range(3)]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join(5)
+    assert len(out) == 3 and made == [] and len(dbmod._idle) == 3
 
 
 def test_database_connection_is_autocommit(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -135,7 +155,7 @@ def test_warm_up_puts_one_connection_ready() -> None:
         return made[-1]
 
     dbmod.warm_up(connect).join(5)
-    assert len(made) == 1 and dbmod._idle is made[0] and not made[0].closed
+    assert len(made) == 1 and dbmod._idle == [made[0]] and not made[0].closed
     d, more = keep_db([])
     assert d.fetch_all("SELECT 1") == [{"ok": 1}]
     assert more == [] and made[0].executed == 1  # 要求は新しい接続を作っていない
@@ -167,7 +187,7 @@ def test_warm_up_failure_does_not_stop_startup() -> None:
         raise OSError("接続できない")
 
     dbmod.warm_up(broken).join(5)  # 例外は外に出ない
-    assert dbmod._idle is None
+    assert dbmod._idle == []
     d, made = keep_db([])
     assert d.fetch_all("SELECT 1") == [{"ok": 1}] and len(made) == 1  # 最初の要求で作る今の動き
 

@@ -109,6 +109,44 @@ def test_write_only_share_links_insert() -> None:
     assert len(log) == 1  # 許さない文は 1 つも DB に届かない
 
 
+def test_write_allow_list_wave2() -> None:
+    """NF-52（D-45）: 書き込みは share_links の INSERT・share_likes の INSERT…ON DUPLICATE KEY UPDATE と UPDATE・usage_events の INSERT IGNORE だけ"""
+    ok = [
+        "INSERT INTO share_likes (share_id, product_id, like_count, updated_at) VALUES (%s, %s, 1, %s) "
+        "ON DUPLICATE KEY UPDATE like_count = IF(like_count < %s, like_count + 1, like_count), updated_at = %s",
+        "UPDATE share_likes SET like_count = GREATEST(like_count - 1, 0), updated_at = %s WHERE share_id = %s AND product_id = %s",
+        "INSERT IGNORE INTO usage_events (visit_id, visitor_id, step, occurred_at, is_test) VALUES (%s, %s, %s, %s, %s)",
+    ]
+    log: list[tuple[str, tuple[Any, ...]]] = []
+    for s in ok:
+        check_sql(s, write=True)
+        conn = FakeConn(log)
+        Db(lambda c=conn: c).write(s, ("a",))  # type: ignore[misc]
+        assert conn.committed and conn.closed
+    assert [x[0] for x in log] == ok
+    bad = [
+        "DELETE FROM share_likes WHERE share_id = %s", "DELETE FROM usage_events WHERE is_test = 1",
+        "UPDATE share_likes SET like_count = 0",  # WHERE なし
+        "UPDATE usage_events SET step = 1 WHERE event_id = %s", "INSERT INTO usage_events (visit_id) VALUES (%s)",  # IGNORE なし
+        "INSERT IGNORE INTO share_likes (share_id) VALUES (%s)", "INSERT INTO share_likes (share_id) VALUES (%s)",  # ON DUPLICATE なし
+        "REPLACE INTO share_likes (share_id) VALUES (%s)", "TRUNCATE TABLE usage_events", "DROP TABLE share_likes",
+        "ALTER TABLE usage_events ADD c INT", "CREATE TABLE share_likes (a INT)", "GRANT ALL ON *.* TO x",
+        "INSERT IGNORE INTO products (a) VALUES (%s)", "INSERT IGNORE INTO usage_events (a) SELECT a FROM products",
+        "INSERT INTO share_likes (a) VALUES (%s) ON DUPLICATE KEY UPDATE a = (SELECT 1 FROM products)",
+        "UPDATE share_likes s JOIN products p ON p.product_id = s.product_id SET s.like_count = 1 WHERE 1 = %s",
+        "INSERT IGNORE INTO usage_events (a) VALUES ('直接の値')", "INSERT IGNORE INTO usage_events (a) VALUES (%s); DROP TABLE x",
+        "INSERT IGNORE INTO giftia_t502.usage_events (a) VALUES (%s)", "INSERT INTO users (a) VALUES (%s)",
+    ]
+    for s in bad:
+        with pytest.raises(DbNotAllowed):
+            check_sql(s, write=True)
+        with pytest.raises(DbNotAllowed):
+            Db(lambda: FakeConn(log)).write(s, ())
+        with pytest.raises(DbNotAllowed):
+            Db(lambda: FakeConn(log)).fetch_all(s)  # 読み取りの口からも書けない
+    assert len(log) == 3  # 許さない文は 1 つも DB に届かない
+
+
 def test_read_scope() -> None:
     for s in ["SELECT 1; SELECT 2", "SELECT * FROM users", "SELECT * FROM giftia_t502.products", "USE giftia_t502",
               "SELECT 1 -- x", "SELECT 1 /* x */", "DELETE FROM products", "UPDATE products SET a = 1"]:
