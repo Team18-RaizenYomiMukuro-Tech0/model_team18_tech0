@@ -400,6 +400,10 @@ class T(unittest.TestCase):
             self.assertRegex(r, r'<td data-label="タイトル"><a href="https://github.com/[^"]+" target="_blank" rel="noopener">[^<]+<span class="vh">（別タブで開く）</span></a></td>')
             self.assertNotIn("<td data-label=\"担当者\"><a", r)
 
+    def test_overview_reads_same_code_forms_as_dashboard(self):
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        self.assertIn(r"[A-Z]\d+(?:-\d+)?[a-z]?", ov)  # W4-1・W4-2b・T3b も札に出す（build-progress.py の AREA_PAT と同じ形）
+
     def test_overview_quick_row_title_is_the_only_link(self):
         ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
         row = ov[ov.index("function row(it)"):ov.index("function link()")]

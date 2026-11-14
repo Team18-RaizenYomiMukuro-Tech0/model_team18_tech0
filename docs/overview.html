@@ -164,7 +164,7 @@ function mk(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null
 function md(x){var m=/^\d{4}-(\d{2})-(\d{2})/.exec(x||"");return m?(+m[1])+"/"+(+m[2]):""}
 function names(a){return Array.isArray(a)?a.filter(function(v){return typeof v==="string"&&v}).join("・"):""}
 function row(it){var li=mk("li",it.closed?"done":"");
-if(/^[PBFT]$/.test(it.area)&&typeof it.code==="string"&&/^(?:[PBFT]\d+[a-z]?|[A-Z]\d+)$/.test(it.code))li.appendChild(mk("span","ak ak-"+it.area,it.code));
+if(/^[PBFT]$/.test(it.area)&&typeof it.code==="string"&&/^(?:[PBFT]\d+[a-z]?|[A-Z]\d+(?:-\d+)?[a-z]?)$/.test(it.code))li.appendChild(mk("span","ak ak-"+it.area,it.code));
 li.appendChild(mk("b",null,"#"+it.n));
 var ti=String(it.title||"");
 if(typeof it.url==="string"&&it.url.indexOf("https://github.com/")===0){var a=mk("a","qt-t",ti);a.href=it.url;a.target="_blank";a.rel="noopener";a.appendChild(mk("span","xl",X));a.lastChild.setAttribute("aria-hidden","true");a.appendChild(mk("span","vh","（別タブで開く）"));li.appendChild(a)}
