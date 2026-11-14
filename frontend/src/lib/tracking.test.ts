@@ -116,6 +116,7 @@ test("track: 保存が使えれば本文を作って送る。使えなければ�
   const local = mem();
   const session = mem();
   session.data.set(TEST_KEY_STORE, "key1");
+  track(1, { entry: "top" }, { local, session, now: T0 - 1, random: rand, send: () => undefined }); // 訪問を先に作っておく（新しい訪問の ① を足させない）
   assert.equal(track(2, { scene: "お礼" }, { local, session, now: T0, random: rand, send: (b) => sent.push(b) }), true);
   assert.equal(sent[0]!.step, 2);
   assert.equal(sent[0]!.scene, "お礼");

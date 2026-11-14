@@ -1,4 +1,5 @@
 import type { PriceBand } from "./priceBand.ts";
+import { track, zeroCondOf, type Tracker } from "./tracking.ts";
 
 // D-08 D-01 E-01〜E-03 E-12 #30 J #29-14: 候補の取得（GET /api/candidates）と、10秒の打ち切り。
 // 10秒は画面の定数。テストの設定で変えられない（設計.md）。
@@ -63,10 +64,13 @@ export class SearchRunner {
 
   private readonly onChange: (s: SearchState) => void;
   private readonly fetchImpl: FetchLike;
+  private readonly tracker: Tracker;
 
-  constructor(onChange: (s: SearchState) => void, fetchImpl: FetchLike = (url, init) => fetch(url, init)) {
+  // tracker は計測（SP-34）の送り先。テストでは差し替える
+  constructor(onChange: (s: SearchState) => void, fetchImpl: FetchLike = (url, init) => fetch(url, init), tracker: Tracker = track) {
     this.onChange = onChange;
     this.fetchImpl = fetchImpl;
+    this.tracker = tracker;
   }
 
   run(params: SearchParams): void {
@@ -88,6 +92,12 @@ export class SearchRunner {
         if (mine !== this.token) return;
         clearTimeout(timer);
         const items = Array.isArray(body.items) ? body.items : [];
+        // ② 結果が出たとき（0件も含む）。0件のときは ⑦ に条件を持たせて別に送る（SP-34・D-40）
+        this.tracker(2, { scene: params.scene });
+        if (!items.length) {
+          const zc = zeroCondOf({ scene: true, priceBand: !!params.priceBand, categories: (params.categories ?? []).length > 0 });
+          if (zc) this.tracker(7, { zero_cond: zc });
+        }
         this.onChange(items.length ? { status: "results", items, count: body.count ?? items.length } : { status: "empty", relax: body.relax ?? null });
       })
       .catch(() => {
@@ -147,10 +157,12 @@ export class ShareLinkRunner {
 
   private readonly onChange: (s: ShareState) => void;
   private readonly fetchImpl: PostFetch;
+  private readonly tracker: Tracker;
 
-  constructor(onChange: (s: ShareState) => void, fetchImpl: PostFetch = (url, init) => fetch(url, init)) {
+  constructor(onChange: (s: ShareState) => void, fetchImpl: PostFetch = (url, init) => fetch(url, init), tracker: Tracker = track) {
     this.onChange = onChange;
     this.fetchImpl = fetchImpl;
+    this.tracker = tracker;
   }
 
   create(productIds: readonly string[]): void {
@@ -183,6 +195,7 @@ export class ShareLinkRunner {
         if (!res.ok) throw new Error("bad status");
         const body = await res.json();
         if (!isShareLink(body)) throw new Error("bad body");
+        this.tracker(5); // ⑤ 共有リンクの作成に成功したとき（API が成功を返したあと。SP-34・D-40）
         finish({ status: "success", link: body });
       })
       .catch(() => finish({ status: "error", link: this.link }));

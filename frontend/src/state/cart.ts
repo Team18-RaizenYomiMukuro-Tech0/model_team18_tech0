@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { track } from "../lib/tracking.ts";
 import { cartNotice, type NoticeController } from "./cartNotice.ts";
 
 // D-31 D-10 SP-14 F-17 U-44 #50-5 #51-3 #53-4 #54-9 #56-3: カート。ブラウザ内の保存（localStorage、キー giftia:cart）だけを使う。
@@ -92,7 +93,8 @@ export type CartStore = {
 
 // storage は関数で渡す（保存が使えないとき null を返す）。読み出しは最初に使うときの1回
 // notice を渡すと、追加のたびに「カートに入れました」を出す（SP-14 ③）
-export function createCartStore(getStorage: () => StoreLike | null, notice?: NoticeController): CartStore {
+// onAdd は追加のたびに呼ぶ（④ カートに入れたとき。どこから入れても。計測 SP-34）
+export function createCartStore(getStorage: () => StoreLike | null, notice?: NoticeController, onAdd?: () => void): CartStore {
   let cart: Cart | null = null;
   let corruptPending = false;
   const listeners = new Set<() => void>();
@@ -121,6 +123,7 @@ export function createCartStore(getStorage: () => StoreLike | null, notice?: Not
     add: (id) => {
       set({ ...current(), [id]: clamp((current()[id] ?? 0) + 1) }); // 同じ商品は数量+1（2件にならない）。99 を超えない
       notice?.show("added");
+      onAdd?.();
     },
     takeCorruptNotice: () => {
       current();
@@ -147,7 +150,7 @@ function browserStorage(): StoreLike | null {
   }
 }
 
-export const cartStore = createCartStore(browserStorage, cartNotice);
+export const cartStore = createCartStore(browserStorage, cartNotice, () => track(4));
 
 const EMPTY: Cart = {};
 

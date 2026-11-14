@@ -17,7 +17,7 @@ export type EventEntry = "top" | "search" | "detail" | "share" | "cart" | "favor
 export type ZeroCond = "price" | "category" | "both" | "scene_only";
 export type EventExtra = { scene?: Scene | null; has_voice?: boolean; entry?: EventEntry; zero_cond?: ZeroCond };
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
-export type Ids = { visitId: string; visitorId: string };
+export type Ids = { visitId: string; visitorId: string; fresh?: boolean }; // fresh: この呼び出しで新しい訪問を作った
 
 export const ID_RE = /^[A-Za-z0-9_-]{22}$/; // 16バイトの乱数を base64url（= なし）にした22文字
 
@@ -65,9 +65,10 @@ export function touchVisit(storage: StorageLike | null, now: number, random: (n:
       storage.setItem(VISITOR_KEY, visitorId);
     }
     const last = parseVisit(storage.getItem(VISIT_KEY));
-    const visitId = last && now - last.last_at < VISIT_GAP_MS ? last.visit_id : randomId(random);
+    const fresh = !(last && now - last.last_at < VISIT_GAP_MS);
+    const visitId = fresh ? randomId(random) : last!.visit_id;
     storage.setItem(VISIT_KEY, JSON.stringify({ visit_id: visitId, last_at: now }));
-    return { visitId, visitorId };
+    return { visitId, visitorId, fresh };
   } catch {
     return null;
   }
@@ -125,12 +126,42 @@ export function sendEvent(body: Record<string, unknown>, fetchImpl: PostLike = (
   }
 }
 
+// 画面の中の呼び出し点が使う型（テストでは差し替える）
+export type Tracker = (step: EventStep, extra?: EventExtra) => void;
+
+// ① 訪問の最初に開いたページの種類（D-40 の値の対応。R7）。cart・favorites は URL を持たないのでここでは返さない
+export function entryOf(pathname: string, search: string): EventEntry {
+  if (pathname === "/") return "top";
+  if (pathname === "/search") return /^[A-Z][0-9]{1,9}$/.test(new URLSearchParams(search).get("product") ?? "") ? "detail" : "search";
+  if (pathname.startsWith("/s/")) return "share";
+  return "other";
+}
+
+// ⑦ 0 件になったときの条件（D-40）。価格帯だけ→price、カテゴリーだけ→category、両方→both、どちらも無くシーンだけ→scene_only。
+// 条件が何も無い検索は全商品が出て 0 件にならないので、その組は null（記録しない）
+export function zeroCondOf(c: { scene: boolean; priceBand: boolean; categories: boolean }): ZeroCond | null {
+  if (c.priceBand && c.categories) return "both";
+  if (c.priceBand) return "price";
+  if (c.categories) return "category";
+  return c.scene ? "scene_only" : null;
+}
+
+// ① サイトに来る: 最初に開いたとき 1 回。URL の giftia_test を取り込んで URL から取り除き（K-5）、入口の種類つきで段 1 を送る。
+// 取り除いたあとの search を返す（画面は history.replaceState で URL を直す。目印が無ければ null）
+export function trackFirstLoad(loc: { pathname: string; search: string }, deps: TrackDeps = {}): { cleaned: string | null } {
+  const session = deps.session === undefined ? browserStorage("sessionStorage") : deps.session;
+  const { cleaned } = captureTestKey(loc.search, session);
+  track(1, { entry: entryOf(loc.pathname, cleaned ?? loc.search) }, { ...deps, session });
+  return { cleaned };
+}
+
 export type TrackDeps = {
   local?: StorageLike | null;
   session?: StorageLike | null;
   now?: number;
   random?: (n: number) => Uint8Array;
   send?: (body: Record<string, unknown>) => void;
+  loc?: { pathname: string; search: string }; // 新しい訪問の ① の入口に使う、そのとき開いているページ（既定は window.location）
 };
 
 // 画面から呼ぶ入口: 訪問の印を決め、本文を作って送る。保存が使えないときは送らず false
@@ -139,6 +170,14 @@ export function track(step: EventStep, extra: EventExtra = {}, deps: TrackDeps =
   const session = deps.session === undefined ? browserStorage("sessionStorage") : deps.session;
   const ids = touchVisit(local, deps.now ?? Date.now(), deps.random);
   if (!ids) return false;
-  (deps.send ?? sendEvent)(buildEventBody(ids, step, extra, readTestKey(session)));
+  const send = deps.send ?? sendEvent;
+  const testKey = readTestKey(session);
+  // 30 分あいた後に開き直さず操作を続けたときも、新しい訪問を作ったらその訪問の ① を先に送る（SP-34・D-47。PM 11/15 朝「段 1 を送る」）。
+  // entry は、そのとき開いているページの種類。段 1 の呼び出し自身のときは足さない（二重にしない）
+  if (ids.fresh && step !== 1) {
+    const loc = deps.loc ?? (typeof window !== "undefined" ? window.location : null);
+    send(buildEventBody(ids, 1, loc ? { entry: entryOf(loc.pathname, loc.search) } : {}, testKey));
+  }
+  send(buildEventBody(ids, step, extra, testKey));
   return true;
 }
