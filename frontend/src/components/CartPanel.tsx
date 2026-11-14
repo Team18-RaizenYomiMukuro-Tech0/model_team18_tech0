@@ -191,7 +191,12 @@ function CartRow({ id, qty, info, onQty, onRemove, onRetry, onOpen }: Readonly<{
   };
   return (
     <li className={styles.row}>
-      {rowHasProduct(info) && img && <Image className={styles.pic} src={img} alt="" width={48} height={48} unoptimized />}
+      {rowHasProduct(info) && img && (
+        <span className={styles.picBox}>
+          <Image className={styles.pic} src={img} alt="" width={48} height={48} unoptimized />
+          <span className={styles.imgtag}>イメージ</span>
+        </span>
+      )}
       {rowHasProduct(info) ? (
         <Link className={`${fav.nm} ${styles.nmLink}`} href={buildSearchHref({ productId: id })} scroll={false} onClick={onOpen}>
           {name}
