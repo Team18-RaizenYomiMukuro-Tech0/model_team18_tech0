@@ -16,7 +16,7 @@ from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db
 from decision import arrives_on, scene_count_value, scene_counts, today_jst
-from ranking import order_by_score
+from ranking import SORTS, order_by_sort
 
 router = APIRouter()
 
@@ -54,6 +54,39 @@ SELECT_PRODUCTS = (
     "AND p.price >= %s AND p.price <= %s "
     "AND (%s = 0 OR p.category IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s))"
 )
+
+
+# 0 件の助け舟（D-44）: シーン（あれば）と在庫 1 以上に合う商品のうち、価格帯をはずしたときの数（no_price）と、
+# カテゴリーをはずしたときの数（no_category）を 1 本で数える。選んでいない条件は「いつも合う」にして外す（SQL 文は固定）。
+SELECT_RELAX = (
+    "SELECT SUM(CASE WHEN (%s = 0 OR p.category IN (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)) THEN 1 ELSE 0 END) AS no_price, "
+    "SUM(CASE WHEN (p.price >= %s AND p.price <= %s) THEN 1 ELSE 0 END) AS no_category "
+    "FROM products p "
+    "WHERE p.stock >= 1 "
+    "AND (%s = 0 OR p.product_id IN (SELECT s.product_id FROM product_scenes s WHERE s.scene_tag = %s))"
+)
+
+
+def relax_counts(
+    db: Db, scene: str | None, price_range: tuple[int, int] | None, categories: list[str]
+) -> dict[str, int | None]:
+    """0 件のときの助け舟（D-44）。{"price_band": N, "category": N}。条件を付けていなければ null、合う商品が無ければ 0。
+    シーンははずさない。R-01 でも 10 件で切らない数"""
+    slots = (
+        categories + [categories[0]] * (_CATEGORY_SLOTS - len(categories))
+        if categories
+        else [""] * _CATEGORY_SLOTS
+    )
+    low, high = price_range if price_range is not None else NO_PRICE_LIMIT
+    rows = db.fetch_all(
+        SELECT_RELAX,
+        (1 if categories else 0, *slots, low, high, 1 if scene is not None else 0, scene or ""),
+    )
+    row = rows[0] if rows else {}
+    return {
+        "price_band": int(row.get("no_price") or 0) if price_range is not None else None,
+        "category": int(row.get("no_category") or 0) if categories else None,
+    }
 
 
 def _error(code: str, message: str) -> JSONResponse:
@@ -131,6 +164,12 @@ def list_products(
             return _error("invalid_page", "page は 1 以上の整数です")
         page = int(raw)
 
+    sort = q.get("sort", "")  # 空（sort=）・無しはおすすめ順（D-43）。4 つ以外は 422
+    if sort == "":
+        sort = "recommend"
+    elif sort not in SORTS:
+        return _error("invalid_sort", "sort は recommend・price_asc・rating_desc・delivery_asc のどれかです")
+
     slots = (
         categories + [categories[0]] * (_CATEGORY_SLOTS - len(categories))
         if categories
@@ -147,11 +186,12 @@ def list_products(
     rows = db.fetch_all(SELECT_PRODUCTS, params)
 
     by_id = {str(r["product_id"]): r for r in rows}
-    ordered = order_by_score(
+    ordered = order_by_sort(
         [
-            (str(r["product_id"]), _to_decimal(r["rating"]), r["review_count"])
+            (str(r["product_id"]), r["price"], _to_decimal(r["rating"]), r["review_count"], r["delivery_days"])
             for r in rows
-        ]
+        ],
+        sort,
     )
 
     total = len(ordered)
@@ -162,10 +202,13 @@ def list_products(
     today = today_jst(clock.now())
     counts = scene_counts(db, scene, chosen) if scene is not None else {}  # シーンがあるとき 12 件分を 1 本で数える（D-34）
     items = [_item(by_id[pid], today, scene, counts.get(pid, 0)) for pid in chosen]
-    return {
+    body: dict[str, Any] = {
         "items": items,
         "count": len(items),
         "total": total,
         "page": page,
         "page_size": PAGE_SIZE,
     }
+    if total == 0:  # 0 件のときだけ助け舟の件数を足す（D-44。+1 往復）
+        body["relax"] = relax_counts(db, scene, price_range if band != "" else None, categories)
+    return body

@@ -55,7 +55,8 @@ def test_empty(fd1_client: TestClient) -> None:
     """U-10・I-28: 該当 0 件は空の一覧でエラーにならない（誕生日・under3000、在庫のあるお礼の商品が無いシーン）"""
     for q in ("scene=誕生日&price_band=under3000", "scene=お礼", "scene=お礼&price_band=5000plus"):
         r = fd1_client.get(f"/api/candidates?{q}")
-        assert r.status_code == 200 and r.json() == {"items": [], "count": 0}
+        body = r.json()
+        assert r.status_code == 200 and (body["items"], body["count"]) == ([], 0) and "relax" in body  # 0 件には relax（D-44）
 
 
 def test_no_price_band_top10_of_eleven() -> None:

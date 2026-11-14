@@ -11,7 +11,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
-from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES
+from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES, relax_counts
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
@@ -135,5 +135,8 @@ def list_candidates(
                 ),
             }
         )
+    body: dict[str, Any] = {"items": items, "count": len(items)}
+    if not items:  # 0 件のときだけ助け舟の件数（D-44。同じ関数。シーンははずさない。+1 往復）
+        body["relax"] = relax_counts(db, scene, price_range if band != "" else None, categories)
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。#256）
-    return {"items": items, "count": len(items)}
+    return body
