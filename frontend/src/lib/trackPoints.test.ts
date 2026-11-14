@@ -2,7 +2,7 @@ import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import { SearchRunner, ShareLinkRunner } from "./api.ts";
 import { ProductRunner } from "./searchRequest.ts";
-import { entryOf, trackFirstLoad, zeroCondOf, TEST_KEY_STORE, type EventExtra, type EventStep, type StorageLike } from "./tracking.ts";
+import { entryOf, track, trackFirstLoad, VISIT_GAP_MS, zeroCondOf, TEST_KEY_STORE, type EventExtra, type EventStep, type StorageLike } from "./tracking.ts";
 import { createCartStore } from "../state/cart.ts";
 
 // S-101〜S-104・S-116（画面側の呼び出し点 D7）: 送る関数を偽物にして、①②④⑤⑦ が決まった時にだけ・決まった値で呼ばれることを確かめる
@@ -153,4 +153,42 @@ test("④ カートに入れたとき（どこから入れても）: add のた�
   store.setQty("G0001", 5);
   store.remove("G0002");
   assert.equal(n, 3);
+});
+
+// SP-34・D-47（PM 11/15 朝「段 1 を送る」）: 30 分あいた後に開き直さず操作を続けたとき、新しい訪問の ① を先に送る
+let seed = 0;
+const rnd = (n: number) => { seed++; return new Uint8Array(n).map((_, i) => (i * 7 + seed * 31) & 255); }; // 呼ぶたびに違う値
+test("30分あいたあと: 新しい visit_id で ①（入口は今のページ）を先に送り、続けて操作の記録を送る", () => {
+  const local = mem();
+  const sent: Record<string, unknown>[] = [];
+  const send = (b: Record<string, unknown>) => void sent.push(b);
+  const T0 = 1_000_000;
+  track(1, { entry: "top" }, { local, session: null, now: T0, random: rnd, send });
+  track(2, { scene: "お礼" }, { local, session: null, now: T0 + 60_000, random: rnd, send }); // 1 分後 → 同じ訪問。① は足さない
+  assert.deepEqual(sent.map((b) => b.step), [1, 2]);
+  const first = sent[0].visit_id;
+  const loc = { pathname: "/search", search: "?scene=お礼" };
+  track(4, {}, { local, session: null, now: T0 + 60_000 + VISIT_GAP_MS, random: rnd, send, loc }); // ちょうど 30 分 → 新しい訪問
+  assert.deepEqual(sent.slice(2).map((b) => b.step), [1, 4]);
+  assert.equal(sent[2].entry, "search");
+  assert.equal(sent[2].visit_id, sent[3].visit_id);
+  assert.notEqual(sent[2].visit_id, first);
+});
+
+test("30分あいたあと、操作が ① のときは二重に送らない。保存が使えなければ何も送らない", () => {
+  const sent: Record<string, unknown>[] = [];
+  const send = (b: Record<string, unknown>) => void sent.push(b);
+  const local = mem();
+  track(1, { entry: "top" }, { local, session: null, now: 5, random: rnd, send });
+  assert.deepEqual(sent.map((b) => b.step), [1]);
+  assert.equal(track(4, {}, { local: null, session: null, now: 9, random: rnd, send }), false);
+  assert.equal(sent.length, 1);
+});
+
+test("test_key は新しい訪問の ① にも付く", () => {
+  const session = mem();
+  session.setItem(TEST_KEY_STORE, "dummy-key");
+  const sent: Record<string, unknown>[] = [];
+  track(4, {}, { local: mem(), session, now: 1, random: rnd, send: (b) => void sent.push(b), loc: { pathname: "/", search: "" } });
+  assert.deepEqual(sent.map((b) => [b.step, b.entry, b.test_key]), [[1, "top", "dummy-key"], [4, undefined, "dummy-key"]]);
 });
