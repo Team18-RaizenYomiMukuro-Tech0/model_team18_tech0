@@ -1,11 +1,13 @@
 /* R8 検索結果の上段（条件）。globals.css は触らない */
 .conds { min-width: 0; display: grid; gap: 10px; max-width: 1200px; margin: 0 auto 16px; }
-.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.sep { width: 12px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.fgrp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.head { font-size: 14px; }
+.hint { font-weight: 400; }
 .btn, .clear { min-width: 44px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .btn:hover, .clear:hover:not(:disabled) { background: var(--peach); }
 .btn[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
 .clear:disabled { color: #5c514d; cursor: not-allowed; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .note { margin: 0; font-size: 14px; color: #5c514d; }
-.group { display: contents; }
+.group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

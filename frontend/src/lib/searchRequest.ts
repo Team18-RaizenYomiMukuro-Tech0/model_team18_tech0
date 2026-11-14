@@ -7,6 +7,8 @@ import type { SearchQuery } from "./searchQuery.ts";
 // 条件ボタンは押した時点で結果を出し直し、同じボタンの再押下で解除する。どの操作もページは1に戻す。
 
 export const AUTO_SEARCH_NOTE = "条件を選ぶと自動で検索されます";
+// 条件の見出し（SP-10・D-27、PM 判断 2026-11-14 #255）。1行目: シーン・価格帯（同じ行）、2行目: カテゴリー（複数選べます）
+export const CONDITION_HEADINGS = { scene: "シーン", price: "価格帯（税込）", category: "カテゴリー", categoryHint: "（複数選べます）" } as const;
 
 export const toggleScene = (q: SearchQuery, s: Scene): SearchQuery => ({ ...q, scene: q.scene === s ? null : s, page: 1 });
 export const togglePrice = (q: SearchQuery, b: PriceBand): SearchQuery => ({ ...q, priceBand: q.priceBand === b ? null : b, page: 1 });
