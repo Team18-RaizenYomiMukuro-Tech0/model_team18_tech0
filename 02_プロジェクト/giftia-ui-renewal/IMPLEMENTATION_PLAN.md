@@ -125,6 +125,78 @@ O1・O2 が Hiroki0023 に決まって（#67-4）偏った（19 / 21 / 27）た�
 | 基盤側のログ（未決 M）: Azure のログは追加でオンにしない。アプリ自身のログに IP を残さない。Functions 側のログ（IP が残るか）は講師の管理範囲（2026-11-11）。`--no-access-log` はローカル用 | 任意 | 相談4 | 済（同上） | 承認済み |
 | 費用 500 円以内の確かめ方（H-16）: 週1回の確認と予算アラートは行わない（リソースの費用・設定は講師の管理範囲。O2 #133 は不要） | 任意 | 相談7 | 済（同上） | 承認済み |
 
+## 第2弾（開発 11/15〜11/18、評価 11/19〜11/21）
+
+### 対象版と実装開始承認（第2弾）
+
+- 5文書のコミットID: `8243007`（ブランチ `docs/wave2-batch1`、PR #276。要求・要件・仕様・設計・ADR・テスト設計。第2弾の「案」「未決」「確認待ち」は 0）
+- 対象版: 要求・要件・仕様・設計・テスト設計 @ `8243007`
+- 評価基準の版: テスト設計.md @ `8243007`（第1弾＋第2弾。G6）
+- 実装計画の版: この節を足したコミット（PR #276）
+- 人の承認者: PM（Hiroki0023）
+- 承認日時:
+- 承認内容（PM が「OK、進めて」と書く欄）:
+
+Issue はまだ作らない。**Issue の作成と着手は「OK、進めて」の記録の後**。5 文書の中身を直すと対象版が変わるので、直すときは先に PM に知らせて対象版を書き直す。
+
+### 日程（ADR-007）
+
+| 段階 | 期間 | 終わりの印 |
+| --- | --- | --- |
+| 開発 1 日目 | 11/15 | 土台（書き込みの許可・見た目と画像・決め手の項目）。PM が 2 つの表を作る |
+| 開発 2 日目 | 11/16 | 新しい API（並び替え・助け舟・声・似た商品・いいね・計測）と、スマホの並べ方・決め手の画面 |
+| 開発 3 日目 | 11/17 | PC の並べ方・残りの画面（最近見た・比べる・届く日・共有ページといいね・計測を送る） |
+| 開発 4 日目 | 11/18 | 結合・システム・速さ・回帰のテスト、本番へ出す、W4 の Issue と手順書の直し。**18 日の終わりに初回提出版を固める** |
+| 評価・受入 | 11/19〜11/21 | 評価のお題「3 人で送別、4,500 円」（S-115・A-28）と計測の記録で評価 |
+| 発表 | 11/24 | 発表の後に計測といいねの記録を消す（D-40 の手順 5b） |
+
+予備日は無い（ADR-007）。落とす順番は作らない（ADR-010。PM 11/15「やり切るので、落とさないです」）。
+
+### 割り振り（第2弾）
+
+- 1 Issue = 1 人。AI を動かす作業（実装・テストの実行）は PM（Hiroki0023）が担当（assignee）し、人は確認役（Reviewer）。確認役は re-ji-tech0 と matsuki24335 に交互に振る（下の表の Reviewer は案。Issue を作るときに PM が決める）。
+- 「先に終わっている必要がある単位」は、その単位の結合テストが通るのに要るもの。コードを書き始めるだけなら並行してよい。
+
+### 実装の単位（第2弾）
+
+| # | 単位 | 区分 | 担当 | Reviewer（案） | 日 | 先に要る単位 | 要件 | 仕様 | 設計 | テスト | 触るファイル | 完了の確かめ方 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| W2-P | 第2弾の PM（承認の記録、Issue の作成と割り振り、進捗、PM が手でやること） | PM | Hiroki0023 | re-ji-tech0 | 11/15〜18 | — | — | — | — | — | この計画、Issue | 「OK、進めて」の記録、各 Issue の状態、下の「PM が手でやること」が済んだ記録 |
+| W2-B1 | 書き込みの許可と接続の本数（`share_likes` への INSERT … ON DUPLICATE KEY UPDATE・UPDATE、`usage_events` への INSERT IGNORE を足す。DELETE と別の表は止めたまま。残す接続 3〜4 本） | BE | Hiroki0023 | matsuki24335 | 11/15 | — | N-04 | SP-28, SP-34 | D-45（D-12・D-13 の変更） | I-52, I-56, NF-52, NF-53 | `backend/db.py`、`backend/config.py`、`backend/tests/` | pytest が通り、許可の外の SQL が止まる（NF-52・NF-53） |
+| W2-B2 | 決め手の項目と選んだシーンの回数（`arrives_on`・`scene_count`、D-29 に任意の `scene`、候補の並びもシーンの回数で） | BE | Hiroki0023 | re-ji-tech0 | 11/15 | — | F-20, F-21, F-23, F-44 | SP-16, SP-02, SP-03, SP-26 | D-34, D-01〜D-04, D-28, D-29 | U-59, U-60, U-61, U-67〜U-70, U-73, I-41〜I-43, I-45〜I-47, I-59 | `backend/api/candidates.py`、`backend/api/products.py`、`backend/api/product_detail.py`、`backend/ranking.py`、`backend/reasons.py`、`backend/tests/` | pytest が通る。`arrives_on` は日本時間で、`scene` が無くても返る |
+| W2-B3 | 並び替え（`sort`）と 0 件の助け舟（`relax`） | BE | Hiroki0023 | matsuki24335 | 11/16 | W2-B2 | F-39, F-42 | SP-21, SP-24 | D-43, D-44（D-28） | U-71, U-77, I-48〜I-50 | `backend/api/products.py`、`backend/tests/` | pytest が通る。同じ値の並びが D-43 のとおり |
+| W2-B4 | 贈った人の声 `GET /api/products/{id}/voices` と似た商品 `GET /api/products/{id}/similar` | BE | Hiroki0023 | re-ji-tech0 | 11/16 | W2-B2 | F-22, F-43 | SP-17, SP-25 | D-35, D-42 | U-62〜U-66, U-78, I-43, I-44, I-51 | `backend/api/`（新しい API の置き場はファイル名まで書かれていない）、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。声は最大 2 件、似た商品は 3 件で D-42 の順 |
+| W2-B5 | いいね `POST /api/share-links/{id}/likes`（上限 30、`on:false` で取り消し、`on` が真偽値でなければ 422 `invalid_on`）と D-06 の `like_count` | BE | Hiroki0023 | matsuki24335 | 11/16 | W2-B1、PM の `share_likes` 作成 | F-34, N-17, N-13 | SP-28, SP-06 | D-38, D-39, D-06 | U-83, U-84, U-87, I-52〜I-55, I-60, NF-51 | `backend/api/share_links.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。30 で止まり、0 を下回らない |
+| W2-B6 | 計測を受ける `POST /api/events`（`entry`・`zero_cond` の値、`visit_id`・`visitor_id` は 22 文字、テストの目印 `test_key` と `GIFTIA_TEST_KEY`） | BE | Hiroki0023 | re-ji-tech0 | 11/16 | W2-B1、PM の `usage_events` 作成 | N-16, N-13, N-09 | SP-34 | D-40, D-41 | U-79〜U-82, I-56〜I-58, NF-50, NF-55 | `backend/api/`（新しい API の置き場はファイル名まで書かれていない）、`backend/config.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。合言葉の値はコード・文書・`.env` のコミットに入れない |
+| W2-F1 | 見た目と画像（ヒーロー、アイコン、ロゴ、OGP 2 枚、色・文字、カテゴリーの並び T-5） | FE（画像） | Hiroki0023 | matsuki24335 | 11/15 | — | F-28, F-29, F-30 | SP-19, SP-20, SP-08, SP-09, SP-10 | D-36, D-37, D-26, D-27, D-24 | S-80〜S-82, S-111〜S-114, U-88 | `frontend/src/app/layout.tsx`、`frontend/src/app/page.tsx`、`frontend/src/app/s/[share_id]/page.tsx`、`frontend/src/app/globals.css`、`frontend/src/components/top.module.css`、`frontend/src/components/Header.tsx`、`frontend/src/components/CategoryTiles.tsx`、`frontend/public/`（`design/` から写す） | 画面テストが通り、`design/check.png` の 11 幅と同じく文字と絵が重ならない |
+| W2-F2 | 決め手・声・在庫なし・行き止まり・共有リストの文言（カード・詳細・お気に入り・カート） | FE | Hiroki0023 | re-ji-tech0 | 11/16 | W2-B2、W2-B4 | F-20〜F-27 | SP-16〜SP-18, SP-04, SP-05, SP-11〜SP-15 | D-29〜D-31, D-34, D-35, D-27 | S-74〜S-79, S-83 | `frontend/src/components/ProductCard.tsx`、`CandidateCard.tsx`、`DetailPanel.tsx`、`FavoritesPanel.tsx`、`CartPanel.tsx`、`SelectedList.tsx`、`frontend/src/lib/products.ts` | 画面テストが通る。無い項目は出さない |
+| W2-F3 | スマホの並べ方（899px 以下: 詳細はシート＋カートの固定帯、下端の帯「共有リスト N 件」「カート（N 点）」、最初の画面、通知の位置） | FE | Hiroki0023 | matsuki24335 | 11/16 | W2-F2 | F-31, F-35, F-38, N-11 | SP-29, SP-31, SP-08, SP-10 | D-46, D-27 | U-85, U-86, S-84, S-90, S-93, S-107〜S-110, NF-49 | `frontend/src/components/SearchResults.tsx`、`results.module.css`、`DetailPanel.tsx`、`SelectedList.tsx`、`CartPanel.tsx`、`cart.module.css`、`TopSearch.tsx` | 375px・899px で画面テストが通る（Chrome の幅縮め）。iPhone Safari は NF-49 |
+| W2-F4 | PC の並べ方とカードの操作（右の列のタブ「共有リスト（N件）／詳細」、カードからカート・ハート、ページ番号、検索中の表示の位置） | FE | Hiroki0023 | re-ji-tech0 | 11/17 | W2-F3 | F-31, F-32, F-36, F-37, F-38 | SP-29, SP-30, SP-32, SP-33 | D-46 | U-72, U-85, S-85, S-91〜S-93, S-117, NF-46〜NF-48 | `frontend/src/components/SearchResults.tsx`、`results.module.css`、`ProductCard.tsx`、`HeartButton.tsx`、`Pagination.tsx`、`Searching.tsx`、`Recommended.tsx` | 1280px・900px で画面テストが通る。キーボードの操作が S-117 のとおり |
+| W2-F5 | 並び替え・0 件の助け舟・似た商品の画面 | FE | Hiroki0023 | matsuki24335 | 11/17 | W2-B3、W2-B4 | F-39, F-42, F-43 | SP-21, SP-24, SP-25 | D-43, D-44, D-42, D-46 | S-94, S-97, S-98 | `frontend/src/components/SearchConditions.tsx`、`SearchResults.tsx`、`DetailPanel.tsx`、`frontend/src/lib/searchQuery.ts`、`searchRequest.ts`、`api.ts` | 画面テストが通る |
+| W2-F6 | 最近見た商品とお気に入りで比べる | FE | Hiroki0023 | re-ji-tech0 | 11/17 | W2-B2 | F-40, F-41 | SP-22, SP-23 | D-47, D-46, D-30 | U-75, U-76, S-95, S-96 | `frontend/src/components/FavoritesPanel.tsx`、`favorites.module.css`、`frontend/src/state/`（`giftia:recent`）。新しい部品のファイル名は書かれていない | 画面テストが通る。読めた分だけ出す（④）、各列に「カートに入れる」（⑤） |
+| W2-F7 | 届く日（目安）の日付と、贈る日に間に合うか | FE | Hiroki0023 | matsuki24335 | 11/17 | W2-B2 | F-44, F-45 | SP-26, SP-27, SP-14 | D-34, D-46, D-31 | U-73, U-74, S-99, S-100 | `frontend/src/components/DetailPanel.tsx`、`CartPanel.tsx`、`ProductCard.tsx` | 画面テストが通る |
+| W2-F8 | 共有ページの画像・くわしく見る・ほかも探す、いいねの画面 | FE | Hiroki0023 | re-ji-tech0 | 11/17 | W2-B5 | F-33, F-34 | SP-06, SP-28 | D-39, D-46, D-47 | S-86〜S-89, S-105, S-110 | `frontend/src/components/SharedView.tsx`、`shared.module.css`、`frontend/src/app/s/[share_id]/`、`frontend/src/lib/sharedLink.ts` | 画面テストが通る。上限 30 のときは印を付けず取り消しも送らない |
+| W2-F9 | 計測を送る（6 段＋0 件、訪問は 30 分で区切る、保存が使えないときは送らない、目印 `giftia_test`） | FE | Hiroki0023 | matsuki24335 | 11/17 | W2-B6 | N-16 | SP-34 | D-40, D-41, D-47 | S-101〜S-104, S-116 | `frontend/src/lib/api.ts`、`frontend/src/state/AppState.tsx`、各画面の部品（送る点は D-40）。新しい部品のファイル名は書かれていない | 画面テストが通る。名前・メール・IP を送らない |
+| W2-T1 | 第2弾の結合・システム・使いやすさ・速さ・回帰のテストと証拠（評価のお題 S-115 を含む） | テスト | Hiroki0023 | matsuki24335（テストの企画・指揮） | 11/18 | 上の全部、本番へ出したこと | N-03, N-11, N-12, N-13, N-15 ほか | SP-16〜SP-34 | D-48 ほか | S-105, S-106, S-115, NF-46〜NF-55, I-47 | `evidence/` | テスト設計 @ `8243007` の期待結果どおり。結果を初回提出版に書く |
+| W2-O1 | 第2弾の版を本番へ出す（`robots.txt` 全拒否・noindex は今どおり） | 運用 | Hiroki0023 | re-ji-tech0 | 11/18 | W2-B1〜W2-B6、W2-F1〜W2-F9 | N-07, N-08 | — | D-33, D-16 | NF-54（本番の速さ） | 今のデプロイ手順（O1 #132・#262） | 本番の URL で画面と API が動く |
+| W2-T2 | W4 の Issue（#236・#237）とテスト実行手順書（PR #274）を「第1弾＋第2弾」の版に直す | テスト | Hiroki0023 | matsuki24335 | 11/18 | — | — | — | — | テスト設計 @ `8243007` | Issue #236・#237、PR #274 | 評価の対象の版が 11/18 の初回提出版になっている |
+
+### PM が手でやること
+
+| いつ | やること | 根拠 |
+| --- | --- | --- |
+| 11/15（W2-B5・W2-B6 の結合テストの前） | 班の DB に `share_likes` と `usage_events` を `CREATE TABLE` で作る（文は設計 D-38・D-40。外部キーは付けない） | D-38, D-40, G7 |
+| テストの時間帯だけ | Azure の関数アプリの設定に `GIFTIA_TEST_KEY` を置き、終わったら消す（値はどこにも書かない） | D-40（K-5） |
+| 11/18 | 初回提出版のコミット ID を下の「初回提出版」に書く | ADR-007 |
+| 発表（11/24）の後 | 計測といいねの記録を消す（設計 D-40 の手順 3c・3d・5b。表ごと消すかは同じ手順のとおり） | D-40, N-09 |
+
+### 5 文書の外に残ること
+
+- `DB管理手順.md` に、表の作成と記録を消す手順（3c・3d・5b）を足す（PM・Terao。文は設計 D-40 に写してある）。
+- 本番の速さ（N-03）は、常時起動を入れない決定（ADR-006）と Issue #256・#258 次第。NF-54 で測った値をそのまま書く。
+- 実機（iPhone Safari）での見た目は未確認。評価までに NF-49 で確かめる。キーボード・読み上げは画面テストと手で確かめ、スクリーンリーダーの実機は書かれていない。
+- 新しい API と画面の部品のファイル名は 5 文書に書かれていない（上の表で「書かれていない」とした所）。実装で決め、PR に書く。
+
 ## 進捗メモ
 
 - [2026-11-07] 割り振り案を作成（#42）。Issue を起票
