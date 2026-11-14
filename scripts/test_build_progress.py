@@ -374,13 +374,14 @@ class T(unittest.TestCase):
         self.assertNotIn("staff-account", bp.now_section(m))
         self.assertEqual(p["who"].split(), ["re-ji-tech0"])  # 一覧に無い人のボタンは無い
 
-    def test_hub_daily_cards_open_in_new_tab(self):
+    def test_hub_daily_cards_open_in_same_tab(self):
         hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
         for h in ("overview.html", "progress.html"):
             m = re.search(r'<a ([^>]*)href="%s">(.*?)</a>' % re.escape(h), hub)
             self.assertIsNotNone(m, h)
-            self.assertIn('target="_blank" rel="noopener"', m.group(1))
-            self.assertIn('<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span>', m.group(2))
+            self.assertNotIn("_blank", m.group(1))  # サイトの中は同じタブ（戻るリンクがある）
+            self.assertNotIn("別タブ", m.group(2))
+            self.assertNotIn('class="xl"', m.group(2))
 
     def test_merged_pr_table_title_is_the_only_link(self):
         d = json.load(open(os.path.join(D, "testdata", "progress-sample.json"), encoding="utf-8"))
@@ -410,8 +411,24 @@ class T(unittest.TestCase):
         items = [li for r in rows for li in re.findall(r"<li class=\"on\">(.*?)</li>", r)]
         self.assertEqual(len(items), 5)  # GitHub 3行 + モック・図 2行
         for li in items:
-            self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a target="_blank" rel="noopener" href="[^"]+">[^<]+<span class="xl"')  # アイコンはリンクの外
+            if 'href="https://' in li:  # 外のサイトは別タブ
+                self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a target="_blank" rel="noopener" href="https://[^"]+">[^<]+<span class="xl" aria-hidden="true">↗</span><span class="vh">（別タブで開く）</span></a>$')  # アイコンはリンクの外
+            else:  # サイトの中は同じタブ・↗なし
+                self.assertRegex(li, r'^<b aria-hidden="true">[^<]+</b><a href="[^"]+">[^<]+</a>$')
             self.assertNotIn("<time>", li)  # 右端の → は無い
+
+    def test_hub_site_pages_same_tab_external_new_tab(self):
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        for tag in re.findall(r'<a [^>]*>', hub):
+            href = re.search(r'href="([^"]*)"', tag).group(1)
+            if href.startswith("http") or href.endswith(".pdf"):
+                self.assertIn('target="_blank" rel="noopener"', tag, href)
+            else:
+                self.assertNotIn("_blank", tag, href)
+        for h in ("mock/clickable/giftia-ui-renewal/mock.html", "mock/diagrams/giftia-ui-renewal/flows.html"):
+            self.assertIn('<a href="%s">' % h, hub)
+            page = open(os.path.join(D, "..", "docs", h), encoding="utf-8").read()
+            self.assertIn('href="../../../hub.html">← 開発ハブに戻る</a>', page)
 
     def test_recent_prs_ten_default_newest_first_and_others(self):
         prs = model()["merged_prs"]

@@ -58,12 +58,12 @@ class T(unittest.TestCase):
         with self.assertRaises(SystemExit):
             brr.build(MD.replace("needs-human", "x-human"), "o/r", "abc")
 
-    def test_hub_links_to_the_page_in_new_tab(self):
+    def test_hub_links_to_the_page_in_same_tab(self):
         hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
         m = re.search(r'<a ([^>]*)href="review-rule.html">(.*?)</a>', hub)
         self.assertIsNotNone(m)
-        self.assertIn('target="_blank" rel="noopener"', m.group(1))
-        self.assertIn("（別タブで開く）", m.group(2))
+        self.assertNotIn("_blank", m.group(1))  # サイトの中（戻るリンクがある）は同じタブ
+        self.assertNotIn("別タブ", m.group(2))
         self.assertLess(hub.index("レビュー待ちの PR"), hub.index("review-rule.html"))
 
     def test_source_md_untouched_by_build(self):
