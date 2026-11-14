@@ -260,8 +260,13 @@ class T(unittest.TestCase):
         self.assertEqual(bp.area_split("[P・K1] 題"), ("P", "K1", "題"))
         self.assertEqual(bp.area_split("[T・O4] 題"), ("T", "O4", "題"))
         self.assertEqual(bp.area_split("[B・L12] 題"), ("B", "L12", "題"))
+        # 「-数字」「英小文字1字」が続く形も読む（札に出す文字はそのまま）
+        self.assertEqual(bp.area_split("[P・W4-1] 題"), ("P", "W4-1", "題"))
+        self.assertEqual(bp.area_split("[T・W4-2b] 題"), ("T", "W4-2b", "題"))
+        self.assertEqual(bp.area_split("[P・T3b] 題"), ("P", "T3b", "題"))
+        self.assertEqual(bp.area_split("[F・O1b] 題"), ("F", "O1b", "題"))
         # 読めない形は None（札なし・題はそのまま）
-        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・o1] 小文字", "[F・RR1] 2字", "[F・O1b] 小文字つき", "[F・1] R が無い", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
+        for bad in ("[R1] だけ", "[X1] 知らない印", "[F・o1] 小文字", "[F・RR1] 2字", "[F・W4-] 数字が無い", "[F・W-1] 数字が無い", "[F・1] R が無い", "[F・W4-2bb] 小文字2字", "[F・W4-2B] 大文字", "[F・R] 数字が無い", "[B2B] 大文字", "[B] 番号なし", "B1 括弧なし", "題 [B1] 途中"):
             self.assertIsNone(bp.area_split(bad), bad)
             self.assertIsNone(bp.AREA_RE.match(bad), bad)
         # 札の HTML（画面）。R1 は札 F の色で R1 と出す
