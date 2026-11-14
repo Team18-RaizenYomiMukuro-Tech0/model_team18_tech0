@@ -8,6 +8,7 @@
 import contextlib
 import re
 import threading
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -117,6 +118,7 @@ class Db:
     def __init__(self, connect: Callable[[], Any] = get_connection) -> None:
         self._connect = connect
         self._keep = connect is get_connection  # 本番の接続だけ使い回す。テストの偽の接続は毎回閉じる
+        self.timings: list[dict[str, float]] = []  # 問い合わせごとの内訳（数値だけ。#256 の原因調べ用に Server-Timing へ出す）
 
     def fetch_all(self, sql: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
         """SELECT を実行して、行を dict のリストで返す"""
@@ -131,6 +133,8 @@ class Db:
 
     def _run(self, sql: str, params: tuple[Any, ...], write: bool) -> list[dict[str, Any]] | None:
         out: dict[str, Any] = {}
+        tm = {"wait": 0.0, "connect": 0.0, "sql": 0.0, "new": 0.0, "reused": 0.0, "retry": 0.0}  # 秒（new・reused・retry は回数）
+        start = time.perf_counter()
 
         def attempt(conn: Any) -> None:
             with conn.cursor() as cur:
@@ -143,16 +147,32 @@ class Db:
         def work() -> None:
             conn = None
             try:
+                t0 = time.perf_counter()
                 reused = _take_idle() if self._keep else None
-                conn = reused if reused is not None else self._connect()
+                tm["wait"] = time.perf_counter() - t0  # 先に作っている接続の完了待ちを含む
+                if reused is not None:
+                    conn = reused
+                    tm["reused"] = 1.0
+                else:
+                    t0 = time.perf_counter()
+                    conn = self._connect()
+                    tm["connect"] += time.perf_counter() - t0
+                    tm["new"] = 1.0
                 try:
+                    t0 = time.perf_counter()
                     attempt(conn)
+                    tm["sql"] = time.perf_counter() - t0
                 except BaseException as ex:
                     if reused is None or not _connection_lost(ex):
                         raise
                     _close_quietly(conn)  # 残していた接続が切れていた: 作り直して 1 回だけやり直す
+                    tm["retry"] = 1.0
+                    t0 = time.perf_counter()
                     conn = self._connect()
+                    tm["connect"] += time.perf_counter() - t0
+                    t0 = time.perf_counter()
                     attempt(conn)
+                    tm["sql"] = time.perf_counter() - t0
                 if self._keep:
                     _give_back(conn)
                     conn = None
@@ -165,12 +185,27 @@ class Db:
         t = threading.Thread(target=work, daemon=True)
         t.start()
         t.join(DB_TIMEOUT_SECONDS)
+        tm["total"] = time.perf_counter() - start
+        self.timings.append(tm)
         if t.is_alive():  # 打ち切り（後ろで動き続けても結果は使わない）
             raise DbTimeout("DB の問い合わせが上限を超えました")
         if "error" in out:
             raise DbError(type(out["error"]).__name__) from None  # 詳細（接続情報など）は持ち上げない
         rows: list[dict[str, Any]] | None = out.get("rows")
         return rows
+
+
+def server_timing(db: Db, total_seconds: float) -> str:
+    """Db が測った内訳を Server-Timing の値にする（数値だけ。ms）。
+    db_wait=残してある接続（または先に作っている接続）を待った、db_connect=新しく接続した、db_sql=問い合わせ、
+    db_total=DB 呼び出しの合計、total=要求全体。conn は新しく作った回数・使い回した回数・作り直した回数"""
+    def total_of(key: str) -> float:
+        return sum(t[key] for t in getattr(db, "timings", []))  # 偽の Db は持たないことがある
+
+    parts = [f"db_{k};dur={total_of(k) * 1000:.1f}" for k in ("wait", "connect", "sql", "total")]
+    parts.append(f"total;dur={total_seconds * 1000:.1f}")
+    parts.append(f'conn;desc="new={total_of("new"):.0f} reused={total_of("reused"):.0f} retry={total_of("retry"):.0f}"')
+    return ", ".join(parts)
 
 
 def get_db() -> Db:

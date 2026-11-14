@@ -3,15 +3,16 @@
 #  - SQL は固定の文。値はすべて %s と params で渡す（N-04）。入力の検証は DB に問い合わせる前に行う。
 #  - 送別回数は、順位が決まる範囲（上位 10 件と 10 位と同点）の商品だけを注文データから都度数える（D-04・手順 6）。
 #  - 理由の文は reasons.py（B4）。AI は使わない（ADR-003）。
+import time
 from decimal import Decimal
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES
 from config import SETTINGS
-from db import Db, get_db
+from db import Db, get_db, server_timing
 from ranking import candidate_pool, score_products, top_by_score_then_count
 from reasons import build_reason
 
@@ -56,8 +57,9 @@ def _high_rating(rating: Decimal | None) -> bool:
 
 
 @router.get("/api/candidates", response_model=None)
-def list_candidates(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any:
+def list_candidates(request: Request, response: Response, db: Annotated[Db, Depends(get_db)]) -> Any:
     """候補の取得。不正な値は 422（invalid_price_band / invalid_scene / invalid_category）"""
+    started = time.perf_counter()
     q = request.query_params  # budget など、ここで読まない名前は無視する（#51-4）
 
     price_range = NO_PRICE_LIMIT
@@ -134,4 +136,5 @@ def list_candidates(request: Request, db: Annotated[Db, Depends(get_db)]) -> Any
                 ),
             }
         )
+    response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。#256）
     return {"items": items, "count": len(items)}
