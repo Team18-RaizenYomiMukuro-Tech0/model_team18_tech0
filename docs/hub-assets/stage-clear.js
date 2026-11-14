@@ -5,6 +5,7 @@
 (function () {
   "use strict";
   var KEY = "hub-stage3-clear-seen";
+  var NAME = "魔族覚醒"; // 次の段の名前（演出の中の大きな字）
   var NEXT = ["STAGE 4 ", "評価・受入へ"]; // 次の段の表示（3.5 実装③ があれば差し替える）
   var STEPS = [1600, 1200, 1600, 1600]; // 段 1〜4 の秒数（合計 6.0 秒）
   var CALM_MS = 2600;
@@ -69,7 +70,7 @@
     s1.appendChild(el("div", "oln gogo", "ゴゴゴ…"));
     // 段 2
     var s2 = el("div", "ly s2");
-    s2.appendChild(el("div", "ly dots")); s2.appendChild(el("div", "oln big", "魔族覚醒")); s2.appendChild(el("div", "bar"));
+    s2.appendChild(el("div", "ly dots")); s2.appendChild(el("div", "oln big", NAME)); s2.appendChild(el("div", "bar"));
     // 段 3
     var s3 = el("div", "ly s3");
     s3.appendChild(el("div", "ly bg")); s3.appendChild(el("div", "ly lines dk")); s3.appendChild(el("div", "ring"));
@@ -127,7 +128,7 @@
       .then(function (j) {
         var c = cleared(j);
         if (!c || seen()) return;
-        if (c.next35) NEXT = ["STAGE 3.5 ", "実装③へ"];
+        if (c.next35) { NEXT = ["STAGE 3.5 ", "実装③へ"]; NAME = "聖光気"; }
         mark(); play();
       })
       .catch(function () { /* 取れなければ何も出さない */ });

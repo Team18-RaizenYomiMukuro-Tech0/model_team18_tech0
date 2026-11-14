@@ -56,7 +56,7 @@ def area_split(title):
         return None
     return m.group("a"), m.group("rc") or m.group("a") + m.group("n"), m.group("t")
 # 段階の技の名前（ハブの霊力ゲージと同じ。マイルストーン題の頭の数字で決まる）。「3.5 実装③」の名前は PM が決める（今は題のまま出す）
-WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "4": "魔族覚醒"}
+WAZA = {"1": "霊気", "2": "霊丸", "3": "霊光波動", "3.5": "聖光気", "4": "魔族覚醒"}
 # 段階のうち、全体 % に数えるのは題が 1〜4 で始まるマイルストーンだけ（ハブの霊力ゲージ docs/hub-assets/band.js と同じ定義。
 # 題の頭の数字が同じ段階が複数あれば、期限順で最初の 1 つだけ。「5 公開期間」とマイルストーンなしは数えず、別の行で出す。
 # 「3.5 実装③」は 3 とは別の段として数える（頭が「3.5」。「3」と読むと「3 実装②」と同じ段になり数えられなかった）
@@ -388,8 +388,9 @@ def render_stage(s, name_of):
     else:
         period, left = "期限未設定", ""
     progress = f'{s["done"]}／{s["total"]}（{pc}%）' if s["total"] else "Issue なし"
-    wz = WAZA.get(s["title"][:1]) if s["title"][1:2] == " " else None
-    cls = f' class="w{s["title"][0]}"' if wz else ""
+    wm = re.match(r"^([1-4](?:\.5)?) ", s["title"])  # 「3.5 実装③」も技の名前を持つ（聖光気）
+    wz = WAZA.get(wm.group(1)) if wm else None
+    cls = f' class="w{wm.group(1).replace(".", "")}"' if wz else ""
     waza = f" <b>{wz}</b>" if wz else ""
     return (f'<li{cls}><span class="sn">{e(s["title"])}{waza}</span><span class="chip">{period}</span>'
             f'<div class="bar"><i style="width:{pc}%"></i></div>'
@@ -444,6 +445,8 @@ CSS = """
 .stg2 li[class] .sn{white-space:nowrap}
 .stg2 li.w4 .sn{border-color:transparent;background:linear-gradient(#2A1B3D,#2A1B3D) padding-box,linear-gradient(to right,var(--m1),var(--m2),var(--m3)) border-box;color:#FFFFFF}
 .stg2 li.w4 .bar i{background:linear-gradient(to right,var(--m1),var(--m2),var(--m3))}
+/* 3.5 実装③（聖光気）は段 3 と同じ色 */
+.stg2 li.w35{--c:var(--m3)}.stg2 li.w35 .bar{height:8px;border:0;background:var(--tint)}.stg2 li.w35 .sn{border:0;background:color-mix(in srgb,var(--c) 30%,transparent);color:#2A1B3D}
 @media(max-width:600px){.stg2>ul>li{grid-template-columns:minmax(0,1fr)}.stg2>ul>li .chip{justify-self:start}}
 .ar{display:inline-block;margin-right:6px;padding:0 8px;border:2px solid currentColor;border-radius:var(--rp);background:transparent;font:800 var(--fs-xs)/1.7 var(--body);vertical-align:middle}
 .chip.ar{margin-right:0;border-color:currentColor}

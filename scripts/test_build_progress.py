@@ -149,6 +149,16 @@ class T(unittest.TestCase):
         out = bp.render(m, "x")
         self.assertIn("全体 57% <span>（完了 4 / 7）</span>", out)
         self.assertIn("3.5 実装③", out)
+        self.assertRegex(out, r'<li class="w35"><span class="sn">3\.5 実装③ <b>聖光気</b></span>')  # 3.5 の技の名前（PM 11/15）。他の段の名前は変えない
+        self.assertIn('<b>魔族覚醒</b>', out)
+
+    def test_band_js_names_3_5_and_keeps_stage_4(self):
+        """PM 11/15: 3.5 は「STAGE 3.5／聖光気／実装③（W3）／11/15〜11/18」。評価・受入は元の「STAGE 4／魔族覚醒（W4）」のまま。11/15 は 3.5 が「いまここ」"""
+        src = open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read()
+        self.assertIn('["聖光気","実装③","W3","11/15〜11/18","3.5"]', src)
+        self.assertIn('["魔族覚醒","評価・受入","W4","11/19〜11/21","4"]', src)
+        self.assertIn('"STAGE "+s[4]', src)  # 番号は段の番号（3.5・4）。並びの順番で振り直さない
+        self.assertIn('"いまここ"', src)
 
     def test_band_js_reads_3_5_as_a_stage(self):
         """band.js の段の読み方（正規表現）が build-progress.py の HUB_STAGE_RE と同じ。3.5 を 3 と読まない"""
