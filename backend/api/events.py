@@ -93,6 +93,20 @@ def is_test_key(given: str | None) -> bool:
     return hmac.compare_digest(given.encode("utf-8"), secret.encode("utf-8"))
 
 
+async def read_limited(request: Request) -> bytes | None:
+    """本文を 1KB まで読む。Content-Length が 1KB を超えるなら読まずに None、無い・偽りでも 1KB を超えたところで読むのをやめて None（D-40）"""
+    limit = SETTINGS.EVENT_BODY_MAX_BYTES
+    declared = request.headers.get("content-length")
+    if declared is not None and declared.isdigit() and int(declared) > limit:
+        return None
+    chunks = bytearray()
+    async for chunk in request.stream():
+        chunks += chunk
+        if len(chunks) > limit:
+            return None  # 残りは読まない
+    return bytes(chunks)
+
+
 @router.post("/api/events", response_model=None)
 async def post_event(
     request: Request,
@@ -100,7 +114,8 @@ async def post_event(
     clock: Annotated[Clock, Depends(get_clock)],
 ) -> Response:
     """計測を 1 件受ける。204（本文なし。重複で捨てたかも返さない）／422 invalid_event／500"""
-    event = parse_event(await request.body())
+    raw = await read_limited(request)
+    event = parse_event(raw) if raw is not None else None
     if event is None:
         return _invalid()
     occurred = clock.now().replace(microsecond=0, tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")  # UTC。ブラウザの時計は使わない

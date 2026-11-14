@@ -184,6 +184,35 @@ def test_failure_is_isolated(db: EventDb, monkeypatch: pytest.MonkeyPatch) -> No
         main.app.dependency_overrides.clear()
 
 
+# D-40: 本文は 1KB まで。読む前（Content-Length）と、長さを偽った・不明なとき（読んでいる途中）で止める。ちょうど 1KB は読む
+def test_body_limit_stops_before_reading_all(client: TestClient, db: EventDb) -> None:
+    from api import events as ev
+
+    seen: list[int] = []
+    real = ev.parse_event
+    def spy(raw: bytes) -> Any:
+        seen.append(len(raw))
+        return real(raw)
+
+    ev.parse_event = spy  # type: ignore[assignment]
+    try:
+        big = json.dumps({**body(1), "pad": "x" * 5000}).encode()
+        assert client.post(URL, content=big, headers={"Content-Type": "application/json"}).status_code == 422
+        def gen() -> Iterator[bytes]:  # 長さ不明（chunked）。1KB を超えた所で止まる
+            for _ in range(2000):
+                yield b"x" * 100
+        assert client.post(URL, content=gen(), headers={"Content-Type": "application/json"}).status_code == 422
+        assert seen == []  # どちらも本文を検査する所まで届かない
+        pad = 1024 - len(json.dumps({**body(1), "pad": ""}).encode())
+        exact = json.dumps({**body(1), "pad": "x" * pad}).encode()
+        assert len(exact) == 1024  # ちょうど 1KB は読む（知らない項目 pad なので 422 だが、検査には届く）
+        client.post(URL, content=exact, headers={"Content-Type": "application/json"})
+        assert seen == [1024]
+    finally:
+        ev.parse_event = real  # type: ignore[assignment]
+    assert db.rows() == []
+
+
 def test_get_and_other_methods_not_allowed(client: TestClient) -> None:
     assert client.get(URL).status_code == 405
     assert client.put(URL, content=b"{}").status_code == 405
