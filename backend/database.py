@@ -45,6 +45,7 @@ def get_connection() -> Any:
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,  # 行を {列名: 値} で受け取る
         connect_timeout=10,
+        autocommit=True,  # 接続を使い回しても、読み取りが古い見え方のまま残らない（#256）
         ssl=_ssl_options(),
     )
 

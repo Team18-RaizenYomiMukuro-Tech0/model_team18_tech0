@@ -13,9 +13,11 @@ from api.candidates import router as candidates_router
 from api.product_detail import router as product_detail_router
 from api.products import router as products_router
 from api.share_links import router as share_links_router
-from db import Db, get_db
+from db import Db, get_db, warm_up
 
 load_dotenv()
+
+warm_up()  # 起動時に DB の接続を 1 本先に作る（#256。別スレッド・失敗しても起動する）。uvicorn と Functions の両方がこの main を読む
 
 app = FastAPI(title="Team18 API")
 logging_setup.install(app)  # 時刻・API・結果だけのログ（N-13）

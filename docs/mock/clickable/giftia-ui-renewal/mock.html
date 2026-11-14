@@ -19,6 +19,7 @@ button:disabled{cursor:not-allowed;opacity:.45}
 :focus-visible{outline:3px solid #2a6fdb;outline-offset:2px}
 #bar{position:sticky;top:0;z-index:30;background:#2f2a28;color:#fff;padding:8px 12px;font-size:12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
 #bar b{color:#ffd9cc}
+#bar a.hubback{color:#fff;font-weight:700;text-decoration:underline;padding:6px 0;min-height:24px}
 #bar .grp{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 #bar button{background:#4a4340;border:1px solid #6b625e;color:#fff;border-radius:6px;padding:3px 9px;font-size:12px}
 #bar button[aria-pressed=true]{background:var(--coral);border-color:var(--coral)}
@@ -111,7 +112,7 @@ button.name{background:none;border:0;padding:0;text-align:left;font-weight:700;m
 .price{font-size:17px;font-weight:700}
 .tax{font-size:12px;font-weight:400;color:var(--sub)}
 .meta{font-size:12px;color:var(--ink2);display:flex;gap:10px;flex-wrap:wrap}
-.star{color:#e8a317}
+.star{color:inherit}
 .reason{font-size:13px;color:var(--ink2);margin:0}
 .pick{margin-top:auto;display:flex;gap:8px;align-items:center;font-weight:600;min-height:44px;cursor:pointer;border:1px solid var(--line);border-radius:var(--rm);padding:6px 10px}
 .pick input{width:20px;height:20px;accent-color:var(--coral)}
@@ -216,6 +217,7 @@ h2.sec{margin:22px 0 10px}
 <body class="show-sp show-note xmas">
 
 <div id="bar" role="region" aria-label="レビュー用の操作（製品の画面ではありません）">
+  <a class="hubback" href="../../../hub.html">← 開発ハブに戻る</a>
   <b>レビュー用操作</b>
   <div class="grp">画面：<button data-view="top" aria-pressed="true">トップ</button><button data-view="result" aria-pressed="false">検索結果</button><button data-view="share" aria-pressed="false">共有ページ</button></div>
   <div class="grp">幅：<button data-w="375" aria-pressed="false">375px</button><button data-w="1280" aria-pressed="true">1280px</button></div>
