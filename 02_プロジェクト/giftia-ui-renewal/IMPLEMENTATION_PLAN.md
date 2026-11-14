@@ -152,44 +152,50 @@ Issue はまだ作らない。**Issue の作成と着手は「OK、進めて」�
 
 予備日は無い（ADR-007）。落とす順番は作らない（ADR-010。PM 11/15「やり切るので、落とさないです」）。
 
-### 割り振り（第2弾。PM の条件 11/15 と god の案。切り方は案で、PM の確認前）
+### 割り振り（第2弾。PM の条件 11/15、分け方は確定 PM 11/15「おっけー。」）
 
 PM の条件（11/15、本人の答え）: 作業量は だーあさ（Hiroki0023）4 割・レージ（re-ji-tech0）4 割・りゅうちゃん（matsuki24335）2 割（りゅうちゃんはテスト担当が重い）／3 人とも自分の AI で実装する／11/15（日）が中心、平日は夜だけ／レージは画面中心／りゅうちゃんは 11/18 まで並行でよい／待ちとコンフリクトを少なく。
 
-切り方（god の案。**案**）: 画面ごと・ファイルごとに持ち主を 1 人にする。だーあさ＝サーバー全部と共有のファイル（`lib/api.ts`・`lib/products.ts`・`lib/searchQuery.ts`・`lib/searchRequest.ts`・`state/AppState.tsx`・`state/cart.ts`）、お気に入りとカートのパネル、計測。レージ＝トップ・検索結果・詳細の画面。りゅうちゃん＝共有ページとテスト。最初に だーあさ が「土台」の小さい PR（新しい API の型と呼び出しを設計どおりの形で共有のファイルに入れる）を出し、画面側は API の完成を待たずに作る（結合の確かめは API の後）。
+切り方（確定。PM 11/15「おっけー。」。god の案のとおり）: 画面ごと・ファイルごとに持ち主を 1 人にする。だーあさ＝サーバー全部と共有のファイル（`lib/api.ts`・`lib/products.ts`・`lib/searchQuery.ts`・`lib/searchRequest.ts`・`state/AppState.tsx`・`state/cart.ts`）、お気に入りとカートのパネル、計測。レージ＝トップ・検索結果・詳細の画面。りゅうちゃん＝共有ページとテスト。最初に だーあさ が「土台」の小さい PR（新しい API の型と呼び出しを設計どおりの形で共有のファイルに入れる）を出し、画面側は API の完成を待たずに作る（結合の確かめは API の後）。
+
+承認: 第2弾の実装 PR は全部「早い者勝ち」。書いた人以外で、先に手の空いた人が承認する（だれが承認するかを前もって決めない。PM 11/15「早い者勝ちで。全部」）。
+
+マイルストーン: `3.5 実装③`（期限 11/18。確定 PM 11/15「おっけー。」）。第2弾の実装の Issue は全部これに入れる。作るのは god が Issue を作るとき。
+
+4:4:2 に合わせる単位の移し替えは案として god に出し、確定は PM（下の「作業量」）。
 
 大きさの目安: S＝1 晩より小さい、M＝1 晩、L＝1 日（今日 11/15 にしか置かない）。点は S=1・M=2・L=3。
 
 ### 実装の単位（第2弾）
 
-| # | 単位 | 担当 | Reviewer（案） | 大きさ | いつ | 先に要る単位 | 要件 | 仕様 | 設計 | テスト | 触るファイル | 完了の確かめ方 |
+| # | 単位 | 担当 | 承認 | 大きさ | いつ | 先に要る単位 | 要件 | 仕様 | 設計 | テスト | 触るファイル | 完了の確かめ方 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| D0 | 土台: 新しい API（`sort`・`relax`・`arrives_on`・`scene_count`・`scene`、声、似た商品、いいね、計測）の型と呼び出し、URL の `sort`、計測の送り口（`visit_id`・`visitor_id`・30 分の区切り、送る関数） | だーあさ | re-ji-tech0 | M | 11/15 朝（最初） | — | F-20〜F-23, F-34, F-39, F-42〜F-44, N-16 | SP-16, SP-17, SP-21, SP-24〜SP-26, SP-28, SP-34 | D-34, D-35, D-39〜D-43, D-47 | U-79, U-80 ほか（型の単体） | `frontend/src/lib/api.ts`、`lib/products.ts`、`lib/searchQuery.ts`、`lib/searchRequest.ts`、`state/AppState.tsx`、計測の送り口の新しいファイル（名前は書かれていない）、各 `*.test.ts` | `npm test` が通る。画面側がこの型で作り始められる |
-| D1 | 書き込みの許可と接続の本数、`share_likes`・`usage_events` を作る（CREATE TABLE は PM が手で） | だーあさ | matsuki24335 | S | 11/15 | — | N-04 | SP-28, SP-34 | D-45, D-38, D-40 | I-52, I-56, NF-52, NF-53 | `backend/db.py`、`backend/config.py`、`backend/tests/` | pytest が通る。許可の外の SQL が止まる。2 つの表がある |
-| D2 | 決め手の項目と選んだシーンの回数（`arrives_on`・`scene_count`、D-29 の任意の `scene`、候補の並び） | だーあさ | re-ji-tech0 | L | 11/15 | D0 | F-20, F-21, F-23, F-44 | SP-16, SP-02, SP-03, SP-26 | D-34, D-01〜D-04, D-28, D-29 | U-59〜U-61, U-67〜U-70, U-73, I-41〜I-43, I-45〜I-47, I-59 | `backend/api/candidates.py`、`backend/api/products.py`、`backend/api/product_detail.py`、`backend/ranking.py`、`backend/reasons.py`、`backend/tests/` | pytest が通る。`arrives_on` は日本時間、`scene` が無くても返る |
-| D3 | 並び替え（`sort`）と 0 件の「はずすと N 件」（`relax`） | だーあさ | matsuki24335 | M | 11/15 | D2 | F-39, F-42 | SP-21, SP-24 | D-43, D-44 | U-71, U-77, I-48〜I-50 | `backend/api/products.py`、`backend/tests/` | pytest が通る |
-| D4 | いいね `POST /api/share-links/{id}/likes` と D-06 の `like_count` | だーあさ | matsuki24335 | M | 11/15 | D1 | F-34, N-17, N-13 | SP-28, SP-06 | D-38, D-39, D-06 | U-83, U-84, U-87, I-52〜I-55, I-60, NF-51 | `backend/api/share_links.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。上限 30、0 を下回らない、`invalid_on` |
-| D5 | 贈った人の声と似た商品の API | だーあさ | re-ji-tech0 | M | 11/16 夜 | D2 | F-22, F-43 | SP-17, SP-25 | D-35, D-42 | U-62〜U-66, U-78, I-43, I-44, I-51 | `backend/api/` の新しいファイル（名前は書かれていない）、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る |
-| D6 | 計測を受ける `POST /api/events`（テストの目印 `test_key`） | だーあさ | re-ji-tech0 | M | 11/16 夜 | D1 | N-16, N-13, N-09 | SP-34 | D-40, D-41 | U-81, U-82, I-56〜I-58, NF-50, NF-55 | `backend/api/` の新しいファイル（名前は書かれていない）、`backend/config.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。合言葉の値をコミットしない |
-| D7 | 計測を送る点を埋める（① サイトに来る ② 検索結果 ④ カート ⑤ 共有リンク ⑥ 注文へ進む ⑦ 0 件）。③ 詳細はレージが D0 の関数を呼ぶ（R8） | だーあさ | matsuki24335 | M | 11/17 夜 | D0, D6 | N-16 | SP-34 | D-40, D-41, D-47 | S-101〜S-104, S-116 | `state/AppState.tsx`（①）、`lib/api.ts` の `SearchRunner`・`ShareLinkRunner`（②⑤⑦）、`lib/searchRequest.ts` の `ProductRunner`（②⑦）、`state/cart.ts` の `add`（④）、`components/CartPanel.tsx`（⑥） | 画面テストが通る。名前・メール・IP を送らない |
-| D8 | お気に入りで比べる、お気に入りの行き止まり（各行の「カートに入れる」と詳細への道） | だーあさ | re-ji-tech0 | M | 11/17 夜 | D0, D2 | F-41, F-25 | SP-23, SP-13, SP-18 | D-30, D-46, D-47 | U-76, S-77, S-96 | `components/FavoritesPanel.tsx`、`components/favorites.module.css` | 画面テストが通る。各列に「カートに入れる」、375px で 2 行に折れてよい |
-| D9 | カートの行き止まりと在庫なし、各行の届く日、帯がある画面での通知の位置 | だーあさ | matsuki24335 | M | 11/18 夜 | D0, D2, R2 | F-24, F-26, F-44 | SP-14, SP-18, SP-26, SP-29 | D-31, D-46 | S-76, S-78, S-99 | `components/CartPanel.tsx`、`components/cart.module.css`、`state/cartCheck.ts` | 画面テストが通る |
-| D10 | 第2弾の版を本番へ出す（`robots.txt` 全拒否・noindex は今どおり） | だーあさ | re-ji-tech0 | S | 11/18 夜 | 全部 | N-07, N-08 | — | D-33, D-16 | NF-54 | 今のデプロイ手順（#132・#262） | 本番の URL で画面と API が動く |
-| R1 | トップの見た目: ヒーロー・ロゴ・ヘッダー・アイコン・トップの OGP | レージ | matsuki24335 | M | 11/15 | — | F-28, F-29 | SP-08, SP-19, SP-20 | D-36, D-37, D-24 | S-80, S-81, S-111〜S-114 | `app/layout.tsx`、`app/page.tsx`、`app/globals.css`、`components/top.module.css`、`components/Header.tsx`、`frontend/public/`（`design/` から写す。`ogp-share.png` は Y3） | 画面テストが通り、11 幅で文字と絵が重ならない |
-| R2 | スマホの並べ方（899px 以下: 詳細はシート＋カートの固定帯、下端の帯、最初の画面） | レージ | matsuki24335 | L | 11/15 | D0 | F-31, F-35, F-38, N-11 | SP-29, SP-31, SP-08, SP-10 | D-46, D-27 | U-85, U-86, S-84, S-90, S-93, S-107〜S-110, NF-49 | `components/SearchResults.tsx`、`CandidateResults.tsx`、`results.module.css`、`DetailPanel.tsx`、`SelectedList.tsx`、`TopSearch.tsx` | 375px・899px で画面テストが通る |
-| R3 | カテゴリーの並び（T-5）と色・ボタンの色 | レージ | matsuki24335 | S | 11/16 夜 | R1 | F-29, F-30 | SP-09, SP-10, SP-20 | D-26, D-27, D-37 | S-82, U-88 | `components/CategoryTiles.tsx`、`lib/topPage.ts`、`components/SearchConditions.tsx`、`app/globals.css` | 画面テストが通る |
-| R4 | カードと詳細の決め手・声・在庫なし・共有リストの文言 | レージ | matsuki24335 | M | 11/16 夜 | D0（結合は D2・D5） | F-20〜F-24, F-27 | SP-16〜SP-18, SP-04, SP-05, SP-11, SP-12, SP-15 | D-29, D-34, D-35, D-27 | S-74, S-75, S-76, S-79, S-83 | `components/ProductCard.tsx`、`CandidateCard.tsx`、`DetailPanel.tsx`、`SelectedList.tsx` | 画面テストが通る。無い項目は出さない |
-| R5 | PC の右の列のタブ（共有リスト（N件）／詳細）とキーボード | レージ | matsuki24335 | M | 11/17 夜 | R2 | F-31, F-38 | SP-29 | D-46 | S-93, S-117, NF-46〜NF-48 | `components/SearchResults.tsx`、`CandidateResults.tsx`、`results.module.css`、`SelectedList.tsx` | 1280px・900px で画面テストが通る |
-| R6 | カードからカート・ハート、ページ番号、検索中の表示の位置 | レージ | matsuki24335 | M | 11/17 夜 | R4 | F-32, F-36, F-37 | SP-30, SP-32, SP-33 | D-46 | U-72, U-85, S-85, S-91, S-92 | `components/ProductCard.tsx`、`CandidateCard.tsx`、`Recommended.tsx`、`HeartButton.tsx`、`Pagination.tsx`、`Searching.tsx` | 画面テストが通る |
-| R7 | 並び替えの UI と 0 件の文（はずすと N 件） | レージ | matsuki24335 | M | 11/17 夜 | D0（結合は D3） | F-39, F-42 | SP-21, SP-24 | D-43, D-44 | S-94, S-97 | `components/SearchConditions.tsx`、`SearchResults.tsx`、`SearchStatus.tsx`、`conditions.module.css` | 画面テストが通る |
-| R8 | 詳細の似た商品・届く日と間に合うか・最近見た商品、③ 詳細の計測の呼び出し | レージ | matsuki24335 | M | 11/18 夜 | D0（結合は D2・D5） | F-40, F-43〜F-45, N-16 | SP-22, SP-25〜SP-27, SP-34 | D-42, D-46, D-47 | U-73〜U-75, S-95, S-98〜S-100 | `components/DetailPanel.tsx`、`ProductCard.tsx`、`SearchResults.tsx`、`CandidateResults.tsx`、最近見た商品の新しい部品と保存（名前は書かれていない） | 画面テストが通る。読めた分だけ出す |
-| Y1 | 共有ページの画像・くわしく見る・ほかも探す、販売終了の候補の扱い | りゅうちゃん | re-ji-tech0 | M | 11/15 | — | F-33 | SP-06 | D-46, D-06 | S-86, S-105, S-110 | `components/SharedView.tsx`、`components/shared.module.css`、`lib/sharedLink.ts` | 画面テストが通る |
-| Y2 | いいねのボタンと数 | りゅうちゃん | Hiroki0023 | M | 11/16 夜 | D0（結合は D4） | F-34, N-17 | SP-28 | D-39, D-47 | S-87〜S-89 | `components/SharedView.tsx`、`components/shared.module.css`、`lib/sharedLink.ts` | 画面テストが通る。上限 30 では印を付けず取り消しも送らない |
-| Y3 | 共有ページの OGP（`ogp-share.png`・説明文） | りゅうちゃん | re-ji-tech0 | S | 11/15 | — | F-28, N-15 | SP-19 | D-36 | S-80, S-111, S-112 | `app/s/[share_id]/page.tsx`、`frontend/public/ogp-share.png` | 画面テストが通る。商品名が枠に入らない |
-| Y4 | W4 の Issue（#236・#237）とテスト実行手順書（PR #274）を「第1弾＋第2弾」の版に直す | りゅうちゃん | Hiroki0023 | S | 11/17 夜 | — | — | — | — | テスト設計 @ `8243007` | Issue #236・#237、PR #274 | 評価の対象が 11/18 の初回提出版 |
-| Y5 | 第2弾の結合・システム・使いやすさ・速さ・回帰のテストと証拠（評価のお題 S-115 を含む） | りゅうちゃん | Hiroki0023 | L | 11/16〜18 の夜に並行（最後は D10 の後） | 単位ごとに、できたものから | N-03, N-11〜N-13, N-15 ほか | SP-16〜SP-34 | D-48 ほか | S-105, S-106, S-115, NF-46〜NF-55, I-47 | `evidence/` | 期待結果どおり。結果を初回提出版に書く |
+| D0 | 土台: 新しい API（`sort`・`relax`・`arrives_on`・`scene_count`・`scene`、声、似た商品、いいね、計測）の型と呼び出し、URL の `sort`、計測の送り口（`visit_id`・`visitor_id`・30 分の区切り、送る関数） | だーあさ | 早い者勝ち | M | 11/15 朝（最初） | — | F-20〜F-23, F-34, F-39, F-42〜F-44, N-16 | SP-16, SP-17, SP-21, SP-24〜SP-26, SP-28, SP-34 | D-34, D-35, D-39〜D-43, D-47 | U-79, U-80 ほか（型の単体） | `frontend/src/lib/api.ts`、`lib/products.ts`、`lib/searchQuery.ts`、`lib/searchRequest.ts`、`state/AppState.tsx`、計測の送り口の新しいファイル（名前は書かれていない）、各 `*.test.ts` | `npm test` が通る。画面側がこの型で作り始められる |
+| D1 | 書き込みの許可と接続の本数、`share_likes`・`usage_events` を作る（CREATE TABLE は PM が手で） | だーあさ | 早い者勝ち | S | 11/15 | — | N-04 | SP-28, SP-34 | D-45, D-38, D-40 | I-52, I-56, NF-52, NF-53 | `backend/db.py`、`backend/config.py`、`backend/tests/` | pytest が通る。許可の外の SQL が止まる。2 つの表がある |
+| D2 | 決め手の項目と選んだシーンの回数（`arrives_on`・`scene_count`、D-29 の任意の `scene`、候補の並び） | だーあさ | 早い者勝ち | L | 11/15 | D0 | F-20, F-21, F-23, F-44 | SP-16, SP-02, SP-03, SP-26 | D-34, D-01〜D-04, D-28, D-29 | U-59〜U-61, U-67〜U-70, U-73, I-41〜I-43, I-45〜I-47, I-59 | `backend/api/candidates.py`、`backend/api/products.py`、`backend/api/product_detail.py`、`backend/ranking.py`、`backend/reasons.py`、`backend/tests/` | pytest が通る。`arrives_on` は日本時間、`scene` が無くても返る |
+| D3 | 並び替え（`sort`）と 0 件の「はずすと N 件」（`relax`） | だーあさ | 早い者勝ち | M | 11/15 | D2 | F-39, F-42 | SP-21, SP-24 | D-43, D-44 | U-71, U-77, I-48〜I-50 | `backend/api/products.py`、`backend/tests/` | pytest が通る |
+| D4 | いいね `POST /api/share-links/{id}/likes` と D-06 の `like_count` | だーあさ | 早い者勝ち | M | 11/15 | D1 | F-34, N-17, N-13 | SP-28, SP-06 | D-38, D-39, D-06 | U-83, U-84, U-87, I-52〜I-55, I-60, NF-51 | `backend/api/share_links.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。上限 30、0 を下回らない、`invalid_on` |
+| D5 | 贈った人の声と似た商品の API | だーあさ | 早い者勝ち | M | 11/16 夜 | D2 | F-22, F-43 | SP-17, SP-25 | D-35, D-42 | U-62〜U-66, U-78, I-43, I-44, I-51 | `backend/api/` の新しいファイル（名前は書かれていない）、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る |
+| D6 | 計測を受ける `POST /api/events`（テストの目印 `test_key`） | だーあさ | 早い者勝ち | M | 11/16 夜 | D1 | N-16, N-13, N-09 | SP-34 | D-40, D-41 | U-81, U-82, I-56〜I-58, NF-50, NF-55 | `backend/api/` の新しいファイル（名前は書かれていない）、`backend/config.py`、`backend/function_app.py`、`backend/main.py`、`backend/tests/` | pytest が通る。合言葉の値をコミットしない |
+| D7 | 計測を送る点を埋める（① サイトに来る ② 検索結果 ④ カート ⑤ 共有リンク ⑥ 注文へ進む ⑦ 0 件）。③ 詳細はレージが D0 の関数を呼ぶ（R8） | だーあさ | 早い者勝ち | M | 11/17 夜 | D0, D6 | N-16 | SP-34 | D-40, D-41, D-47 | S-101〜S-104, S-116 | `state/AppState.tsx`（①）、`lib/api.ts` の `SearchRunner`・`ShareLinkRunner`（②⑤⑦）、`lib/searchRequest.ts` の `ProductRunner`（②⑦）、`state/cart.ts` の `add`（④）、`components/CartPanel.tsx`（⑥） | 画面テストが通る。名前・メール・IP を送らない |
+| D8 | お気に入りで比べる、お気に入りの行き止まり（各行の「カートに入れる」と詳細への道） | だーあさ | 早い者勝ち | M | 11/17 夜 | D0, D2 | F-41, F-25 | SP-23, SP-13, SP-18 | D-30, D-46, D-47 | U-76, S-77, S-96 | `components/FavoritesPanel.tsx`、`components/favorites.module.css` | 画面テストが通る。各列に「カートに入れる」、375px で 2 行に折れてよい |
+| D9 | カートの行き止まりと在庫なし、各行の届く日、帯がある画面での通知の位置 | だーあさ | 早い者勝ち | M | 11/18 夜 | D0, D2, R2 | F-24, F-26, F-44 | SP-14, SP-18, SP-26, SP-29 | D-31, D-46 | S-76, S-78, S-99 | `components/CartPanel.tsx`、`components/cart.module.css`、`state/cartCheck.ts` | 画面テストが通る |
+| D10 | 第2弾の版を本番へ出す（`robots.txt` 全拒否・noindex は今どおり） | だーあさ | 早い者勝ち | S | 11/18 夜 | 全部 | N-07, N-08 | — | D-33, D-16 | NF-54 | 今のデプロイ手順（#132・#262） | 本番の URL で画面と API が動く |
+| R1 | トップの見た目: ヒーロー・ロゴ・ヘッダー・アイコン・トップの OGP | レージ | 早い者勝ち | M | 11/15 | — | F-28, F-29 | SP-08, SP-19, SP-20 | D-36, D-37, D-24 | S-80, S-81, S-111〜S-114 | `app/layout.tsx`、`app/page.tsx`、`app/globals.css`、`components/top.module.css`、`components/Header.tsx`、`frontend/public/`（`design/` から写す。`ogp-share.png` は Y3） | 画面テストが通り、11 幅で文字と絵が重ならない |
+| R2 | スマホの並べ方（899px 以下: 詳細はシート＋カートの固定帯、下端の帯、最初の画面） | レージ | 早い者勝ち | L | 11/15 | D0 | F-31, F-35, F-38, N-11 | SP-29, SP-31, SP-08, SP-10 | D-46, D-27 | U-85, U-86, S-84, S-90, S-93, S-107〜S-110, NF-49 | `components/SearchResults.tsx`、`CandidateResults.tsx`、`results.module.css`、`DetailPanel.tsx`、`SelectedList.tsx`、`TopSearch.tsx` | 375px・899px で画面テストが通る |
+| R3 | カテゴリーの並び（T-5）と色・ボタンの色 | レージ | 早い者勝ち | S | 11/16 夜 | R1 | F-29, F-30 | SP-09, SP-10, SP-20 | D-26, D-27, D-37 | S-82, U-88 | `components/CategoryTiles.tsx`、`lib/topPage.ts`、`components/SearchConditions.tsx`、`app/globals.css` | 画面テストが通る |
+| R4 | カードと詳細の決め手・声・在庫なし・共有リストの文言 | レージ | 早い者勝ち | M | 11/16 夜 | D0（結合は D2・D5） | F-20〜F-24, F-27 | SP-16〜SP-18, SP-04, SP-05, SP-11, SP-12, SP-15 | D-29, D-34, D-35, D-27 | S-74, S-75, S-76, S-79, S-83 | `components/ProductCard.tsx`、`CandidateCard.tsx`、`DetailPanel.tsx`、`SelectedList.tsx` | 画面テストが通る。無い項目は出さない |
+| R5 | PC の右の列のタブ（共有リスト（N件）／詳細）とキーボード | レージ | 早い者勝ち | M | 11/17 夜 | R2 | F-31, F-38 | SP-29 | D-46 | S-93, S-117, NF-46〜NF-48 | `components/SearchResults.tsx`、`CandidateResults.tsx`、`results.module.css`、`SelectedList.tsx` | 1280px・900px で画面テストが通る |
+| R6 | カードからカート・ハート、ページ番号、検索中の表示の位置 | レージ | 早い者勝ち | M | 11/17 夜 | R4 | F-32, F-36, F-37 | SP-30, SP-32, SP-33 | D-46 | U-72, U-85, S-85, S-91, S-92 | `components/ProductCard.tsx`、`CandidateCard.tsx`、`Recommended.tsx`、`HeartButton.tsx`、`Pagination.tsx`、`Searching.tsx` | 画面テストが通る |
+| R7 | 並び替えの UI と 0 件の文（はずすと N 件） | レージ | 早い者勝ち | M | 11/17 夜 | D0（結合は D3） | F-39, F-42 | SP-21, SP-24 | D-43, D-44 | S-94, S-97 | `components/SearchConditions.tsx`、`SearchResults.tsx`、`SearchStatus.tsx`、`conditions.module.css` | 画面テストが通る |
+| R8 | 詳細の似た商品・届く日と間に合うか・最近見た商品、③ 詳細の計測の呼び出し | レージ | 早い者勝ち | M | 11/18 夜 | D0（結合は D2・D5） | F-40, F-43〜F-45, N-16 | SP-22, SP-25〜SP-27, SP-34 | D-42, D-46, D-47 | U-73〜U-75, S-95, S-98〜S-100 | `components/DetailPanel.tsx`、`ProductCard.tsx`、`SearchResults.tsx`、`CandidateResults.tsx`、最近見た商品の新しい部品と保存（名前は書かれていない） | 画面テストが通る。読めた分だけ出す |
+| Y1 | 共有ページの画像・くわしく見る・ほかも探す、販売終了の候補の扱い | りゅうちゃん | 早い者勝ち | M | 11/15 | — | F-33 | SP-06 | D-46, D-06 | S-86, S-105, S-110 | `components/SharedView.tsx`、`components/shared.module.css`、`lib/sharedLink.ts` | 画面テストが通る |
+| Y2 | いいねのボタンと数 | りゅうちゃん | 早い者勝ち | M | 11/16 夜 | D0（結合は D4） | F-34, N-17 | SP-28 | D-39, D-47 | S-87〜S-89 | `components/SharedView.tsx`、`components/shared.module.css`、`lib/sharedLink.ts` | 画面テストが通る。上限 30 では印を付けず取り消しも送らない |
+| Y3 | 共有ページの OGP（`ogp-share.png`・説明文） | りゅうちゃん | 早い者勝ち | S | 11/15 | — | F-28, N-15 | SP-19 | D-36 | S-80, S-111, S-112 | `app/s/[share_id]/page.tsx`、`frontend/public/ogp-share.png` | 画面テストが通る。商品名が枠に入らない |
+| Y4 | W4 の Issue（#236・#237）とテスト実行手順書（PR #274）を「第1弾＋第2弾」の版に直す | りゅうちゃん | 早い者勝ち | S | 11/17 夜 | — | — | — | — | テスト設計 @ `8243007` | Issue #236・#237、PR #274 | 評価の対象が 11/18 の初回提出版 |
+| Y5 | 第2弾の結合・システム・使いやすさ・速さ・回帰のテストと証拠（評価のお題 S-115 を含む） | りゅうちゃん | 早い者勝ち | L | 11/16〜18 の夜に並行（最後は D10 の後） | 単位ごとに、できたものから | N-03, N-11〜N-13, N-15 ほか | SP-16〜SP-34 | D-48 ほか | S-105, S-106, S-115, NF-46〜NF-55, I-47 | `evidence/` | 期待結果どおり。結果を初回提出版に書く |
 
-### 作業量（点。S=1・M=2・L=3。案）
+### 作業量（点。S=1・M=2・L=3）
 
 | 担当 | 単位 | 点 | 割合 |
 | --- | --- | --- | --- |
@@ -197,6 +203,8 @@ PM の条件（11/15、本人の答え）: 作業量は だーあさ（Hiroki002
 | レージ | R1 2, R2 3, R3 1, R4 2, R5 2, R6 2, R7 2, R8 2 | 16 | 約 31% |
 | りゅうちゃん | Y1 2, Y2 2, Y3 1, Y4 1, Y5 3 | 9 | 約 18% |
 | （計） | | 46 | 4:4:2 なら 約 18・18・9 |
+
+移し替えの案（PM の確認待ち）: D8（お気に入りで比べる・お気に入りの行き止まり。M・2 点。触るのは `FavoritesPanel.tsx`・`favorites.module.css` だけで、ほかの単位と重ならない）をレージへ移すと、だーあさ 19（約 41%）・レージ 18（約 39%）・りゅうちゃん 9（約 20%）。
 
 ### 今日（11/15）と平日の夜
 
@@ -244,3 +252,4 @@ PM の条件（11/15、本人の答え）: 作業量は だーあさ（Hiroki002
 - [2026-11-12] O1 #132 の期限を「11/11」から「リソース配布後すぐ（11/12〜）」に変更（PM 決定 2026-11-12、本人回答「全部おすすめで」）。マイルストーン名「2 実装①」と、担当別の表の「11/11 までの実装①」はそのまま。
 - [2026-11-13] 実装②の進捗（P2 #59）。マイルストーン「2 実装①」は全 16 件が Closed（P1 #53 を含む）。「3 実装②」は全 19 件のうち閉じた 12 件・開いている 7 件。この日に閉じた 11 件: #62、#63、#64、#65、#66、#117、#118、#119、#120、#121、#206。開いている（#59 以外）: #67（Hiroki0023）、#68・#122・#123・#124・#135（matsuki24335）。詳細は #59 のコメント（18:35 JST）
 - [2026-11-14] 実装②の進捗（P2 #59）。「3 実装②」は全 21 件のうち閉じた 20 件・開いている 1 件（#59。この進捗メモの PR で閉じる）。この日に閉じた 6 件: #122・#123（#249・#250）、#67（T3 速さの測定）、#68（T2、#251）、#135（iPhone の実機確認。範囲を iPhone に縮めた #269、証拠 #270）、#124（R-02 のテスト。#255、条件の見出し #271）。本番の画面が古いまま残った件は #262（デプロイ前に古い中身を消す）で直した。候補 API の常時起動は入れない（ADR-006、#267）。詳細は #59 のコメント（18:00・20:45 JST）
+- [2026-11-15] 第2弾の節を足した（対象版 `8243007`）。PM の決定: 分け方（サーバーと共有ファイルは だーあさ、トップ・検索結果・詳細の画面は レージ、共有ページは りゅうちゃん）とマイルストーン `3.5 実装③`（期限 11/18）は確定（PM 11/15「おっけー。」）。承認は全部「早い者勝ち」（PM 11/15「早い者勝ちで。全部」）。作業量の条件は 4:4:2・3 人とも自分の AI・11/15 中心（PM 11/15）。D8 の移し替えは案（PM の確認待ち）
