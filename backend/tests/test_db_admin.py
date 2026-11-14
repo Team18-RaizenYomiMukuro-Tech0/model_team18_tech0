@@ -170,3 +170,135 @@ def test_main_prints_uncommitted_record_last(
     with pytest.raises(SystemExit):
         db_admin.main(["db_admin.py", "0"])
     assert capsys.readouterr().out.strip().splitlines()[-1].startswith("コミットしていない記録: ")
+
+
+# ---- 手順D（手順書 3b。#135 完了条件 #4）: 控えた share_id の行だけを消す。偽の接続で、DB には接続しない ----
+ID_A, ID_B, ID_C = "A" * 22, "B" * 22, "C" * 22
+
+
+class DeleteCursor:
+    """share_links（share_id の集合）を持つ偽のカーソル。流された文と params を残す"""
+
+    def __init__(self, conn: "DeleteConn") -> None:
+        self.conn = conn
+        self.rows: list[dict[str, Any]] = []
+        self.rowcount = 0
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *a: object) -> None:
+        return None
+
+    def execute(self, q: str, params: tuple[Any, ...] = ()) -> None:
+        self.conn.log.append((q, params))
+        table = self.conn.table
+        if q.startswith("SELECT DATABASE()"):
+            self.rows = [{"DATABASE()": database.DB_NAME}]
+        elif q == "SELECT COUNT(*) FROM share_links;":
+            self.rows = [{"COUNT(*)": len(table)}]
+        elif q.startswith("SELECT COUNT(*) FROM share_links WHERE share_id IN"):
+            self.rows = [{"COUNT(*)": sum(1 for i in params if i in table)}]
+        elif q.startswith("SELECT share_id"):
+            self.rows = [{"share_id": i, "created_at": "t", "is_test": table[i]} for i in params if i in table]
+        elif q.startswith("DELETE FROM share_links WHERE share_id IN"):
+            gone = [i for i in params if i in table]
+            self.conn.pending = gone
+            self.rowcount = len(gone)
+        else:
+            raise AssertionError(f"想定外の文: {q}")
+
+    def fetchall(self) -> list[dict[str, Any]]:
+        return self.rows
+
+
+class DeleteConn:
+    def __init__(self) -> None:
+        self.table: dict[str, int] = {ID_A: 0, ID_B: 0, "Z" * 22: 0, "Y" * 22: 1}  # 値は is_test
+        self.log: list[tuple[str, tuple[Any, ...]]] = []
+        self.pending: list[str] = []
+        self.committed = False
+        self.rolled_back = False
+
+    def cursor(self) -> DeleteCursor:
+        return DeleteCursor(self)
+
+    def commit(self) -> None:
+        self.committed = True
+        for i in self.pending:
+            del self.table[i]
+
+    def rollback(self) -> None:
+        self.rolled_back = True
+
+
+def run_d(monkeypatch: pytest.MonkeyPatch, conn: DeleteConn, *answers: str) -> db_admin.Report:
+    it = iter(answers)
+    monkeypatch.setattr("builtins.input", lambda _="": next(it))
+    rep = db_admin.Report("D")
+    db_admin.step_d(conn, rep)
+    return rep
+
+
+def test_step_d_in_menu_and_sql_shape() -> None:
+    assert "D" in db_admin.STEPS and db_admin.HANDLERS["D"] is db_admin.step_d
+    stmt = db_admin._in_clause(db_admin.SQL_D_DELETE, 3)
+    assert stmt == "DELETE FROM share_links WHERE share_id IN (%s, %s, %s);"
+    assert db_admin._in_clause(db_admin.SQL_D_DELETE, 1).endswith("IN (%s);")
+
+
+def test_parse_share_ids() -> None:
+    assert db_admin.parse_share_ids(f"{ID_A}, {ID_B}  {ID_A}\n") == [ID_A, ID_B]  # 重複は 1 つ
+    for bad in ("", "  ", "short", "A" * 21, "A" * 23, "A" * 21 + "!", f"{ID_A} x"):
+        with pytest.raises(SystemExit):
+            db_admin.parse_share_ids(bad)
+
+
+def test_step_d_deletes_only_given_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = DeleteConn()
+    rep = run_d(monkeypatch, conn, f"{ID_A} {ID_B}", "yes")
+    assert conn.committed and set(conn.table) == {"Z" * 22, "Y" * 22}  # 入力した ID 以外は残る
+    delete = [(q, p) for q, p in conn.log if q.startswith("DELETE")]
+    assert delete == [("DELETE FROM share_links WHERE share_id IN (%s, %s);", (ID_A, ID_B))]
+    text = "\n".join(rep.lines)
+    assert "消す前の全体件数 4、該当件数 2" in text
+    assert "消した後の全体件数 2（前 4）、該当件数 0（前 2）" in text
+    assert "不合格" not in text
+
+
+def test_step_d_stops_without_yes(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = DeleteConn()
+    with pytest.raises(SystemExit):
+        run_d(monkeypatch, conn, ID_A, "no")
+    assert not any(q.startswith("DELETE") for q, _ in conn.log) and len(conn.table) == 4
+
+
+def test_step_d_stops_when_an_id_is_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = DeleteConn()
+    with pytest.raises(SystemExit):
+        run_d(monkeypatch, conn, f"{ID_A} {ID_C}", "yes")  # ID_C は表に無い
+    assert not any(q.startswith("DELETE") for q, _ in conn.log) and len(conn.table) == 4
+
+
+def test_step_d_rolls_back_if_deleted_count_differs(monkeypatch: pytest.MonkeyPatch) -> None:
+    conn = DeleteConn()
+    real = DeleteCursor.execute
+
+    def execute(self: DeleteCursor, q: str, params: tuple[Any, ...] = ()) -> None:
+        real(self, q, params)
+        if q.startswith("DELETE"):
+            self.rowcount += 1  # 確認した件数と違う
+
+    monkeypatch.setattr(DeleteCursor, "execute", execute)
+    with pytest.raises(SystemExit):
+        run_d(monkeypatch, conn, ID_A, "yes")
+    assert conn.rolled_back and not conn.committed
+
+
+def test_step_d_report_has_no_connection_info(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GIFTIA_DB_HOST", "db.example.invalid")
+    monkeypatch.setenv("GIFTIA_DB_USER", "someuser")
+    monkeypatch.setenv("GIFTIA_DB_PASSWORD", "s3cretpw")
+    rep = run_d(monkeypatch, DeleteConn(), ID_A, "yes")
+    text = "\n".join(rep.lines)
+    assert not any(v in text for v in ("db.example.invalid", "someuser", "s3cretpw"))
