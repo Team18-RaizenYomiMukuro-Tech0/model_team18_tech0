@@ -59,3 +59,21 @@ def test_db_records_new_connection_and_sums() -> None:
     assert len(db.timings) == 2 and all(t["new"] == 1.0 for t in db.timings)  # 偽の接続は使い回さない
     text = server_timing(db, 0.5)
     assert 'conn;desc="new=2 reused=0 retry=0"' in text and "total;dur=500.0" in text
+
+
+def test_process_mark_is_numbers_and_nth_counts_up() -> None:
+    db = Db(connect=_Conn)
+    first = server_timing(db, 0.1)
+    second = server_timing(db, 0.1)
+    pat = r'proc;desc="pid=\d+ up=\d+ warm=-?\d+ nth=(\d+)"'
+    a, b = re.search(pat, first), re.search(pat, second)
+    assert a and b and int(b.group(1)) == int(a.group(1)) + 1
+    assert not re.search(r"[A-Za-z_]+/|host|user|password", first.replace("proc;desc", "").replace("db_", ""))
+
+
+def test_warm_up_records_how_long_it_took() -> None:
+    import db as dbmod
+
+    dbmod.warm_up(_Conn).join(5)
+    assert dbmod._warm_seconds is not None and dbmod._warm_seconds >= 0
+    dbmod._take_idle()
