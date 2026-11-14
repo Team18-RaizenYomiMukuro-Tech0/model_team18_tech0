@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { REQUEST_TIMEOUT_MS, SearchRunner, type SearchState } from "./api.ts";
 import type { Fetched, ProductList } from "./products.ts";
 import { parseSearchQuery, searchHref } from "./searchQuery.ts";
-import { CONDITION_HEADINGS, clearConditions, hasConditions, ProductRunner, toggleCategory, togglePrice, toggleScene } from "./searchRequest.ts";
+import { CONDITION_HEADINGS, clearConditions, hasConditions, ProductRunner, setSort, toggleCategory, togglePrice, toggleScene } from "./searchRequest.ts";
 
 // S-22 S-23 S-55 S-57 S-58 I-34 I-35 E-15: 条件の操作と、続けて条件を変えたときの応答の取捨。偽のタイマーで応答を遅らせる
 const Q = (s = "") => parseSearchQuery(new URLSearchParams(s));
@@ -130,4 +130,15 @@ test("conditions: 見出しは「シーン」「価格帯（税込）」「カ�
   assert.equal(CONDITION_HEADINGS.scene, "シーン");
   assert.equal(CONDITION_HEADINGS.price, "価格帯（税込）");
   assert.equal(CONDITION_HEADINGS.category + CONDITION_HEADINGS.categoryHint, "カテゴリー（複数選べます）");
+});
+
+// SP-21: 並びを替えると同じ条件のまま1ページ目に戻る。条件をクリアしても並びは残る（並びは条件ではない）
+test("searchRequest SP-21: setSort は1ページ目に戻り、ほかの条件を変えない", () => {
+  const q = setSort(Q("price_band=under3000&category=食品&page=3"), "price_asc");
+  assert.equal(q.sort, "price_asc");
+  assert.equal(q.page, 1);
+  assert.equal(q.priceBand, "under3000");
+  assert.deepEqual(q.categories, ["食品"]);
+  assert.equal(clearConditions(q).sort, "price_asc");
+  assert.equal(togglePrice(q, "5000plus").sort, "price_asc");
 });

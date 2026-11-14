@@ -16,6 +16,8 @@ class Settings:
     SHARE_ID_LENGTH: int = 22  # SP-05 共有リンクの識別子の長さ
     REQUEST_TIMEOUT_SECONDS: int = 10  # #29-14 サーバーの DB 問い合わせの上限（E-13）
     PAGE_SIZE: int = 12  # D-28・N-14 絞り込み API の1ページの件数（決定。キックオフ記録 80）
+    DB_IDLE_MAX: int = 4  # D-45 残しておく DB 接続の本数（3〜4 本。詳細の画面の 3 つの API が同時に使う）
+    LIKE_MAX_PER_ITEM: int = 30  # N-17・D-39 1 共有リンク × 1 候補のいいねの上限
     SHARE_REQUEST_MAX_LENGTH: int = 50  # N-06 重複込みの配列の長さの上限（決定。キックオフ記録 76）
 
 

@@ -1,7 +1,7 @@
 import { fetchJson, isProductList, type Fetched, type ProductList } from "./products.ts";
 import type { Scene } from "./api.ts";
 import type { PriceBand } from "./priceBand.ts";
-import type { SearchQuery } from "./searchQuery.ts";
+import type { SearchQuery, SortKey } from "./searchQuery.ts";
 
 // R8 D-27 #46-1 #50-2 #55-3 F-12 F-18 I-34 I-35 E-15: 検索結果の条件の操作（純粋な部分）と、R-02 の取得の実行役。
 // 条件ボタンは押した時点で結果を出し直し、同じボタンの再押下で解除する。どの操作もページは1に戻す。
@@ -20,6 +20,8 @@ export const toggleCategory = (q: SearchQuery, name: string): SearchQuery => ({
 });
 // シーン・価格帯・カテゴリーをすべて外す。選んだ候補は画面全体の状態（D-32）にあるので触らない（#50-2、#55-3）
 export const clearConditions = (q: SearchQuery): SearchQuery => ({ ...q, scene: null, priceBand: null, categories: [], page: 1 });
+// 並びを替える。同じ条件のまま1ページ目に戻る（SP-21）
+export const setSort = (q: SearchQuery, sort: SortKey): SearchQuery => ({ ...q, sort, page: 1 });
 export const hasConditions = (q: SearchQuery): boolean => q.scene !== null || q.priceBand !== null || q.categories.length > 0;
 
 // R-02（GET /api/products）の実行役。run のたびに「最新の1回」だけが画面に反映される。
