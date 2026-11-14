@@ -6,6 +6,8 @@
 #    ②書き込みは share_links への INSERT だけ ③SQL はすべてプレースホルダ
 # テストでだけ、テストのコードの中で app.dependency_overrides に別の Db を入れる（D-12。入口は他に作らない）。
 import contextlib
+import itertools
+import os
 import re
 import threading
 import time
@@ -33,6 +35,9 @@ _OTHER_DB_RE = re.compile(r"\bgiftia_t\d+\b", re.IGNORECASE)  # 別の DB 名の
 _idle_lock = threading.Lock()
 _idle: Any = None
 _warm_thread: threading.Thread | None = None  # 起動時に先に作っている途中の接続（あれば最初の要求はその完了を待つ）
+_PROCESS_START = time.monotonic()  # このプロセスが db.py を読んだ時刻（起動直後かどうかを Server-Timing で見るため。#256）
+_requests = itertools.count(1)  # このプロセスが Server-Timing を付けた回数（毎回 1 なら、要求ごとにプロセスが新しい）
+_warm_seconds: float | None = None  # 起動時の接続（warm_up）が出来上がるまでにかかった秒（未完了・失敗は None）
 _LOST_CODES = (2006, 2013, 2014, 2055)  # MySQL server has gone away / Lost connection など
 
 
@@ -65,10 +70,13 @@ def warm_up(connect: Callable[[], Any] = get_connection) -> threading.Thread:
     つながらなくても起動は止めず、何も残さない（最初の要求で作る、今までの動きに戻るだけ）"""
 
     def work() -> None:
+        global _warm_seconds
+        t0 = time.perf_counter()
         try:
             conn = connect()
         except BaseException:  # noqa: BLE001  失敗しても起動は止めない（原因は最初の要求の失敗として出る）
             return
+        _warm_seconds = time.perf_counter() - t0
         _give_back(conn)
 
     global _warm_thread
@@ -204,6 +212,11 @@ def server_timing(db: Db, total_seconds: float) -> str:
 
     parts = [f"db_{k};dur={total_of(k) * 1000:.1f}" for k in ("wait", "connect", "sql", "total")]
     parts.append(f"total;dur={total_seconds * 1000:.1f}")
+    # プロセスの印（数字だけ）: pid、プロセスが起動してからの ms（up）、起動時の接続ができるまでの ms（warm。未完了は -1）、
+    # このプロセスで何回目の応答か（nth）。要求ごとにプロセスが新しいなら nth は毎回 1、up は小さい
+    warm_ms = -1.0 if _warm_seconds is None else _warm_seconds * 1000
+    up_ms = (time.monotonic() - _PROCESS_START) * 1000
+    parts.append(f'proc;desc="pid={os.getpid()} up={up_ms:.0f} warm={warm_ms:.0f} nth={next(_requests)}"')
     parts.append(f'conn;desc="new={total_of("new"):.0f} reused={total_of("reused"):.0f} retry={total_of("retry"):.0f}"')
     return ", ".join(parts)
 
