@@ -42,3 +42,10 @@ def test_wrap() -> None:
     assert build_reason(12, Decimal("4.2"), 30, 3, False) == X2  # X2（不可）
     assert build_reason(12, Decimal("4.2"), 30, 3, None) == X2  # X5（値なし）
     assert "ラッピング" not in X2
+
+
+# SP-03 D-03 U-13 第2弾（PM 11/15 朝「理由の行を出さない」）: 材料が全部無いときは空の文字列。代わりの文言は作らない（行を出さないのは画面側）
+def test_reason_empty() -> None:
+    for scene in ("送別", "お礼", "誕生日"):
+        assert build_reason(0, None, None, None, None, scene) == ""
+        assert build_reason(0, None, 0, None, None, scene) == ""  # 件数 0 は評価の文を入れない
