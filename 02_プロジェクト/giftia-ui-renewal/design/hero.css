@@ -1,5 +1,5 @@
 /* 背景と床の帯は CSS、絵は hero.svg（右下）。見出しの大きさは今の top.module.css（30px・行間 1.3、480px 以下は 24px）のまま */
-.hero{--ah:320px;position:relative;height:340px;overflow:hidden;border-radius:8px;background:linear-gradient(to top,#fbe3d9 calc(var(--ah)*.183),#e8dfd9 calc(var(--ah)*.183) calc(var(--ah)*.2),#fdeee6 calc(var(--ah)*.2))}
+.hero{--ah:288px;position:relative;height:340px;overflow:hidden;border-radius:8px;background:linear-gradient(to top,#fbe3d9 calc(var(--ah)*.183),#e8dfd9 calc(var(--ah)*.183) calc(var(--ah)*.2),#fdeee6 calc(var(--ah)*.2))}
 .hero img{position:absolute;right:max(24px,4vw);bottom:0;height:var(--ah);width:auto}
 .hero .txt{position:absolute;left:48px;top:50%;transform:translateY(-50%);max-width:calc(100% - var(--ah)*1.445 - 48px - max(24px,4vw) - 24px)}
 .hero h1{margin:0 0 8px;font-size:30px;line-height:1.3;color:#3a3331}
