@@ -10,12 +10,20 @@ const ok = (stock: "available" | "out_of_stock", extra: Partial<CartFound> = {})
 const gone: CartFound = { status: "notfound" };
 const bad: CartFound = { status: "error" };
 
-test("S-78 ① 販売終了・在庫なし・読めない・確認中だけのカートは「注文へ進む」を押せず、買える商品がありませんと出す", () => {
-  const ids = ["G1", "G2", "G3", "G4"];
-  const found = { G1: gone, G2: ok("out_of_stock"), G3: bad }; // G4 はまだ確かめていない
+test("S-78 ① 販売終了・在庫なし・読めない商品だけ（確認が終わった）のカートは「注文へ進む」を押せず、買える商品がありませんと出す", () => {
+  const ids = ["G1", "G2", "G3"];
+  const found = { G1: gone, G2: ok("out_of_stock"), G3: bad };
   assert.equal(buyableCount(ids, found), 0);
   assert.deepEqual(orderGate(ids, found), { canOrder: false, hint: NO_BUYABLE_MESSAGE });
   assert.equal(NO_BUYABLE_MESSAGE, "買える商品がありません");
+});
+
+test("確認中は何も出さない: まだ確かめ終わっていない商品があるあいだは文言を出さず、押せない（PM 11/15）。終われば決まる", () => {
+  assert.deepEqual(orderGate(["G1"], {}), { canOrder: false, hint: null }); // 開いた直後
+  assert.deepEqual(orderGate(["G1", "G2"], { G1: ok("available") }), { canOrder: false, hint: null }); // 1 つ確認済み・1 つ確認中は、全部終わるまで押せない
+  assert.deepEqual(orderGate(["G1", "G2"], { G1: gone }), { canOrder: false, hint: null }); // 買えない 1 つだけ確認済みでも、文言はまだ出さない
+  assert.deepEqual(orderGate(["G1", "G2"], { G1: gone, G2: ok("out_of_stock") }), { canOrder: false, hint: "買える商品がありません" }); // 全部終わって 0 件
+  assert.equal(pressOrder(["G1"], {}, () => assert.fail("確認中は送らない")), null);
 });
 
 test("S-78 ② 空のカートも押せず、買える商品がありませんと出す", () => {

@@ -68,8 +68,10 @@ export function buyableCount(ids: readonly string[], found: Readonly<Record<stri
 
 export const NO_BUYABLE_MESSAGE = "買える商品がありません";
 
-// 「注文へ進む」の押せる条件（SP-18 ③）。買える商品が 0 件（空のカートも）なら押せず、すぐ上に「買える商品がありません」
+// 「注文へ進む」の押せる条件（SP-18 ③）。買える商品が 0 件（空のカートも）なら押せず、すぐ上に「買える商品がありません」。
+// 確認中（開いた直後で、まだ確かめ終わっていない商品がある）あいだは、文言を出さず「注文へ進む」だけ押せない（PM 11/15「確認中は何も出さない」）
 export function orderGate(ids: readonly string[], found: Readonly<Record<string, CartFound | undefined>>): { canOrder: boolean; hint: string | null } {
+  if (ids.some((id) => !found[id])) return { canOrder: false, hint: null };
   const canOrder = buyableCount(ids, found) > 0;
   return { canOrder, hint: canOrder ? null : NO_BUYABLE_MESSAGE };
 }
