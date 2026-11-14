@@ -31,11 +31,15 @@ _OTHER_DB_RE = re.compile(r"\bgiftia_t\d+\b", re.IGNORECASE)  # 別の DB 名の
 #  - 接続は autocommit（database.py）。読み取りが古い見え方（スナップショット）のまま残らない。
 _idle_lock = threading.Lock()
 _idle: Any = None
+_warm_thread: threading.Thread | None = None  # 起動時に先に作っている途中の接続（あれば最初の要求はその完了を待つ）
 _LOST_CODES = (2006, 2013, 2014, 2055)  # MySQL server has gone away / Lost connection など
 
 
 def _take_idle() -> Any:
     global _idle
+    warm = _warm_thread
+    if warm is not None and warm.is_alive():  # 先に作っている最中なら、もう 1 本作らずにその完了を待つ（上限は問い合わせと同じ）
+        warm.join(DB_TIMEOUT_SECONDS)
     with _idle_lock:
         conn, _idle = _idle, None
     return conn
@@ -53,6 +57,24 @@ def _give_back(conn: Any) -> None:
 def _close_quietly(conn: Any) -> None:
     with contextlib.suppress(Exception):  # 閉じられなくても呼び出し側には関係しない
         conn.close()
+
+
+def warm_up(connect: Callable[[], Any] = get_connection) -> threading.Thread:
+    """起動時に接続を 1 本先に作って残す（#256）。別スレッドで行うので起動は待たない。
+    つながらなくても起動は止めず、何も残さない（最初の要求で作る、今までの動きに戻るだけ）"""
+
+    def work() -> None:
+        try:
+            conn = connect()
+        except BaseException:  # noqa: BLE001  失敗しても起動は止めない（原因は最初の要求の失敗として出る）
+            return
+        _give_back(conn)
+
+    global _warm_thread
+    t = threading.Thread(target=work, daemon=True)
+    _warm_thread = t
+    t.start()
+    return t
 
 
 def _connection_lost(ex: BaseException) -> bool:

@@ -59,6 +59,7 @@ def keep_db(conns: list[Conn]) -> tuple[Db, list[Conn]]:
 def empty_slot() -> Any:
     dbmod._idle = None
     yield
+    dbmod._warm_thread = None
     dbmod._idle = None
 
 
@@ -123,3 +124,66 @@ def test_database_connection_is_autocommit(monkeypatch: pytest.MonkeyPatch) -> N
         monkeypatch.setenv(k, "x")
     database.get_connection()
     assert seen[0]["autocommit"] is True
+
+
+def test_warm_up_puts_one_connection_ready() -> None:
+    """起動時に 1 本先に作って残す。最初の要求は新しく作らずにその接続を使う"""
+    made: list[Conn] = []
+
+    def connect() -> Conn:
+        made.append(Conn())
+        return made[-1]
+
+    dbmod.warm_up(connect).join(5)
+    assert len(made) == 1 and dbmod._idle is made[0] and not made[0].closed
+    d, more = keep_db([])
+    assert d.fetch_all("SELECT 1") == [{"ok": 1}]
+    assert more == [] and made[0].executed == 1  # 要求は新しい接続を作っていない
+
+
+def test_first_request_waits_for_the_connection_being_made() -> None:
+    """先に作っている最中に要求が来たら、もう 1 本作らずにその接続を待って使う"""
+    import threading
+    import time
+
+    gate = threading.Event()
+    made: list[Conn] = []
+
+    def slow_connect() -> Conn:
+        gate.wait(5)
+        made.append(Conn())
+        return made[-1]
+
+    dbmod.warm_up(slow_connect)
+    threading.Timer(0.3, gate.set).start()
+    d, more = keep_db([])
+    t0 = time.monotonic()
+    assert d.fetch_all("SELECT 1") == [{"ok": 1}]
+    assert more == [] and len(made) == 1 and made[0].executed == 1 and time.monotonic() - t0 >= 0.25
+
+
+def test_warm_up_failure_does_not_stop_startup() -> None:
+    def broken() -> Conn:
+        raise OSError("接続できない")
+
+    dbmod.warm_up(broken).join(5)  # 例外は外に出ない
+    assert dbmod._idle is None
+    d, made = keep_db([])
+    assert d.fetch_all("SELECT 1") == [{"ok": 1}] and len(made) == 1  # 最初の要求で作る今の動き
+
+
+def test_main_calls_warm_up_at_import() -> None:
+    """main.py は読み込むときに warm_up() を 1 回呼ぶ（uvicorn・Functions のどちらも main を読む）"""
+    import ast
+    from pathlib import Path
+
+    tree = ast.parse((Path(__file__).resolve().parent.parent / "main.py").read_text(encoding="utf-8"))
+    calls = [
+        n for n in tree.body
+        if isinstance(n, ast.Expr) and isinstance(n.value, ast.Call)
+        and isinstance(n.value.func, ast.Name) and n.value.func.id == "warm_up"
+    ]
+    assert len(calls) == 1
+    import main
+
+    assert main.warm_up is dbmod.warm_up
