@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Giftia レビュー用モック（案A）</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
 :root{--bg:#f4f1ee;--paper:#fff;--ink:#3a3331;--sub:#7a6f6a;--line:#e8dfd9;--peach:#fdeee6;--coral:#ee6c4d;--coral-d:#d4553a;--sage:#e6ebdd;--sage-d:#5d7a4e;--green:#6f8a5a;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8;
  --surf:#fff;--sel:#fff6f2;--muted:#f5f2ef;--imgbg:#faf7f4;--bd2:#8a7d75;--btn-sel:#b8422a;--btn-sel-d:#8f321e;--ink2:#5c514d;--badge-bg:#fbe3d9;--badge-ink:#a2402a;
@@ -35,7 +36,9 @@ body.show-sp .sp{display:inline-block}
 body.show-note .sticky{display:block}
 header.top{position:sticky;top:var(--barh,0px);z-index:20;background:var(--paper);display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .logo{font-weight:800;font-size:22px;color:var(--ink);display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;min-height:44px}
-.logo i{display:inline-block;width:22px;height:22px;border:2px solid var(--coral);border-radius:4px;position:relative}
+.logo img{display:block;height:34px;width:auto}
+@container (max-width:480px){.logo img{height:28px}}
+.logo i{display:none;width:22px;height:22px;border:2px solid var(--coral);border-radius:4px;position:relative}
 .logo i::after{content:"";position:absolute;left:8px;top:-2px;width:2px;height:22px;background:var(--coral)}
 .hsearch{display:flex;flex:1 1 180px;max-width:420px;border:1px solid var(--bd2);border-radius:22px;overflow:hidden;background:var(--muted)}
 .hsearch input{flex:1;min-width:0;border:0;padding:8px 14px;font:inherit;min-height:44px;background:var(--muted)}
@@ -50,11 +53,6 @@ header.top{position:sticky;top:var(--barh,0px);z-index:20;background:var(--paper
 main{padding:20px}
 h1{font-size:20px;margin:0 0 4px}
 h2.sec{font-size:15px;margin:22px 0 10px}
-.hero{position:relative;background:var(--hero-bg);color:var(--hero-ink);border-radius:var(--rl);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;overflow:hidden}
-.hero h1{font-size:28px;line-height:1.35;margin:0 0 8px}
-.hero p{margin:0;color:var(--hero-sub);font-size:13px}
-.hero svg{flex:0 0 150px;width:150px;height:auto}
-@container (max-width:600px){.hero h1{font-size:21px}.hero svg{display:none}}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{background:var(--surf);border:1px solid var(--line);border-radius:var(--rm);padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px}
 .tile[aria-pressed=true]{border:2px solid var(--coral);background:var(--sel);font-weight:700}
@@ -155,27 +153,20 @@ button.name{background:none;border:0;padding:0;text-align:left;font-weight:700;m
 #list{border-top:3px dashed #d9c24a;background:#fffbe0;padding:14px 20px;font-size:13px;display:none}
 body.show-note #list{display:block}
 #list ol{margin:6px 0 0;padding-left:1.4em}
-@container (max-width:480px){header.top,main{padding-left:12px;padding-right:12px}.sharebar{margin:16px -12px -20px;padding:10px 12px}.hbtn .t{font-size:11px}#list{padding:12px}.hero{padding:16px}}
+@container (max-width:480px){header.top,main{padding-left:12px;padding-right:12px}.sharebar{margin:16px -12px -20px;padding:10px 12px}.hbtn .t{font-size:11px}#list{padding:12px}}
 
 /* 質感・動き */
 body{background:var(--bg)}
-.card,.detail,.filters,.chosen,.tile,.hero{box-shadow:var(--shadow)}
+.card,.detail,.filters,.chosen,.tile{box-shadow:var(--shadow)}
 .card,.tile,.fb,.primary,.ghost,.heart{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-h)}
 .tile:hover,.fb:hover,.ghost:hover,.primary:not(:disabled):hover{transform:translateY(-1px)}
 .card:active,.tile:active,.fb:active,.primary:active,.ghost:active{transform:scale(.98)}
 .tile[aria-pressed=true]::before,.fb[aria-pressed=true]::before{content:"✓ "}
 h2.sec{font-size:19px}
-.hero h1{font-size:34px}
 body.xmas h2.sec{position:relative;padding-bottom:8px}
 body.xmas h2.sec::after{content:"";width:36px;height:3px;border-radius:2px;background:var(--gold);position:absolute;left:0;bottom:0}
 .rib{fill:var(--coral)}.ribs{stroke:var(--coral)}
-.orn{display:none}
-body.xmas .orn{display:block;position:absolute;right:210px;top:0;width:110px;pointer-events:none}
-body.xmas .hero::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 8% 24%,rgba(255,255,255,.7) 0 2px,transparent 3px),radial-gradient(circle at 22% 70%,rgba(255,255,255,.5) 0 1.5px,transparent 2.5px),radial-gradient(circle at 38% 18%,rgba(255,255,255,.6) 0 2px,transparent 3px),radial-gradient(circle at 55% 78%,rgba(255,255,255,.45) 0 1.5px,transparent 2.5px),radial-gradient(circle at 70% 30%,rgba(255,255,255,.6) 0 2px,transparent 3px),radial-gradient(circle at 92% 62%,rgba(255,255,255,.5) 0 2px,transparent 3px)}
-.hero>*{position:relative}
-body.xmas .hero{border:2px solid rgba(201,162,39,.55)}
-@container (max-width:600px){.hero h1{font-size:24px}.orn{display:none!important}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
 /* #60 条件の欄の3群を同じボタンに（色はテーマ変数から。未選択=白地・枠・同じ余白、選択=主色＋白文字＋✓） */
@@ -283,16 +274,39 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 .cmppick{display:flex;gap:6px;align-items:center;font-size:12px;min-height:44px}
 .cmppick input{width:20px;height:20px;accent-color:var(--coral)}
 .srlive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ヒーロー: design/hero.css（SP-20 T1）。背景と床の帯は CSS、絵は hero.svg（右下）。mock は幅を #app の幅で決めるので @container と cqw にしてある */
+.hero{--ah:288px;position:relative;height:340px;overflow:hidden;border-radius:var(--rm);background:linear-gradient(to top,#fbe3d9 calc(var(--ah)*.183),#e8dfd9 calc(var(--ah)*.183) calc(var(--ah)*.2),#fdeee6 calc(var(--ah)*.2));box-shadow:none}
+.hero img{position:absolute;right:max(24px,4cqw);bottom:0;height:var(--ah);width:auto}
+.hero .txt{position:absolute;left:48px;top:50%;transform:translateY(-50%);max-width:calc(100% - var(--ah)*1.445 - 48px - max(24px,4cqw) - 24px)}
+.hero h1{margin:0 0 8px;font-size:30px;line-height:1.3;color:#3a3331}
+.hero p{margin:0;color:#5c514d;font-size:14px}
+.hero p span.l{display:block}
+@container (max-width:899px){.hero{--ah:clamp(108px,calc((100cqw - 380px)/1.444),220px);height:260px}.hero .txt{left:16px;top:16px;transform:none;max-width:calc(100% - 32px)}.hero img{right:16px}}
+@container (max-width:480px){.hero{--ah:96px;height:232px}.hero h1{font-size:24px}}
+/* 画像（アプリと同じ: 商品の仮画像 products/*.svg・カテゴリー categories/*.svg） */
+.pic{position:relative;display:block}
+.pic img{display:block;width:100%;height:auto;border-radius:6px}
+.imgtag{position:absolute;right:6px;bottom:6px;padding:0 8px;border-radius:999px;background:rgba(58,51,49,.82);color:#fff;font-size:11px;line-height:1.7}
+.imgwrap{background:none}
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.cats .cat{flex-direction:column;justify-content:center;gap:4px;padding:10px 4px;min-height:76px;font-size:13px}
+.cats .cat img{display:block}
+@container (max-width:760px){.cats{grid-template-columns:repeat(3,1fr)}}
+@container (max-width:480px){.cats{grid-template-columns:repeat(2,1fr)}}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);max-width:560px}
+.tiles .tile{min-height:64px;font-size:17px;font-weight:700}
+.mini img{display:block;width:100%;height:100%;object-fit:contain;border-radius:var(--rm)}
 </style>
 </head>
-<body class="show-sp show-note xmas">
+<body class="show-sp show-note">
 
 <div id="bar" role="region" aria-label="レビュー用の操作（製品の画面ではありません）">
   <a class="hubback" href="../../../hub.html">← 開発ハブに戻る</a>
   <b>レビュー用操作</b><button id="barToggle" aria-expanded="true">操作を隠す</button>
   <div class="grp">画面：<button data-view="top" aria-pressed="true">トップ</button><button data-view="result" aria-pressed="false">検索結果</button><button data-view="share" aria-pressed="false">共有ページ</button></div>
   <div class="grp">幅：<button data-w="375" aria-pressed="false">375px</button><button data-w="1280" aria-pressed="true">1280px</button></div>
-  <div class="grp">テーマ：<button data-theme="xmas" aria-pressed="true">クリスマス</button><button data-theme="light" aria-pressed="false">淡色</button></div>
+  <div class="grp">テーマ：<button data-theme="xmas" aria-pressed="false">クリスマス（仕様の配色。切り替え）</button><button data-theme="light" aria-pressed="true">淡色（今のアプリ）</button></div>
   <div class="grp"><label><input type="checkbox" id="tSp" checked> 仕様ID</label><label><input type="checkbox" id="tNote" checked> 付箋</label></div>
   <div class="grp" id="stateBtns">検索の状態：
     <button data-st="initial">初期</button><button data-st="loading">検索中</button><button data-st="results">結果あり</button><button data-st="empty">0件</button><button data-st="error">失敗</button></div>
@@ -306,7 +320,7 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 
 <div id="stage"><div id="app">
   <header class="top">
-    <button class="logo" id="home" aria-label="Giftia トップへ"><i></i>Giftia</button>
+    <button class="logo" id="home" aria-label="Giftia トップへ"><img src="logo.svg" alt="Giftia" height="34"></button>
     <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す（準備中）" placeholder="準備中" disabled></div>
     <span class="sp">AC-03 #41-8</span>
     <span class="spacer"></span>
@@ -325,6 +339,8 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 <script>
 "use strict";
 /* ---------- 架空データ（実在の商品ではありません） ---------- */
+const SLUG={"生活雑貨":"living","食品":"food","コスメ":"cosme","飲料":"drink","家電":"appliance","インテリア":"interior","ビジネス小物":"business","フラワー":"flower","酒類":"liquor","カタログギフト":"catalog"};
+const catIcon=c=>`categories/${SLUG[c]||"living"}.svg`,prodImg=c=>`products/${SLUG[c]||"living"}.svg`;
 const CATS=["生活雑貨","食品","コスメ","飲料","家電","インテリア","ビジネス小物","フラワー","酒類","カタログギフト"];/* DB の10種（#54-5） */
 const CIC={"飲料":"🥤","生活雑貨":"🧴","インテリア":"🪴","カタログギフト":"📖","コスメ":"💄","ビジネス小物":"📓","フラワー":"💐","家電":"🔌","酒類":"🍶","食品":"🍱"};
 const HUE={"飲料":90,"生活雑貨":15,"インテリア":120,"カタログギフト":200,"コスメ":340,"ビジネス小物":220,"フラワー":320,"家電":190,"酒類":50,"食品":70};
@@ -387,10 +403,7 @@ const priceHTML=n=>`<span class="price">${yen(n)}${TAX}</span>`;
 const spinnerHTML=()=>`<img class="spinner" src="akapu.png" alt="" width="96" height="96" style="display:block;border:0;border-radius:50%;width:96px;height:96px;object-fit:cover">`;
 
 /* イラスト風の仮画像（SVG）。「イメージ」と明記（OPEN-06） */
-function imgHTML(p){
-  const h=HUE[p.cat]||20,c=(a,l)=>`hsl(${(h+a)%360},${a?45:60}%,${l}%)`;
-  return `<div class="imgwrap" role="img" aria-label="イメージ（仮画像）"><svg viewBox="0 0 120 96" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="22" y="58" width="76" height="22" rx="7" fill="${c(0,38)}"/><rect x="26" y="40" width="68" height="22" rx="7" fill="${c(40,52)}"/><rect x="30" y="22" width="60" height="22" rx="7" fill="${c(0,62)}" stroke="${c(0,30)}" stroke-width="1.5"/></svg><span class="imgtag">イメージ</span></div>`;
-}
+function imgHTML(p){return `<span class="pic imgwrap"><img src="${prodImg(p.cat)}" alt="" width="400" height="400"><span class="imgtag">イメージ</span></span>`}
 const ornSVG=`<svg class="orn" viewBox="0 0 110 90" aria-hidden="true"><path d="M20 0v26M55 0v40M90 0v18" stroke="#c9a227" stroke-width="1.5"/><circle cx="20" cy="34" r="9" fill="#b3261e"/><circle cx="17" cy="31" r="2.5" fill="#fff" opacity=".6"/><circle cx="55" cy="50" r="11" fill="#c9a227"/><circle cx="51" cy="46" r="3" fill="#fff" opacity=".6"/><circle cx="90" cy="26" r="8" fill="#b3261e"/><circle cx="87" cy="23" r="2" fill="#fff" opacity=".6"/></svg>`;
 const heroSVG=`<svg viewBox="0 0 150 120" aria-hidden="true"><rect x="30" y="50" width="90" height="60" rx="6" fill="#fff" stroke="#f1d6c9"/><rect x="24" y="38" width="102" height="18" rx="5" fill="#fff" stroke="#f1d6c9"/><rect class="rib" x="70" y="38" width="12" height="72"/><path class="ribs" d="M76 38c-22-26-40-8-24 0M76 38c22-26 40-8 24 0" fill="none" stroke-width="7" stroke-linecap="round"/><circle cx="20" cy="30" r="3" fill="#f4a58f"/><circle cx="132" cy="22" r="3" fill="#8a9a6e"/><circle cx="138" cy="70" r="3" fill="#c9a227"/></svg>`;
 
@@ -444,7 +457,7 @@ const VOICES={1:[[5,"毎日使っていて、肌ざわりが本当にやさし�
 const voicesOf=p=>{const seen=new Set();return (VOICES[p.id]||[]).filter(v=>v[0]!=null&&v[0]>=4&&v[1]&&v[1].trim()).sort((a,b)=>b[2].localeCompare(a[2])||a[1].localeCompare(b[1])).filter(v=>!seen.has(v[1])&&seen.add(v[1])).slice(0,2)};
 const arrDate=p=>{if(p.d==null)return null;const t=new Date();t.setDate(t.getDate()+p.d);return t};
 const arrTxt=p=>{const t=arrDate(p);return t?`${t.getMonth()+1}/${t.getDate()}までに届く（目安）`:""};
-const miniImg=p=>`<span class="mini" style="background:hsl(${HUE[p.cat]||20} 45% 90%)" aria-hidden="true">${CIC[p.cat]||"🎁"}</span>`;
+const miniImg=p=>`<span class="mini" aria-hidden="true"><img src="${prodImg(p.cat)}" alt=""></span>`;
 const bandOf=price=>BANDS.find(b=>b[2](price))[0];
 const matchCount=(scene,band,cats)=>{const bd=BANDS.find(x=>x[0]===band);return PRODUCTS.filter(p=>p.stock>=1&&(!scene||p.scenes.includes(scene))&&(!bd||bd[2](p.price))&&catOk(cats,p)).length};
 const SORTS=[["recommend","おすすめ"],["price_asc","安い順"],["rating_desc","評価順"],["delivery_asc","早く届く順"]];
@@ -527,16 +540,16 @@ function budgetFormHTML(){
 }
 function topHTML(){
   const rec=orderBy(PRODUCTS.filter(p=>p.stock>=1)).slice(0,4);
-  return `<section class="hero">${ornSVG}<div><h1>ありがとうに、<br>ちょうどいいギフト。</h1><p>相手とシーンに合わせて、気持ちが伝わる贈りものを。${sp("案A トップ")}</p></div>${heroSVG}</section>
+  return `<section class="hero"><div class="txt"><h1>ありがとうに、<br>ちょうどいいギフト。</h1><p><span class="l">相手とシーンに合わせて、</span><span class="l">気持ちが伝わる贈りものを。</span></p><div>${sp("SP-20 T1 design/hero.svg")}</div></div><img src="hero.svg" alt="" width="1200" height="360"></section>
   <form id="f" novalidate>
    <h2 class="sec">シーンから探す${sp("SP-01 #50-1")}</h2>
-   <div class="tiles" role="group" aria-label="シーン">${TILES.map(x=>`<button type="button" class="tile" data-tile="${x}" aria-pressed="${S.scene===x}"><span class="ic" aria-hidden="true">${TICON[x]}</span>${x}</button>`).join("")}</div>
+   <div class="tiles" role="group" aria-label="シーン">${TILES.map(x=>`<button type="button" class="tile" data-tile="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div>
       ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
   <h2 class="sec cat-static">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
   <h2 class="sec cat-toggle"><button type="button" id="catToggle" class="cathead" aria-expanded="${S.catOpen}" aria-controls="catlist">カテゴリーから探す<span class="multi">（複数選べます）</span><span class="chev" aria-hidden="true">${S.catOpen?"▲":"▼"}</span></button>${sp("AC-04 #61")}</h2>
-  <div class="cats ${S.catOpen?"":"shut"}" id="catlist">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><span class="ic" aria-hidden="true">${CIC[c]}</span>${c}</button>`).join("")}</div>
+  <div class="cats ${S.catOpen?"":"shut"}" id="catlist">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><img src="${catIcon(c)}" alt="" width="40" height="40">${c}</button>`).join("")}</div>
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   ${$("#fRec").checked?`<div class="msgbox err" role="alert">おすすめの商品を読み込めませんでした<br><button type="button" class="ghost" id="recRetry" style="margin-top:8px">もう一度</button>${sp("D-26 キックオフ記録 #86 の1")}</div>`:`<div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`}`;
 }
@@ -627,7 +640,7 @@ function recentHTML(){
   const items=RECENT.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
   if(S.recentBad)return `<section class="recent" aria-label="最近見た商品"><h3>最近見た商品</h3><div class="msgbox err" role="alert">最近見た商品を読み込めませんでした <button class="ghost" id="recentRetry">もう一度</button>${sp("SP-22 D-47")}</div></section>`;
   if(!items.length)return "";
-  return `<section class="recent" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini">${CIC[p.cat]||"🎁"}</span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="recent" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini"><img src="${prodImg(p.cat)}" alt=""></span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
 }
 function listHTML(){return chosenHTML()+sharebar()}
 function sideHTML(){
