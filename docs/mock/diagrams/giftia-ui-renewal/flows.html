@@ -3,136 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Giftia 主要フロー図（R-01）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#f7f6f2; --card:#fff; --ink:#1f2328; --sub:#59606a; --line:#d0d4da;
-  --ui:#2f6fdb; --ui-bg:#e8f0fd; --api:#1f8a5b; --api-bg:#e4f5ec; --db:#8a5a1f; --db-bg:#f8efe0;
-  --warn:#b4531a; --warn-bg:#fdeee3; --err:#b3261e; --err-bg:#fdeceb;
-  --pend:#6b6f76; --gap:#7b3fb3; --gap-bg:#f3ecfa;
-  --w2:#B388FF; --w2-ink:#2A1B3D;
-}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#16181b; --card:#1f2327; --ink:#e8eaed; --sub:#a4abb4; --line:#3a4048;
-  --ui:#7aa7f5; --ui-bg:#1c2a44; --api:#59c791; --api-bg:#172e24; --db:#d9a566; --db-bg:#33270f;
-  --warn:#f0a070; --warn-bg:#3a2415; --err:#f28b82; --err-bg:#3d1b19; --pend:#9aa0a8; --gap:#c79af0; --gap-bg:#2c1d3d;}
-}
+:root{--bg:#E3D8F3;--ink:#2A1B3D;--sub:#54476B;--card:#fff;--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;--w2:#B388FF;--w2bg:#F1E9FF;--gap:#7b3fb3;--gapbg:#f3ecfa;--line:#2A1B3D;
+--body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,"Hiragino Sans","Yu Gothic",sans-serif}
-header,main{max-width:980px;margin:0 auto;padding:0 16px}
-header{padding-top:20px}
-h1{font-size:20px;margin:0 0 4px}
-h2{font-size:17px;margin:24px 0 8px}
-h3{font-size:15px;margin:18px 0 6px}
-a.hubback{display:inline-block;margin:0 0 8px;padding:6px 0;color:var(--ink);text-decoration:underline;font-size:13px;font-weight:700}
-p.lead{margin:0 0 12px;color:var(--sub);font-size:13px}
-/* tabs (CSS only) */
-input.tab{position:absolute;opacity:0;pointer-events:none}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
-.tabs label{padding:8px 14px;border:2px solid var(--ink);border-radius:999px;font-weight:700;background:var(--card);cursor:pointer;font-size:14px}
-#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3],#t4:checked~.tabs label[for=t4],#t5:checked~.tabs label[for=t5]{background:#FFD700;color:#2A1B3D;border-color:#2A1B3D;box-shadow:3px 3px 0 #2A1B3D}
-input.tab:focus-visible~.tabs label{outline:2px solid var(--ui)}
-.panel{display:none}
-#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3,#t4:checked~.p4,#t5:checked~.p5{display:block}
-/* legend */
-.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:var(--sub);margin:4px 0 8px}
+body{margin:0;color:var(--ink);font:500 15px/1.65 var(--body);background:var(--bg) radial-gradient(rgba(42,27,61,.07) 1px,transparent 1.3px);background-size:auto,12px 12px}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+a.hubback{display:inline-block;font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px;text-decoration:underline}
+h1{margin:0 0 6px;display:inline-flex;align-items:center;gap:12px;padding:4px 20px;font:800 1.25rem/1.4 var(--body);background:var(--m3);border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink)}
+.mk{display:inline-flex;gap:4px}.mk i{width:10px;height:10px;border-radius:50%;border:2px solid var(--ink)}.mk i:nth-child(1){background:var(--m1)}.mk i:nth-child(2){background:var(--m2)}.mk i:nth-child(3){background:var(--m3)}
+p.lead{margin:6px 0 8px;color:var(--sub);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--sub);margin:4px 0 8px;font-weight:700}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.sw{display:inline-block;width:22px;height:12px;border-radius:3px;border:1.5px solid var(--line);background:var(--card)}
-.sw.pend{border:1.5px dashed var(--pend)}
-.sw.gap{border:1.5px dashed var(--gap);background:var(--gap-bg)}
-.sw.err{border-color:var(--err);background:var(--err-bg)}
-.sw.warn{border-color:var(--warn);background:var(--warn-bg)}
-/* 実装③（第2弾）の印: ハブの STAGE 3.5 の色 #B388FF。塗りの札＋左の太い実線。紫の破線（仕様に書かれていない）とは別物 */
-.w2tag{display:inline-block;background:var(--w2);color:var(--w2-ink);border:1.5px solid var(--w2-ink);border-radius:999px;padding:0 8px;margin-right:6px;font-size:11px;font-weight:800;line-height:1.5;vertical-align:1px;white-space:nowrap}
-.sw.w2{width:22px;border:0;border-left:6px solid var(--w2);background:var(--card)}
-.node.w2,.box.w2{border-left:7px solid var(--w2)}
-.arrow.w2{color:var(--w2);font-weight:800;text-shadow:0 0 0 var(--w2-ink)}
-.w2note{font-size:12px;color:var(--sub);margin:2px 0 8px}
-/* nodes */
-.node{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
-.node b{display:block;font-size:14px}
-.node small{display:block;color:var(--sub);font-size:12px}
-.ids{display:block;margin-top:3px;font-size:11px;color:var(--sub);font-family:ui-monospace,Consolas,monospace}
-.node.ui{border-color:var(--ui);background:var(--ui-bg)}
-.node.api{border-color:var(--api);background:var(--api-bg)}
-.node.db{border-color:var(--db);background:var(--db-bg)}
-.node.err{border-color:var(--err);background:var(--err-bg)}
-.node.warn{border-color:var(--warn);background:var(--warn-bg)}
-.node.pend{border:1.5px dashed var(--pend);background:transparent}
-.node.gap{border:1.5px dashed var(--gap);background:var(--gap-bg)}
-.node.gap b::before{content:"仕様に書かれていません｜";color:var(--gap);font-weight:700}
-.tag{display:inline-block;font-size:11px;border-radius:4px;padding:0 6px;margin-right:4px;border:1px solid currentColor}
-.tag.ui{color:var(--ui)} .tag.api{color:var(--api)} .tag.db{color:var(--db)} .tag.pend{color:var(--pend);border-style:dashed}
-.arrow{text-align:center;color:var(--sub);line-height:1;font-size:16px;margin:2px 0}
-/* rows: main + side */
-.row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px 14px;align-items:start;margin-bottom:2px}
-.side{display:flex;flex-direction:column;gap:6px}
-.step-no{display:inline-block;min-width:22px;text-align:center;border-radius:11px;background:var(--ink);color:var(--bg);font-size:12px;margin-right:6px}
-.exp{font-size:12px;color:var(--sub)}
-.exp b{display:inline;color:var(--ink)}
-.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}
-.box ul{margin:4px 0 0;padding-left:18px}
-.box li{margin:2px 0}
-table{border-collapse:collapse;width:100%;font-size:13px}
-th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
-th{background:var(--card)}
-.tl{display:flex;align-items:stretch;gap:0;margin:10px 0}
-.tl .seg{flex:1;padding:10px;border:1.5px solid var(--line);background:var(--card);font-size:13px;min-width:0}
-.tl .seg.s1{border-color:var(--ui);background:var(--ui-bg);border-radius:10px 0 0 10px}
-.tl .seg.s2{border-color:var(--api);background:var(--api-bg);flex:2}
-.tl .seg.s3{border-color:var(--err);background:var(--err-bg);border-radius:0 10px 10px 0}
+.sw{display:inline-block;width:22px;height:12px;border:2px solid var(--ink);border-radius:4px}
+.sw.ui{background:var(--m1)}.sw.api{background:var(--m2)}.sw.db{background:var(--m3)}
+.sw.gp{border:2px dashed var(--gap);background:var(--gapbg)}
+.sw.w2{border:0;border-left:6px solid var(--w2);background:var(--w2bg);width:22px}
+input.tab,input.t{position:absolute;opacity:0;pointer-events:none}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.pill{display:inline-block;padding:3px 16px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:800 14px/1.6 var(--body);cursor:pointer;color:var(--ink)}
+.tabs .pill{padding:5px 18px;font-size:15px}
+input:focus-visible+*,input.tab:focus-visible~.tabs label{outline:3px solid var(--ink);outline-offset:2px}
+.panel{display:none}
+.sub{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 12px}
+.pn{display:none}
+.sumline{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:10px 0 2px;font-weight:800}
+.lane{display:inline-block;padding:2px 14px;border:2px solid var(--ink);border-radius:999px;font-weight:800;font-size:14px}
+.lane.ui{background:var(--m1)}.lane.api{background:var(--m2)}.lane.db{background:var(--m3)}.lane.plain{background:#fff}
+.ar{font-weight:800;font-size:18px}
+.sumnote{font-size:13px;font-weight:500;margin:0 0 0 8px}
+.stick{display:inline-block;background:var(--w2);color:var(--ink);border:2px solid var(--ink);border-radius:999px;padding:0 10px;font-size:12px;font-weight:800;line-height:1.55;white-space:nowrap;margin-right:6px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;margin:8px 0}
+.switch input{width:20px;height:20px;accent-color:#7b3fb3}
+.code{font:700 12.5px ui-monospace,Consolas,monospace;word-break:break-all}
+.ids{display:block;margin-top:4px;font:11px ui-monospace,Consolas,monospace;color:var(--sub)}
+.mth{display:inline-block;border:2px solid var(--ink);border-radius:6px;padding:0 8px;font:800 12px ui-monospace,Consolas,monospace;background:#fff}
+.ep,.stp{margin:0 0 22px}
+.ephead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 8px}
+.ephead b{font-size:17px}
+.flow{display:grid;grid-template-columns:1fr 36px 1fr 36px 1fr;align-items:stretch}
+.flowcard{background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.flowcard h4{margin:0;padding:5px 12px;font-size:13px;border-bottom:2px solid var(--ink)}
+.flowcard.ui h4,.flowcard.c1 h4{background:var(--m1)}.flowcard.api h4,.flowcard.c2 h4{background:var(--m2)}.flowcard.db h4{background:var(--m3)}.flowcard.c3 h4{background:var(--ink);color:#fff}
+.flowcard .bd{padding:10px 12px}
+.t1{font-weight:800;font-size:16px;line-height:1.45;margin:0}
+.t1 .no{display:inline-block;min-width:24px;text-align:center;border-radius:12px;background:var(--ink);color:#fff;font-size:13px;margin-right:8px;padding:0 6px}
+.s1{font-size:13px;color:var(--sub);margin:3px 0 0}
+.flowcard details,.stp details{margin-top:8px;font-size:12.5px;color:var(--sub)}
+details>summary{cursor:pointer;font-weight:800;font-size:13px}
+.arw{display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.dn{text-align:center;font-weight:800;font-size:20px;line-height:1;margin:-12px 0 8px}
+.fails{margin-top:10px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:6px 12px;font-size:13px}
+.fails .fl>div{margin:6px 0}
+.fchip{display:inline-block;font:800 11.5px var(--body);border:2px solid var(--ink);border-radius:999px;padding:0 9px;background:#fff;margin-right:6px}
+.w2m .flowcard{background:var(--w2bg);border:3px solid var(--w2);box-shadow:5px 5px 0 var(--w2)}
+.w2m .flowcard h4{border-bottom:2px solid var(--ink)}
+.infocard,.gapcard,.infobox{display:flex;flex-direction:column;gap:3px;background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:10px 14px;margin:0 0 14px;font-size:13.5px}
+.infocard.w2m,.infobox.w2m{background:var(--w2bg);border:3px solid var(--w2);box-shadow:5px 5px 0 var(--w2)}
+.infocard b,.infobox>b{font-size:15px}
+.infocard .stick,.infobox>.stick{align-self:flex-start;margin:0 0 4px}
+.gapcard{background:var(--gapbg);border:2px dashed var(--gap);box-shadow:none}
+.gapcard b{color:var(--gap)}
+.blurb{font-size:13px;color:var(--sub);margin:0 0 12px}
+.subw2{margin-top:8px;border-left:6px solid var(--w2);background:var(--w2bg);border-radius:6px;padding:6px 10px;font-size:12.5px;font-weight:700}
+table.dt{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border:2px solid var(--ink);border-radius:10px;overflow:hidden;margin:6px 0 14px}
+table.dt th,table.dt td{border:1px solid var(--ink);padding:6px 8px;text-align:left;vertical-align:top}
+table.dt th{background:var(--m1)}
+.dim .it:not(.w2m){opacity:.3}
 .foot{font-size:12px;color:var(--sub);margin:24px 0 40px}
-@media (max-width:680px){
+@media (max-width:760px){
+  .flow{grid-template-columns:1fr}.arw{transform:rotate(90deg);height:26px}
   table.stk thead{display:none}
   table.stk,table.stk tbody,table.stk tr,table.stk td{display:block;width:100%}
-  table.stk tr{border:1px solid var(--line);border-radius:8px;margin:0 0 8px;background:var(--card)}
-  table.stk td{border:0;padding:3px 8px}
-  table.stk td::before{content:attr(data-l)"：";font-weight:700;color:var(--sub)}
-  .row{grid-template-columns:1fr}
-  .cols{grid-template-columns:1fr}
-  .tl{flex-direction:column}
-  .tl .seg{border-radius:0!important}
-  .tl .seg.s1{border-radius:10px 10px 0 0!important}
-  .tl .seg.s3{border-radius:0 0 10px 10px!important}
-}
-
-/* ⑤ 全体の仕組み */
-.p5{--hd-ink:#fff}
-@media (prefers-color-scheme:dark){.p5{--hd-ink:#0f1114}}
-#t5:checked~.p5{width:min(1240px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
-.arch{display:grid;grid-template-columns:minmax(0,.8fr) 58px minmax(0,1.15fr) 58px minmax(0,1.3fr) 58px minmax(0,1.05fr);align-items:stretch;margin:10px 0 0}
-.arch.bt{grid-template-columns:minmax(0,1.9fr) minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-top:6px}
-.ac{background:var(--card);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
-.ac h4{margin:0;padding:7px 10px;font-size:14px;color:var(--hd-ink);background:var(--ink)}
-.ac.ui h4{background:var(--ui)} .ac.api h4{background:var(--api)} .ac.db h4{background:var(--db)} .ac.gh h4{background:var(--pend)} .ac.warn h4{background:var(--warn)}
-.ac.ui{border-color:var(--ui)} .ac.api{border-color:var(--api)} .ac.db{border-color:var(--db)} .ac.warn{border-color:var(--warn);background:var(--warn-bg)}
-.ac .bd{padding:8px 10px;font-size:13px}
-.ac .big{font-size:16px;font-weight:800;margin:0 0 2px}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:6px 0 0;font-size:12.5px}
-.kv code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700;word-break:break-all}
-.kv>*{padding:3px 0;border-top:1px solid var(--line);min-width:0}
-.kv>:nth-child(-n+2){border-top:0}
-.kv.one{grid-template-columns:1fr}.kv.one>b{padding-bottom:0}.kv.one>span{border-top:0;padding-top:0}
-#t5:checked~.p5>h2,#t5:checked~.p5>.lead,#t5:checked~.p5>.counts{max-width:980px;margin-left:auto;margin-right:auto}
-.ac .sub{margin:8px 0 0;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--bg)}
-.ac .sub b{display:block;font-size:12.5px}
-.ac .sub.w2{border-left:6px solid var(--w2)}
-.al{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--sub);text-align:center;line-height:1.3;font-weight:700}
-.al i{font-style:normal;font-size:20px;color:var(--ink)}
-.arch .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
-.archnote{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:12px;color:var(--sub);margin:12px 2px 0}
-.counts{display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 6px;font-size:13px;font-weight:800}
-.counts span{border:2px solid var(--ink);border-radius:999px;padding:1px 12px;background:var(--card)}
-@media (max-width:1000px){
-  .arch,.arch.bt{grid-template-columns:1fr}
-  .al{flex-direction:row;gap:8px;padding:4px 0}
-  .al i{transform:rotate(90deg)}
+  table.stk tr{border-bottom:2px solid var(--ink);padding:4px 0}
+  table.stk td{border:0;padding:2px 8px}
+  table.stk td::before{content:attr(data-l)"：";font-weight:800;color:var(--sub)}
 }
 /* ER図（ハブの色・太枠・ずらし影・札） */
 .erwrap{--ew-bg:#E3D8F3;--ew-card:#fff;--ew-ink:#2A1B3D;--ew-sub:#54476B;--ew-line:#2A1B3D;--ew-sh:#2A1B3D;--ew-dot:rgba(42,27,61,.07);--ew-stripe:rgba(42,27,61,.16);--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;
   background:var(--ew-bg) radial-gradient(var(--ew-dot) 1px,transparent 1.3px);background-size:auto,12px 12px;color:var(--ew-ink);border:2px solid var(--ew-line);border-radius:12px;box-shadow:3px 3px 0 var(--ew-sh);padding:20px 10px 12px}
-@media (prefers-color-scheme:dark){.erwrap{--ew-bg:#2A1B3D;--ew-card:#3F3158;--ew-ink:#fff;--ew-sub:#E3D8F3;--ew-line:#E3D8F3;--ew-sh:rgba(0,0,0,.55);--ew-dot:rgba(255,255,255,.12);--ew-stripe:rgba(255,255,255,.22)}}
 .erg{position:relative;width:880px;height:910px;margin:0 auto}
 .erl{position:absolute;left:0;top:0;pointer-events:none}
 .erl .ln{fill:none;stroke:var(--ew-line);stroke-width:2}
@@ -185,412 +139,33 @@ th{background:var(--card)}
   .erk{grid-template-columns:1fr;margin:16px 0 4px}
   .erwrap{padding:14px 10px 10px}
 }
+#t1:checked~.p1{display:block}#t1:checked~.tabs label[for=t1]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t2:checked~.p2{display:block}#t2:checked~.tabs label[for=t2]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t3:checked~.p3{display:block}#t3:checked~.tabs label[for=t3]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t4:checked~.p4{display:block}#t4:checked~.tabs label[for=t4]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t10:checked~.t1p0{display:block}#t10:checked~.sub label[for=t10]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t11:checked~.t1p1{display:block}#t11:checked~.sub label[for=t11]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t12:checked~.t1p2{display:block}#t12:checked~.sub label[for=t12]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t13:checked~.t1p3{display:block}#t13:checked~.sub label[for=t13]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t14:checked~.t1p4{display:block}#t14:checked~.sub label[for=t14]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t15:checked~.t1p5{display:block}#t15:checked~.sub label[for=t15]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t20:checked~.t2p0{display:block}#t20:checked~.sub label[for=t20]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t21:checked~.t2p1{display:block}#t21:checked~.sub label[for=t21]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t22:checked~.t2p2{display:block}#t22:checked~.sub label[for=t22]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t23:checked~.t2p3{display:block}#t23:checked~.sub label[for=t23]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t24:checked~.t2p4{display:block}#t24:checked~.sub label[for=t24]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t25:checked~.t2p5{display:block}#t25:checked~.sub label[for=t25]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t26:checked~.t2p6{display:block}#t26:checked~.sub label[for=t26]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t30:checked~.t3p0{display:block}#t30:checked~.sub label[for=t30]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t31:checked~.t3p1{display:block}#t31:checked~.sub label[for=t31]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t32:checked~.t3p2{display:block}#t32:checked~.sub label[for=t32]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t33:checked~.t3p3{display:block}#t33:checked~.sub label[for=t33]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+.ptitle{font-size:17px;margin:14px 0 4px}
+.erwrap{margin-top:12px}
+.erwrap .stick{margin:0}.tb .band .stick{margin:0}
+#t4:checked~.p4 p.lead{font-size:13px}
 </style>
 </head>
 <body>
-<header>
-  <a class="hubback" href="../../../hub.html">← 開発ハブに戻る</a>
-  <h1>Giftia 主要フロー図（R-01 共同購入者）</h1>
-  <p class="lead">チームレビュー用。正本は 要求.md・仕様.md・設計.md・キックオフ記録（#22〜#32）。この図は文書にある流れだけを描き、文書に無い所は紫の破線＋「仕様に書かれていません」で示します。ID は小さく付けています（SP＝仕様、D＝設計、AC＝受入基準）。第2弾（実装③。開発 11/15〜11/18）で足した所は、紫の塗りの札「実装③」と左の太い実線で区別しています（第2弾の対象版は 5 文書 <code>8243007</code>、この図は main <code>6764510</code> の文書から描きました）。</p>
-  <div class="legend" aria-label="凡例">
-    <span><i class="sw" style="border-color:var(--ui);background:var(--ui-bg)"></i>画面・利用者</span>
-    <span><i class="sw" style="border-color:var(--api);background:var(--api-bg)"></i>API（FastAPI）</span>
-    <span><i class="sw" style="border-color:var(--db);background:var(--db-bg)"></i>DB（MySQL）</span>
-    <span><i class="sw warn"></i>つまずき・分岐</span>
-    <span><i class="sw err"></i>エラー・期限切れ</span>
-    <span><i class="sw pend"></i>未決・承認待ち（破線）</span>
-    <span><i class="sw gap"></i>仕様に書かれていない（紫の破線）</span>
-    <span><i class="sw w2"></i><span class="w2tag">実装③</span>第2弾で足した箱・矢印（塗りの札＋左の太い実線。破線ではない）</span>
-  </div>
-</header>
-
+<div class="wrap">
+<a class="hubback" href="../../../hub.html">← 開発ハブに戻る</a><br>
+<h1><span class="mk"><i></i><i></i><i></i></span>Giftia 主要フロー図（R-01 共同購入者）</h1>
+<p class="lead">チームレビュー用。正本は 要求.md・仕様.md・設計.md・キックオフ記録（#22〜#32）。文書にある流れだけを描き、文書に無い所は紫の破線＋「仕様に書かれていません」で示します。ID は小さく付けています（SP＝仕様、D＝設計、AC＝受入基準）。第2弾（実装③。開発 11/15〜11/18）で足した所は、薄紫の地・太い紫の枠・札「実装③」で区別します（第2弾の対象版は 5 文書 <code>8243007</code>、この図は main <code>6764510</code> の文書から描きました）。説明と ID は「くわしく」、失敗は「失敗したとき」を押すと開きます。</p>
+<div class="legend" aria-label="凡例"><span><i class="sw ui"></i>画面・利用者</span><span><i class="sw api"></i>API（FastAPI）</span><span><i class="sw db"></i>DB（MySQL）</span><span><i class="sw w2"></i><span class="stick">実装③</span>第2弾で足した所（薄紫の地・太い紫の枠）</span><span><i class="sw gp"></i>仕様に書かれていない（紫の破線）</span><span>つまずき・失敗は「失敗したとき」に畳んでいます</span></div>
+<label class="switch"><input type="checkbox" onchange="document.body.classList.toggle('dim',this.checked)">実装③だけを強調する（それ以外をうすくする）</label>
 <main>
-<input class="tab" type="radio" name="tab" id="t1" checked>
-<input class="tab" type="radio" name="tab" id="t2">
-<input class="tab" type="radio" name="tab" id="t3">
-<input class="tab" type="radio" name="tab" id="t4">
-<input class="tab" type="radio" name="tab" id="t5">
-<div class="tabs" role="tablist">
-  <label for="t1">① 顧客視点</label>
-  <label for="t2">② システム視点</label>
-  <label for="t3">③ 共有リンクの状態</label>
-  <label for="t4">④ ER図（DB）</label>
-  <label for="t5">⑤ 全体の仕組み</label>
-</div>
-
-<!-- ============ 図1 顧客視点 ============ -->
-<section class="panel p1" aria-label="顧客視点">
-  <h2>① 顧客視点：Aさんが仲間に候補を送って決める</h2>
-  <p class="lead">Aさん（Exhibit 2）: 同僚3人で送別品（1,500円ずつ＝総額4,500円）。30分で10商品以上見て一度閉じ、夜に3商品へ絞ってLINEに送り、2人の賛成で購入。R-01 の体験: (1) 1回の訪問で、仲間に見せられる候補を3つほどに絞りきれる (2) 仲間がひと目で「それならいい」と言える理由つきで送れる。</p>
-
-  <div class="row">
-    <div class="node ui"><b><span class="step-no">1</span>価格帯（任意）を選び、シーン「送別」のタイルを押す</b>
-      <small>例: 3,000〜4,999円。価格帯は「〜2,999円／3,000〜4,999円／5,000円〜」の3ボタンから1つ（任意。同じボタンで解除）。シーンは3つのタイルから1つ。押した時点で候補が出る（「候補を出す」ボタンは無い）。</small>
-      <span class="ids">SP-01 ／ D-08 ／ F-01 ／ 体験(1)</span></div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node ui"><b><span class="step-no">2</span>候補と理由を見る（上位10件・順位順）</b>
-      <small>各候補に、事実をつなげた自然な文の理由。例「職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。」</small>
-      <span class="ids">SP-01〜03 ／ D-01〜D-04 ／ F-01, F-01a, F-02 ／ 体験(2)</span></div>
-    <div class="side">
-      <div class="node warn"><b>0件</b><small>価格帯ありは「条件に合う商品がありません。価格帯を変えてみてください」、価格帯なしは「この条件に合う商品がありません。シーンを変えてみてください」→ 変えて出し直す。</small><span class="ids">SP-01</span></div>
-      <div class="node warn w2"><b><span class="w2tag">実装③</span>0件の助け舟</b><small>選んでいる条件だけ「価格帯をはずすと N 件」「カテゴリーをはずすと N 件」。N が0の行は出さない。押すと条件をはずして出し直す。件数が取れなければ今の0件の文言だけ。</small><span class="ids">SP-24 ／ D-44 ／ F-42</span></div>
-      <div class="node ui w2"><b><span class="w2tag">実装③</span>決め手の1行（各カードに）</b><small>「📦 11/17までに届く（目安）」「🎀 ラッピング可」「在庫あり」「送別で{n}回」の順。値の無い決め手は出さない（値を作らない）。カードと詳細で同じ値・並び・文言。</small><span class="ids">SP-16, SP-26 ／ D-34 ／ F-20, F-44</span></div>
-      <div class="node err"><b>失敗・10秒で打ち切り</b><small>「失敗しました。もう一度お試しください」と再試行ボタン。</small><span class="ids">SP-01 ／ 500</span></div>
-    </div>
-  </div>
-  <div class="arrow w2">↓</div>
-
-  <div class="row">
-    <div class="node ui w2"><b><span class="w2tag">実装③</span><span class="step-no">2+</span>カードを押して詳細を開き、決め手・贈った人の声・似た商品・届く日を見る</b>
-      <small>詳細の欄に、決め手の1行（SP-16）→ 贈った人の声（レビューのうち★4以上で本文のあるものを新しい順に最大2件。本文は「」で囲み、投稿した人の名前・日付は出さない。0件なら欄ごと出さない）→ 同じシーン・同じ価格帯の商品（最大3件。シーンを選んだときだけ）。届く日は「{M}/{D}までに届く（目安）」。「贈る日（任意）」を入れると「間に合う（目安）／間に合わない（目安）」。入れた日は保存しない。</small>
-      <span class="ids">SP-16, SP-17, SP-25, SP-26, SP-27 ／ D-29, D-35, D-42 ／ F-20〜F-23, F-43〜F-45</span></div>
-    <div class="side">
-      <div class="node warn w2"><b><span class="w2tag">実装③</span>在庫0の商品</b><small>詳細の「カートに入れる」は「在庫なし」の文字になり、押せない。</small><span class="ids">SP-18 ① ／ U-14</span></div>
-      <div class="node err w2"><b><span class="w2tag">実装③</span>詳細・声・似た商品の読み込みに失敗</b><small>詳細は「商品の情報を読み込めませんでした」と「もう一度」。商品が無い（404）は「この商品は見つかりません」。声・似た商品は出せないとき欄を出さない。</small><span class="ids">SP-12 ／ D-29, D-35, D-42</span></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node ui"><b><span class="step-no">3</span>候補を選ぶ・外す</b>
-      <small>1つ以上、上限なし。選択中の数を表示。選択は画面の中だけ（再読込で消える）。Aさんは3つに絞った。</small>
-      <span class="ids">SP-04 ／ D-08 ／ F-03 ／ 体験(1)</span></div>
-    <div class="side">
-      <div class="node warn"><b>0件選択</b><small>「共有リンクを作る」ボタンを押せない。</small><span class="ids">SP-05 ／ D-08</span></div>
-      <div class="node ui w2"><b><span class="w2tag">実装③</span>並び替え（シーンなしの一覧）</b><small>おすすめ／安い順／評価順／早く届く順。選んだ並びは URL に持つ。R-01 の10件には出さない。</small><span class="ids">SP-21 ／ D-43 ／ F-39</span></div>
-      <div class="node ui w2"><b><span class="w2tag">実装③</span>お気に入りで2〜3件を比べる</b><small>パネルで「比べる」を選ぶと、価格（税込）・届く日（目安）・ラッピング・評価（件数）を列で並べる。値が無い項目は「—」。各列に「カートに入れる」。</small><span class="ids">SP-23 ／ D-47 ／ F-41</span></div>
-      <div class="node ui w2"><b><span class="w2tag">実装③</span>最近見た商品</b><small>詳細を開いた商品を新しい順に最大6件、検索結果の下に横に並べる。ブラウザ内の保存だけ。0件・保存できないときは欄を出さない。</small><span class="ids">SP-22 ／ D-47 ／ F-40</span></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node ui"><b><span class="step-no">4</span>共有リンクを作る → リンク＋コピーボタン</b>
-      <small>サイトを閉じずに作られる（AC-01）。作成中はボタンを押せない。作成後は作成ボタンが再び押せる。コピーすると「コピーしました」を2秒。失敗したら長押しでコピーの案内。</small>
-      <span class="ids">SP-05 ／ D-05, D-07, D-08 ／ F-04 ／ AC-01</span></div>
-    <div class="side">
-      <div class="node err"><b>作成の失敗・10秒で打ち切り</b><small>「失敗しました。もう一度お試しください」と再試行。失敗ならリンクは作られない（打ち切り後に裏で作られることは許す）。</small><span class="ids">SP-05 ／ #30 C</span></div>
-      <div class="node warn"><b>11件以上</b><small>作らずに入力エラー（選ぶ数を減らす）。</small><span class="ids">SP-05 ／ N-06</span></div>
-      <div class="node warn"><b>選び直す</b><small>選び直したら、同じ選び方でも毎回新しいリンク。作成済みのリンクの中身は変えない。</small><span class="ids">SP-07 ／ D-05</span></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node gap"><b><span class="step-no">5</span>LINEで仲間に送る</b>
-      <small>サイトの外の操作。Aさんがコピーしたリンクを自分でLINEに貼る前提。LINEへ直接送る共有ボタン・LINE連携は文書にありません。</small>
-      <span class="ids">要求.md 体験(2)「候補を送れ」</span></div>
-    <div class="side">
-      <div class="node"><b>外部公開 ADR-004（承認済み）</b><small>公開後（11/12〜）に実機スマホで1回ずつ開く。仕様 AC-02 は「スマホ幅の画面」と書く。</small><span class="ids">ADR-004</span></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node ui"><b><span class="step-no">6</span>仲間がスマホ幅（375px）でリンクを開く（ログインなし）</b>
-      <small>作成時点の商品名・価格・理由が全部表示される（AC-02）。PC 1280px でも崩れない。</small>
-      <span class="ids">SP-06 ／ D-06, D-09 ／ F-05, N-01 ／ AC-02</span></div>
-    <div class="side">
-      <div class="node err"><b>期限切れ</b><small>作成から720時間（ちょうどまでは有効）を1秒でも過ぎたら、商品は出さず「このリンクは期限切れです」だけ。</small><span class="ids">SP-06 ／ 410</span></div>
-      <div class="node err"><b>見つからない／表示の失敗</b><small>「リンクが見つかりません」／「失敗しました。もう一度お試しください」＋再試行。</small><span class="ids">SP-06 ／ 404, 500</span></div>
-      <div class="node warn"><b>販売終了・在庫なしの商品</b><small>作成時点の名前・価格は出したまま、「この商品は販売終了しました」／「在庫なし」を足す。</small><span class="ids">SP-06 ／ #32-5</span></div>
-      <div class="node ui w2"><b><span class="w2tag">実装③</span>各商品に画像・「くわしく見る」・「いいね」</b><small>「♡ いいね {N}」を押すとサーバーに記録して数を1増やし「♥ いいねした」に。もう一度押すと取り消し。名前は出さない。数はリンクを開いた人のだれにでも同じに見える。ページの下に「ほかの贈りものも探す」。購入操作は置かない。</small><span class="ids">SP-06, SP-28 ／ D-39 ／ F-33, F-34, L</span></div>
-      <div class="node err w2"><b><span class="w2tag">実装③</span>いいねの失敗</b><small>「いいねできませんでした。もう一度お試しください」。印は変えず、押す前の状態に戻す。上限（1候補30回）に達したら押した印を付けず、数も増やさない。</small><span class="ids">SP-28 ／ N-17</span></div>
-      <div class="node"><b>ログインの入口は「準備中」</b><small>本番には作らない（ADR-005）。リンクを開くのにログインは要らない。</small><span class="ids">#26 ／ #65</span></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-
-  <div class="row">
-    <div class="node gap"><b><span class="step-no">7</span>仲間が同意して、購入へ</b>
-      <small>仲間の返事（賛成）はサイトの外の行動で、サイトは制御できない。体験の目標で受入基準にはしない（要求.md）。共有ページには購入操作（カート・注文）を置かない（第2弾でも変えない。決定 PM 11/14・G2）。</small>
-      <span class="ids">要求.md 体験(2) ／ 決済・配送は対象外</span></div>
-    <div class="side">
-      <div class="node warn"><b>カートの「注文へ進む」</b><small>ボタンだけ。押すと「デモのため、注文はできません」。（検索ページ側のカート。共有ページには置かない）</small><span class="ids">#26, #27 ／ OPEN-05 ／ SP-06</span></div>
-      <div class="node warn w2"><b><span class="w2tag">実装③</span>カートの行き止まりをなくす</b><small>買える商品が0件なら「注文へ進む」を押せず、すぐ上に「買える商品がありません」（在庫の確認中は何も出さない）。各行に小さい画像・商品名から詳細を開く道・届く日。お気に入りの各行にも「カートに入れる」（在庫0は押せない）。下に「買い物を続ける」（押すと検索結果へ）。</small><span class="ids">SP-18 ／ D-30, D-31 ／ F-24〜F-26</span></div>
-      <div class="node gap"><b>期限切れリンクの再発行・延長</b><small>期限切れのあと、Aさんがどうするか（延長の入口があるか）。SP-07 は「選び直したら新しいリンク」のみ。</small><span class="ids">SP-06 ／ SP-07</span></div>
-    </div>
-  </div>
-
-  <div class="arrow w2">↓</div>
-  <div class="box w2"><b><span class="w2tag">実装③</span>どの画面でも、匿名で使い方を記録する（計測）</b>
-    <ul>
-      <li>記録する点（SP-34）: ① サイトに来る ② 検索結果を開く（0件も。0件のときは別に「0件になった」記録） ③ 詳細を開く ④ カートに入れる ⑤ 共有リンクを作る ⑥ 注文へ進む</li>
-      <li>どの記録にも訪問の印と匿名の訪問者 ID。前の記録から30分以上あいたら新しい訪問（あいた後に続けて操作したときも、新しい訪問の ① を送る）。同じ訪問の同じ段は最初の1件だけ。</li>
-      <li>名前・メール・IP アドレス・ブラウザの情報・商品 ID・検索語は記録しない（N-13）。画面を待たせず、失敗しても画面には何も出さない。ブラウザに保存できないときは送らない。</li>
-    </ul><span class="ids">SP-34 ／ D-40, D-47 ／ N-16, N-13</span></div>
-  <div class="box w2"><b><span class="w2tag">実装③</span>画面の使いやすさ（スマホ幅 375〜480px・PC）</b>
-    <ul>
-      <li>スマホ（480px以下）: 詳細は下から出るシート。シートを閉じている間は画面の下端に1本の帯（左「共有リスト {n}件」・右「カート（{n}点）」）。ヘッダーの検索欄は出さず、条件は1行にたたむ「{条件} ▼ 絞り込み」。</li>
-      <li>PC（900px以上）: 右の列に「共有リスト（N件）」「詳細」の2つのタブ。カードの部品（共有リストに入れる・ハート・カートに入れる）をそろえ、どのボタンも縦横44px以上。</li>
-      <li>ページ番号（「前へ 1 … 4 5 [6] 7 8 … 223 次へ」）、検索中の表示は結果の欄の上。見た目の直し（ヒーロー・アイコン・OGP・ロゴ）はコードの見た目だけで、流れは変えない。</li>
-    </ul><span class="ids">SP-19, SP-20, SP-29〜SP-33 ／ D-36, D-37, D-46</span></div>
-
-  <div class="box"><b>受入基準との対応</b>
-    <ul>
-      <li><b>AC-01</b>：価格帯（3,000〜4,999円）・送別を選び、1つ以上選んで共有リンクを作る → 1回の操作の流れの中で作られる（段1〜4）</li>
-      <li><b>AC-02</b>：そのリンクをログインなしでスマホ幅で開く → 選んだ候補がすべて、理由の文つきで表示される（段6）</li>
-    </ul>
-  </div>
-</section>
-
-<!-- ============ 図2 システム視点 ============ -->
-<section class="panel p2" aria-label="システム視点">
-  <h2>② システム視点：画面 ⇄ API ⇄ DB</h2>
-  <p class="lead">3つの API を、上から順に処理の流れで描く（D〜G は第2弾で足した <span class="w2tag">実装③</span>）。<span class="tag ui">画面</span><span class="tag api">API</span><span class="tag db">DB</span> は処理する場所。10秒を超える問い合わせは画面・API とも打ち切り、500 に。</p>
-
-  <h3>A. 候補を出す　GET /api/candidates?price_band=…&amp;scene=…</h3>
-  <div class="row">
-    <div class="node ui"><span class="tag ui">画面</span><b>価格帯・シーンを選ぶ → 検索</b>
-      <small>価格帯は3ボタン（任意）。10秒で打ち切り、以降の応答は捨てる。</small>
-      <span class="ids">D-08 ／ SP-01 ／ #49-1〜3, #30 J</span></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>入力検証</b>
-      <small>price_band は under3000／3000to4999／5000plus（任意）。scene は お礼/誕生日/送別。</small>
-      <span class="ids">D-01 ／ SP-01</span></div>
-    <div class="side"><div class="node err"><b>422</b><small>invalid_price_band / invalid_scene（画面からは起きない。API に直接届いたとき）</small></div></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node db"><span class="tag db">DB</span><b>候補の抽出（読み取りのみ）</b>
-      <small>商品 × シーンタグ。シーン一致・在庫≧1・価格が選んだ価格帯（税込。価格帯なしは価格で絞らない）。</small>
-      <span class="ids">D-01 ／ SP-01</span></div>
-    <div class="side">
-      <div class="node warn"><b>0件</b><small>200 で items:[] → 画面が「条件に合う商品がありません…」</small></div>
-      <div class="node"><b>10カテゴリー＝products.category</b><small>R-01 の絞り込みと R-02 の絞り込みで使う。</small></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node db"><span class="tag db">DB</span><b>送別回数の都度集計（保存しない）</b>
-      <small>候補の商品IDだけ。注文のうち推定シーン＝送別かつ会社宛て。0件の商品は回数0。</small>
-      <span class="ids">D-04 ／ DATA-01</span></div>
-    <div class="side">
-      <div class="node"><b>注文テーブルの列・会社宛ての見分け方（決定済み。#60）</b><small>シーンは product_scenes.scene_tag、会社宛ては orders.ship_to_type='会社'、送別の回数は orders.estimated_scene='送別'。</small></div>
-    </div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>ベイズ平均で順位付け → 上位10件</b>
-      <small>点数＝(v÷(v＋20))×R＋(20÷(v＋20))×C。C は評価のある候補の平均。評価か件数が無ければ v＝0。同点は送別回数の多い順→商品ID順。</small>
-      <span class="ids">D-02 ／ SP-02 ／ F-01a</span></div>
-    <div class="side"></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>理由の文を作る（テンプレート、AI なし）</b>
-      <small>値のある材料の文だけをつなぐ。送別回数0でも「まだありません」。→ 200 { items:[…reason], count }</small>
-      <span class="ids">D-03 ／ SP-03 ／ F-02 ／ ADR-003</span></div>
-    <div class="side">
-      <div class="node err"><b>500・10秒超過</b><small>DB 障害・Db の10秒上限 → 画面は「失敗しました。もう一度お試しください」＋再試行</small><span class="ids">D-12</span></div>
-    </div>
-  </div>
-
-  <h3>B. リンクを作る　POST /api/share-links　{ product_ids:[…], scene?（任意。無ければ送別。D-05） }</h3>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>検証</b><small>product_ids 1〜10件・商品が存在すること。</small><span class="ids">D-05 ／ SP-05</span></div>
-    <div class="side"><div class="node err"><b>422</b><small>empty_selection / too_many_items / invalid_product_ids</small></div></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>作成時点の商品名・価格・理由を作り、22文字の識別子を生成</b>
-      <small>サーバーが作り直す（画面の値を信用しない）。英大小文字・数字・「-」「_」。毎回新しいリンク。</small>
-      <span class="ids">D-05 ／ SP-05, SP-07 ／ N-02 ／ #30 I</span></div>
-    <div class="side"></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node db"><span class="tag db">DB</span><b>share_links に1行 INSERT</b>
-      <small>share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at／is_test。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }</small>
-      <span class="ids">D-07 ／ DATA-02</span></div>
-    <div class="side">
-      <div class="node"><b>MySQL 8.4.9 の JSON 型を使う</b><small>items は JSON 型。</small></div>
-      <div class="node err"><b>500・10秒超過</b><small>失敗なら行は作られない。打ち切り後に裏で作られることは許す。</small></div>
-    </div>
-  </div>
-
-  <h3>C. リンクを開く　GET /api/share-links/{share_id}</h3>
-  <div class="row">
-    <div class="node db"><span class="tag db">DB</span><b>share_links から行を取得</b><small>識別子で1行。</small><span class="ids">D-06 ／ SP-06</span></div>
-    <div class="side"><div class="node err"><b>404</b><small>該当なし → 「リンクが見つかりません」</small></div></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node api"><span class="tag api">API</span><b>期限の判定（サーバー時刻）</b>
-      <small>現在 − created_at ＞ 720時間（秒で比べる）で期限切れ。ちょうどまでは有効。</small>
-      <span class="ids">D-06, D-11 ／ SP-06</span></div>
-    <div class="side"><div class="node err"><b>410</b><small>商品は返さず → 「このリンクは期限切れです」だけ</small></div></div>
-  </div>
-  <div class="arrow">↓</div>
-  <div class="row">
-    <div class="node db"><span class="tag db">DB</span><b>商品の現在の状態を確認（販売終了・在庫なしだけ）</b>
-      <small>商品が無い→discontinued、在庫0→out_of_stock。→ 200（名前・価格・理由は保存した値）</small>
-      <span class="ids">D-06 ／ SP-06 ／ #32-5</span></div>
-    <div class="side"><div class="node err"><b>500・10秒超過</b><small>画面は失敗表示＋再試行</small></div></div>
-  </div>
-
-  <h3><span class="w2tag">実装③</span>D. 詳細を開く　GET /api/products/{product_id}?scene=…　＋　/voices　＋　/similar</h3>
-  <p class="w2note">詳細の欄は3つの API を同時に呼ぶ（D-29・D-35・D-42）。</p>
-  <div class="row">
-    <div class="node ui w2"><span class="tag ui">画面</span><b>詳細を開く（シーンを選んでいれば scene を付ける）</b>
-      <small>決め手・声・似た商品・届く日をそろえて出す。失敗は欄ごとに扱う。</small>
-      <span class="ids">D-34, D-46 ／ SP-16, SP-17, SP-25</span></div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node api w2"><span class="tag api">API</span><b>商品の詳細に、届く日と回数を足す</b>
-      <small>状態 status（available／out_of_stock）に加え、arrives_on（サーバーの今日＝日本時間＋配送日数。配送日数が無ければ出さない）と scene_count（選んだシーンでの回数。1以上のときだけ決め手に出す）。</small>
-      <span class="ids">D-29, D-34 ／ SP-16, SP-26</span></div>
-    <div class="side">
-      <div class="node err"><b>404／422／500</b><small>404 not_found・422 invalid_product_id／invalid_scene・DB 障害。</small></div>
-    </div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node db w2"><span class="tag db">DB</span><b>読み取りのみ（商品・シーンタグ・注文・レビュー）</b>
-      <small>声は reviews から（★4以上・本文あり・新しい順・同じ本文は1件・最大2件）。似た商品は同じシーンタグ・同じ価格帯・在庫1以上を評価順に最大3件（開いている商品は除く）。</small>
-      <span class="ids">D-35, D-42 ／ SP-17, SP-25</span></div>
-    <div class="side">
-      <div class="node w2"><b>声 GET …/voices → { voices:[{text, rating}] }</b><small>0〜2件。商品が無いときも 404 にせず []（404 は詳細の API が返す）。投稿した人の ID・名前・日付は返さない（N-13）。</small></div>
-      <div class="node w2"><b>似た商品 GET …/similar</b><small>シーンを選んでいない・0件のときは画面が欄を出さない。</small></div>
-    </div>
-  </div>
-
-  <h3><span class="w2tag">実装③</span>E. いいねを押す　POST /api/share-links/{share_id}/likes　{ product_id, on:true|false }</h3>
-  <div class="row">
-    <div class="node ui w2"><span class="tag ui">画面</span><b>共有ページ（表示のとき）の「♡ いいね」を押す</b>
-      <small>成功したら数を1増やして「♥ いいねした」に、ブラウザ内に押した印を残す。押した状態でもう一度押すと取り消し（on:false）。10秒で打ち切り。</small>
-      <span class="ids">SP-28 ／ D-39, D-47</span></div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node api w2"><span class="tag api">API</span><b>検証・リンクの期限の判定</b>
-      <small>share_id の形式・product_id がそのリンクの商品にあること・on が真偽値。期限（720時間）は今のリンクの取得と同じ判定。</small>
-      <span class="ids">D-39, D-06 ／ N-17</span></div>
-    <div class="side"><div class="node err"><b>422／404／410</b><small>invalid_product_id・invalid_on／形式が不正・リンクが無い・そのリンクの商品に無い／expired（720時間超。数も返らない）。</small></div></div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node db w2"><span class="tag db">DB</span><b>share_likes に記録（1往復）</b>
-      <small>押す: 無ければ1で作り、あれば上限まで +1（INSERT … ON DUPLICATE KEY UPDATE）。取り消す: 0を下回らない（UPDATE）。→ 200 { product_id, like_count, capped }</small>
-      <span class="ids">D-38, D-39 ／ DATA-03</span></div>
-    <div class="side">
-      <div class="node warn w2"><b>上限（1候補30回）</b><small>capped:true。画面は押した印を付けず、数も増やさず、取り消しも送らない（文言は出さない）。</small><span class="ids">N-17</span></div>
-      <div class="node err"><b>失敗・10秒超過</b><small>画面は「いいねできませんでした。もう一度お試しください」で、押す前に戻す。</small></div>
-    </div>
-  </div>
-  <p class="w2note">リンクを開いたときの数は、C の取得を share_links と share_likes の1本の結合にして返す（items[].like_count。無ければ0）。往復は増やさない。</p>
-
-  <h3><span class="w2tag">実装③</span>F. 使い方を記録する　POST /api/events　{ visit_id, visitor_id, step, scene?, has_voice?, entry?, zero_cond?, test_key? }</h3>
-  <div class="row">
-    <div class="node ui w2"><span class="tag ui">画面</span><b>記録の点で、画面を待たせずに送る</b>
-      <small>訪問 ID と訪問者 ID はブラウザが作る22文字の乱数（ブラウザ内に保存）。前の記録から30分以上あいたら新しい訪問。保存できないときは送らない。失敗しても何も出さない。</small>
-      <span class="ids">SP-34 ／ D-40, D-47</span></div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node api w2"><span class="tag api">API</span><b>形を検めて受け取る</b>
-      <small>step は1〜6が漏斗の段、7が「検索が0件になった」。本文は1KBまで。名前・メール・IP・ブラウザの情報は受け取らず保存しない。</small>
-      <span class="ids">D-40 ／ N-16, N-13</span></div>
-    <div class="side"><div class="node err"><b>422・500</b><small>invalid_event（理由は返さない）／DB 障害。</small></div></div>
-  </div>
-  <div class="arrow w2">↓</div>
-  <div class="row">
-    <div class="node db w2"><span class="tag db">DB</span><b>usage_events に1行 INSERT IGNORE</b>
-      <small>同じ訪問の同じ段は最初の1件だけ（重複は捨てる）。→ 204（本文なし。重複で捨てたかも返さない）。通過率は、評価のあと PM が手で SELECT する（アプリは出さない）。</small>
-      <span class="ids">D-40, D-41 ／ DATA-04</span></div>
-    <div class="side"><div class="node w2"><b>速さの見込み</b><small>画面は待たない。サーバーは2秒以内を目標（約0.5秒）。</small><span class="ids">D-48 ／ N-03</span></div></div>
-  </div>
-
-  <h3><span class="w2tag">実装③</span>G. 検索の追加　GET /api/products（R-02）／ GET /api/candidates（R-01）</h3>
-  <div class="row">
-    <div class="node api w2"><span class="tag api">API</span><b>並び替え（sort）と0件の助け舟（relax）</b>
-      <small>sort で おすすめ／安い順／評価順／早く届く順（同じ値どうしの順は設計 D-43 の表）。relax は選んでいる条件をはずしたときの件数（R-01 でも10件で切らない）。ページ送りは選んだ並びのまま。カテゴリー（OR）・価格帯・シーンは今のとおり。</small>
-      <span class="ids">D-43, D-44, D-28 ／ SP-21, SP-24</span></div>
-    <div class="side"><div class="node w2"><b>ページ番号は画面で計算</b><small>D-28 の total から。</small><span class="ids">D-46 ／ SP-32</span></div></div>
-  </div>
-
-  <div class="box w2"><b><span class="w2tag">実装③</span>第2弾の運用の枠（図の外側）</b>
-    <div class="cols" style="margin-top:6px">
-      <div class="node"><b>書き込みの許可を広げる</b><small>share_links への INSERT に、share_likes への INSERT … ON DUPLICATE KEY UPDATE と UPDATE、usage_events への INSERT IGNORE を足す。DELETE・別の表・users は今までどおり止める。</small><span class="ids">D-45 ／ N-04, N-09</span></div>
-      <div class="node"><b>DB の接続を3〜4本残す</b><small>詳細が3つの API を同時に呼ぶため（約1秒の新規接続を避ける）。</small><span class="ids">D-45 ／ N-03</span></div>
-      <div class="node"><b>表の作成・後片付けは PM が手で</b><small>CREATE TABLE と、期限切れのいいね・計測の記録の削除は手順書どおり（アプリには作らない）。</small><span class="ids">DB管理手順 1b・1c・3c・3d</span></div>
-    </div>
-  </div>
-
-  <div class="box"><b>全体の枠（図の外側）</b>
-    <div class="cols" style="margin-top:6px">
-      <div class="node"><b>配置（Azure）・公開URL（11/11 まで。O1 #132）</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。公開先のドメインは Azure が付ける 〜.azurewebsites.net（#65）。</small></div>
-      <div class="node"><b>ログイン（認証）</b><small>本番に作らない（ADR-005）。入口は「準備中」。</small></div>
-      <div class="node"><b>テスト用の差し替え</b><small>時計（Clock）と DB 実行口（Db）はテストのコードからだけ差し替え。入口は作らない。</small><span class="ids">D-11, D-12</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 図3 共有リンクの状態 ============ -->
-<section class="panel p3" aria-label="共有リンクの状態">
-  <h2>③ 共有リンクの状態</h2>
-  <p class="lead">1本のリンク（share_links の1行）が、作られてから期限切れになるまで。中身は変えない（SP-07）。行はアプリから消さない（テスト後の後片付けのみ）。</p>
-
-  <div class="tl">
-    <div class="seg s1"><b>作成</b><br>POST で1行 INSERT<br>created_at を記録<br><span class="ids">SP-05 ／ D-05, D-07</span></div>
-    <div class="seg s2"><b>有効（0 〜 720時間ちょうど）</b><br>ログインなしで開ける。作成時点の商品名・価格・理由を表示。商品ごとに、開いた時点の状態を確認して表示を足す。<br><span class="ids">SP-06 ／ D-06, D-09</span><br><span class="w2tag">実装③</span>各商品にいいねを押せる（数は開いたときに読む）。<span class="ids">SP-28 ／ D-39</span></div>
-    <div class="seg s3"><b>期限切れ（720時間＋1秒〜）</b><br>商品は出さず「このリンクは期限切れです」だけ（410）。<br><span class="ids">SP-06 ／ D-06</span><br><span class="w2tag">実装③</span> いいねの数も返らず、押せない（410）。<span class="ids">SP-28</span></div>
-  </div>
-
-  <h3>有効なあいだの、商品ごとの表示</h3>
-  <table>
-    <thead><tr><th>開いた時点の商品</th><th>画面の表示</th><th>API の status</th><th>ID</th></tr></thead>
-    <tbody>
-      <tr><td>DB にあり、在庫あり</td><td>作成時点の名前・価格・理由</td><td>available</td><td>SP-06</td></tr>
-      <tr><td>在庫0</td><td>作成時点の名前・価格・理由＋「在庫なし」</td><td>out_of_stock</td><td>SP-06 ／ #32-5</td></tr>
-      <tr><td>DB に無い</td><td>作成時点の名前・価格・理由＋「この商品は販売終了しました」</td><td>discontinued</td><td>SP-06 ／ #32-5</td></tr>
-    </tbody>
-  </table>
-
-  <div class="box w2"><b><span class="w2tag">実装③</span>いいねの状態（有効なあいだ・1つの商品ごと）</b>
-    <table class="stk">
-      <thead><tr><th>きっかけ</th><th>数（share_likes）</th><th>ブラウザ内の印</th><th>ID</th></tr></thead>
-      <tbody>
-        <tr><td data-l="きっかけ">リンクを開く</td><td data-l="数（share_likes）">開いたときに読む（無ければ0）。第1弾のリンクも0から押せる</td><td data-l="ブラウザ内の印">押した印があれば「♥ いいねした」</td><td data-l="ID">SP-28 ／ D-39</td></tr>
-        <tr><td data-l="きっかけ">「♡ いいね」を押す（成功）</td><td data-l="数（share_likes）">+1（上限30まで）</td><td data-l="ブラウザ内の印">印を残す（開き直しても押した状態）</td><td data-l="ID">SP-28 ／ L-4</td></tr>
-        <tr><td data-l="きっかけ">押した状態でもう一度押す</td><td data-l="数（share_likes）">−1（0を下回らない）</td><td data-l="ブラウザ内の印">印を消す</td><td data-l="ID">SP-28</td></tr>
-        <tr><td data-l="きっかけ">上限に達していた（capped）</td><td data-l="数（share_likes）">増えない</td><td data-l="ブラウザ内の印">印を付けない。取り消しも送らない</td><td data-l="ID">SP-28 ／ N-17</td></tr>
-        <tr><td data-l="きっかけ">失敗・10秒で打ち切り</td><td data-l="数（share_likes）">数えない（打ち切り後にサーバー側で数えられることは許す）</td><td data-l="ブラウザ内の印">変えない（押す前の状態に戻す）</td><td data-l="ID">SP-28</td></tr>
-        <tr><td data-l="きっかけ">リンクの期限（720時間）を過ぎる</td><td data-l="数（share_likes）">期限切れ・見つからないでは出さない。行は PM が手順どおりに消す</td><td data-l="ブラウザ内の印">—</td><td data-l="ID">L-3 ／ D-41</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>開いたとき、ほかに起きうること</h3>
-  <table>
-    <thead><tr><th>状況</th><th>表示</th><th>コード</th></tr></thead>
-    <tbody>
-      <tr><td>識別子に該当する行が無い</td><td>「リンクが見つかりません」</td><td>404</td></tr>
-      <tr><td>720時間を1秒でも過ぎた</td><td>「このリンクは期限切れです」（商品なし）</td><td>410</td></tr>
-      <tr><td>DB 障害・10秒で打ち切り</td><td>「失敗しました。もう一度お試しください」＋再試行</td><td>500</td></tr>
-    </tbody>
-  </table>
-
-  <div class="cols" style="margin-top:12px">
-    <div class="node gap"><b>期限切れの前に知らせる／延長する</b><small>文書にあるのは「選び直したら新しいリンクを作る」（SP-07）だけ。延長・通知・再発行の入口は未記載。</small></div>
-    <div class="node gap"><b>リンクを無効にする操作</b><small>作った人が途中で取り消す操作は文書にありません（アプリの機能としての削除は作らない、とだけ設計に記載）。</small></div>
-    <div class="node"><b>公開の範囲</b><small>外部公開 ADR-004: 承認済み（11/12〜12/12）。</small></div>
-  </div>
-</section>
-
-<!-- ============ 図4 ER図 ============ -->
-<section class="panel p4" aria-label="ER図">
-  <h2>④ ER図：班の DB のテーブルとつながり</h2>
-  <p class="lead">正本は backend/db_schema.md（check_db.py の出力。既存の表7つ・外部キー7本）と、設計.md DATA-02〜04（チームで足した表）。チームで足した表は3つ: share_links（第1弾。作成済み・2026-11-09 B2 #56）と、<span class="w2tag">実装③</span> share_likes・usage_events（第2弾。2026-11-15 に作成済み。evidence/db/2026-11-15_1b_1c.md）。新しい表には外部キーを張らない（PM 11/15）。</p>
+<input class="tab" type="radio" name="tab" id="t1" checked><input class="tab" type="radio" name="tab" id="t2"><input class="tab" type="radio" name="tab" id="t3"><input class="tab" type="radio" name="tab" id="t4"><div class="tabs" role="tablist"><label for="tt1" class="pill">① 顧客視点</label><label for="tt2" class="pill">② システム視点</label><label for="tt3" class="pill">③ 共有リンクの状態</label><label for="t4" class="pill">④ ER図（DB）</label></div><section class="panel p1" aria-label="① 顧客視点"><h2 class="ptitle">① 顧客視点</h2><div class="sumline"><span class="lane plain">選ぶ</span><span class="ar">→</span><span class="lane plain">リンクを作る</span><span class="ar">→</span><span class="lane plain">仲間が開く</span><span class="ar">→</span><span class="lane plain">購入へ</span></div><p class="sumnote">Aさんが仲間に候補を送って決める流れ。</p><input class="t" type="radio" name="t1" id="t10" checked><input class="t" type="radio" name="t1" id="t11"><input class="t" type="radio" name="t1" id="t12"><input class="t" type="radio" name="t1" id="t13"><input class="t" type="radio" name="t1" id="t14"><input class="t" type="radio" name="t1" id="t15"><div class="sub"><label for="t10" class="pill">探して選ぶ（1〜3）<span class=dot></span></label><label for="t11" class="pill">リンクを作る（4）</label><label for="t12" class="pill">仲間が開く（5〜6）<span class=dot></span></label><label for="t13" class="pill">購入へ（7）<span class=dot></span></label><label for="t14" class="pill">計測・使いやすさ<span class=dot></span></label><label for="t15" class="pill">受入基準</label></div><div class="pn t1p0"><p class="blurb">Aさん（Exhibit 2）: 同僚3人で送別品（1,500円ずつ＝総額4,500円）。30分で10商品以上見て一度閉じ、夜に3商品へ絞ってLINEに送り、2人の賛成で購入。R-01 の体験: (1) 1回の訪問で、仲間に見せられる候補を3つほどに絞りきれる (2) 仲間がひと目で「それならいい」と言える理由つきで送れる。</p><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">1</span>価格帯（任意）を選び、シーン「送別」のタイルを押す</p><details><summary>くわしく</summary><p class="s1">例: 3,000〜4,999円。価格帯は「〜2,999円／3,000〜4,999円／5,000円〜」の3ボタンから1つ（任意。同じボタンで解除）。シーンは3つのタイルから1つ。押した時点で候補が出る（「候補を出す」ボタンは無い）。</p><span class="ids">SP-01 ／ D-08 ／ F-01 ／ 体験(1)</span></details></div></div></div><div class="dn">↓</div><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">2</span>候補と理由を見る（上位10件・順位順）</p><details><summary>くわしく</summary><p class="s1">各候補に、事実をつなげた自然な文の理由。例「職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。」</p><span class="ids">SP-01〜03 ／ D-01〜D-04 ／ F-01, F-01a, F-02 ／ 体験(2)</span></details><details class="fails"><summary>つまずき・失敗したとき（2）</summary><div class="fl"><div><span class="fchip">0件</span>価格帯ありは「条件に合う商品がありません。価格帯を変えてみてください」、価格帯なしは「この条件に合う商品がありません。シーンを変えてみてください」→ 変えて出し直す。<span class="ids">SP-01</span></div><div><span class="fchip">失敗・10秒で打ち切り</span>「失敗しました。もう一度お試しください」と再試行ボタン。<span class="ids">SP-01 ／ 500</span></div></div></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>0件の助け舟</p><details><summary>くわしく</summary><p class="s1">選んでいる条件だけ「価格帯をはずすと N 件」「カテゴリーをはずすと N 件」。N が0の行は出さない。押すと条件をはずして出し直す。件数が取れなければ今の0件の文言だけ。</p><span class="ids">SP-24 ／ D-44 ／ F-42</span></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>決め手の1行（各カードに）</p><details><summary>くわしく</summary><p class="s1">「📦 11/17までに届く（目安）」「🎀 ラッピング可」「在庫あり」「送別で{n}回」の順。値の無い決め手は出さない（値を作らない）。カードと詳細で同じ値・並び・文言。</p><span class="ids">SP-16, SP-26 ／ D-34 ／ F-20, F-44</span></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">2+</span>カードを押して詳細を開く（決め手・贈った人の声・似た商品・届く日）</p><details><summary>くわしく</summary><p class="s1">詳細の欄に、決め手の1行（SP-16）→ 贈った人の声（★4以上で本文のあるものを新しい順に最大2件。本文は「」で囲み、名前・日付は出さない。0件なら欄ごと出さない）→ 同じシーン・同じ価格帯の商品（最大3件。シーンを選んだときだけ）。届く日は「{M}/{D}までに届く（目安）」。「贈る日（任意）」を入れると「間に合う（目安）／間に合わない（目安）」（保存しない）。</p><span class="ids">SP-16, SP-17, SP-25, SP-26, SP-27 ／ D-29, D-35, D-42 ／ F-20〜F-23, F-43〜F-45</span></details><details class="fails"><summary>つまずき・失敗したとき（2）</summary><div class="fl"><div><span class="fchip">在庫0の商品</span>詳細の「カートに入れる」は「在庫なし」の文字になり、押せない。<span class="ids">SP-18 ① ／ U-14</span></div><div><span class="fchip">詳細・声・似た商品の読み込みに失敗</span>詳細は「商品の情報を読み込めませんでした」と「もう一度」。商品が無い（404）は「この商品は見つかりません」。声・似た商品は出せないとき欄を出さない。<span class="ids">SP-12 ／ D-29, D-35, D-42</span></div></div></details></div></div></div><div class="dn">↓</div><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">3</span>候補を選ぶ・外す</p><details><summary>くわしく</summary><p class="s1">1つ以上、上限なし。選択中の数を表示。選択は画面の中だけ（再読込で消える）。Aさんは3つに絞った。</p><span class="ids">SP-04 ／ D-08 ／ F-03 ／ 体験(1)</span></details><details class="fails"><summary>つまずき・失敗したとき（1）</summary><div class="fl"><div><span class="fchip">0件選択</span>「共有リンクを作る」ボタンを押せない。<span class="ids">SP-05 ／ D-08</span></div></div></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>並び替え（シーンなしの一覧）</p><details><summary>くわしく</summary><p class="s1">おすすめ／安い順／評価順／早く届く順。選んだ並びは URL に持つ。R-01 の10件には出さない。</p><span class="ids">SP-21 ／ D-43 ／ F-39</span></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>お気に入りで2〜3件を比べる</p><details><summary>くわしく</summary><p class="s1">パネルで「比べる」を選ぶと、価格（税込）・届く日（目安）・ラッピング・評価（件数）を列で並べる。値が無い項目は「—」。各列に「カートに入れる」。</p><span class="ids">SP-23 ／ D-47 ／ F-41</span></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>最近見た商品</p><details><summary>くわしく</summary><p class="s1">詳細を開いた商品を新しい順に最大6件、検索結果の下に横に並べる。ブラウザ内の保存だけ。0件・保存できないときは欄を出さない。</p><span class="ids">SP-22 ／ D-47 ／ F-40</span></details></div></div></div></div><div class="pn t1p1"><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">4</span>共有リンクを作る → リンク＋コピーボタン</p><details><summary>くわしく</summary><p class="s1">サイトを閉じずに作られる（AC-01）。作成中はボタンを押せない。作成後は作成ボタンが再び押せる。コピーすると「コピーしました」を2秒。失敗したら長押しでコピーの案内。</p><span class="ids">SP-05 ／ D-05, D-07, D-08 ／ F-04 ／ AC-01</span></details><details class="fails"><summary>つまずき・失敗したとき（3）</summary><div class="fl"><div><span class="fchip">作成の失敗・10秒で打ち切り</span>「失敗しました。もう一度お試しください」と再試行。失敗ならリンクは作られない（打ち切り後に裏で作られることは許す）。<span class="ids">SP-05 ／ #30 C</span></div><div><span class="fchip">11件以上</span>作らずに入力エラー（選ぶ数を減らす）。<span class="ids">SP-05 ／ N-06</span></div><div><span class="fchip">選び直す</span>選び直したら、同じ選び方でも毎回新しいリンク。作成済みのリンクの中身は変えない。<span class="ids">SP-07 ／ D-05</span></div></div></details></div></div></div></div><div class="pn t1p2"><div class="gapcard it"><b>仕様に書かれていません｜5 LINEで仲間に送る</b><span>サイトの外の操作。Aさんがコピーしたリンクを自分でLINEに貼る前提。LINEへ直接送る共有ボタン・LINE連携は文書にありません。</span><span class="ids">要求.md 体験(2)「候補を送れ」</span></div><div class="dn">↓</div><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">6</span>仲間がスマホ幅（375px）でリンクを開く（ログインなし）</p><details><summary>くわしく</summary><p class="s1">作成時点の商品名・価格・理由が全部表示される（AC-02）。PC 1280px でも崩れない。</p><span class="ids">SP-06 ／ D-06, D-09 ／ F-05, N-01 ／ AC-02</span></details><details class="fails"><summary>つまずき・失敗したとき（5）</summary><div class="fl"><div><span class="fchip">期限切れ</span>作成から720時間（ちょうどまでは有効）を1秒でも過ぎたら、商品は出さず「このリンクは期限切れです」だけ。<span class="ids">SP-06 ／ 410</span></div><div><span class="fchip">見つからない／表示の失敗</span>「リンクが見つかりません」／「失敗しました。もう一度お試しください」＋再試行。<span class="ids">SP-06 ／ 404, 500</span></div><div><span class="fchip">販売終了・在庫なしの商品</span>作成時点の名前・価格は出したまま、「この商品は販売終了しました」／「在庫なし」を足す。<span class="ids">SP-06 ／ #32-5</span></div><div><span class="fchip">ログインの入口は「準備中」</span>本番には作らない（ADR-005）。リンクを開くのにログインは要らない。<span class="ids">#26 ／ #65</span></div><div><span class="fchip">外部公開 ADR-004（承認済み）</span>公開後（11/12〜）に実機スマホで1回ずつ開く。仕様 AC-02 は「スマホ幅の画面」と書く。<span class="ids">ADR-004</span></div></div></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>各商品に画像・「くわしく見る」・「いいね」</p><details><summary>くわしく</summary><p class="s1">「♡ いいね {N}」を押すとサーバーに記録して数を1増やし「♥ いいねした」に。もう一度押すと取り消し。名前は出さない。数はリンクを開いた人のだれにでも同じに見える。ページの下に「ほかの贈りものも探す」。購入操作は置かない。</p><span class="ids">SP-06, SP-28 ／ D-39 ／ F-33, F-34, L</span></details><details class="fails"><summary>つまずき・失敗したとき（1）</summary><div class="fl"><div><span class="fchip">いいねの失敗</span>「いいねできませんでした。もう一度お試しください」。印は変えず、押す前の状態に戻す。上限（1候補30回）に達したら押した印を付けず、数も増やさない。<span class="ids">SP-28 ／ N-17</span></div></div></details></div></div></div></div><div class="pn t1p3"><div class="gapcard it"><b>仕様に書かれていません｜7 仲間が同意して、購入へ</b><span>仲間の返事（賛成）はサイトの外の行動で、サイトは制御できない。体験の目標で受入基準にはしない（要求.md）。共有ページには購入操作（カート・注文）を置かない（第2弾でも変えない。決定 PM 11/14・G2）。</span><span class="ids">要求.md 体験(2) ／ 決済・配送は対象外</span></div><div class="stp it"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1"><span class="no">カート</span>カートの「注文へ進む」</p><details><summary>くわしく</summary><p class="s1">ボタンだけ。押すと「デモのため、注文はできません」。（検索ページ側のカート。共有ページには置かない）</p><span class="ids">#26, #27 ／ OPEN-05 ／ SP-06</span></details></div></div></div><div class="stp it w2m"><div class="flowcard ui"><h4><span class="stick">実装③</span>画面</h4><div class="bd"><p class="t1"><span class="no">+</span>カートの行き止まりをなくす</p><details><summary>くわしく</summary><p class="s1">買える商品が0件なら「注文へ進む」を押せず、すぐ上に「買える商品がありません」（在庫の確認中は何も出さない）。各行に小さい画像・商品名から詳細を開く道・届く日。お気に入りの各行にも「カートに入れる」（在庫0は押せない）。下に「買い物を続ける」（押すと検索結果へ）。</p><span class="ids">SP-18 ／ D-30, D-31 ／ F-24〜F-26</span></details></div></div></div><div class="gapcard it"><b>仕様に書かれていません｜期限切れリンクの再発行・延長</b><span>期限切れのあと、Aさんがどうするか（延長の入口があるか）。SP-07 は「選び直したら新しいリンク」のみ。</span><span class="ids">SP-06 ／ SP-07</span></div></div><div class="pn t1p4"><div class="infocard it w2m"><span class="stick">実装③</span><b>どの画面でも、匿名で使い方を記録する（計測）</b><span>記録する点（SP-34）: ① サイトに来る ② 検索結果を開く（0件も。0件のときは別に「0件になった」記録） ③ 詳細を開く ④ カートに入れる ⑤ 共有リンクを作る ⑥ 注文へ進む。どの記録にも訪問の印と匿名の訪問者 ID。前の記録から30分以上あいたら新しい訪問。同じ訪問の同じ段は最初の1件だけ。名前・メール・IP アドレス・ブラウザの情報・商品 ID・検索語は記録しない（N-13）。画面を待たせず、失敗しても画面には何も出さない。ブラウザに保存できないときは送らない。</span><span class="ids">SP-34 ／ D-40, D-47 ／ N-16, N-13</span></div><div class="infocard it w2m"><span class="stick">実装③</span><b>画面の使いやすさ（スマホ幅 375〜480px・PC）</b><span>スマホ（480px以下）: 詳細は下から出るシート。シートを閉じている間は画面の下端に1本の帯（左「共有リスト {n}件」・右「カート（{n}点）」）。ヘッダーの検索欄は出さず、条件は1行にたたむ「{条件} ▼ 絞り込み」。PC（900px以上）: 右の列に「共有リスト（N件）」「詳細」の2つのタブ。カードの部品（共有リストに入れる・ハート・カートに入れる）をそろえ、どのボタンも縦横44px以上。ページ番号（「前へ 1 … 4 5 [6] 7 8 … 223 次へ」）、検索中の表示は結果の欄の上。見た目の直し（ヒーロー・アイコン・OGP・ロゴ）は見た目だけで、流れは変えない。</span><span class="ids">SP-19, SP-20, SP-29〜SP-33 ／ D-36, D-37, D-46</span></div></div><div class="pn t1p5"><div class="infocard it"><b>AC-01</b><span>価格帯（3,000〜4,999円）・送別を選び、1つ以上選んで共有リンクを作る → 1回の操作の流れの中で作られる（段1〜4）</span><span class="ids">AC-01</span></div><div class="infocard it"><b>AC-02</b><span>そのリンクをログインなしでスマホ幅で開く → 選んだ候補がすべて、理由の文つきで表示される（段6）</span><span class="ids">AC-02</span></div></div></section><section class="panel p2" aria-label="② システム視点"><h2 class="ptitle">② システム視点</h2><div class="sumline"><span class="lane ui">画面</span><span class="ar">→</span><span class="lane api">API（FastAPI）</span><span class="ar">→</span><span class="lane db">DB（MySQL）</span></div><p class="sumnote">API 9 本のうち <span class="stick">実装③</span> が 6 つの流れ（新しい API 4 本）。</p><input class="t" type="radio" name="t2" id="t20" checked><input class="t" type="radio" name="t2" id="t21"><input class="t" type="radio" name="t2" id="t22"><input class="t" type="radio" name="t2" id="t23"><input class="t" type="radio" name="t2" id="t24"><input class="t" type="radio" name="t2" id="t25"><input class="t" type="radio" name="t2" id="t26"><div class="sub"><label for="t20" class="pill">候補を出す<span class=dot></span></label><label for="t21" class="pill">リンクを作る</label><label for="t22" class="pill">リンクを開く<span class=dot></span></label><label for="t23" class="pill">詳細<span class=dot></span></label><label for="t24" class="pill">いいね<span class=dot></span></label><label for="t25" class="pill">計測<span class=dot></span></label><label for="t26" class="pill">枠（図の外側）<span class=dot></span></label></div><div class="pn t2p0"><div class="ep it"><div class="ephead"><b>候補を出す（R-01）</b><span class="mth">GET</span><span class="code">/api/candidates</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">価格帯・シーンを選ぶ → 検索</p><details><summary>くわしく</summary><p class="s1">価格帯は3ボタン（任意）。10秒で打ち切り、以降の応答は捨てる。</p><span class="ids">D-08 ／ SP-01 ／ #49-1〜3, #30 J</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">検証 → 順位付け → 理由の文（上位10件）</p><details><summary>くわしく</summary><p class="s1">price_band は under3000／3000to4999／5000plus（任意）、scene は お礼/誕生日/送別。点数＝ベイズ平均 (v÷(v＋20))×R＋(20÷(v＋20))×C。同点は送別回数の多い順→商品ID順。理由はテンプレート（AI なし）。→ 200 { items:[…reason], count }</p><span class="ids">D-01〜D-03 ／ SP-01〜03 ／ F-01a, F-02 ／ ADR-003</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">候補を読む（読み取りのみ）＋送別回数の都度集計</p><details><summary>くわしく</summary><p class="s1">商品×シーンタグ・在庫1以上・価格帯（税込）。送別回数は候補の商品IDだけ、注文のうち推定シーン＝送別かつ会社宛て（保存しない。0件の商品は0回）。注文テーブルの列は #60 で決定済み。10カテゴリー＝products.category。</p><span class="ids">D-01, D-04 ／ SP-01 ／ DATA-01</span></details></div></div></div><details class="fails"><summary>失敗したとき（3）</summary><div class="fl"><div><span class="fchip">422</span>invalid_price_band / invalid_scene（画面からは起きない。API に直接届いたとき）</div><div><span class="fchip">0件</span>200 で items:[] → 画面が「条件に合う商品がありません…」</div><div><span class="fchip">500・10秒超過</span>画面は「失敗しました。もう一度お試しください」＋再試行<span class="ids">D-12</span></div></div></details></div><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>一覧（R-02）の並び替え・助け舟</b><span class="mth">GET</span><span class="code">/api/products</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">並びを選ぶ／0件で助け舟を押す</p><details><summary>くわしく</summary><p class="s1">おすすめ・安い順・評価順・早く届く順。「価格帯をはずすと N 件」。ページ番号は画面で計算（D-28 の total から）。</p><span class="ids">SP-21, SP-24, SP-32 ／ D-44, D-46</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">sort と relax</p><details><summary>くわしく</summary><p class="s1">同じ値どうしの順は設計 D-43 の表。relax は選んでいる条件をはずしたときの件数（R-01 でも10件で切らない）。ページ送りは選んだ並びのまま。カテゴリー（OR）・価格帯・シーンは今のとおり。</p><span class="ids">D-28, D-43, D-44</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">商品を読む（読み取りのみ）</p><details><summary>くわしく</summary><p class="s1">シーン・価格帯・カテゴリーで絞る。</p><span class="ids">D-28</span></details></div></div></div><details class="fails"><summary>失敗したとき（2）</summary><div class="fl"><div><span class="fchip">件数が取れない</span>助け舟を出さず、今の0件の文言だけ</div><div><span class="fchip">500・10秒超過</span>失敗表示＋再試行</div></div></details></div></div><div class="pn t2p1"><div class="ep it"><div class="ephead"><b>共有リンクを作る　{ product_ids:[…], scene?（任意。無ければ送別） }</b><span class="mth">POST</span><span class="code">/api/share-links</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">候補を選んで「共有リンクを作る」</p><details><summary>くわしく</summary><p class="s1">1〜10件。作成中はボタンを押せない。</p><span class="ids">SP-05 ／ D-08 ／ AC-01</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">検証 → 名前・価格・理由を作り直す → 識別子</p><details><summary>くわしく</summary><p class="s1">product_ids 1〜10件・商品が存在すること。サーバーが作り直す（画面の値を信用しない）。22文字（英大小文字・数字・「-」「_」）・毎回新しいリンク。</p><span class="ids">D-05 ／ SP-05, SP-07 ／ N-02 ／ #30 I</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">share_links に1行 INSERT</p><details><summary>くわしく</summary><p class="s1">share_id（CHAR 22）／ items（JSON：商品ID・名前・価格・理由）／ created_at／is_test。既存テーブルは変更しない。→ 201 { share_id, path, created_at, expires_at }。MySQL 8.4.9 の JSON 型。</p><span class="ids">D-07 ／ DATA-02</span></details></div></div></div><details class="fails"><summary>失敗したとき（2）</summary><div class="fl"><div><span class="fchip">422</span>empty_selection / too_many_items / invalid_product_ids</div><div><span class="fchip">500・10秒超過</span>失敗なら行は作られない（打ち切り後に裏で作られることは許す）</div></div></details></div></div><div class="pn t2p2"><div class="ep it"><div class="ephead"><b>共有リンクを開く</b><span class="mth">GET</span><span class="code">/api/share-links/{share_id}</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">共有ページを開く（ログインなし）</p><details><summary>くわしく</summary><p class="s1">作成時点の名前・価格・理由を表示。スマホ 375px・PC 1280px。</p><span class="ids">SP-06 ／ D-09 ／ AC-02</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">期限の判定（720時間）</p><details><summary>くわしく</summary><p class="s1">現在 − created_at ＞ 720時間（秒で比べる）で期限切れ。ちょうどまでは有効。</p><span class="ids">D-06, D-11 ／ SP-06</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">行と商品の今の状態を読む</p><details><summary>くわしく</summary><p class="s1">識別子で1行。商品が無い→discontinued、在庫0→out_of_stock（販売終了・在庫なしだけ確かめる）。→ 200（名前・価格・理由は保存した値）。第2弾: share_links と share_likes を1本の結合で読み、items[].like_count（無ければ0）を返す。</p><span class="ids">D-06 ／ SP-06 ／ #32-5</span></details></div></div></div><details class="fails"><summary>失敗したとき（3）</summary><div class="fl"><div><span class="fchip">404</span>該当なし →「リンクが見つかりません」</div><div><span class="fchip">410</span>商品は返さず →「このリンクは期限切れです」だけ</div><div><span class="fchip">500・10秒超過</span>画面は失敗表示＋再試行</div></div></details></div></div><div class="pn t2p3"><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>詳細：届く日と回数</b><span class="mth">GET</span><span class="code">/api/products/{id}?scene=…</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">詳細を開く（シーンを選んでいれば scene を付ける）</p><details><summary>くわしく</summary><p class="s1">決め手・声・似た商品・届く日をそろえて出す。詳細・声・似た商品の3つの API を同時に呼ぶ。「贈る日（任意）」で間に合うか（保存しない）。</p><span class="ids">SP-16, SP-26, SP-27 ／ D-34, D-46</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">詳細に arrives_on と scene_count を足す</p><details><summary>くわしく</summary><p class="s1">status（available／out_of_stock）に加え、arrives_on（サーバーの今日＝日本時間＋配送日数。配送日数が無ければ出さない）と scene_count（選んだシーンでの回数。1以上のときだけ決め手に出す）。</p><span class="ids">D-29, D-34 ／ SP-16, SP-26</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">読み取りのみ</p><details><summary>くわしく</summary><p class="s1">商品・シーンタグ・注文。</p><span class="ids">D-29</span></details></div></div></div><details class="fails"><summary>失敗したとき（2）</summary><div class="fl"><div><span class="fchip">404 / 422</span>not_found ／ invalid_product_id・invalid_scene</div><div><span class="fchip">500</span>画面は「商品の情報を読み込めませんでした」＋「もう一度」</div></div></details></div><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>詳細：贈った人の声</b><span class="mth">GET</span><span class="code">/api/products/{id}/voices</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">声の欄（0件なら欄ごと出さない）</p><details><summary>くわしく</summary><p class="s1">本文を「」で囲み、星だけ。投稿した人の名前・日付は出さない。</p><span class="ids">SP-17 ／ D-35</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">最大2件を返す → { voices:[{text, rating}] }</p><details><summary>くわしく</summary><p class="s1">★4以上・本文あり・新しい順・同じ本文は1件。商品が無いときも 404 にせず []。</p><span class="ids">D-35 ／ N-13</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">reviews を読む（読み取りのみ）</p><details><summary>くわしく</summary><p class="s1">投稿した人の ID・名前・日付は返さない。</p><span class="ids">D-35</span></details></div></div></div><details class="fails"><summary>失敗したとき（1）</summary><div class="fl"><div><span class="fchip">422 / 500</span>invalid_product_id ／ 声が出せないとき欄を出さない</div></div></details></div><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>詳細：似た商品</b><span class="mth">GET</span><span class="code">/api/products/{id}/similar</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">「同じシーン・同じ価格帯の商品」</p><details><summary>くわしく</summary><p class="s1">シーンを選んだときだけ。押すとその商品の詳細に替える。0件のときは欄を出さない。</p><span class="ids">SP-25 ／ D-46</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">評価の高い順に最大3件</p><details><summary>くわしく</summary><p class="s1">同じシーンタグ・同じ価格帯・在庫1以上。開いている商品は除く。</p><span class="ids">D-42</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">読み取りのみ</p><details><summary>くわしく</summary><p class="s1">商品・シーンタグ。</p><span class="ids">D-42</span></details></div></div></div><details class="fails"><summary>失敗したとき（1）</summary><div class="fl"><div><span class="fchip">0件 / 500</span>欄を出さない</div></div></details></div></div><div class="pn t2p4"><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>いいねを押す　{ product_id, on:true|false }</b><span class="mth">POST</span><span class="code">/api/share-links/{share_id}/likes</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">共有ページの「♡ いいね」を押す／もう一度で取り消し</p><details><summary>くわしく</summary><p class="s1">成功したら数を1増やして「♥ いいねした」に。押した印はブラウザの中に残す。10秒で打ち切り。</p><span class="ids">SP-28 ／ D-39, D-47</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">検証 → 期限の判定</p><details><summary>くわしく</summary><p class="s1">share_id の形式・product_id がそのリンクの商品にあること・on が真偽値。期限（720時間）は今のリンクの取得と同じ。上限は1候補30回（capped:true なら画面は印も数も変えない）。→ 200 { product_id, like_count, capped }</p><span class="ids">D-39, D-06 ／ N-17</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">share_likes に記録（1往復）</p><details><summary>くわしく</summary><p class="s1">押す: 無ければ1で作り、あれば上限まで +1（INSERT … ON DUPLICATE KEY UPDATE）。取り消す: 0を下回らない（UPDATE）。</p><span class="ids">D-38, D-39 ／ DATA-03</span></details></div></div></div><details class="fails"><summary>失敗したとき（4）</summary><div class="fl"><div><span class="fchip">422</span>invalid_product_id / invalid_on</div><div><span class="fchip">404 / 410</span>見つからない・そのリンクの商品に無い／期限切れ（数も返らない）</div><div><span class="fchip">上限（capped:true）</span>押した印を付けず、数も増やさず、取り消しも送らない（文言は出さない）<span class="ids">N-17</span></div><div><span class="fchip">500・10秒超過</span>「いいねできませんでした。もう一度お試しください」で、押す前に戻す</div></div></details></div></div><div class="pn t2p5"><div class="ep it w2m"><div class="ephead"><span class="stick">実装③</span><b>使い方を記録する（計測）</b><span class="mth">POST</span><span class="code">/api/events</span></div><div class="flow"><div class="flowcard ui"><h4>画面</h4><div class="bd"><p class="t1">記録の点で、画面を待たせずに送る</p><details><summary>くわしく</summary><p class="s1">① 来る ② 検索結果 ③ 詳細 ④ カート ⑤ リンク作成 ⑥ 注文へ進む。訪問 ID と訪問者 ID はブラウザが作る22文字の乱数。30分以上あいたら新しい訪問。保存できないときは送らない。失敗しても何も出さない。</p><span class="ids">SP-34 ／ D-40, D-47</span></details></div></div><div class="arw">→</div><div class="flowcard api"><h4>API</h4><div class="bd"><p class="t1">形を検めて受け取る → 204</p><details><summary>くわしく</summary><p class="s1">step は1〜6が漏斗の段、7が「検索が0件になった」。本文は1KBまで。名前・メール・IP・ブラウザの情報は受け取らず保存しない。サーバーは2秒以内が目標（約0.5秒。画面は待たない）。</p><span class="ids">D-40, D-48 ／ N-13, N-16, N-03</span></details></div></div><div class="arw">→</div><div class="flowcard db"><h4>DB</h4><div class="bd"><p class="t1">usage_events に INSERT IGNORE</p><details><summary>くわしく</summary><p class="s1">同じ訪問の同じ段は最初の1件だけ（重複は捨てる）。→ 204（本文なし）。通過率は、評価のあと PM が手で SELECT する（アプリは出さない）。</p><span class="ids">D-40, D-41 ／ DATA-04</span></details></div></div></div><details class="fails"><summary>失敗したとき（1）</summary><div class="fl"><div><span class="fchip">422 / 500</span>invalid_event（理由は返さない）／ DB 障害。失敗しても画面には何も出さない</div></div></details></div></div><div class="pn t2p6"><div class="infocard it w2m"><span class="stick">実装③</span><b>書き込みの許可を広げる</b><span>share_links への INSERT に、share_likes への INSERT … ON DUPLICATE KEY UPDATE と UPDATE、usage_events への INSERT IGNORE を足す。DELETE・別の表・users は今までどおり止める。</span><span class="ids">D-45 ／ N-04, N-09</span></div><div class="infocard it w2m"><span class="stick">実装③</span><b>DB の接続を3〜4本残す</b><span>詳細が3つの API を同時に呼ぶため（約1秒の新規接続を避ける）。</span><span class="ids">D-45 ／ N-03</span></div><div class="infocard it w2m"><span class="stick">実装③</span><b>表の作成・後片付けは PM が手で</b><span>CREATE TABLE と、期限切れのいいね・計測の記録の削除は手順書どおり（アプリには作らない）。</span><span class="ids">DB管理手順 1b・1c・3c・3d</span></div><div class="infocard it"><b>配置（Azure）・公開URL（11/11 まで。O1 #132）</b><span>外部公開 ADR-004: 承認済み（11/12〜12/12）。公開先のドメインは Azure が付ける 〜.azurewebsites.net（#65）。</span><span class="ids">ADR-004</span></div><div class="infocard it"><b>ログイン（認証）</b><span>本番に作らない（ADR-005）。入口は「準備中」。</span><span class="ids">ADR-005</span></div><div class="infocard it"><b>テスト用の差し替え</b><span>時計（Clock）と DB 実行口（Db）はテストのコードからだけ差し替え。入口は作らない。</span><span class="ids">D-11, D-12</span></div></div></section><section class="panel p3" aria-label="③ 共有リンクの状態"><h2 class="ptitle">③ 共有リンクの状態</h2><div class="sumline"><span class="lane plain">作成</span><span class="ar">→</span><span class="lane plain">有効（720時間）</span><span class="ar">→</span><span class="lane plain">期限切れ</span></div><p class="sumnote">共有リンク 1 本が、作られてから期限切れになるまで。</p><input class="t" type="radio" name="t3" id="t30" checked><input class="t" type="radio" name="t3" id="t31"><input class="t" type="radio" name="t3" id="t32"><input class="t" type="radio" name="t3" id="t33"><div class="sub"><label for="t30" class="pill">時間の流れ<span class=dot></span></label><label for="t31" class="pill">商品ごとの表示</label><label for="t32" class="pill">いいねの状態<span class=dot></span></label><label for="t33" class="pill">ほかに起きること</label></div><div class="pn t3p0"><div class="flow"><div class="flowcard c1"><h4>作成</h4><div class="bd"><p class="t1">POST で1行 INSERT</p><details><summary>くわしく</summary><p class="s1">created_at を記録。</p><span class="ids">SP-05 ／ D-05, D-07</span></details></div></div><div class="arw">→</div><div class="flowcard c2"><h4>有効（0 〜 720時間ちょうど）</h4><div class="bd"><p class="t1">ログインなしで開ける</p><details><summary>くわしく</summary><p class="s1">作成時点の商品名・価格・理由を表示。商品ごとに、開いた時点の状態を確認して表示を足す。</p><span class="ids">SP-06 ／ D-06, D-09</span></details><div class="subw2"><span class="stick">実装③</span>各商品にいいねを押せる（数は開いたときに読む）<span class="ids">SP-28 ／ D-39</span></div></div></div><div class="arw">→</div><div class="flowcard c3"><h4>期限切れ（720時間＋1秒〜）</h4><div class="bd"><p class="t1">「このリンクは期限切れです」だけ（410）</p><details><summary>くわしく</summary><p class="s1">商品は出さない。</p><span class="ids">SP-06 ／ D-06</span></details><div class="subw2"><span class="stick">実装③</span>いいねの数も返らず、押せない（410）<span class="ids">SP-28</span></div></div></div></div><p class="blurb">1本のリンク（share_links の1行）が、作られてから期限切れになるまで。中身は変えない（SP-07）。行はアプリから消さない（テスト後の後片付けのみ）。</p></div><div class="pn t3p1"><table class="dt stk"><thead><tr><th>開いた時点の商品</th><th>画面の表示</th><th>API の status</th><th>ID</th></tr></thead><tbody><tr><td data-l="開いた時点の商品">DB にあり、在庫あり</td><td data-l="画面の表示">作成時点の名前・価格・理由</td><td data-l="API の status">available</td><td data-l="ID">SP-06</td></tr><tr><td data-l="開いた時点の商品">在庫0</td><td data-l="画面の表示">作成時点の名前・価格・理由＋「在庫なし」</td><td data-l="API の status">out_of_stock</td><td data-l="ID">SP-06 ／ #32-5</td></tr><tr><td data-l="開いた時点の商品">DB に無い</td><td data-l="画面の表示">作成時点の名前・価格・理由＋「この商品は販売終了しました」</td><td data-l="API の status">discontinued</td><td data-l="ID">SP-06 ／ #32-5</td></tr></tbody></table></div><div class="pn t3p2"><div class="it w2m infobox"><span class="stick">実装③</span><b>いいねの状態（有効なあいだ・1つの商品ごと）</b><table class="dt stk"><thead><tr><th>きっかけ</th><th>数（share_likes）</th><th>ブラウザ内の印</th><th>ID</th></tr></thead><tbody><tr><td data-l="きっかけ">リンクを開く</td><td data-l="数（share_likes）">開いたときに読む（無ければ0）。第1弾のリンクも0から押せる</td><td data-l="ブラウザ内の印">押した印があれば「♥ いいねした」</td><td data-l="ID">SP-28 ／ D-39</td></tr><tr><td data-l="きっかけ">「♡ いいね」を押す（成功）</td><td data-l="数（share_likes）">+1（上限30まで）</td><td data-l="ブラウザ内の印">印を残す（開き直しても押した状態）</td><td data-l="ID">SP-28 ／ L-4</td></tr><tr><td data-l="きっかけ">押した状態でもう一度押す</td><td data-l="数（share_likes）">−1（0を下回らない）</td><td data-l="ブラウザ内の印">印を消す</td><td data-l="ID">SP-28</td></tr><tr><td data-l="きっかけ">上限に達していた（capped）</td><td data-l="数（share_likes）">増えない</td><td data-l="ブラウザ内の印">印を付けない。取り消しも送らない</td><td data-l="ID">SP-28 ／ N-17</td></tr><tr><td data-l="きっかけ">失敗・10秒で打ち切り</td><td data-l="数（share_likes）">数えない（打ち切り後にサーバー側で数えられることは許す）</td><td data-l="ブラウザ内の印">変えない（押す前の状態に戻す）</td><td data-l="ID">SP-28</td></tr><tr><td data-l="きっかけ">リンクの期限（720時間）を過ぎる</td><td data-l="数（share_likes）">期限切れ・見つからないでは出さない。行は PM が手順どおりに消す</td><td data-l="ブラウザ内の印">—</td><td data-l="ID">L-3 ／ D-41</td></tr></tbody></table></div></div><div class="pn t3p3"><table class="dt"><thead><tr><th>状況</th><th>表示</th><th>コード</th></tr></thead><tbody><tr><td data-l="状況">識別子に該当する行が無い</td><td data-l="表示">「リンクが見つかりません」</td><td data-l="コード">404</td></tr><tr><td data-l="状況">720時間を1秒でも過ぎた</td><td data-l="表示">「このリンクは期限切れです」（商品なし）</td><td data-l="コード">410</td></tr><tr><td data-l="状況">DB 障害・10秒で打ち切り</td><td data-l="表示">「失敗しました。もう一度お試しください」＋再試行</td><td data-l="コード">500</td></tr></tbody></table><div class="gapcard it"><b>仕様に書かれていません｜期限切れの前に知らせる／延長する</b><span>文書にあるのは「選び直したら新しいリンクを作る」（SP-07）だけ。延長・通知・再発行の入口は未記載。</span></div><div class="gapcard it"><b>仕様に書かれていません｜リンクを無効にする操作</b><span>作った人が途中で取り消す操作は文書にありません（アプリの機能としての削除は作らない、とだけ設計に記載）。</span></div><div class="infocard it"><b>公開の範囲</b><span>外部公開 ADR-004: 承認済み（11/12〜12/12）。</span><span class="ids">ADR-004</span></div></div></section><section class="panel p4" aria-label="ER図">
+  <h2 class="ptitle">④ ER図：班の DB のテーブルとつながり</h2><div class="sumline"><span class="lane plain">既存の表 7</span><span class="ar">＋</span><span class="lane plain">チームで追加 3</span><span class="ar">（外部キーなし）</span></div><p class="sumnote">班の DB のテーブルとつながり。表 10。<span class="stick">実装③</span> は share_likes・usage_events。</p>
+  <p class="lead">正本は backend/db_schema.md（check_db.py の出力。既存の表7つ・外部キー7本）と、設計.md DATA-02〜04（チームで足した表）。チームで足した表は3つ: share_links（第1弾。作成済み・2026-11-09 B2 #56）と、<span class="stick">実装③</span> share_likes・usage_events（第2弾。2026-11-15 に作成済み。evidence/db/2026-11-15_1b_1c.md）。新しい表には外部キーを張らない（PM 11/15）。</p>
   <div class="erwrap">
-    <div class="erlg" aria-label="凡例"><span><i class="sw2 ex"></i>既存（班の DB・変更しない）</span><span><i class="sw2 tm"></i>チームで追加（第1弾の share_links）</span><span><i class="sw2 w2"></i><span class="w2tag">実装③</span>実装③で追加（share_likes・usage_events）</span></div>
-    <div class="erg"><svg class="erl" width="880" height="910" viewBox="0 0 880 910" aria-hidden="true"><defs><marker id="erone" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="0" refY="7" orient="auto"><path class="ml" d="M8 1V13"/></marker><marker id="ercrow" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="14" refY="7" orient="auto"><path class="ml" d="M0 7L14 1M0 7H14M0 7L14 13"/></marker></defs><path class="ln" d="M140 122 V240" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M248 285 H304" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V329 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V141 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V557 H248" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M32 45 H14 V579 H32" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln dd" d="M764 636 V690"/></svg><span class="pl" style="left:764px;top:668px">同じ share_id<br>（外部キーなし）</span><span class="pl" style="left:140px;top:181px">注文する</span><span class="pl" style="left:276px;top:285px">含む</span><span class="pl" style="left:554px;top:329px">注文される</span><span class="pl" style="left:554px;top:45px">シーンタグ<br>を持つ</span><span class="pl" style="left:554px;top:141px">事実を持つ</span><span class="pl" style="left:404px;top:557px">レビューされる</span><span class="pl" style="left:14px;top:320px">書く</span><div class="tb g1" style="left:32px;top:0px;height:122px"><h4><b>users</b><small>利用者</small></h4><ul><li><code>user_id</code><i>varchar(20)</i><em class="k pk">PK</em></li><li><code>age_group</code><i>varchar(10)</i></li><li><code>gender</code><i>varchar(10)</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g1" style="left:32px;top:240px;height:210px"><h4><b>orders</b><small>注文</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>ordered_at</code><i>datetime</i></li><li><code>gift_purpose</code><i>varchar(20) ・空可</i></li><li><code>estimated_scene</code><i>varchar(20)</i></li><li><code>recipient_key</code><i>varchar(16)</i></li><li><code>ship_to_type</code><i>varchar(10)</i></li><li><code>total_amount</code><i>int</i></li></ul><p class="fkm">FK: orders.user_id → users.user_id</p></div><div class="tb g1" style="left:304px;top:240px;height:144px"><h4><b>order_items</b><small>注文の明細</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>line_no</code><i>int</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>quantity</code><i>int</i></li><li><code>unit_price</code><i>int</i></li></ul><p class="fkm">FK: order_items.order_id → orders.order_id ／ order_items.product_id → products.product_id</p></div><div class="tb g2" style="left:656px;top:0px;height:364px"><h4><b>products</b><small>商品</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em></li><li><code>product_name</code><i>varchar(100)</i></li><li><code>category</code><i>varchar(30)</i></li><li><code>price</code><i>int</i></li><li><code>brand</code><i>varchar(50)</i></li><li><code>description</code><i>text</i></li><li><code>size</code><i>varchar(100) ・空可</i></li><li><code>delivery_days</code><i>int</i></li><li><code>gift_wrap</code><i>tinyint(1)</i></li><li><code>message_card</code><i>tinyint(1)</i></li><li><code>rating</code><i>decimal(2,1) ・空可</i></li><li><code>review_count</code><i>int</i></li><li><code>sales_count</code><i>int</i></li><li><code>stock</code><i>int</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g2" style="left:304px;top:0px;height:78px"><h4><b>product_scenes</b><small>商品のシーンタグ</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>scene_tag</code><i>varchar(20)</i><em class="k pk">PK</em></li></ul><p class="fkm">FK: product_scenes.product_id → products.product_id</p></div><div class="tb g2" style="left:304px;top:96px;height:122px"><h4><b>product_facts</b><small>商品の事実</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>fact</code><i>varchar(30)</i><em class="k pk">PK</em></li><li><code>value</code><i>int</i></li><li><code>source</code><i>varchar(30)</i></li></ul><p class="fkm">FK: product_facts.product_id → products.product_id</p></div><div class="tb g3" style="left:32px;top:490px;height:166px"><h4><b>reviews</b><small>レビュー</small></h4><ul><li><code>review_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>rating</code><i>int</i></li><li><code>comment</code><i>text ・空可</i></li><li><code>posted_at</code><i>date</i></li></ul><p class="fkm">FK: reviews.product_id → products.product_id ／ reviews.user_id → users.user_id</p></div><div class="tb tm" style="left:656px;top:470px;height:166px"><h4><b>share_links</b><small>共有リンク</small></h4><div class="band"><span class="st">チームで追加</span><span class="st st2">作成済み B2 #56</span></div><ul><li><code>share_id</code><i>CHAR(22)</i><em class="k pk">PK</em></li><li><code>items</code><i>JSON</i></li><li><code>created_at</code><i>DATETIME</i></li><li><code>is_test</code><i>TINYINT(1)</i></li></ul><p class="fkm">チームで足した表。既存の表との線は引かない（既存は変更しない）。</p></div><div class="tb w2t" style="left:656px;top:690px;height:166px"><h4><b>share_likes</b><small>共有リンクのいいね</small></h4><div class="band"><span class="w2tag">実装③</span><span class="st st2">作成済み 11/15 D-38</span></div><ul><li><code>share_id</code><i>CHAR(22)</i><em class="k pk">PK</em></li><li><code>product_id</code><i>VARCHAR(10)</i><em class="k pk">PK</em></li><li><code>like_count</code><i>INT UNSIGNED</i></li><li><code>updated_at</code><i>DATETIME</i></li></ul><p class="fkm">share_id は share_links、product_id は products と同じ値（外部キーは張らない）。</p></div><div class="tb w2t" style="left:304px;top:590px;height:298px"><h4><b>usage_events</b><small>使い方の記録</small></h4><div class="band"><span class="w2tag">実装③</span><span class="st st2">作成済み 11/15 D-40</span></div><ul><li><code>event_id</code><i>BIGINT UNSIGNED</i><em class="k pk">PK</em></li><li><code>visit_id</code><i>CHAR(22)</i></li><li><code>visitor_id</code><i>CHAR(22)</i></li><li><code>step</code><i>TINYINT UNSIGNED</i></li><li><code>occurred_at</code><i>DATETIME</i></li><li><code>scene</code><i>VARCHAR(20) ・空可</i></li><li><code>has_voice</code><i>TINYINT(1) ・空可</i></li><li><code>entry</code><i>VARCHAR(20) ・空可</i></li><li><code>zero_cond</code><i>VARCHAR(20) ・空可</i></li><li><code>is_test</code><i>TINYINT(1)</i></li></ul><p class="fkm">個人を示す列は持たない（N-13）。(visit_id, step) は重複不可。</p></div></div>
+    <div class="erlg" aria-label="凡例"><span><i class="sw2 ex"></i>既存（班の DB・変更しない）</span><span><i class="sw2 tm"></i>チームで追加（第1弾の share_links）</span><span><i class="sw2 w2"></i><span class="stick">実装③</span>実装③で追加（share_likes・usage_events）</span></div>
+    <div class="erg"><svg class="erl" width="880" height="910" viewBox="0 0 880 910" aria-hidden="true"><defs><marker id="erone" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="0" refY="7" orient="auto"><path class="ml" d="M8 1V13"/></marker><marker id="ercrow" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="14" refY="7" orient="auto"><path class="ml" d="M0 7L14 1M0 7H14M0 7L14 13"/></marker></defs><path class="ln" d="M140 122 V240" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M248 285 H304" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V329 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V141 H520" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M656 45 H588 V557 H248" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln" d="M32 45 H14 V579 H32" marker-start="url(#erone)" marker-end="url(#ercrow)"/><path class="ln dd" d="M764 636 V690"/></svg><span class="pl" style="left:764px;top:668px">同じ share_id<br>（外部キーなし）</span><span class="pl" style="left:140px;top:181px">注文する</span><span class="pl" style="left:276px;top:285px">含む</span><span class="pl" style="left:554px;top:329px">注文される</span><span class="pl" style="left:554px;top:45px">シーンタグ<br>を持つ</span><span class="pl" style="left:554px;top:141px">事実を持つ</span><span class="pl" style="left:404px;top:557px">レビューされる</span><span class="pl" style="left:14px;top:320px">書く</span><div class="tb g1" style="left:32px;top:0px;height:122px"><h4><b>users</b><small>利用者</small></h4><ul><li><code>user_id</code><i>varchar(20)</i><em class="k pk">PK</em></li><li><code>age_group</code><i>varchar(10)</i></li><li><code>gender</code><i>varchar(10)</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g1" style="left:32px;top:240px;height:210px"><h4><b>orders</b><small>注文</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>ordered_at</code><i>datetime</i></li><li><code>gift_purpose</code><i>varchar(20) ・空可</i></li><li><code>estimated_scene</code><i>varchar(20)</i></li><li><code>recipient_key</code><i>varchar(16)</i></li><li><code>ship_to_type</code><i>varchar(10)</i></li><li><code>total_amount</code><i>int</i></li></ul><p class="fkm">FK: orders.user_id → users.user_id</p></div><div class="tb g1" style="left:304px;top:240px;height:144px"><h4><b>order_items</b><small>注文の明細</small></h4><ul><li><code>order_id</code><i>varchar(12)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>line_no</code><i>int</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>quantity</code><i>int</i></li><li><code>unit_price</code><i>int</i></li></ul><p class="fkm">FK: order_items.order_id → orders.order_id ／ order_items.product_id → products.product_id</p></div><div class="tb g2" style="left:656px;top:0px;height:364px"><h4><b>products</b><small>商品</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em></li><li><code>product_name</code><i>varchar(100)</i></li><li><code>category</code><i>varchar(30)</i></li><li><code>price</code><i>int</i></li><li><code>brand</code><i>varchar(50)</i></li><li><code>description</code><i>text</i></li><li><code>size</code><i>varchar(100) ・空可</i></li><li><code>delivery_days</code><i>int</i></li><li><code>gift_wrap</code><i>tinyint(1)</i></li><li><code>message_card</code><i>tinyint(1)</i></li><li><code>rating</code><i>decimal(2,1) ・空可</i></li><li><code>review_count</code><i>int</i></li><li><code>sales_count</code><i>int</i></li><li><code>stock</code><i>int</i></li><li><code>registered_at</code><i>date</i></li></ul></div><div class="tb g2" style="left:304px;top:0px;height:78px"><h4><b>product_scenes</b><small>商品のシーンタグ</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>scene_tag</code><i>varchar(20)</i><em class="k pk">PK</em></li></ul><p class="fkm">FK: product_scenes.product_id → products.product_id</p></div><div class="tb g2" style="left:304px;top:96px;height:122px"><h4><b>product_facts</b><small>商品の事実</small></h4><ul><li><code>product_id</code><i>varchar(10)</i><em class="k pk">PK</em><em class="k fk">FK</em></li><li><code>fact</code><i>varchar(30)</i><em class="k pk">PK</em></li><li><code>value</code><i>int</i></li><li><code>source</code><i>varchar(30)</i></li></ul><p class="fkm">FK: product_facts.product_id → products.product_id</p></div><div class="tb g3" style="left:32px;top:490px;height:166px"><h4><b>reviews</b><small>レビュー</small></h4><ul><li><code>review_id</code><i>varchar(12)</i><em class="k pk">PK</em></li><li><code>product_id</code><i>varchar(10)</i><em class="k fk">FK</em></li><li><code>user_id</code><i>varchar(20)</i><em class="k fk">FK</em></li><li><code>rating</code><i>int</i></li><li><code>comment</code><i>text ・空可</i></li><li><code>posted_at</code><i>date</i></li></ul><p class="fkm">FK: reviews.product_id → products.product_id ／ reviews.user_id → users.user_id</p></div><div class="tb tm" style="left:656px;top:470px;height:166px"><h4><b>share_links</b><small>共有リンク</small></h4><div class="band"><span class="st">チームで追加</span><span class="st st2">作成済み B2 #56</span></div><ul><li><code>share_id</code><i>CHAR(22)</i><em class="k pk">PK</em></li><li><code>items</code><i>JSON</i></li><li><code>created_at</code><i>DATETIME</i></li><li><code>is_test</code><i>TINYINT(1)</i></li></ul><p class="fkm">チームで足した表。既存の表との線は引かない（既存は変更しない）。</p></div><div class="tb w2t" style="left:656px;top:690px;height:166px"><h4><b>share_likes</b><small>共有リンクのいいね</small></h4><div class="band"><span class="stick">実装③</span><span class="st st2">作成済み 11/15 D-38</span></div><ul><li><code>share_id</code><i>CHAR(22)</i><em class="k pk">PK</em></li><li><code>product_id</code><i>VARCHAR(10)</i><em class="k pk">PK</em></li><li><code>like_count</code><i>INT UNSIGNED</i></li><li><code>updated_at</code><i>DATETIME</i></li></ul><p class="fkm">share_id は share_links、product_id は products と同じ値（外部キーは張らない）。</p></div><div class="tb w2t" style="left:304px;top:590px;height:298px"><h4><b>usage_events</b><small>使い方の記録</small></h4><div class="band"><span class="stick">実装③</span><span class="st st2">作成済み 11/15 D-40</span></div><ul><li><code>event_id</code><i>BIGINT UNSIGNED</i><em class="k pk">PK</em></li><li><code>visit_id</code><i>CHAR(22)</i></li><li><code>visitor_id</code><i>CHAR(22)</i></li><li><code>step</code><i>TINYINT UNSIGNED</i></li><li><code>occurred_at</code><i>DATETIME</i></li><li><code>scene</code><i>VARCHAR(20) ・空可</i></li><li><code>has_voice</code><i>TINYINT(1) ・空可</i></li><li><code>entry</code><i>VARCHAR(20) ・空可</i></li><li><code>zero_cond</code><i>VARCHAR(20) ・空可</i></li><li><code>is_test</code><i>TINYINT(1)</i></li></ul><p class="fkm">個人を示す列は持たない（N-13）。(visit_id, step) は重複不可。</p></div></div>
     <div class="erk">
       <div class="erc"><h5>見かた</h5>
         <p><em class="k pk">PK</em> 主キー　<em class="k fk">FK</em> 外部キー　空可 ＝ 空を許す。線の端は、縦棒が「1つ」の側、三つ又が「多数」の側。</p>
@@ -600,8 +175,8 @@ th{background:var(--card)}
         <ul><li>アプリは <b>users</b> を <b>SELECT しない</b>（ログインの答えが来たら見直す）</li>
         <li>既存の6つは <b>SELECT</b> だけ（INSERT・UPDATE・DELETE・DDL なし）</li>
         <li><b>share_links</b> は <b>SELECT・INSERT</b> だけ（UPDATE・DELETE・DDL なし）</li>
-        <li><span class="w2tag">実装③</span><b>share_likes</b> は <b>INSERT … ON DUPLICATE KEY UPDATE と UPDATE</b>（押す・取り消す。読み取りはリンクの取得の結合。DELETE・DDL なし。D-45）</li>
-        <li><span class="w2tag">実装③</span><b>usage_events</b> は書き込みは <b>INSERT IGNORE</b> だけ（DELETE・DDL なし。消すのは PM が手順どおりに）</li></ul>
+        <li><span class="stick">実装③</span><b>share_likes</b> は <b>INSERT … ON DUPLICATE KEY UPDATE と UPDATE</b>（押す・取り消す。読み取りはリンクの取得の結合。DELETE・DDL なし。D-45）</li>
+        <li><span class="stick">実装③</span><b>usage_events</b> は書き込みは <b>INSERT IGNORE</b> だけ（DELETE・DDL なし。消すのは PM が手順どおりに）</li></ul>
       </div>
       <div class="erc"><h5>テーブル同士のつながり（外部キー7本）</h5>
         <ul><li><code>order_items.order_id → orders.order_id（注文が含む）</code></li><li><code>order_items.product_id → products.product_id（商品が注文される）</code></li><li><code>orders.user_id → users.user_id（利用者が注文する）</code></li><li><code>product_facts.product_id → products.product_id（商品が事実を持つ）</code></li><li><code>product_scenes.product_id → products.product_id（商品がシーンタグを持つ）</code></li><li><code>reviews.product_id → products.product_id（商品がレビューされる）</code></li><li><code>reviews.user_id → users.user_id（利用者が書く）</code></li></ul>
@@ -609,97 +184,9 @@ th{background:var(--card)}
     </div>
   </div>
 </section>
-
-
-<!-- ============ 図5 全体の仕組み ============ -->
-<section class="panel p5" aria-label="全体の仕組み">
-  <h2>⑤ 全体の仕組み：画面・API・DB・デプロイ・ハブのつながり</h2>
-  <p class="lead">11/24 の発表と、3人の学びのための 1 枚。①〜④をまとめた構図で、正本は 設計.md（D-33 ほか）・ADR-004・ADR-005・<code>.github/workflows/</code>。文書にある物だけを描き、無い所は紫の破線＋「仕様に書かれていません」。<span class="w2tag">実装③</span> は第2弾（実装③）で増えた分。</p>
-  <div class="counts" aria-label="数">
-    <span>画面 3 ページ</span><span>API 9 本（実装③で 4 本）</span><span>表 10（実装③で 2）</span><span>デプロイ 2 本＋ハブ（Pages）</span>
-  </div>
-
-  <div class="arch">
-    <div class="stack">
-      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>
-      <div class="ac"><h4>② データ</h4><div class="bd"><p class="big">架空データだけ</p>班の DB（<code>giftia_t501</code>）に配られた分。実データは使わない。<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></div></div>
-    </div>
-    <div class="al"><span>操作</span><i>→</i></div>
-
-    <div class="ac ui"><h4>③ 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">
-      <p class="big">3 ページ</p>
-      <div class="kv">
-        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>
-        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>
-        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>
-      </div>
-      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>
-      <div class="sub w2"><b><span class="w2tag">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>
-      <div class="sub w2"><b><span class="w2tag">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>
-    </div></div>
-    <div class="al"><span>呼出</span><i>→</i></div>
-
-    <div class="ac api"><h4>④ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">
-      <p class="big">9 本</p>
-      <div class="kv">
-        <code>GET /api/candidates</code><span>R-01 の候補10件（ベイズ平均・理由は AI なしのテンプレート）</span>
-        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="w2tag">実装③</span> 並び替え・0件の助け舟</span>
-        <code>GET /api/products/{id}</code><span>詳細。<span class="w2tag">実装③</span> 届く日・回数</span>
-        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>
-        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="w2tag">実装③</span> いいねの数</span>
-        <code>GET …/{id}/voices</code><span><span class="w2tag">実装③</span> 贈った人の声（最大2件）</span>
-        <code>GET …/{id}/similar</code><span><span class="w2tag">実装③</span> 似た商品（最大3件）</span>
-        <code>POST …/{share_id}/likes</code><span><span class="w2tag">実装③</span> いいね（1候補30回まで）</span>
-        <code>POST /api/events</code><span><span class="w2tag">実装③</span> 匿名の計測（204）</span>
-      </div>
-      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>
-    </div></div>
-    <div class="al"><span>読み<br>書き</span><i>→</i></div>
-
-    <div class="ac db"><h4>⑤ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">
-      <p class="big">表 10</p>
-      <div class="kv one">
-        <b>既存 7</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>
-        <b>share_links</b><span>INSERT</span>
-        <b><span class="w2tag">実装③</span> share_likes</b><span>INSERT … ON DUPLICATE KEY UPDATE・UPDATE</span>
-        <b><span class="w2tag">実装③</span> usage_events</b><span>INSERT IGNORE</span>
-      </div>
-      <div class="sub"><b>つなぎ方</b>SSL（証明書とホスト名を確かめる）。DB 名は固定。配られたアカウント1つ。接続情報は環境変数で受け、コードにも文書にも書かない。DELETE・DDL はアプリに作らない（表の作成と削除は PM が手で）<span class="ids">D-12, D-13, D-45 ／ N-04</span></div>
-    </div></div>
-  </div>
-
-  <div class="arrow">↑ GitHub Actions でデプロイ（画面 → App Service ／ API → Functions）　　↓ Pages で公開（ハブ）</div>
-
-  <div class="arch bt">
-    <div class="ac gh"><h4>GitHub　ソースコード・PR レビュー</h4><div class="bd">
-      <div class="kv">
-        <b>Actions ①</b><span>画面を ビルド・テストして App Service へ（<code>main_gen13-app-step3-1-5181-fe.yml</code>）</span>
-        <b>Actions ②</b><span>API を Azure Functions へ（<code>main_func-gen13-step3-5181.yml</code>）</span>
-        <b>Actions ③</b><span>Pages: ハブ・5 文書の HTML・進捗ページを作って公開（<code>pages.yml</code>）</span>
-        <b>Actions ④</b><span>PR 機械チェック（<code>pr-mechanical-checks.yml</code>）</span>
-      </div>
-      <span class="ids">D-33 ／ ADR-004</span>
-    </div></div>
-    <div class="ac gh"><h4>開発ハブ　GitHub Pages</h4><div class="bd">
-      <p class="big">主要フロー図もここ</p>
-      手書きページ（<code>docs/</code>）・5 文書（ビルド時に HTML 化）・進捗ページ（Issue から自動）。main へのマージと毎朝 6:00（日本時間）に更新。秘匿値は使わない。アプリの画面とは別の公開先。
-      <span class="ids">pages.yml</span>
-    </div></div>
-    <div class="ac warn"><h4>外部公開・実データ利用前</h4><div class="bd">
-      <ul style="margin:0;padding-left:18px;font-size:12.5px">
-        <li>架空データだけ。ログインは作らない（入口は「準備中」。ADR-005）</li>
-        <li>公開は 11/12〜12/12（ADR-004 承認済み）。後片付けは 12/12（O3）</li>
-        <li>noindex: <code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta（N-07）</li>
-        <li>共有リンクは推測できない識別子・720時間で期限切れ・個人情報なし（N-02・N-13）</li>
-      </ul>
-      <div class="node gap" style="margin-top:8px"><b>実データを使うときの認証・認可</b><small>文書にありません（発展は運営の承認後）。</small></div>
-    </div></div>
-  </div>
-  <div class="archnote"><span>画面・API・DB の役割を分けている</span><span>接続情報は環境変数（コード・文書に書かない）</span><span>画面の保存はブラウザの中だけ</span><span><span class="w2tag">実装③</span> 第2弾で増えた分は左の太い実線</span></div>
-</section>
-
-<p class="foot">作成: Takahiro（設計）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みなし・単体の HTML。</p>
 </main>
+<p class="foot">作成: Takahiro（設計）／ Mi-rin（見た目）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みは開発ハブと同じ Google Fonts のみ・単体の HTML。</p>
+</div>
 <script>var hm={"#er":"t4","#arch":"t5"}[location.hash];if(hm){var e=document.getElementById(hm);if(e)e.checked=true}</script>
 </body>
 </html>
