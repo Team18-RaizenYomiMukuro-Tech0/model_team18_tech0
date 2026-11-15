@@ -6,4 +6,5 @@
 .hero p{margin:0;color:#2B2522;font-size:14px}
 .hero p span{display:block}
 @media(max-width:899px){.hero{--ah:clamp(108px,calc((100vw - 380px)/1.444),220px);height:260px}.hero .txt{left:16px;top:16px;transform:none;max-width:calc(100% - 32px)}.hero img{right:16px}}
-@media(max-width:480px){.hero{--ah:96px;height:232px}.hero h1{font-size:24px}}
+@media(max-width:480px){.hero{--ah:72px;height:160px}.hero h1{font-size:24px;margin-bottom:6px}}
+@media(max-width:340px){.hero{--ah:56px}.hero p{font-size:12px}}
