@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { RECOMMEND_COUNT, bandLinkHref, buildSearchHref, categoryToggle, fetchRecommended, onBandPress, pickRecommended, type RecommendedItem } from "./topPage.ts";
+import { CATEGORIES } from "./images.ts";
+import { categoryNote } from "./searchMode.ts";
+import { CATEGORY_FIRST_COUNT, RECOMMEND_COUNT, bandLinkHref, buildSearchHref, categoryToggle, fetchRecommended, onBandPress, pickRecommended, type RecommendedItem } from "./topPage.ts";
 
 // U-45 U-46 S-52〜S-56 D-26: タイルと価格帯ボタンの押し方から、検索結果へ渡す条件が組み立てられる
 test("topPage U-45: シーンのタイルだけ → シーンだけ。価格帯を先に選んでいれば価格帯つき", () => {
@@ -23,9 +25,21 @@ test("topPage U-45: カテゴリーのタイル → そのカテゴリー1つだ
   assert.equal(buildSearchHref({ category: "食品" }), "/search?category=%E9%A3%9F%E5%93%81");
   assert.equal(buildSearchHref({ productId: "G0007" }), "/search?product=G0007");
 });
-test("topPage U-46: 開閉ボタンの aria-expanded は、閉じていれば false、開けば true。印は ▼ から ▲", () => {
-  assert.deepEqual(categoryToggle(false), { expanded: false, mark: "▼" });
-  assert.deepEqual(categoryToggle(true), { expanded: true, mark: "▲" });
+test("topPage U-46: 開閉ボタンの aria-expanded は、閉じていれば false、開けば true。文字は「ほか6個を見る」「ほか6個を閉じる」", () => {
+  assert.deepEqual(categoryToggle(false, 10), { expanded: false, label: "ほか6個を見る", rest: 6 });
+  assert.deepEqual(categoryToggle(true, 10), { expanded: true, label: "ほか6個を閉じる", rest: 6 });
+  assert.equal(CATEGORY_FIRST_COUNT, 4);
+});
+test("topPage U-88: カテゴリーの並び（T-5）は 1 つの定数。先頭 4 つがスマホの最初の 4 つ、残りが「ほか6個」。重複・欠落なし", () => {
+  const names = CATEGORIES.map((c) => c.name);
+  assert.deepEqual(names, ["食品", "飲料", "生活雑貨", "フラワー", "コスメ", "酒類", "インテリア", "家電", "ビジネス小物", "カタログギフト"]);
+  assert.equal(new Set(names).size, 10);
+  assert.equal(new Set(CATEGORIES.map((c) => c.slug)).size, 10);
+  assert.deepEqual(names.slice(0, CATEGORY_FIRST_COUNT), ["食品", "飲料", "生活雑貨", "フラワー"]);
+  assert.equal(names.slice(CATEGORY_FIRST_COUNT).length, 6);
+});
+test("topPage U-88: 検索結果の見出し横の説明（選んだカテゴリー）もタイルと同じ並び", () => {
+  assert.equal(categoryNote(["カタログギフト", "食品", "コスメ"]), "食品・コスメ・カタログギフト");
 });
 test("topPage U-45: おすすめは先頭4件", () => {
   const items: RecommendedItem[] = Array.from({ length: 12 }, (_, i) => ({

@@ -21,19 +21,22 @@
   min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: var(--rm);
   background: var(--paper); color: var(--ink); font: inherit; cursor: pointer;
 }
+/* SP-20 T2: シーン・カテゴリーのタイルは枠を外し、白い面にする */
+.tile, .cat { border: 0; }
 .tile { min-height: 64px; font-size: 17px; font-weight: 700; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn { padding: 8px 16px; font-size: 15px; }
 .tile:hover, .btn:hover, .cat:hover { background: var(--peach); }
-/* 選んだボタン: 白い字で 4.5 以上（#b8422a と白で約 5.4）。✓ も付けて色だけに頼らない */
-.btn[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+/* SP-20 T3: 選んだボタンは文字が載るオレンジの面 --s-coral-ink（白文字 6.74:1）。✓ も付けて色だけに頼らない */
+.btn[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
 .bandlink { margin: 10px 0 0; }
 .bandlink a { display: inline-flex; align-items: center; min-height: 44px; color: #8f321e; font-weight: 700; }
 .cats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-.cat { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 4px; min-height: 76px; font-size: 13px; }
-.cathead_toggle { display: none; }
-.catbtn { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 44px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: inherit; text-align: left; cursor: pointer; }
-.chev { margin-left: auto; padding-right: 4px; font-size: 14px; }
+/* SP-20 T4: アイコンは焦げ茶で、文字の横に並べる */
+.cat { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; padding: 10px 8px; min-height: 56px; font-size: 14px; }
+.cat img { flex: none; }
+/* 「ほか6個を見る」は 480px 以下だけ（SP-09）。広い幅では出さず、10 個を常に出す */
+.morebtn { display: none; }
 .rec { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .card { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); color: var(--ink); text-decoration: none; font-size: 14px; }
 .pic { position: relative; display: block; }
@@ -42,11 +45,10 @@
 .name { font-weight: 700; }
 .price { font-weight: 700; }
 .rating { color: #5c514d; font-size: 13px; }
-/* #61: 幅 480px 以下ではカテゴリーを折りたたむ。パソコン幅は変えない */
+/* SP-09: 幅 480px 以下では先頭の 4 つだけ出し、「ほか6個を見る」で残りを開く。パソコン幅は変えない */
 @media (max-width: 480px) {
-  .cathead_static { display: none; }
-  .cathead_toggle { display: block; }
-  .shut { display: none; }
+  .shut .more { display: none; }
+  .morebtn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin-top: 10px; padding: 8px 16px; border: 1px solid var(--s-ink); border-radius: var(--rm); background: var(--s-paper); color: var(--s-ink); font: inherit; font-size: 14px; cursor: pointer; }
   .cats { grid-template-columns: repeat(2, 1fr); }
   .rec { grid-template-columns: repeat(2, 1fr); }
 }

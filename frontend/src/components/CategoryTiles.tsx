@@ -4,12 +4,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CATEGORIES, categoryIcon } from "@/lib/images";
-import { buildSearchHref, categoryToggle } from "@/lib/topPage";
+import { CATEGORY_FIRST_COUNT, buildSearchHref, categoryToggle } from "@/lib/topPage";
 import styles from "./top.module.css";
 
-// SP-09 D-26 #54-5 #56-1 #58-4 #61-1〜3 #62-1〜3: カテゴリー10タイル。
-// 幅 480px 以下では見出し「カテゴリーから探す ▼」のボタンだけを出し、押すと10個が開く（最初は閉じる）。広い幅は常に開いた表示。
-// 開閉の状態は覚えない: トップを開くたびに閉じから始まり、幅が 480px をまたいだら閉じに戻す。
+// SP-09 D-26 T-5 #54-5 #56-1 #58-4 #61: カテゴリー10タイル。並びは lib/images.ts の 1 つの定数。
+// 幅 480px 以下では先頭の 4 つだけ出し、その下のボタン「ほか6個を見る」で残りを開く（開いたら「ほか6個を閉じる」で最初の 4 つに戻る）。481px 以上は常に 10 個でボタンは出ない。
+// 見出し「カテゴリーから探す」は押しても開閉しない（▼・▲ は付けない）。開閉は覚えない: 開くたびに 4 つだけの状態から始め、幅が 480px をまたいだら戻す。
 // タイルを押すと、そのカテゴリー1つを選んだ状態で検索結果へ移る（2つ目からは検索結果の画面で足す。#58-4）。
 export function CategoryTiles() {
   const router = useRouter();
@@ -17,33 +17,28 @@ export function CategoryTiles() {
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 480px)");
-    const onChange = () => setOpen(false); // 幅が 480px をまたいだら閉じに戻す（#62-2）
+    const onChange = () => setOpen(false);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const t = categoryToggle(open);
+  const t = categoryToggle(open, CATEGORIES.length);
   return (
     <section aria-labelledby="h-cat">
-      <h2 id="h-cat" className={`${styles.h} ${styles.cathead_static}`}>
-        カテゴリーから探す<span className={styles.multi}>（複数選べます）</span>
-      </h2>
-      <h2 className={`${styles.h} ${styles.cathead_toggle}`}>
-        <button type="button" className={styles.catbtn} aria-expanded={t.expanded} aria-controls="catlist" onClick={() => setOpen(!open)}>
-          カテゴリーから探す<span className={styles.multi}>（複数選べます）</span>
-          <span className={styles.chev} aria-hidden="true">
-            {t.mark}
-          </span>
-        </button>
+      <h2 id="h-cat" className={styles.h}>
+        カテゴリーから探す
       </h2>
       <div id="catlist" className={`${styles.cats} ${open ? "" : styles.shut}`}>
-        {CATEGORIES.map((c) => (
-          <button key={c.slug} type="button" className={styles.cat} onClick={() => router.push(buildSearchHref({ category: c.name }))}>
-            <Image src={categoryIcon(c.name) ?? ""} alt="" width={40} height={40} unoptimized />
+        {CATEGORIES.map((c, i) => (
+          <button key={c.slug} type="button" className={`${styles.cat} ${i >= CATEGORY_FIRST_COUNT ? styles.more : ""}`} onClick={() => router.push(buildSearchHref({ category: c.name }))}>
+            <Image src={categoryIcon(c.name) ?? ""} alt="" width={28} height={28} unoptimized />
             {c.name}
           </button>
         ))}
       </div>
+      <button type="button" className={styles.morebtn} aria-expanded={t.expanded} aria-controls="catlist" onClick={() => setOpen(!open)}>
+        {t.label}
+      </button>
     </section>
   );
 }

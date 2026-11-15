@@ -29,9 +29,12 @@ export function bandLinkHref(scene: Scene | null, band: PriceBand | null): strin
   return !scene && band ? buildSearchHref({ priceBand: band }) : null;
 }
 
-// カテゴリーの開閉ボタン（480px 以下）。閉じていれば aria-expanded=false・印 ▼、開いていれば true・▲（#61、#62-1）
-export function categoryToggle(open: boolean): { expanded: boolean; mark: "▼" | "▲" } {
-  return { expanded: open, mark: open ? "▲" : "▼" };
+// カテゴリーの開閉ボタン（480px 以下。SP-09・S-82）。最初は先頭 4 つだけ出し、ボタンは「ほか{残り}個を見る」。
+// 開くと「ほか{残り}個を閉じる」になり、押すと最初の 4 つに戻る。見出しは押しても開閉しない（▼・▲ の印は付けない）。
+export const CATEGORY_FIRST_COUNT = 4;
+export function categoryToggle(open: boolean, total: number): { expanded: boolean; label: string; rest: number } {
+  const rest = Math.max(0, total - CATEGORY_FIRST_COUNT);
+  return { expanded: open, label: open ? `ほか${rest}個を閉じる` : `ほか${rest}個を見る`, rest };
 }
 
 // おすすめ: GET /api/products を条件なしで呼んだ先頭4件（D-26）
