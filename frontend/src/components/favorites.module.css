@@ -13,3 +13,24 @@
 .list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--rm); }
 .nm { flex: 1 1 140px; font-weight: 700; }
 .empty { margin: 0; color: #5c514d; }
+/* 第2弾 Y5（SP-23・SP-18）: 各行の「カートに入れる」・商品名のリンク・比べる選択・比べる表 */
+.panelWide { width: min(720px, 100%); }
+.nm a { color: inherit; text-decoration: underline; }
+.pick { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding-right: 6px; cursor: pointer; }
+.pick input { width: 24px; height: 24px; margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cartAdd { min-width: 44px; min-height: 44px; padding: 6px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.cartAdd:disabled { color: #5c514d; background: #f1ece9; cursor: not-allowed; }
+.cartFull { width: 100%; padding: 6px 4px; font-size: 12px; line-height: 1.3; }
+.compare { width: 100%; min-height: 44px; margin-bottom: 4px; border: 1px solid #b8422a; border-radius: var(--rm); background: #b8422a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.compare:disabled { border-color: var(--bd2); background: #f1ece9; color: #5c514d; cursor: not-allowed; }
+.note { min-height: 1.4em; margin: 4px 0 8px; font-size: 13px; color: #5c514d; }
+.back { min-height: 44px; margin-bottom: 8px; padding: 6px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.scroll { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.table th, .table td { padding: 6px 4px; border: 1px solid var(--line); vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+.table thead th { font-weight: 700; }
+.table thead th img { display: block; margin-bottom: 4px; }
+.table tbody th { width: 64px; font-weight: 700; background: #faf7f5; }
+.table a { color: inherit; text-decoration: underline; }
+.stockout { display: block; margin-top: 4px; color: #b3261e; font-weight: 700; }
