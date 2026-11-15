@@ -324,12 +324,7 @@ table.sys .rt .code{overflow-wrap:anywhere;word-break:normal;font-size:12px}
       <div class="impact"><b>インパクト評価で数えるもの</b>通過率は <code>usage_events</code>（訪問は 30 分で区切る）。購入件数は既存の <code>orders</code>。名前・メール・IP は残さない。<span class="ids">ADR-011 ／ N-13, N-16</span></div>
       <div class="gapcard"><b>仕様に書かれていません｜実データを使うときの認証・認可</b><span>文書にありません（発展は運営の承認後）。</span></div>
     </div>
-<div class="points" aria-label="この図で伝えたいこと"><h3>この図で伝えたいこと</h3><ul>
-<li><b>画面・API・DB の役割を分けている</b>画面は見せるだけ、API が DB を読み書き。<details><summary>くわしく</summary><b>画面・API・DB の役割を分けている</b>画面は見せるだけ、API が検証して DB を読み書きする。<span class="ids">設計.md D-33</span></details></li>
-<li><b>接続情報は環境変数だけ</b>コードにも文書にも書かない。<details><summary>くわしく</summary><b>接続情報は環境変数だけ</b>コードにも文書にも書かない。<span class="ids">D-12, D-13 ／ N-04</span></details></li>
-<li><b>画面の保存はブラウザの中だけ</b>お気に入り・カートはサーバーに送らない。<details><summary>くわしく</summary><b>画面の保存はブラウザの中だけ</b>お気に入り・カートなどはサーバーに送らない。<span class="ids">D-10, D-47</span></details></li>
-<li><b><span class="stick">実装③</span> 第2弾で増えた分は薄紫の地と太い紫の枠</b>いいね・計測の 2 つの線。<details><summary>くわしく</summary><b><span class="stick">実装③</span> 第2弾で増えた分は薄紫の地と太い紫の枠</b>いいね（share_likes）と計測（usage_events）の 2 つの線がつながっている。<span class="ids">ADR-009, ADR-011</span></details></li>
-</ul>
+<div class="points" aria-label="いいねと計測の流れ"><h3>いいねと計測の流れ</h3>
 <div class="flowline"><span class="lk">いいね</span> 押す → <code>POST …/likes</code> → <code>share_likes</code> に +1 → <code>GET /api/share-links/{id}</code> が <code>like_count</code> を返す → 共有ページに数が出る <span class="ids">D-38, D-39</span></div>
 <div class="flowline"><span class="lk ev">計測</span> 画面が送る → <code>POST /api/events</code> → <code>usage_events</code> に 1 行 → 通過率の SELECT（読むだけ） <span class="ids">D-40, D-41</span></div>
 </div>
