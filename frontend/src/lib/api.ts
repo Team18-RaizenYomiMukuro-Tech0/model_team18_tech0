@@ -13,7 +13,8 @@ export const SCENES: readonly Scene[] = ["お礼", "誕生日", "送別"];
 export type SceneCount = { scene: string; n: number };
 
 // D-44: 0件のときだけ付く。はずすと何件になるか（その条件を付けていなければ null、0件なら 0）。シーンははずさない
-export type Relax = { price_band: number | null; category: number | null };
+// no_q は D-49（言葉をはずしたときの件数。q を付けて 0 件のときだけ来る）
+export type Relax = { price_band: number | null; category: number | null; no_q?: number | null };
 
 // D-01 の応答の1件分（画面が使う分だけ）。delivery_days・wrapping・arrives_on・scene_count は第2弾（D-34）の項目で、
 // API 側（D2）が入るまでは来ないので省略可。delivery_days が null なら arrives_on も null

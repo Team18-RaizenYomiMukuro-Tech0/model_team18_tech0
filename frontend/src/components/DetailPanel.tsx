@@ -1,19 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
+import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
 import { fetchJson, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail } from "@/lib/products";
 import { cartStore } from "@/state/cart";
 import { HeartButton } from "./HeartButton";
 import { Searching } from "./Searching";
+import { Sheet } from "./Sheet";
+import { useMediaQuery } from "./useMediaQuery";
 import styles from "./results.module.css";
 
 // SP-12 F-14 F-16 D-29 #53-5 #54-6 #55-4 #58-10: 検索結果の右の詳細の欄。
 // 商品名・画像・価格（税込）・評価（件数）・「高評価の商品」・配送日数・ラッピング・商品の特徴・セット内容・「カートに入れる」と「お気に入りに追加」。
 // 値が無い項目は出さない。在庫0は「在庫なし」。取得が通信の失敗なら「商品の情報を読み込めませんでした」と「もう一度」、404 なら「この商品は見つかりません」だけ。
-export function DetailPanel({ productId }: Readonly<{ productId: string }>) {
+// R2 SP-29 D-46: 899px 以下は下から出るシート（閉じるボタン・Esc。開いたら商品名へ焦点）、900px 以上は右の欄。
+// どちらも一番下に「{価格}（税込）［カートに入れる］」の帯を固定する（`position: sticky; bottom: 0`。在庫 0 は「在庫なし」で押せない）。
+export function DetailPanel({ productId, onClose }: Readonly<{ productId: string; onClose: () => void }>) {
+  const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
 
@@ -28,12 +34,20 @@ export function DetailPanel({ productId }: Readonly<{ productId: string }>) {
   // 別のカードを押した直後は、前の商品の中身を出さない
   const r = state.id === productId ? state.r : null;
 
-  return (
-    <aside className={styles.detail} aria-label="商品の詳細">
-      {!r && <Searching />}
-      {r?.status === "notfound" && <p role="status">この商品は見つかりません</p>}
+  const content = (
+    <>
+      {!r && (
+        <div className={styles.detpad}>
+          <Searching />
+        </div>
+      )}
+      {r?.status === "notfound" && (
+        <p role="status" className={styles.detpad}>
+          この商品は見つかりません
+        </p>
+      )}
       {r?.status === "error" && (
-        <div role="alert" className={styles.deterr}>
+        <div role="alert" className={`${styles.deterr} ${styles.detpad}`}>
           商品の情報を読み込めませんでした
           <button
             type="button"
@@ -47,16 +61,54 @@ export function DetailPanel({ productId }: Readonly<{ productId: string }>) {
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} />}
+      {r?.status === "ok" && <Foot p={r.data} />}
+    </>
+  );
+  if (sheet) {
+    return (
+      <Sheet label="商品の詳細" onClose={onClose}>
+        {content}
+      </Sheet>
+    );
+  }
+  return (
+    <aside className={styles.detail} aria-label="商品の詳細">
+      {content}
     </aside>
   );
 }
 
-function Body({ p }: Readonly<{ p: ProductDetail }>) {
-  const img = productImage(p.category);
+// 一番下の固定の帯: {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
+function Foot({ p }: Readonly<{ p: ProductDetail }>) {
+  const out = p.status === "out_of_stock";
   return (
-    <div className={styles.detbody}>
-      <h2 className={styles.detname}>{p.name}</h2>
+    <div className={styles.detfoot}>
+      <span className={styles.footprice}>{formatPrice(p.price)}</span>
+      {out ? (
+        <button type="button" className={styles.footbtn} disabled>
+          在庫なし
+        </button>
+      ) : (
+        <button type="button" className={styles.footbtn} data-primary="true" onClick={() => cartStore.add(p.product_id)}>
+          カートに入れる
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Body({ p, focusName }: Readonly<{ p: ProductDetail; focusName: boolean }>) {
+  const img = productImage(p.category);
+  const name = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (focusName) name.current?.focus(); // シートが開いたら、読めた商品名へ焦点（D-46）
+  }, [focusName, p.product_id]);
+  return (
+    <div className={`${styles.detbody} ${styles.detpad}`}>
+      <h2 className={styles.detname} ref={name} tabIndex={-1}>
+        {p.name}
+      </h2>
       <span className={styles.pic}>
         {img && <Image src={img} alt="" width={240} height={240} unoptimized />}
         <span className={styles.imgtag}>イメージ</span>
@@ -86,10 +138,6 @@ function Body({ p }: Readonly<{ p: ProductDetail }>) {
         </p>
       )}
       <div className={styles.actions}>
-        {/* R9 D-31: 押すと giftia:cart に追加（同じ商品は数量+1）。ヘッダーのカートの数が増える */}
-        <button type="button" className={styles.btn} onClick={() => cartStore.add(p.product_id)}>
-          カートに入れる
-        </button>
         <span className={styles.favrow}>
           お気に入りに追加 <HeartButton productId={p.product_id} name={p.name} />
         </span>

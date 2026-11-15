@@ -9,6 +9,7 @@ import { fetchJson, isProductDetail, productUrl, type Fetched, type ProductDetai
 import { buildSearchHref } from "@/lib/topPage";
 import { cartStore } from "@/state/cart";
 import { FAVORITES_KEY, loadFavorites, useFavorites } from "@/state/favorites";
+import { Icon } from "./icons";
 import styles from "./favorites.module.css";
 
 // D-30 SP-13 #46-6: ヘッダーのお気に入りのボタンと、右から出る一覧のパネル。
@@ -31,8 +32,8 @@ export function FavoritesButton() {
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
-        <span aria-hidden="true">♡</span> <span className="t">お気に入り</span>
-        {ids.length > 0 && <span className={styles.count}>{ids.length}</span>}
+        <span className="ico"><Icon name="heart" /></span> <span className="t">お気に入り</span>
+        {ids.length > 0 && <span className={`${styles.count} cnt`}>{ids.length}</span>}
       </button>
       {open && (
         <FavoritesPanel

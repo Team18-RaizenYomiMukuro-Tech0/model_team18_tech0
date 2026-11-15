@@ -3,6 +3,7 @@ import { CategoryTiles } from "@/components/CategoryTiles";
 import { Recommended } from "@/components/Recommended";
 import { TopSearch } from "@/components/TopSearch";
 import { HERO_IMAGE } from "@/lib/images";
+import { TOP_SUBLINES } from "@/lib/pageMeta";
 import styles from "@/components/top.module.css";
 
 // R2 #119 D-26 SP-09: トップ `/`。上から ヒーロー → シーン3タイル・価格帯3ボタン（1組）→ カテゴリー10 → おすすめ4件。
@@ -10,15 +11,19 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div>
+        <div className={styles.txt}>
           <h1>
             ありがとうに、
             <br />
             ちょうどいいギフト。
           </h1>
-          <p>相手とシーンに合わせて、気持ちが伝わる贈りものを。</p>
+          <p>
+            {TOP_SUBLINES.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+          </p>
         </div>
-        <Image src={HERO_IMAGE} alt="" width={1200} height={360} unoptimized priority className={styles.heroimg} />
+        <Image src={HERO_IMAGE} alt="" width={520} height={360} unoptimized priority className={styles.heroimg} />
       </section>
       <TopSearch />
       <CategoryTiles />

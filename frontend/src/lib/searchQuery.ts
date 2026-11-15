@@ -15,7 +15,11 @@ export const SORTS: readonly { value: SortKey; label: string }[] = [
   { value: "delivery_asc", label: "早く届く順" },
 ];
 
-export type SearchQuery = { scene: Scene | null; priceBand: PriceBand | null; categories: string[]; page: number; product: string | null; sort: SortKey };
+// D-49 SP-35: q はヘッダーの検索欄の言葉（50文字まで。無ければ ""）。条件（シーン・価格帯・カテゴリー）には足して絞る
+export const Q_MAX = 50;
+export const cleanQ = (v: string | null | undefined): string => Array.from((v ?? "").trim()).slice(0, Q_MAX).join("");
+
+export type SearchQuery = { scene: Scene | null; priceBand: PriceBand | null; categories: string[]; page: number; product: string | null; sort: SortKey; q: string };
 
 const CATEGORY_NAMES: readonly string[] = CATEGORIES.map((c) => c.name);
 
@@ -34,7 +38,7 @@ export function parseSearchQuery(q: URLSearchParams): SearchQuery {
   const priceBand = PRICE_BANDS.find((b) => b.value === band)?.value ?? null;
   const categories = [...new Set(q.getAll("category").filter((c) => CATEGORY_NAMES.includes(c)))];
   const sort = SORTS.find((o) => o.value === q.get("sort"))?.value ?? "recommend"; // 4つ以外は既定に戻す
-  return { scene, priceBand, categories, page: posInt(q.get("page")) ?? 1, product: idParam(q.get("product")), sort };
+  return { scene, priceBand, categories, page: posInt(q.get("page")) ?? 1, product: idParam(q.get("product")), sort, q: cleanQ(q.get("q")) };
 }
 
 // 同じ条件のまま、ページや商品だけ替えた URL（ページ送りは同じ条件のまま次の12件。#45-5・6）
@@ -44,6 +48,7 @@ export function searchHref(s: SearchQuery, over: Partial<SearchQuery> = {}): str
   if (m.scene) q.set("scene", m.scene);
   if (m.priceBand) q.set("price_band", m.priceBand);
   for (const c of m.categories) q.append("category", c);
+  if (m.q) q.set("q", m.q);
   if (m.sort !== "recommend") q.set("sort", m.sort);
   if (m.page > 1) q.set("page", String(m.page));
   if (m.product != null) q.set("product", String(m.product));

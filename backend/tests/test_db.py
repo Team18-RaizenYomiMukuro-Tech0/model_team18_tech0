@@ -114,7 +114,7 @@ def test_write_allow_list_wave2() -> None:
     ok = [
         "INSERT INTO share_likes (share_id, product_id, like_count, updated_at) VALUES (%s, %s, 1, %s) "
         "ON DUPLICATE KEY UPDATE like_count = IF(like_count < %s, like_count + 1, like_count), updated_at = %s",
-        "UPDATE share_likes SET like_count = GREATEST(like_count - 1, 0), updated_at = %s WHERE share_id = %s AND product_id = %s",
+        "UPDATE share_likes SET like_count = IF(like_count > 0, like_count - 1, 0), updated_at = %s WHERE share_id = %s AND product_id = %s",
         "INSERT IGNORE INTO usage_events (visit_id, visitor_id, step, occurred_at, is_test) VALUES (%s, %s, %s, %s, %s)",
     ]
     log: list[tuple[str, tuple[Any, ...]]] = []
