@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { LIKE_FAILED_MESSAGE, LikeController, likeLabel, likesKey, loadLikedIds, type LikeView, type SharedItem } from "./sharedLink.ts";
 import type { LikeResult } from "./api.ts";
-import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, sharedUrl } from "./sharedLink.ts";
+import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, sharedUrl } from "./sharedLink.ts";
 
 // SP-06 D-06 D-09 S-14〜S-17: 共有リンクの取得と、状態（表示・期限切れ・見つからない・失敗）の振り分け
 const res = (status: number, body: unknown = {}): typeof fetch => (async () => ({ ok: status < 400, status, json: async () => body }) as Response) as typeof fetch;
@@ -47,6 +47,18 @@ test("sharedLink S-86: 「くわしく見る」は /search?product=… へ。販
 test("sharedLink S-86: 「ほかの贈りものも探す」はトップへ", () => {
   assert.equal(OTHERS_LABEL, "ほかの贈りものも探す");
   assert.equal(OTHERS_HREF, "/");
+});
+
+// S-86 F-33 SP-06 案A: 画像は items[].category のカテゴリー共通イラスト。category が無い・知らないときは画像なし
+test("sharedLink S-86: 画像は category で選ぶ。無い・知らないカテゴリーは画像なし。第1弾の応答（category なし）も開ける", async () => {
+  assert.equal(itemImage({ category: "食品" }), "/products/food.svg");
+  assert.equal(itemImage({}), null);
+  assert.equal(itemImage({ category: "存在しない" }), null);
+  const withCat = [{ product_id: "G1", status: "available", name: "A", price: 1, reason: "r", category: "食品" }];
+  const okRes = (async () => ({ ok: true, status: 200, json: async () => ({ items: withCat }) }) as Response) as typeof fetch;
+  assert.equal((await fetchShared("A".repeat(22), undefined, okRes)).status, "ok");
+  const badRes = (async () => ({ ok: true, status: 200, json: async () => ({ items: [{ ...withCat[0], category: 5 }] }) }) as Response) as typeof fetch;
+  assert.equal((await fetchShared("A".repeat(22), undefined, badRes)).status, "error");
 });
 
 // S-87〜S-89 F-34 SP-28 D-39 D-47 N-17: いいね

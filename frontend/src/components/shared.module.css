@@ -22,3 +22,6 @@
 .likeErr { margin: 0; font-size: 14px; color: #7a1812; }
 .others { justify-self: start; margin-top: 8px; }
 .msg .others { margin-top: 12px; }
+.img { position: relative; width: 100%; max-width: 200px; aspect-ratio: 1; background: var(--peach); border-radius: var(--rm); overflow: hidden; }
+.img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
