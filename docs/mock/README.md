@@ -33,7 +33,7 @@
 ## いま置いてあるもの（Giftia UI/UX リニューアル）
 
 - クリックで動くモック: `clickable/giftia-ui-renewal/mock.html`（検索中の画像 `akapu.png` も同じ場所）
-- 実装③（第2弾）完了時点の固定版: `clickable/giftia-ui-renewal/mock-wave2.html`（2026-11-15。以後は変えない。画像は同じ場所を共有）
+- 実装③（第2弾）完了時点の固定版: `clickable/giftia-ui-renewal/mock-wave2.html`（記録用。ハブには出さない。2026-11-15。以後は変えない。画像は同じ場所を共有）
 - 主要フローの図: `diagrams/giftia-ui-renewal/flows.html`
 - 見た目の確認用スクリーンショット: `screenshots/giftia-ui-renewal/`
 - 以前は `02_プロジェクト/giftia-ui-renewal/evidence/mock/` にあった。見せる場所と原本を `docs/mock/` に一本化した（#80）。
