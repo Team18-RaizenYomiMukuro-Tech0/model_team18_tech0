@@ -1,4 +1,5 @@
 import { REQUEST_TIMEOUT_MS, apiUrl } from "./api.ts";
+import { buildSearchHref } from "./topPage.ts";
 
 // SP-06 D-06 D-09 N-01: 共有リンクを開く（GET /api/share-links/{share_id}）。ログインなし。10秒で打ち切る。
 // 期限切れ（410）・見つからない（404。形式が不正な識別子も API が 404）・失敗（500・通信・10秒超過・形の違う応答）を区別する。
@@ -25,6 +26,13 @@ export function itemNote(status: SharedStatus): string | null {
   if (status === "out_of_stock") return "在庫なし";
   return null;
 }
+
+// 第2弾 F-33 SP-06 K-6: 「くわしく見る」は検索結果の詳細の欄へ（/search?product=…）。販売終了の候補（商品が DB に無い）には置かない。在庫なしには置く
+export const DETAIL_LABEL = "くわしく見る";
+export const OTHERS_LABEL = "ほかの贈りものも探す";
+export const OTHERS_HREF = "/"; // トップへ
+export const canShowDetail = (status: SharedStatus): boolean => status !== "discontinued";
+export const detailHref = (productId: string): string => buildSearchHref({ productId });
 
 export async function fetchShared(shareId: string, signal?: AbortSignal, fetchImpl: typeof fetch = fetch): Promise<SharedResult> {
   const abort = new AbortController();

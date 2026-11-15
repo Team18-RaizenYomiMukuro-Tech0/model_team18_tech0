@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fetchShared, itemNote, sharedUrl } from "./sharedLink.ts";
+import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, sharedUrl } from "./sharedLink.ts";
 
 // SP-06 D-06 D-09 S-14〜S-17: 共有リンクの取得と、状態（表示・期限切れ・見つからない・失敗）の振り分け
 const res = (status: number, body: unknown = {}): typeof fetch => (async () => ({ ok: status < 400, status, json: async () => body }) as Response) as typeof fetch;
@@ -31,4 +31,18 @@ test("sharedLink: 識別子は URL に通してから API に渡す。販売終�
   assert.equal(itemNote("available"), null);
   assert.equal(itemNote("discontinued"), "この商品は販売終了しました");
   assert.equal(itemNote("out_of_stock"), "在庫なし");
+});
+
+// S-86 F-33 SP-06 K-6: くわしく見る（検索結果の詳細へ）・ほかの贈りものも探す（トップへ）
+test("sharedLink S-86: 「くわしく見る」は /search?product=… へ。販売終了の候補には置かず、在庫なしには置く", () => {
+  assert.equal(DETAIL_LABEL, "くわしく見る");
+  assert.equal(detailHref("G0002"), "/search?product=G0002");
+  assert.equal(canShowDetail("available"), true);
+  assert.equal(canShowDetail("out_of_stock"), true);
+  assert.equal(canShowDetail("discontinued"), false);
+});
+
+test("sharedLink S-86: 「ほかの贈りものも探す」はトップへ", () => {
+  assert.equal(OTHERS_LABEL, "ほかの贈りものも探す");
+  assert.equal(OTHERS_HREF, "/");
 });
