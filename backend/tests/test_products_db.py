@@ -25,6 +25,8 @@ FIELDS = {
     "delivery_days",
     "wrapping",
     "high_rating",
+    "arrives_on",  # D-34
+    "scene_count",  # D-34（scene を付けないので null）
 }
 
 

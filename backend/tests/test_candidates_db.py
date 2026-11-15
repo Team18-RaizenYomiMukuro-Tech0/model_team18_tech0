@@ -26,7 +26,10 @@ def test_scene_and_band(client: TestClient) -> None:
     assert 1 <= body["count"] <= 10 and body["count"] == len(body["items"])
     for i in body["items"]:
         assert 3000 <= i["price"] <= 4999
-        assert set(i) == {"product_id", "name", "price", "category", "high_rating", "reason"}
+        assert set(i) == {  # D-34 で delivery_days・wrapping・arrives_on・scene_count が増えた
+            "product_id", "name", "price", "category", "high_rating", "reason",
+            "delivery_days", "wrapping", "arrives_on", "scene_count",
+        }  # fmt: skip
 
 
 def test_empty_combination(client: TestClient) -> None:
