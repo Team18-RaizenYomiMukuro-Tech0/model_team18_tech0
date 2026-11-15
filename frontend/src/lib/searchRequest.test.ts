@@ -153,3 +153,20 @@ test("searchRequest SP-35: q 付きの結果も ②・⑦ を送り、送る中�
   assert.deepEqual(sent.map((x) => x.step), [2, 7]);
   assert.ok(!JSON.stringify(sent).includes("zzz"));
 });
+
+// 決定20（PM 11/15）: 価格帯・カテゴリーが無いときは ⑦ を送らない（言葉だけ・言葉＋シーンで 0 件）。あれば price/category/both
+test("searchRequest 決定20: q 付き 0 件の ⑦ は、価格帯・カテゴリーがあるときだけ（値は増やさない）", async () => {
+  const empty = (async () => ({ ok: true, status: 200, json: async () => ({ items: [], count: 0, total: 0, page: 1, page_size: 12 }) })) as unknown as typeof fetch;
+  const run = async (url: string) => {
+    const sent: { step: number; extra?: unknown }[] = [];
+    new ProductRunner(() => {}, empty, (step, extra) => void sent.push({ step, extra })).run(url);
+    await flush();
+    return sent;
+  };
+  assert.deepEqual((await run("/api/products?q=zzz")).map((x) => x.step), [2]);
+  assert.deepEqual((await run("/api/products?scene=x&q=zzz")).map((x) => x.step), [2]);
+  const z = async (u: string) => ((await run(u)).find((x) => x.step === 7)?.extra as { zero_cond?: string } | undefined)?.zero_cond;
+  assert.equal(await z("/api/products?q=zzz&price_band=under3000"), "price");
+  assert.equal(await z("/api/products?q=zzz&category=%E9%A3%9F%E5%93%81"), "category");
+  assert.equal(await z("/api/products?q=zzz&price_band=under3000&category=%E9%A3%9F%E5%93%81"), "both");
+});
