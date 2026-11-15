@@ -164,6 +164,17 @@ class T(unittest.TestCase):
         ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
         self.assertIn('<div class="stage" data-start="2026-11-15" data-end="2026-11-18">', ov)
 
+    def test_overview_has_the_second_round(self):
+        """PM 11/15「開発の全体像のアップデート漏れ」: 概要ページに第2弾（実装③）の中身と版が載っている"""
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        for needle in ("f87b699", "share_likes・usage_events", "POST /api/events", "いいねの API", "11/15〜11/18",
+                       "11/19〜11/21", "決め手・並び替え・声・似た商品が返り", "共有ページで「いいね」を押す"):
+            self.assertIn(needle, ov, needle)
+        self.assertEqual(ov.count("初回提出版を固定"), 1)  # 11/18（実装③）の 1 つだけ（実装計画: 18 日の終わりに固める）
+        self.assertNotIn("11/15 初回提出版を固定", ov)
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        self.assertIn("<code>8243007</code>", hub)
+
     def test_band_js_names_3_5_and_keeps_stage_4(self):
         """PM 11/15: 3.5 は「STAGE 3.5／聖光気／実装③（W3）／11/15〜11/18」。評価・受入は元の「STAGE 4／魔族覚醒（W4）」のまま。11/15 は 3.5 が今の段（枠・日付・ゲージの印）"""
         src = open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read()
