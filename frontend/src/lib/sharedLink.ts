@@ -1,13 +1,11 @@
 import { REQUEST_TIMEOUT_MS, apiUrl } from "./api.ts";
-import { productImage } from "./images.ts";
 import { buildSearchHref } from "./topPage.ts";
 
 // SP-06 D-06 D-09 N-01: 共有リンクを開く（GET /api/share-links/{share_id}）。ログインなし。10秒で打ち切る。
 // 期限切れ（410）・見つからない（404。形式が不正な識別子も API が 404）・失敗（500・通信・10秒超過・形の違う応答）を区別する。
 
 export type SharedStatus = "available" | "discontinued" | "out_of_stock";
-// category は第2弾の応答で付く（商品が DB に無い・カテゴリーが空のときは無い。画像なし。PM 11/15 案A、D-06）
-export type SharedItem = { product_id: string; status: SharedStatus; name: string; price: number; reason: string; category?: string };
+export type SharedItem = { product_id: string; status: SharedStatus; name: string; price: number; reason: string };
 export type SharedResult = { status: "ok"; items: SharedItem[] } | { status: "expired" } | { status: "notfound" } | { status: "error" };
 
 export function sharedUrl(shareId: string): string {
@@ -19,7 +17,7 @@ const STATUSES: readonly string[] = ["available", "discontinued", "out_of_stock"
 function isItem(v: unknown): v is SharedItem {
   if (typeof v !== "object" || v === null) return false;
   const o = v as Record<string, unknown>;
-  return typeof o.product_id === "string" && typeof o.name === "string" && typeof o.price === "number" && typeof o.reason === "string" && (o.category === undefined || typeof o.category === "string") && typeof o.status === "string" && STATUSES.includes(o.status);
+  return typeof o.product_id === "string" && typeof o.name === "string" && typeof o.price === "number" && typeof o.reason === "string" && typeof o.status === "string" && STATUSES.includes(o.status);
 }
 
 // 販売終了・在庫なしでも、作成時点の商品名・価格は出したまま、この文を足す（#32-5、S-17）
@@ -33,8 +31,6 @@ export function itemNote(status: SharedStatus): string | null {
 export const DETAIL_LABEL = "くわしく見る";
 export const OTHERS_LABEL = "ほかの贈りものも探す";
 export const OTHERS_HREF = "/"; // トップへ
-// 画像（カテゴリー共通イラスト＋「イメージ」）。category が無い・知らないカテゴリーなら画像なし
-export const itemImage = (it: { category?: string }): string | null => (it.category ? productImage(it.category) : null);
 export const canShowDetail = (status: SharedStatus): boolean => status !== "discontinued";
 export const detailHref = (productId: string): string => buildSearchHref({ productId });
 

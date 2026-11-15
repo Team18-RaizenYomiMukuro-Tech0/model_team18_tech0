@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemImage, itemNote, OTHERS_HREF, OTHERS_LABEL, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, type SharedResult } from "@/lib/sharedLink";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -40,12 +39,6 @@ export function SharedView({ shareId }: Readonly<{ shareId: string }>) {
               const note = itemNote(it.status);
               return (
                 <li key={it.product_id} className={styles.item}>
-                  {itemImage(it) && (
-                    <div className={styles.img}>
-                      <Image src={itemImage(it) ?? ""} alt="" width={200} height={200} unoptimized />
-                      <span className={styles.imgtag}>イメージ</span>
-                    </div>
-                  )}
                   <h2 className={styles.name}>{it.name}</h2>
                   <p className={styles.price}>{formatPrice(it.price)}</p>
                   <p className={styles.reason}>{it.reason}</p>
