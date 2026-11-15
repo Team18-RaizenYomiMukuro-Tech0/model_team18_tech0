@@ -23,7 +23,7 @@ LIMIT = SETTINGS.LIKE_MAX_PER_ITEM
 
 
 def _to_sqlite(sql: str) -> str:
-    sql = sql.replace("GREATEST(", "MAX(")
+    sql = sql.replace("IF(like_count > 0, like_count - 1, 0)", "CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END")
     sql = re.sub(r"ON DUPLICATE KEY UPDATE like_count = IF\(like_count < %s, like_count \+ 1, like_count\), updated_at = %s",
                  "ON CONFLICT(share_id, product_id) DO UPDATE SET like_count = CASE WHEN like_count < %s THEN like_count + 1 ELSE like_count END, updated_at = %s", sql)
     return sql
@@ -121,6 +121,22 @@ def test_like_and_undo(backend: Backend) -> None:
         assert push(link, a, on=False).json()["like_count"] in (0, 1)
     assert push(link, a, on=False).json()["like_count"] == 0 and counts(link)[a] == 0
     assert set(r.json()) == {"product_id", "like_count", "capped"}  # 名前・ID・押した人を示す値が無い（L-2）
+
+
+# SP-28 D-38 D-39 ADR-009 #373: 数が 0 のときに取り消しても 500 にならず、0 のまま。
+# like_count は INT UNSIGNED。`like_count - 1` を 0 のときに計算すると MySQL（strict）が 1690 を出す。偽の DB（SQLite）には起きないので、班の DB でも流す
+def test_undo_at_zero_stays_zero(backend: Backend) -> None:
+    a = backend.ids[0]
+    link = create(backend.ids)["share_id"]
+    r = push(link, a, on=False)  # まだ押していない（行が無い）ときの取り消し
+    assert r.status_code == 200, r.text
+    assert push(link, a).json()["like_count"] == 1
+    assert push(link, a, on=False).json()["like_count"] == 0  # 1 → 0
+    for _ in range(3):  # 0 のとき、続けて取り消しても 200 で 0 のまま
+        r = push(link, a, on=False)
+        assert r.status_code == 200, r.text
+        assert r.json() == {"product_id": a, "like_count": 0, "capped": False}
+    assert counts(link)[a] == 0
 
 
 # U-83 I-60: 数の遷移 0・1・29・30（上限 30）
