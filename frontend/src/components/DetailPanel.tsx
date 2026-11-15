@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
-import { fetchJson, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail } from "@/lib/products";
+import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
+import { VOICES_HEADING, voiceViews } from "@/lib/voices";
 import { cartStore } from "@/state/cart";
+import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
 import { Searching } from "./Searching";
 import { Sheet } from "./Sheet";
@@ -18,18 +20,29 @@ import styles from "./results.module.css";
 // 値が無い項目は出さない。在庫0は「在庫なし」。取得が通信の失敗なら「商品の情報を読み込めませんでした」と「もう一度」、404 なら「この商品は見つかりません」だけ。
 // R2 SP-29 D-46: 899px 以下は下から出るシート（閉じるボタン・Esc。開いたら商品名へ焦点）、900px 以上は右の欄。
 // どちらも一番下に「{価格}（税込）［カートに入れる］」の帯を固定する（`position: sticky; bottom: 0`。在庫 0 は「在庫なし」で押せない）。
-export function DetailPanel({ productId, onClose, focusKey = null }: Readonly<{ productId: string; onClose: () => void; focusKey?: number | null }>) {
+// R4 SP-12 SP-16 SP-17 D-29 D-35: 商品名・画像・価格・評価のすぐ下に決め手の 1 行（カードと同じ部品）、その下に「贈った人の声」（読めた分だけ。0 件・失敗は欄ごと出さない）。
+// scene は R-01 から開いたときだけ渡す（D-29。「{シーン}で{n}回」を出すため）。R-02・おすすめ・お気に入り・カート・共有ページから開いたときは渡さない。
+export function DetailPanel({ productId, onClose, scene = null, focusKey = null }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null }>) {
   const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
+  const [voices, setVoices] = useState<{ id: string; v: VoiceList | null }>({ id: productId, v: null });
 
   useEffect(() => {
     const abort = new AbortController();
-    fetchJson(productUrl(productId), isProductDetail, abort.signal).then((r) => {
+    fetchJson(productUrl(productId, scene), isProductDetail, abort.signal).then((r) => {
       if (!abort.signal.aborted) setState({ id: productId, r });
     });
     return () => abort.abort();
-  }, [productId, tries]);
+  }, [productId, scene, tries]);
+  // 声は別の API（D-35）。詳細の表示を待たせず、読めた分だけ出す（失敗・0 件は欄ごと出さない）
+  useEffect(() => {
+    const abort = new AbortController();
+    fetchVoices(productId, abort.signal).then((r) => {
+      if (!abort.signal.aborted) setVoices({ id: productId, v: r.status === "ok" ? r.data : null });
+    });
+    return () => abort.abort();
+  }, [productId]);
 
   // 別のカードを押した直後は、前の商品の中身を出さない
   const r = state.id === productId ? state.r : null;
@@ -61,7 +74,7 @@ export function DetailPanel({ productId, onClose, focusKey = null }: Readonly<{ 
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} />}
       {r?.status === "ok" && <Foot p={r.data} />}
     </>
   );
@@ -98,8 +111,9 @@ function Foot({ p }: Readonly<{ p: ProductDetail }>) {
   );
 }
 
-function Body({ p, focusName, focusKey }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null }>) {
+function Body({ p, focusName, focusKey, voices }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null }>) {
   const img = productImage(p.category);
+  const views = voiceViews(voices?.voices);
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）
@@ -115,14 +129,29 @@ function Body({ p, focusName, focusKey }: Readonly<{ p: ProductDetail; focusName
       </span>
       {p.high_rating && <span className={styles.badge}>高評価の商品</span>}
       {p.status === "out_of_stock" && <span className={styles.stockout}>在庫なし</span>}
-      <span className={styles.price}>{formatPrice(p.price)}</span>
-      {p.rating != null && p.review_count != null && (
-        <span className={styles.meta}>
-          ★ {ratingText(p.rating)}（{p.review_count}件）
-        </span>
+      <span className={styles.pricerow}>
+        <span className={styles.price}>{formatPrice(p.price)}</span>
+        {p.rating != null && p.review_count != null && (
+          <span className={styles.meta}>
+            ★ {ratingText(p.rating)}（{p.review_count}件）
+          </span>
+        )}
+      </span>
+      <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock={p.status === "available"} sceneCount={p.scene_count} />
+      {views.length > 0 && (
+        <section className={styles.voices} aria-labelledby="h-voices">
+          <h3 id="h-voices" className={styles.vh3}>
+            {VOICES_HEADING}
+          </h3>
+          <ul className={styles.vlist}>
+            {views.map((v, i) => (
+              <li key={i} className={styles.voice}>
+                <span>{v.quote}</span> <span className={styles.stars}>{v.stars}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
-      {p.delivery_days != null && <span className={styles.meta}>{p.delivery_days}日でお届け</span>}
-      {p.wrapping === true && <span className={styles.meta}>ラッピング可</span>}
       {p.description && (
         <p className={styles.dt}>
           <b>商品の特徴</b>

@@ -7,7 +7,7 @@ import styles from "./candidates.module.css";
 export function ShareLinkButton({ onCreate, disabled, creating }: Readonly<{ onCreate: () => void; disabled: boolean; creating: boolean }>) {
   return (
     <button type="button" className={styles.create} disabled={disabled || creating} aria-busy={creating} onClick={onCreate}>
-      {creating ? "作成中…" : "共有リンクを作る"}
+      {creating ? "作成中…" : "共有リストを作る"}
     </button>
   );
 }

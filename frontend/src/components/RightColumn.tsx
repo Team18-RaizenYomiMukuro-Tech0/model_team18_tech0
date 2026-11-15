@@ -17,7 +17,8 @@ export function RightColumn({
   onCloseDetail,
   focusKey,
   picked,
-}: Readonly<{ tab: RightTab; onTab: (t: RightTab) => void; detailId: string | null; onCloseDetail: () => void; focusKey: number | null; picked: number }>) {
+  scene = null,
+}: Readonly<{ tab: RightTab; onTab: (t: RightTab) => void; detailId: string | null; onCloseDetail: () => void; focusKey: number | null; picked: number; scene?: string | null }>) {
   const uid = useId();
   const tabId = (t: RightTab) => `${uid}-tab-${t}`;
   const panelId = (t: RightTab) => `${uid}-panel-${t}`;
@@ -80,7 +81,7 @@ export function RightColumn({
         hidden={tab !== "detail"}
         className={styles.tabpanel}
       >
-        {detailId != null ? <DetailPanel productId={detailId} onClose={onCloseDetail} focusKey={focusKey} /> : <p className={styles.tabhint}>{DETAIL_HINT}</p>}
+        {detailId != null ? <DetailPanel productId={detailId} onClose={onCloseDetail} focusKey={focusKey} scene={scene} /> : <p className={styles.tabhint}>{DETAIL_HINT}</p>}
       </div>
       <div
         ref={(el) => {

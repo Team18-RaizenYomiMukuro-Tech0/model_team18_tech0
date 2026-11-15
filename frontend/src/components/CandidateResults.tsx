@@ -71,9 +71,9 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
         )}
       </section>
       {narrow ? (
-        detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} />
+        detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} />
       ) : (
-        <RightColumn tab={tab} onTab={setTab} detailId={detailId} onCloseDetail={onCloseDetail} focusKey={focusKey} picked={picked.length} />
+        <RightColumn tab={tab} onTab={setTab} detailId={detailId} onCloseDetail={onCloseDetail} focusKey={focusKey} picked={picked.length} scene={q.scene} />
       )}
     </div>
   );
