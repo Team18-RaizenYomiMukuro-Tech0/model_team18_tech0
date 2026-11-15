@@ -36,7 +36,7 @@ export function SearchResults() {
   // 詳細を閉じる: product だけ外した検索結果に戻る（おすすめ・お気に入り・カートから開いたときも一覧が見える。元の画面には戻さない。SP-29）
   const closeDetail = useCallback(() => router.replace(searchHref(q, { product: null })), [router, q]);
   const closeList = useCallback(() => setListOpen(false), []);
-  const isR01 = q.scene != null;
+  const isR01 = q.scene != null && !q.q; // D-49 SP-35 ③: シーン＋言葉は R-02
   const listShown = listOpen && picked.length > 0; // 全部外したら、空のシートを残さない
   const bar = narrow && q.product == null && !listShown; // シートを開いている間は帯を出さない
   return (
@@ -73,6 +73,7 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
   const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
   const runner = useRef<ProductRunner | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const r = new ProductRunner((u, v) => setRes({ url: u, r: v }));
@@ -89,6 +90,14 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
   return (
     <div className={styles.layout}>
       <section aria-label="検索結果" className={styles.results}>
+        {q.q && (
+          <p className={styles.qnote}>
+            <span>「{q.q}」で探しています</span>
+            <button type="button" className={styles.btn} onClick={() => router.push(searchHref(q, { q: "", page: 1, product: null }))}>
+              言葉を消す
+            </button>
+          </p>
+        )}
         {!r && <Searching />}
         {r?.status === "error" && (
           <div role="alert" className={styles.deterr}>

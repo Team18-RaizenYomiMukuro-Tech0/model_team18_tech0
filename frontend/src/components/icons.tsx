@@ -15,6 +15,12 @@ const PATHS = {
       <circle cx="46" cy="52" r="4" />
     </>
   ),
+  search: (
+    <>
+      <circle cx="27" cy="27" r="16" />
+      <path d="M39 39l17 17" />
+    </>
+  ),
   box: (
     <>
       <path d="M32 8l22 11v26L32 56 10 45V19z" />

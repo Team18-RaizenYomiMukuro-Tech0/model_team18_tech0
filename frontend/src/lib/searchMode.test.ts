@@ -38,3 +38,12 @@ test("categoryNote #58-7: 選んだカテゴリーを「・」でつないで全
   assert.equal(categoryNote(["カタログギフト", "生活雑貨", "酒類"]), "生活雑貨・酒類・カタログギフト");
   assert.equal(categoryNote([]), "");
 });
+
+// D-49 SP-35 ③: 言葉があれば、シーンを選んでいても R-02（/api/products）。シーンは条件として付ける
+test("searchMode D-49: q があれば scene があっても r02。scene・q・条件を付ける", () => {
+  const m = M("scene=%E3%81%8A%E7%A4%BC&price_band=under3000&q=%E7%94%98%E3%81%84%E3%82%82%E3%81%AE");
+  assert.equal(m.mode, "r02");
+  assert.equal(m.url, "/api/products?scene=%E3%81%8A%E7%A4%BC&q=%E7%94%98%E3%81%84%E3%82%82%E3%81%AE&price_band=under3000");
+  assert.equal(M("q=%E7%94%98").url, "/api/products?q=%E7%94%98");
+  assert.equal(M("scene=%E3%81%8A%E7%A4%BC").mode, "r01"); // q が無ければ今までどおり
+});
