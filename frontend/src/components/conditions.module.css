@@ -5,8 +5,11 @@
 .head { font-size: 14px; }
 .hint { font-weight: 400; }
 .btn, .clear { min-width: 44px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+/* 2 番目のボタン（条件をクリア）: 白い面・枠 1px --s-ink・文字 --s-ink */
+.clear { border-color: var(--s-ink); }
 .btn:hover, .clear:hover:not(:disabled) { background: var(--peach); }
-.btn[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+/* SP-20 T3: 選んだボタンは --s-coral-ink の面・白文字 */
+.btn[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
 .clear:disabled { color: #5c514d; cursor: not-allowed; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .note { margin: 0; font-size: 14px; color: #5c514d; }

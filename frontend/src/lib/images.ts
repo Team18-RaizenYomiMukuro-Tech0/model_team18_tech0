@@ -1,17 +1,18 @@
 // R7 #116 SP-09 SP-11 #39-2: 画像の置き場と名前は、このファイルの1か所だけに書く。
 // 画像はすべてリポジトリの frontend/public/ から同じサイトで読む（外部のサイトから読み込まない）。
 
-// DB の category の10種類（#54-5）。並びはタイルの並び順。
+// DB の category の10種類。並びは T-5（仕様 SP-09・設計 D-37）: トップ・検索結果、PC・スマホで共通の 1 か所。
+// 先頭の 4 つ（食品・飲料・生活雑貨・フラワー）が、トップのスマホ幅で最初に出す 4 つ。残りの 6 つが「ほか6個」。
 export const CATEGORIES = [
-  { name: "生活雑貨", slug: "living" },
   { name: "食品", slug: "food" },
-  { name: "コスメ", slug: "cosme" },
   { name: "飲料", slug: "drink" },
-  { name: "家電", slug: "appliance" },
-  { name: "インテリア", slug: "interior" },
-  { name: "ビジネス小物", slug: "business" },
+  { name: "生活雑貨", slug: "living" },
   { name: "フラワー", slug: "flower" },
+  { name: "コスメ", slug: "cosme" },
   { name: "酒類", slug: "liquor" },
+  { name: "インテリア", slug: "interior" },
+  { name: "家電", slug: "appliance" },
+  { name: "ビジネス小物", slug: "business" },
   { name: "カタログギフト", slug: "catalog" },
 ] as const;
 
