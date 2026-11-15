@@ -156,7 +156,7 @@ a.it:hover{background:none}a.it:hover b{text-decoration-thickness:3px}
 (function(){var n=new Date(Date.now()+9*36e5).toISOString().slice(0,10),c=null,l=document.querySelectorAll(".stage");
 for(var i=0;i<l.length;i++){var st=l[i].getAttribute("data-start"),en=l[i].getAttribute("data-end");if((!st||st<=n)&&en>=n&&(st||i===0))c=l[i]}  // 期間が重なる日（11/15）は後の段（実装③）を今にする
 if(!c)for(var j=0;j<l.length;j++){if(l[j].getAttribute("data-end")>=n){c=l[j];break}}
-if(c){var k=Array.prototype.indexOf.call(l,c)+1,q=document.querySelector('.rc[data-c="'+k+'"]');if(q)q.classList.add("now");c.classList.add("today");c.querySelector("h3").insertAdjacentHTML("beforeend",' <span class="badge">いま ここ</span>')}})();
+if(c){var k=Array.prototype.indexOf.call(l,c)+1,q=document.querySelector('.rc[data-c="'+k+'"]');if(q)q.classList.add("now");c.classList.add("today")}})();
 
 /* Issue の早見表: 同じサイトの issues-quick.json から（読めなければ「読めませんでした」のまま） */
 (function(){if(!window.fetch)return;

@@ -164,6 +164,13 @@ class T(unittest.TestCase):
         ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
         self.assertIn('<div class="stage" data-start="2026-11-15" data-end="2026-11-18">', ov)
 
+    def test_no_now_badge_in_overview_and_gauge_mock(self):
+        """PM 11/15「いまここ消す」: 概要とゲージのモックにも札は無い（枠は残る）"""
+        for f in ("overview.html", os.path.join("mock", "clickable", "hub-stage-gauge.html")):
+            src = open(os.path.join(D, "..", "docs", f), encoding="utf-8").read()
+            self.assertNotIn("いまここ", src, f)
+            self.assertNotIn("いま ここ", src, f)
+
     def test_overview_has_the_second_round(self):
         """PM 11/15「開発の全体像のアップデート漏れ」: 概要ページに第2弾（実装③）の中身と版が載っている"""
         ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
