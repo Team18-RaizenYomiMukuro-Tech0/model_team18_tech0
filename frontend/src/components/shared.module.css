@@ -15,3 +15,7 @@
 .msgmain { font-weight: 700; margin-bottom: 4px !important; }
 .err { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
 .btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.link, .others { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; text-decoration: none; }
+.link { justify-self: start; margin-top: 4px; }
+.others { justify-self: start; margin-top: 8px; }
+.msg .others { margin-top: 12px; }
