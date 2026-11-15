@@ -1,0 +1,10 @@
+375 表示 {"links":["くわしく見る→/search?product=G0001","くわしく見る→/search?product=G0003","ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+375 期限切れ {"links":["ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+375 見つからない {"links":["ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+375 くわしく見る→ http://localhost:3123/search?product=G0001
+375 ほかの贈りものも探す→ http://localhost:3123/
+1280 表示 {"links":["くわしく見る→/search?product=G0001","くわしく見る→/search?product=G0003","ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+1280 期限切れ {"links":["ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+1280 見つからない {"links":["ほかの贈りものも探す→/"],"overflow":false,"cart":false}
+1280 くわしく見る→ http://localhost:3123/search?product=G0001
+1280 ほかの贈りものも探す→ http://localhost:3123/
