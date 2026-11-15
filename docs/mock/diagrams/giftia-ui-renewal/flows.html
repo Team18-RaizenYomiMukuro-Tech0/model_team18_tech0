@@ -30,10 +30,10 @@ p.lead{margin:0 0 12px;color:var(--sub);font-size:13px}
 input.tab{position:absolute;opacity:0;pointer-events:none}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
 .tabs label{padding:8px 14px;border:2px solid var(--ink);border-radius:999px;font-weight:700;background:var(--card);cursor:pointer;font-size:14px}
-#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3],#t4:checked~.tabs label[for=t4]{background:#FFD700;color:#2A1B3D;border-color:#2A1B3D;box-shadow:3px 3px 0 #2A1B3D}
+#t1:checked~.tabs label[for=t1],#t2:checked~.tabs label[for=t2],#t3:checked~.tabs label[for=t3],#t4:checked~.tabs label[for=t4],#t5:checked~.tabs label[for=t5]{background:#FFD700;color:#2A1B3D;border-color:#2A1B3D;box-shadow:3px 3px 0 #2A1B3D}
 input.tab:focus-visible~.tabs label{outline:2px solid var(--ui)}
 .panel{display:none}
-#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3,#t4:checked~.p4{display:block}
+#t1:checked~.p1,#t2:checked~.p2,#t3:checked~.p3,#t4:checked~.p4,#t5:checked~.p5{display:block}
 /* legend */
 .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:var(--sub);margin:4px 0 8px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -97,6 +97,38 @@ th{background:var(--card)}
   .tl .seg.s3{border-radius:0 0 10px 10px!important}
 }
 
+/* ⑤ 全体の仕組み */
+.p5{--hd-ink:#fff}
+@media (prefers-color-scheme:dark){.p5{--hd-ink:#0f1114}}
+#t5:checked~.p5{width:min(1240px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
+.arch{display:grid;grid-template-columns:minmax(0,.8fr) 58px minmax(0,1.15fr) 58px minmax(0,1.3fr) 58px minmax(0,1.05fr);align-items:stretch;margin:10px 0 0}
+.arch.bt{grid-template-columns:minmax(0,1.9fr) minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-top:6px}
+.ac{background:var(--card);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.ac h4{margin:0;padding:7px 10px;font-size:14px;color:var(--hd-ink);background:var(--ink)}
+.ac.ui h4{background:var(--ui)} .ac.api h4{background:var(--api)} .ac.db h4{background:var(--db)} .ac.gh h4{background:var(--pend)} .ac.warn h4{background:var(--warn)}
+.ac.ui{border-color:var(--ui)} .ac.api{border-color:var(--api)} .ac.db{border-color:var(--db)} .ac.warn{border-color:var(--warn);background:var(--warn-bg)}
+.ac .bd{padding:8px 10px;font-size:13px}
+.ac .big{font-size:16px;font-weight:800;margin:0 0 2px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:6px 0 0;font-size:12.5px}
+.kv code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700;word-break:break-all}
+.kv>*{padding:3px 0;border-top:1px solid var(--line);min-width:0}
+.kv>:nth-child(-n+2){border-top:0}
+.kv.one{grid-template-columns:1fr}.kv.one>b{padding-bottom:0}.kv.one>span{border-top:0;padding-top:0}
+#t5:checked~.p5>h2,#t5:checked~.p5>.lead,#t5:checked~.p5>.counts{max-width:980px;margin-left:auto;margin-right:auto}
+.ac .sub{margin:8px 0 0;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12px;background:var(--bg)}
+.ac .sub b{display:block;font-size:12.5px}
+.ac .sub.w2{border-left:6px solid var(--w2)}
+.al{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--sub);text-align:center;line-height:1.3;font-weight:700}
+.al i{font-style:normal;font-size:20px;color:var(--ink)}
+.arch .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.archnote{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:12px;color:var(--sub);margin:12px 2px 0}
+.counts{display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 6px;font-size:13px;font-weight:800}
+.counts span{border:2px solid var(--ink);border-radius:999px;padding:1px 12px;background:var(--card)}
+@media (max-width:1000px){
+  .arch,.arch.bt{grid-template-columns:1fr}
+  .al{flex-direction:row;gap:8px;padding:4px 0}
+  .al i{transform:rotate(90deg)}
+}
 /* ER図（ハブの色・太枠・ずらし影・札） */
 .erwrap{--ew-bg:#E3D8F3;--ew-card:#fff;--ew-ink:#2A1B3D;--ew-sub:#54476B;--ew-line:#2A1B3D;--ew-sh:#2A1B3D;--ew-dot:rgba(42,27,61,.07);--ew-stripe:rgba(42,27,61,.16);--m1:#FFD700;--m2:#40E0D0;--m3:#FF69B4;
   background:var(--ew-bg) radial-gradient(var(--ew-dot) 1px,transparent 1.3px);background-size:auto,12px 12px;color:var(--ew-ink);border:2px solid var(--ew-line);border-radius:12px;box-shadow:3px 3px 0 var(--ew-sh);padding:20px 10px 12px}
@@ -177,11 +209,13 @@ th{background:var(--card)}
 <input class="tab" type="radio" name="tab" id="t2">
 <input class="tab" type="radio" name="tab" id="t3">
 <input class="tab" type="radio" name="tab" id="t4">
+<input class="tab" type="radio" name="tab" id="t5">
 <div class="tabs" role="tablist">
   <label for="t1">① 顧客視点</label>
   <label for="t2">② システム視点</label>
   <label for="t3">③ 共有リンクの状態</label>
   <label for="t4">④ ER図（DB）</label>
+  <label for="t5">⑤ 全体の仕組み</label>
 </div>
 
 <!-- ============ 図1 顧客視点 ============ -->
@@ -576,8 +610,96 @@ th{background:var(--card)}
   </div>
 </section>
 
+
+<!-- ============ 図5 全体の仕組み ============ -->
+<section class="panel p5" aria-label="全体の仕組み">
+  <h2>⑤ 全体の仕組み：画面・API・DB・デプロイ・ハブのつながり</h2>
+  <p class="lead">11/24 の発表と、3人の学びのための 1 枚。①〜④をまとめた構図で、正本は 設計.md（D-33 ほか）・ADR-004・ADR-005・<code>.github/workflows/</code>。文書にある物だけを描き、無い所は紫の破線＋「仕様に書かれていません」。<span class="w2tag">実装③</span> は第2弾（実装③）で増えた分。</p>
+  <div class="counts" aria-label="数">
+    <span>画面 3 ページ</span><span>API 9 本（実装③で 4 本）</span><span>表 10（実装③で 2）</span><span>デプロイ 2 本＋ハブ（Pages）</span>
+  </div>
+
+  <div class="arch">
+    <div class="stack">
+      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>
+      <div class="ac"><h4>② データ</h4><div class="bd"><p class="big">架空データだけ</p>班の DB（<code>giftia_t501</code>）に配られた分。実データは使わない。<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></div></div>
+    </div>
+    <div class="al"><span>操作</span><i>→</i></div>
+
+    <div class="ac ui"><h4>③ 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">
+      <p class="big">3 ページ</p>
+      <div class="kv">
+        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>
+        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>
+        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>
+      </div>
+      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>
+      <div class="sub w2"><b><span class="w2tag">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>
+      <div class="sub w2"><b><span class="w2tag">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>
+    </div></div>
+    <div class="al"><span>呼出</span><i>→</i></div>
+
+    <div class="ac api"><h4>④ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">
+      <p class="big">9 本</p>
+      <div class="kv">
+        <code>GET /api/candidates</code><span>R-01 の候補10件（ベイズ平均・理由は AI なしのテンプレート）</span>
+        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="w2tag">実装③</span> 並び替え・0件の助け舟</span>
+        <code>GET /api/products/{id}</code><span>詳細。<span class="w2tag">実装③</span> 届く日・回数</span>
+        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>
+        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="w2tag">実装③</span> いいねの数</span>
+        <code>GET …/{id}/voices</code><span><span class="w2tag">実装③</span> 贈った人の声（最大2件）</span>
+        <code>GET …/{id}/similar</code><span><span class="w2tag">実装③</span> 似た商品（最大3件）</span>
+        <code>POST …/{share_id}/likes</code><span><span class="w2tag">実装③</span> いいね（1候補30回まで）</span>
+        <code>POST /api/events</code><span><span class="w2tag">実装③</span> 匿名の計測（204）</span>
+      </div>
+      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>
+    </div></div>
+    <div class="al"><span>読み<br>書き</span><i>→</i></div>
+
+    <div class="ac db"><h4>⑤ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">
+      <p class="big">表 10</p>
+      <div class="kv one">
+        <b>既存 7</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>
+        <b>share_links</b><span>INSERT</span>
+        <b><span class="w2tag">実装③</span> share_likes</b><span>INSERT … ON DUPLICATE KEY UPDATE・UPDATE</span>
+        <b><span class="w2tag">実装③</span> usage_events</b><span>INSERT IGNORE</span>
+      </div>
+      <div class="sub"><b>つなぎ方</b>SSL（証明書とホスト名を確かめる）。DB 名は固定。配られたアカウント1つ。接続情報は環境変数で受け、コードにも文書にも書かない。DELETE・DDL はアプリに作らない（表の作成と削除は PM が手で）<span class="ids">D-12, D-13, D-45 ／ N-04</span></div>
+    </div></div>
+  </div>
+
+  <div class="arrow">↑ GitHub Actions でデプロイ（画面 → App Service ／ API → Functions）　　↓ Pages で公開（ハブ）</div>
+
+  <div class="arch bt">
+    <div class="ac gh"><h4>GitHub　ソースコード・PR レビュー</h4><div class="bd">
+      <div class="kv">
+        <b>Actions ①</b><span>画面を ビルド・テストして App Service へ（<code>main_gen13-app-step3-1-5181-fe.yml</code>）</span>
+        <b>Actions ②</b><span>API を Azure Functions へ（<code>main_func-gen13-step3-5181.yml</code>）</span>
+        <b>Actions ③</b><span>Pages: ハブ・5 文書の HTML・進捗ページを作って公開（<code>pages.yml</code>）</span>
+        <b>Actions ④</b><span>PR 機械チェック（<code>pr-mechanical-checks.yml</code>）</span>
+      </div>
+      <span class="ids">D-33 ／ ADR-004</span>
+    </div></div>
+    <div class="ac gh"><h4>開発ハブ　GitHub Pages</h4><div class="bd">
+      <p class="big">主要フロー図もここ</p>
+      手書きページ（<code>docs/</code>）・5 文書（ビルド時に HTML 化）・進捗ページ（Issue から自動）。main へのマージと毎朝 6:00（日本時間）に更新。秘匿値は使わない。アプリの画面とは別の公開先。
+      <span class="ids">pages.yml</span>
+    </div></div>
+    <div class="ac warn"><h4>外部公開・実データ利用前</h4><div class="bd">
+      <ul style="margin:0;padding-left:18px;font-size:12.5px">
+        <li>架空データだけ。ログインは作らない（入口は「準備中」。ADR-005）</li>
+        <li>公開は 11/12〜12/12（ADR-004 承認済み）。後片付けは 12/12（O3）</li>
+        <li>noindex: <code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta（N-07）</li>
+        <li>共有リンクは推測できない識別子・720時間で期限切れ・個人情報なし（N-02・N-13）</li>
+      </ul>
+      <div class="node gap" style="margin-top:8px"><b>実データを使うときの認証・認可</b><small>文書にありません（発展は運営の承認後）。</small></div>
+    </div></div>
+  </div>
+  <div class="archnote"><span>画面・API・DB の役割を分けている</span><span>接続情報は環境変数（コード・文書に書かない）</span><span>画面の保存はブラウザの中だけ</span><span><span class="w2tag">実装③</span> 第2弾で増えた分は左の太い実線</span></div>
+</section>
+
 <p class="foot">作成: Takahiro（設計）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みなし・単体の HTML。</p>
 </main>
-<script>if(location.hash==="#er"){var e=document.getElementById("t4");if(e)e.checked=true}</script>
+<script>var hm={"#er":"t4","#arch":"t5"}[location.hash];if(hm){var e=document.getElementById(hm);if(e)e.checked=true}</script>
 </body>
 </html>
