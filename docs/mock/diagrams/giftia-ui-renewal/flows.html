@@ -164,6 +164,22 @@ table.dt th{background:var(--m1)}
 .ac .infocard{box-shadow:none}
 #t5:checked~.p5{width:min(1240px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
 #t5:checked~.p5>.sumline,#t5:checked~.p5>.sumnote,#t5:checked~.p5>.counts,#t5:checked~.p5>.ptitle,#t5:checked~.p5>.lead{max-width:1100px;margin-left:auto;margin-right:auto}
+.points{background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:10px 14px;margin:8px 0 10px}
+.points h3{margin:0 0 6px;font-size:15px}
+.points ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;font-size:13px}
+.points li b{display:block;font-size:13.5px}
+.flowline{margin-top:8px;padding:6px 10px;border:2px solid var(--ink);border-radius:8px;font-size:12.5px;background:var(--w2bg)}
+.flowline code,.why code,.impact code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700}
+.lk{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:0 9px;font-size:11px;font-weight:800;line-height:1.6;margin-right:4px}
+.lk.ev{background:#fff;color:var(--ink);border:2px solid var(--ink);line-height:1.35}
+.mini{margin:0 0 4px;font-size:12.5px;color:var(--sub)}
+.why{margin:6px 0 0;padding-left:0;list-style:none;font-size:12.5px}
+.why li{margin:0 0 6px}.why li b{display:block}
+.impact{margin-top:8px;padding:6px 8px;border:2px solid var(--ink);border-radius:8px;font-size:12px;background:#fff}
+.impact b{display:block;font-size:12.5px}
+.ac .big{line-height:1.4}
+.kv details{grid-column:1/-1;font-size:12px;color:var(--sub);border-top:0;padding:0}
+@media (max-width:1000px){.points ul{grid-template-columns:1fr}}
 @media (max-width:1000px){.arch,.arch.bt{grid-template-columns:1fr}.al{flex-direction:row;gap:8px;padding:4px 0}.al i{transform:rotate(90deg)}}
 #t1:checked~.p1{display:block}#t1:checked~.tabs label[for=t1]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
 #t2:checked~.p2{display:block}#t2:checked~.tabs label[for=t2]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
@@ -210,91 +226,58 @@ table.dt th{background:var(--m1)}
       </div>
     </div>
   </div>
-</section><section class="panel p5" aria-label="全体の仕組み">
-  <h2 class="ptitle">⑤ 全体の仕組み：画面・API・DB・デプロイ・ハブのつながり</h2><div class="sumline"><span class="lane ui">画面</span><span class="ar">→</span><span class="lane api">API</span><span class="ar">→</span><span class="lane db">DB</span><span class="ar">／</span><span class="lane plain">GitHub → デプロイ</span></div><p class="sumnote">画面・API・DB・デプロイ・ハブのつながり。</p>
-  <p class="lead">11/24 の発表と、3人の学びのための 1 枚。①〜④をまとめた構図で、正本は 設計.md（D-33 ほか）・ADR-004・ADR-005・<code>.github/workflows/</code>。文書にある物だけを描き、無い所は紫の破線＋「仕様に書かれていません」。<span class="stick">実装③</span> は第2弾（実装③）で増えた分。</p>
-  <div class="counts" aria-label="数">
-    <span>画面 3 ページ</span><span>API 9 本（実装③で 4 本）</span><span>表 10（実装③で 2）</span><span>デプロイ 2 本＋ハブ（Pages）</span>
-  </div>
-
-  <div class="arch">
-    <div class="stack">
-      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>
-      <div class="ac"><h4>② データ</h4><div class="bd"><p class="big">架空データだけ</p>班の DB（<code>giftia_t501</code>）に配られた分。実データは使わない。<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></div></div>
-    </div>
-    <div class="al"><span>操作</span><i>→</i></div>
-
-    <div class="ac ui"><h4>③ 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">
-      <p class="big">3 ページ</p>
-      <div class="kv">
-        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>
-        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>
-        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>
-      </div>
-      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>
-      <div class="sub w2"><b><span class="stick">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>
-      <div class="sub w2"><b><span class="stick">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>
-    </div></div>
-    <div class="al"><span>呼出</span><i>→</i></div>
-
-    <div class="ac api"><h4>④ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">
-      <p class="big">9 本</p>
-      <div class="kv">
-        <code>GET /api/candidates</code><span>R-01 の候補10件（ベイズ平均・理由は AI なしのテンプレート）</span>
-        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="stick">実装③</span> 並び替え・0件の助け舟</span>
-        <code>GET /api/products/{id}</code><span>詳細。<span class="stick">実装③</span> 届く日・回数</span>
-        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>
-        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="stick">実装③</span> いいねの数</span>
-        <code>GET …/{id}/voices</code><span><span class="stick">実装③</span> 贈った人の声（最大2件）</span>
-        <code>GET …/{id}/similar</code><span><span class="stick">実装③</span> 似た商品（最大3件）</span>
-        <code>POST …/{share_id}/likes</code><span><span class="stick">実装③</span> いいね（1候補30回まで）</span>
-        <code>POST /api/events</code><span><span class="stick">実装③</span> 匿名の計測（204）</span>
-      </div>
-      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>
-    </div></div>
-    <div class="al"><span>読み<br>書き</span><i>→</i></div>
-
-    <div class="ac db"><h4>⑤ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">
-      <p class="big">表 10</p>
-      <div class="kv one">
-        <b>既存 7</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>
-        <b>share_links</b><span>INSERT</span>
-        <b><span class="stick">実装③</span> share_likes</b><span>INSERT … ON DUPLICATE KEY UPDATE・UPDATE</span>
-        <b><span class="stick">実装③</span> usage_events</b><span>INSERT IGNORE</span>
-      </div>
-      <div class="sub"><b>つなぎ方</b>SSL（証明書とホスト名を確かめる）。DB 名は固定。配られたアカウント1つ。接続情報は環境変数で受け、コードにも文書にも書かない。DELETE・DDL はアプリに作らない（表の作成と削除は PM が手で）<span class="ids">D-12, D-13, D-45 ／ N-04</span></div>
-    </div></div>
-  </div>
-
-  <div class="arrowline">↑ GitHub Actions でデプロイ（画面 → App Service ／ API → Functions）　　↓ Pages で公開（ハブ）</div>
-
-  <div class="arch bt">
-    <div class="ac gh"><h4>GitHub　ソースコード・PR レビュー</h4><div class="bd">
-      <div class="kv">
-        <b>Actions ①</b><span>画面を ビルド・テストして App Service へ（<code>main_gen13-app-step3-1-5181-fe.yml</code>）</span>
-        <b>Actions ②</b><span>API を Azure Functions へ（<code>main_func-gen13-step3-5181.yml</code>）</span>
-        <b>Actions ③</b><span>Pages: ハブ・5 文書の HTML・進捗ページを作って公開（<code>pages.yml</code>）</span>
-        <b>Actions ④</b><span>PR 機械チェック（<code>pr-mechanical-checks.yml</code>）</span>
-      </div>
+</section><section class="panel p5" aria-label="全体の仕組み">  <h2 class="ptitle">⑤ 全体の仕組み：画面・API・DB・デプロイ・ハブのつながり</h2><div class="sumline"><span class="lane ui">画面</span><span class="ar">→</span><span class="lane api">API</span><span class="ar">→</span><span class="lane db">DB</span><span class="ar">／</span><span class="lane plain">GitHub → デプロイ</span></div><p class="sumnote">いいねと計測の 2 本の線が、画面から DB までつながっている。</p>  <p class="lead">11/24 の発表と、3人の学びのための 1 枚。①〜④をまとめた構図で、正本は 設計.md（D-33 ほか）・ADR-004・ADR-005・<code>.github/workflows/</code>。文書にある物だけを描き、無い所は紫の破線＋「仕様に書かれていません」。<span class="stick">実装③</span> は第2弾（実装③）で増えた分。</p>  <div class="points" aria-label="この図で伝えたいこと"><h3>この図で伝えたいこと</h3><ul>
+<li><b>画面・API・DB の役割を分けている</b>画面は見せるだけ、API が検証して DB を読み書きする。<span class="ids">設計.md D-33</span></li>
+<li><b>接続情報は環境変数だけ</b>コードにも文書にも書かない。<span class="ids">D-12, D-13 ／ N-04</span></li>
+<li><b>画面の保存はブラウザの中だけ</b>お気に入り・カートなどはサーバーに送らない。<span class="ids">D-10, D-47</span></li>
+<li><b><span class="stick">実装③</span> 第2弾で増えた分は薄紫の地と太い紫の枠</b>いいね（share_likes）と計測（usage_events）の 2 つの線がつながっている。<span class="ids">ADR-009, ADR-010</span></li>
+</ul>
+<div class="flowline"><span class="lk">いいね</span> 押す → <code>POST …/likes</code> → <code>share_likes</code> に +1 → <code>GET /api/share-links/{id}</code> が <code>like_count</code> を返す → 共有ページに数が出る <span class="ids">D-38, D-39</span></div>
+<div class="flowline"><span class="lk ev">計測</span> 画面が送る → <code>POST /api/events</code> → <code>usage_events</code> に 1 行 → 通過率の SELECT（読むだけ） <span class="ids">D-40, D-41</span></div>
+</div>
+  <div class="counts" aria-label="数">    <span>画面 3 ページ</span><span>API 9 本（実装③で 4 本）</span><span>表 10（実装③で 2）</span><span>デプロイ 2 本＋ハブ（Pages）</span>  </div>  <div class="arch">    <div class="stack">      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>      <div class="ac"><h4>② データ</h4><div class="bd"><p class="big">架空データだけ</p>班の DB（<code>giftia_t501</code>）に配られた分。実データは使わない。<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></div></div>    </div>    <div class="al"><span>操作</span><i>→</i></div>    <div class="ac ui"><h4>③ 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">      <p class="big">3 ページ</p>      <div class="kv">        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>      </div>      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>    </div></div>    <div class="al"><span>呼出</span><i>→</i></div>    <div class="ac api"><h4>④ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">      <p class="big">9 本</p>      <div class="kv">        <code>GET /api/candidates</code><span><b>レビューが少ない商品だけが上に来ないよう点数を補正して上位 10 件。</b>理由は毎回同じ型の文で、出し方がぶれない（AI なしのテンプレート）。<span class="ids">D-01, D-03</span></span>        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="stick">実装③</span> 並び替え・0件の助け舟</span>        <code>GET /api/products/{id}</code><span>詳細。<span class="stick">実装③</span> 届く日・回数</span>        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="stick">実装③</span> <span class="lk">いいね</span> <code>share_likes</code> を読んで <code>like_count</code> を返す（共有ページに数が出る）。<span class="ids">D-06, D-39</span></span>        <code>GET …/{id}/voices</code><span><span class="stick">実装③</span> 贈った人の声（最大2件）</span>        <code>GET …/{id}/similar</code><span><span class="stick">実装③</span> 似た商品（最大3件）</span>        <code>POST …/{share_id}/likes</code><span>
+<span class="stick">実装③</span> <span class="lk">いいね</span> <code>share_likes</code> に書く（数を +1）。<span class="ids">D-39</span></span>        <code>POST /api/events</code><span>
+<span class="stick">実装③</span> <span class="lk ev">計測</span> インパクト評価の計測（訪問→詳細→カート→注文）。応答は 204。<span class="ids">D-40</span></span>      </div>      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>    </div></div>    <div class="al"><span>読み<br>書き</span><i>→</i></div>    <div class="ac db"><h4>⑤ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">      <p class="big">表 10</p>      <div class="kv one">        <b>既存 7</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>        <b>share_links</b><span>INSERT</span>        <b>
+<span class="stick">実装③</span> share_likes <span class="lk">いいね</span></b>
+<span>1 行＝共有リンク 1 本×商品 1 つ。<code>like_count</code> で数だけ持つ。押した人は残さない。<details><summary>くわしく</summary>1 候補の上限は 30。0 を下回らない。書き方は INSERT … ON DUPLICATE KEY UPDATE・UPDATE。<span class="ids">D-38, D-39, ADR-009</span></details></span>        <b>
+<span class="stick">実装③</span> usage_events <span class="lk ev">計測</span></b>
+<span>1 訪問・1 段・1 行。6 段＋検索 0 件。<details><summary>くわしく</summary>書き方は INSERT IGNORE。名前・メール・IP は持たない。<span class="ids">D-40, N-16</span></details></span>      </div>      <div class="sub"><b>つなぎ方</b>SSL（証明書とホスト名を確かめる）。DB 名は固定。配られたアカウント1つ。接続情報は環境変数で受け、コードにも文書にも書かない。DELETE・DDL はアプリに作らない（表の作成と削除は PM が手で）<span class="ids">D-12, D-13, D-45 ／ N-04</span></div>    </div></div>  </div>  <div class="arrowline">↑ GitHub Actions でデプロイ（画面 → App Service ／ API → Functions）　　↓ Pages で公開（ハブ）</div>  <div class="arch bt">    <div class="ac gh">
+<h4>GitHub　ソースコード・PR レビュー</h4>
+<div class="bd">
+      <p class="big">main に入れたら自動で本番へ。手作業のデプロイは無い</p>
+      <p class="mini">PR レビューを通ったものだけが main に入り、GitHub Actions が画面と API を自動で公開先へ出す。</p>
+      <details><summary>くわしく（Actions の 4 本）</summary><div class="kv">
+        <b>Actions ①</b>
+<span>画面を ビルド・テストして App Service へ（<code>main_gen13-app-step3-1-5181-fe.yml</code>）</span>
+        <b>Actions ②</b>
+<span>API を Azure Functions へ（<code>main_func-gen13-step3-5181.yml</code>）</span>
+        <b>Actions ③</b>
+<span>Pages: ハブ・5 文書の HTML・進捗ページを作って公開（<code>pages.yml</code>）</span>
+        <b>Actions ④</b>
+<span>PR 機械チェック（<code>pr-mechanical-checks.yml</code>）</span>
+      </div></details>
       <span class="ids">D-33 ／ ADR-004</span>
-    </div></div>
-    <div class="ac gh"><h4>開発ハブ　GitHub Pages</h4><div class="bd">
-      <p class="big">主要フロー図もここ</p>
-      手書きページ（<code>docs/</code>）・5 文書（ビルド時に HTML 化）・進捗ページ（Issue から自動）。main へのマージと毎朝 6:00（日本時間）に更新。秘匿値は使わない。アプリの画面とは別の公開先。
-      <span class="ids">pages.yml</span>
-    </div></div>
-    <div class="ac warn"><h4>外部公開・実データ利用前</h4><div class="bd">
-      <ul style="margin:0;padding-left:18px;font-size:12.5px">
-        <li>架空データだけ。ログインは作らない（入口は「準備中」。ADR-005）</li>
-        <li>公開は 11/12〜12/12（ADR-004 承認済み）。後片付けは 12/12（O3）</li>
-        <li>noindex: <code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta（N-07）</li>
-        <li>共有リンクは推測できない識別子・720時間で期限切れ・個人情報なし（N-02・N-13）</li>
+    </div>
+</div>
+    <div class="ac gh">
+<h4>開発ハブ　GitHub Pages</h4>
+<div class="bd">
+      <p class="big">文書と進み具合を 1 か所で全員が見られる。アプリとは別の公開先</p>
+      <p class="mini">主要フロー図もここ。</p>
+      <details><summary>くわしく</summary>手書きページ（<code>docs/</code>）・5 文書（ビルド時に HTML 化）・進捗ページ（Issue から自動）。main へのマージと毎朝 6:00（日本時間）に更新。秘匿値は使わない（<code>pages.yml</code>）。</details>
+    </div>
+</div>
+    <div class="ac warn">
+<h4>外部公開・実データ利用前</h4>
+<div class="bd">
+      <p class="big">公開しても安全と言える理由</p>
+      <ul class="why">
+        <li><b>見せるもの</b>架空データだけ・ログインなし（ADR-005）・noindex（<code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta。N-07）・共有リンクは 720 時間で期限切れ（N-02）。公開は 11/12〜12/12（ADR-004）。</li>
+        <li><b>DB に触る範囲</b>班の DB は、既存 7 表を読むだけ。書くのは share_links・share_likes・usage_events の 3 表だけ。表の作成・削除は PM が手で（D-45 ／ DB管理手順.md）。</li>
+        <li><b>ブラウザの中だけ</b>お気に入り・カート・最近見た商品・いいねの印・匿名の訪問者 ID は、サーバーに送らない（D-10, D-47 ／ N-13）。</li>
       </ul>
-      <div class="gapcard"><b>仕様に書かれていません｜実データを使うときの認証・認可</b><span>文書にありません（発展は運営の承認後）。</span></div>
-    </div></div>
-  </div>
-  <div class="archnote"><span>画面・API・DB の役割を分けている</span><span>接続情報は環境変数（コード・文書に書かない）</span><span>画面の保存はブラウザの中だけ</span><span><span class="stick">実装③</span> 第2弾で増えた分は左の太い実線</span></div>
-</section>
+      <div class="impact"><b>インパクト評価で数えるもの</b>通過率は <code>usage_events</code>（訪問は 30 分で区切る）。購入件数は既存の <code>orders</code>。名前・メール・IP は残さない。<span class="ids">ADR-011 ／ N-13, N-16</span></div>
+      <div class="gapcard"><b>仕様に書かれていません｜実データを使うときの認証・認可</b><span>文書にありません（発展は運営の承認後）。</span></div>    </div></div>  </div>  </section>
 </main>
 <p class="foot">作成: Takahiro（設計）／ Mi-rin（見た目）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みは開発ハブと同じ Google Fonts のみ・単体の HTML。</p>
 </div>
