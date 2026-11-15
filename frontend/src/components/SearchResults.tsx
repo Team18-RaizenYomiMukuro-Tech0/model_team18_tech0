@@ -10,9 +10,12 @@ import { CandidateResults } from "./CandidateResults";
 import { DetailPanel } from "./DetailPanel";
 import { Pagination } from "./Pagination";
 import { ProductCard } from "./ProductCard";
+import { RelaxHelp } from "./RelaxHelp";
 import { SearchConditions } from "./SearchConditions";
 import { Searching } from "./Searching";
 import { SelectedList } from "./SelectedList";
+import { SortSelect } from "./SortSelect";
+import cond from "./conditions.module.css";
 import styles from "./results.module.css";
 
 // SP-11 SP-12 D-27 F-13 F-16 F-19: 検索結果 `/search`。シーンがあれば R-01 の10件（CandidateResults。GET /api/candidates）、
@@ -64,12 +67,20 @@ function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
         )}
         {r?.status === "notfound" && <p role="status">{emptyMessageR02(q)}</p>}
         {r?.status === "ok" && r.data.items.length === 0 && (
-          <p className={styles.empty} role="status">
-            {emptyMessageR02(q)}
-          </p>
+          <div>
+            <p className={styles.empty} role="status">
+              {emptyMessageR02(q)}
+            </p>
+            <RelaxHelp q={q} relax={r.data.relax} />
+          </div>
         )}
         {r?.status === "ok" && r.data.items.length > 0 && (
           <>
+            {/* SP-21: 結果の見出しの右に並び替え（R-01 の 10 件には出さない。見出しの文言はモックの「絞り込み結果」） */}
+            <div className={cond.rhead}>
+              <h2 className={cond.rtitle}>絞り込み結果</h2>
+              <SortSelect q={q} />
+            </div>
             <ul className={styles.cards}>
               {r.data.items.map((p) => (
                 <ProductCard key={p.product_id} p={p} href={searchHref(q, { page: r.data.page, product: p.product_id })} selected={p.product_id === detailId} />
