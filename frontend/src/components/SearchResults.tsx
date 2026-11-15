@@ -12,6 +12,7 @@ import { BottomBar } from "./BottomBar";
 import { CandidateResults } from "./CandidateResults";
 import { DetailPanel } from "./DetailPanel";
 import { Pagination } from "./Pagination";
+import { RecentViewed } from "./RecentViewed";
 import { ProductCard } from "./ProductCard";
 import { RelaxHelp } from "./RelaxHelp";
 import { SearchConditions } from "./SearchConditions";
@@ -135,6 +136,7 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
             <Pagination q={q} total={r.data.total} page={r.data.page} pageSize={r.data.page_size} />
           </>
         )}
+        <RecentViewed q={q} />
         <SelectedList />
       </section>
       {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} />}

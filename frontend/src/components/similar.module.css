@@ -1,0 +1,11 @@
+/* R8 SP-25: 似た商品（詳細の中。贈った人の声の下）。1 件は画像・商品名・価格・届く日。押せる高さ 44px 以上 */
+.similar { display: grid; gap: 6px; margin-top: 4px; }
+.h { margin: 0; font-size: 14px; }
+.list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); color: var(--ink); text-decoration: none; font-size: 13px; }
+.pic { flex: none; width: 48px; }
+.pic img { display: block; width: 48px; height: 48px; border-radius: 6px; }
+.body { display: grid; gap: 2px; min-width: 0; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.price { font-weight: 700; }
+.meta { color: #5c514d; font-size: 12px; }

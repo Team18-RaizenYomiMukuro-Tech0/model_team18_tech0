@@ -7,6 +7,7 @@ import { searchHref, type SearchQuery } from "@/lib/searchQuery";
 import { CandidateList } from "./CandidateList";
 import { DetailPanel } from "./DetailPanel";
 import { Sheet } from "./Sheet";
+import { RecentViewed } from "./RecentViewed";
 import { SearchStatus } from "./SearchStatus";
 import { SelectedList } from "./SelectedList";
 import results from "./results.module.css";
@@ -38,6 +39,7 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
           <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
         </div>
         {s.status === "results" && <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />}
+        <RecentViewed q={q} />
         {narrow ? (
           <Sheet open={listOpen} label="共有リスト" onClose={onCloseList}>
             <div className={results.listpad}>
@@ -48,7 +50,7 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
           <SelectedList />
         )}
       </section>
-      {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} />}
+      {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />}
     </div>
   );
 }
