@@ -15,7 +15,7 @@ a.name { color: inherit; }
 .price { font-weight: 700; }
 .reason { color: #5c514d; font-size: 13px; overflow-wrap: anywhere; }
 .pick, .remove, .create { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
-.pick { margin-top: auto; }
+.pick { margin-top: auto; white-space: nowrap; padding-left: 10px; padding-right: 10px; }
 .remove { flex-shrink: 0; white-space: nowrap; }
 .pick:hover, .remove:hover { background: var(--peach); }
 /* 選択中: 白い字で 4.5 以上のコントラスト。✓ も付けて色だけに頼らない */

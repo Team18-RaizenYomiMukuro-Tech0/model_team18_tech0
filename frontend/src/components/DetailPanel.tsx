@@ -30,7 +30,7 @@ import styles from "./results.module.css";
 // scene は R-01 から開いたときだけ渡す（D-29。「{シーン}で{n}回」を出すため）。R-02・おすすめ・お気に入り・カート・共有ページから開いたときは渡さない。
 // R8 SP-22 SP-25 SP-27 SP-34 D-42 D-46 D-47: 詳細が出たら最近見た商品の先頭に入れ（404・失敗は入れない）、③「詳細を開く」の計測を 1 回送る（声の有無つき。声の取得が済んでから）。
 // 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。届く日のそばに「贈る日（任意）」（入れた日は保存せず、別の商品に替えても残す）。
-export function DetailPanel({ productId, onClose, scene = null, similarHref }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; similarHref?: (id: string) => string }>) {
+export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string }>) {
   const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
@@ -95,7 +95,7 @@ export function DetailPanel({ productId, onClose, scene = null, similarHref }: R
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} gift={gift} onGift={setGift} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} gift={gift} onGift={setGift} />}
       {r?.status === "ok" && <Foot p={r.data} />}
     </>
   );
@@ -132,14 +132,14 @@ function Foot({ p }: Readonly<{ p: ProductDetail }>) {
   );
 }
 
-function Body({ p, focusName, voices, scene, similarHref, gift, onGift }: Readonly<{ p: ProductDetail; focusName: boolean; voices: VoiceList | null; scene: string | null; similarHref?: (id: string) => string; gift: string; onGift: (v: string) => void }>) {
+function Body({ p, focusName, focusKey, voices, scene, similarHref, gift, onGift }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null; scene: string | null; similarHref?: (id: string) => string; gift: string; onGift: (v: string) => void }>) {
   const img = productImage(p.category);
   const views = voiceViews(voices?.voices);
   const verdict = giftVerdict(p.arrives_on, gift);
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (focusName) name.current?.focus(); // シートが開いたら、読めた商品名へ焦点（D-46）
-  }, [focusName, p.product_id]);
+    if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）
+  }, [focusName, focusKey, p.product_id]);
   return (
     <div className={`${styles.detbody} ${styles.detpad}`}>
       <h2 className={styles.detname} ref={name} tabIndex={-1}>

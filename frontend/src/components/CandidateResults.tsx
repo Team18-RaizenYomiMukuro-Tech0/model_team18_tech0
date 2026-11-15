@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import { SearchRunner, type SearchState } from "@/lib/api";
 import { searchMode } from "@/lib/searchMode";
+import type { RightTab } from "@/lib/rightColumn";
 import { searchHref, type SearchQuery } from "@/lib/searchQuery";
+import { useAppState } from "@/state/AppState";
 import { CandidateList } from "./CandidateList";
 import { DetailPanel } from "./DetailPanel";
 import { Sheet } from "./Sheet";
 import { RecentViewed } from "./RecentViewed";
+import { RightColumn } from "./RightColumn";
 import { SearchStatus } from "./SearchStatus";
 import { SelectedList } from "./SelectedList";
 import results from "./results.module.css";
@@ -15,6 +18,7 @@ import results from "./results.module.css";
 // F-19 SP-15 D-27 D-08 D-32: 検索結果 `/search?scene=…` の R-01（シーンあり）。10件を順位・理由・「選ぶ」つきで出し、下に「選んだ候補」の欄。
 // 条件（シーン・価格帯・カテゴリー）は URL から読む。変わったら出し直し、古い応答は捨てる・10秒で打ち切る（SearchRunner。F1 から引き継ぎ）。
 // 選んだ候補は layout の Context（D-32）にあるので、トップへ戻って押し直しても残る。
+// R5 SP-29 D-46: 900px 以上は右の列をタブ（詳細／共有リスト（N件））にする。カードを押すと、いつも詳細のタブが出る。キーボードの Enter で押したときだけ詳細の商品名へ焦点を移す。
 // R2 D-46: 899px 以下は、共有リスト（選んだ候補）を帯から開くシートに入れる（閉じていても中身は残す）。900px 以上は今のまま結果の下。
 export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDetail }: Readonly<{ q: SearchQuery; narrow: boolean; listOpen: boolean; onCloseList: () => void; onCloseDetail: () => void }>) {
   const { url } = searchMode(q);
@@ -31,6 +35,22 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
 
   const s: SearchState = state.url === url ? state.s : { status: "loading" };
   const detailId = q.product;
+  const { picked } = useAppState();
+  const [tab, setTab] = useState<RightTab>("detail"); // 最初はいつも詳細（URL には入れない。再読み込みも 900px をまたいでも詳細に戻る）
+  const [focusKey, setFocusKey] = useState<number | null>(null);
+  const [wasNarrow, setWasNarrow] = useState(narrow);
+  if (wasNarrow !== narrow) {
+    setWasNarrow(narrow);
+    setTab("detail");
+    setFocusKey(null);
+  }
+  // カードを押す（名前のリンク）と、共有リストのタブを開いていても詳細に戻る。Enter（click の detail が 0）のときだけ焦点を商品名へ
+  const onCards = (e: React.MouseEvent) => {
+    if (narrow || !(e.target as HTMLElement).closest("a[href]")) return;
+    setTab("detail");
+    if (e.detail === 0) setFocusKey((k) => (k ?? 0) + 1);
+    else setFocusKey(null);
+  };
 
   return (
     <div className={results.layout}>
@@ -38,19 +58,25 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
         <div aria-live="polite">
           <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
         </div>
-        {s.status === "results" && <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />}
+        {s.status === "results" && (
+          <div onClick={onCards}>
+            <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />
+          </div>
+        )}
         <RecentViewed q={q} />
-        {narrow ? (
+        {narrow && (
           <Sheet open={listOpen} label="共有リスト" onClose={onCloseList}>
             <div className={results.listpad}>
               <SelectedList />
             </div>
           </Sheet>
-        ) : (
-          <SelectedList />
         )}
       </section>
-      {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />}
+      {narrow ? (
+        detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />
+      ) : (
+        <RightColumn tab={tab} onTab={setTab} detailId={detailId} onCloseDetail={onCloseDetail} focusKey={focusKey} picked={picked.length} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />
+      )}
     </div>
   );
 }
