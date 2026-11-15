@@ -22,6 +22,8 @@ class Settings:
     TEST_KEY_MAX_LENGTH: int = 64  # D-40・K-5 本文の test_key の長さの上限（合言葉の値はここに置かない。環境変数 GIFTIA_TEST_KEY）
     SEARCH_Q_MAX_LENGTH: int = 50  # D-49・SP-35 検索の言葉の長さの上限（決定。PM 11/15）
     SEARCH_MIN_SCORE: int = 85  # D-49 決定 17 近さの下限（rapidfuzz partial_ratio。仮の値。テスト語で決めて D-49 に書き戻す）
+    VOICES_MAX: int = 2  # SP-17・D-35 贈った人の声の最大件数
+    VOICE_MIN_RATING: int = 4  # SP-17・D-35 声に使う星の下限（4 以上）
     SHARE_REQUEST_MAX_LENGTH: int = 50  # N-06 重複込みの配列の長さの上限（決定。キックオフ記録 76）
 
 
