@@ -48,7 +48,7 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
           <SelectedList />
         )}
       </section>
-      {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} />}
+      {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} />}
     </div>
   );
 }

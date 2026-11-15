@@ -3,32 +3,35 @@ import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
 import { productImage } from "@/lib/images";
 import { ratingText, type Product } from "@/lib/products";
+import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
 import styles from "./results.module.css";
 
-// SP-11 F-13 #41-9 OPEN-06: 検索結果のカード。画像（カテゴリー共通イラスト＋「イメージ」）・商品名・価格・評価と件数・配送日数・
-// ラッピング可・お気に入りのハート・高評価バッジ（API の high_rating。評価 4.5 以上）。評価・件数・配送日数・ラッピングのどれかが
-// 無い商品は、その項目だけ出さない（値を作らない）。カードの本体を押すと詳細の欄（SP-12）。
+// SP-11 SP-16 F-13 #41-9 OPEN-06: 検索結果のカード。画像（カテゴリー共通イラスト＋「イメージ」）・商品名・価格・評価と件数・
+// 決め手の 1 行（DecisionChips。前の「3日でお届け」「ラッピング可」はここにまとめた）・お気に入りのハート・高評価バッジ（API の high_rating）。
+// 値が無い項目は出さない（値を作らない）。画像と商品名のどちらを押しても詳細の欄（SP-12）を開く。ハートは別のボタン（カード全体を 1 つのリンクにはしない）。
+// 一覧は在庫 0 を出さないので、決め手の「在庫あり」はいつも出る。R-02 はシーンを選んでいないので「{シーン}で{n}回」は出ない。
 export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: string; selected: boolean }>) {
   const img = productImage(p.category);
   return (
     <li className={styles.card} data-selected={selected}>
-      <Link href={href} scroll={false} className={styles.body} aria-current={selected ? "true" : undefined}>
-        <span className={styles.pic}>
+      <div className={styles.body}>
+        <Link href={href} scroll={false} className={styles.pic} tabIndex={-1} aria-hidden="true">
           {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
           <span className={styles.imgtag}>イメージ</span>
-        </span>
+        </Link>
         {p.high_rating && <span className={styles.badge}>高評価の商品</span>}
-        <span className={styles.name}>{p.name}</span>
+        <Link href={href} scroll={false} className={styles.name} aria-current={selected ? "true" : undefined}>
+          {p.name}
+        </Link>
         <span className={styles.price}>{formatPrice(p.price)}</span>
         {p.rating != null && p.review_count != null && (
           <span className={styles.meta}>
             ★ {ratingText(p.rating)}（{p.review_count}件）
           </span>
         )}
-        {p.delivery_days != null && <span className={styles.meta}>{p.delivery_days}日でお届け</span>}
-        {p.wrapping === true && <span className={styles.meta}>ラッピング可</span>}
-      </Link>
+        <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
+      </div>
       <span className={styles.heartpos}>
         <HeartButton productId={p.product_id} name={p.name} />
       </span>

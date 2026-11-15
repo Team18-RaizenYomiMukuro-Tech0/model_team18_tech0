@@ -1,0 +1,4 @@
+/* R4 SP-16 D-37 T7: 決め手の 1 行。札（999px）・中のアイコンは 18px の線（--ink）。オレンジは使わない */
+.chips { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 0; padding: 0; list-style: none; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.5; }
+.chip svg { flex: none; }

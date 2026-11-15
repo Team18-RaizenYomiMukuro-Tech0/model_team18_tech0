@@ -9,7 +9,7 @@ import styles from "./candidates.module.css";
 import { ShareLinkButton } from "./ShareLinkButton";
 import { ShareLinkResult } from "./ShareLinkResult";
 
-// F2 D-08 #39-3 #41-5 #41-7 #36 #76: 「選んだ候補」の欄。検索結果の下。選んだ順に 商品名・価格（税込）・理由の文 と「外す」。
+// F2 D-08 #39-3 #41-5 #41-7 #36 #76 SP-05: 「共有リスト」の欄（第2弾で「選んだ候補」から変更。U-20）。検索結果の下。選んだ順に 商品名・価格（税込）・理由の文 と「外す」。
 // 選んだ数を表示する。0件なら欄も作成ボタンも出さない。11件以上は作成ボタンのすぐ上に案内を出し、ボタンを押せなくする。
 // F3: 作るのは ShareLinkRunner（商品IDの並びだけを選んだ順に送る）。できたリンクとコピーは ShareLinkResult。
 export function SelectedList() {
@@ -27,7 +27,7 @@ export function SelectedList() {
   return (
     <section className={styles.selected} aria-labelledby="h-selected">
       <h2 id="h-selected" className={styles.sh}>
-        選んだ候補
+        共有リスト
         <span className={styles.count} aria-live="polite">
           （{picked.length}件）
         </span>
