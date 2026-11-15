@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { cartBandText, listBandText } from "@/lib/mobileLayout";
 import { useCart } from "@/state/cart";
 import styles from "./results.module.css";
@@ -9,6 +10,13 @@ import styles from "./results.module.css";
 // カートのパネルはヘッダーのカートのボタンが持っているので、そのボタンを押す（パネルの作りは変えない。D9 の持ち物）。
 export function BottomBar({ isR01, picked, onOpenList }: Readonly<{ isR01: boolean; picked: number; onOpenList: () => void }>) {
   const { count } = useCart();
+  // SP-29 ⑤: 帯がある間は、通知を帯の上に出す（cart.module.css の .toastBox が body[data-band] を見る）
+  useEffect(() => {
+    document.body.dataset.band = "1";
+    return () => {
+      delete document.body.dataset.band;
+    };
+  }, []);
   const list = listBandText(isR01, picked);
   const openCart = () => document.querySelector<HTMLButtonElement>('header.top button[aria-label="カート"]')?.click();
   return (
