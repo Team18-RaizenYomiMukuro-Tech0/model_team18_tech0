@@ -1,5 +1,7 @@
 # products.py — GET /api/products（設計.md D-28、R-02 の絞り込み。仕様 SP-10・SP-11）
 # シーン・価格帯・カテゴリー・ページを受け、条件間 AND で、おすすめ順に 12 件ずつ返す。読み取りのみ。
+# 第2弾: q（言葉。D-49）を足す。条件はそのまま AND、その中で言葉に合う商品に絞り、合う言葉の数 → 近さの点 → おすすめ順に並べる（sort があれば sort が先）。
+#  処理の順: ①SQL で条件に合う商品を LIMIT なしで取る ②Python で q の合い方を見て絞る ③並べる ④total を数えて 12 件ずつに切る。言葉はログ・計測に残さない。
 #  - SQL は 1 本の固定の文。値はすべて %s と params で渡す（N-04）。SQL 文に値をつなげない。
 #  - 並びは D-02 と同じ式（絞り込んだ商品で C を求める）。同点は商品ID順。送別回数は数えない（#46-2・#50-3）。
 #  - 入力の検証は DB に問い合わせる前に行う（不正なら DB を呼ばない）。
@@ -17,6 +19,7 @@ from config import SETTINGS
 from db import Db, get_db
 from decision import arrives_on, scene_count_value, scene_counts, today_jst
 from ranking import SORTS, order_by_sort
+from search import match, parse_q
 
 router = APIRouter()
 
@@ -170,6 +173,13 @@ def list_products(
     elif sort not in SORTS:
         return _error("invalid_sort", "sort は recommend・price_asc・rating_desc・delivery_asc のどれかです")
 
+    words: list[str] | None = None  # q（任意。D-49）。空・空白だけは言葉なし。50 文字を超えたら 422
+    parsed = parse_q(q.get("q"))
+    if parsed == "too_long":
+        return _error("invalid_q", "q は 50 文字までです")
+    if isinstance(parsed, list):
+        words = parsed
+
     slots = (
         categories + [categories[0]] * (_CATEGORY_SLOTS - len(categories))
         if categories
@@ -184,15 +194,25 @@ def list_products(
         *slots,
     )
     rows = db.fetch_all(SELECT_PRODUCTS, params)
+    conditions_total = len(rows)  # 言葉をはずしたときの件数（relax.no_q。D-49）
+
+    matched: dict[str, tuple[int, float]] = {}
+    if words is not None:  # ②言葉に合う商品に絞り、合う言葉の数と近さの点を付ける
+        hits = match(words, rows)
+        matched = {str(rows[i]["product_id"]): score for i, score in hits.items()}
+        rows = [r for r in rows if str(r["product_id"]) in matched]
 
     by_id = {str(r["product_id"]): r for r in rows}
-    ordered = order_by_sort(
-        [
-            (str(r["product_id"]), r["price"], _to_decimal(r["rating"]), r["review_count"], r["delivery_days"])
-            for r in rows
-        ],
-        sort,
-    )
+    items_for_sort = [
+        (str(r["product_id"]), r["price"], _to_decimal(r["rating"]), r["review_count"], r["delivery_days"])
+        for r in rows
+    ]
+    if words is not None and q.get("sort", "") == "":
+        # ③ sort が無ければ 合う言葉の数 → 近さの点 → おすすめ順（D-49）。sort があれば下の order_by_sort（sort 優先）
+        recommend = {pid: n for n, pid in enumerate(order_by_sort(items_for_sort, "recommend"))}
+        ordered = sorted(by_id, key=lambda pid: (-matched[pid][0], -matched[pid][1], recommend[pid]))
+    else:
+        ordered = order_by_sort(items_for_sort, sort)
 
     total = len(ordered)
     last_page = max(1, math.ceil(total / PAGE_SIZE))
@@ -210,5 +230,8 @@ def list_products(
         "page_size": PAGE_SIZE,
     }
     if total == 0:  # 0 件のときだけ助け舟の件数を足す（D-44。+1 往復）
-        body["relax"] = relax_counts(db, scene, price_range if band != "" else None, categories)
+        relax = relax_counts(db, scene, price_range if band != "" else None, categories)
+        if words is not None:
+            relax["no_q"] = conditions_total  # 言葉をはずしたときの件数（①の件数。D-49。言葉が無いときは付けない）
+        body["relax"] = relax
     return body
