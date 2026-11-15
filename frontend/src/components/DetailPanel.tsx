@@ -18,7 +18,7 @@ import styles from "./results.module.css";
 // 値が無い項目は出さない。在庫0は「在庫なし」。取得が通信の失敗なら「商品の情報を読み込めませんでした」と「もう一度」、404 なら「この商品は見つかりません」だけ。
 // R2 SP-29 D-46: 899px 以下は下から出るシート（閉じるボタン・Esc。開いたら商品名へ焦点）、900px 以上は右の欄。
 // どちらも一番下に「{価格}（税込）［カートに入れる］」の帯を固定する（`position: sticky; bottom: 0`。在庫 0 は「在庫なし」で押せない）。
-export function DetailPanel({ productId, onClose }: Readonly<{ productId: string; onClose: () => void }>) {
+export function DetailPanel({ productId, onClose, focusKey = null }: Readonly<{ productId: string; onClose: () => void; focusKey?: number | null }>) {
   const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
@@ -61,7 +61,7 @@ export function DetailPanel({ productId, onClose }: Readonly<{ productId: string
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} />}
       {r?.status === "ok" && <Foot p={r.data} />}
     </>
   );
@@ -98,12 +98,12 @@ function Foot({ p }: Readonly<{ p: ProductDetail }>) {
   );
 }
 
-function Body({ p, focusName }: Readonly<{ p: ProductDetail; focusName: boolean }>) {
+function Body({ p, focusName, focusKey }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null }>) {
   const img = productImage(p.category);
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (focusName) name.current?.focus(); // シートが開いたら、読めた商品名へ焦点（D-46）
-  }, [focusName, p.product_id]);
+    if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）
+  }, [focusName, focusKey, p.product_id]);
   return (
     <div className={`${styles.detbody} ${styles.detpad}`}>
       <h2 className={styles.detname} ref={name} tabIndex={-1}>
