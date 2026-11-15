@@ -14,3 +14,11 @@
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .note { margin: 0; font-size: 14px; color: #5c514d; }
 .group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* R7 SP-21 並び替え・SP-24 0 件の助け舟 */
+.sortbar { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.sortsel { min-height: 44px; padding: 4px 10px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; }
+.help { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.helpbtn { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font-size: 14px; text-decoration: none; }
+.helpbtn:hover { background: var(--peach); }
+.rhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.rtitle { margin: 0; font-size: 17px; }

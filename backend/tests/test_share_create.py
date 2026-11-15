@@ -154,7 +154,8 @@ def test_create(backend: Backend) -> None:
             "SELECT product_name, price FROM products WHERE product_id = %s", (i["product_id"],)
         )[0]
         assert (i["name"], i["price"]) == (found["product_name"], found["price"])
-        assert i["reason"].startswith("職場の送別") and i["reason"].endswith("。")
+        # 送別回数が 1 以上なら文頭は回数の文、0 なら回数の文を出さず評価・配送の文から始まる（SP-03 第2弾。TPL-03 は取りやめ）
+        assert i["reason"].endswith("。") and (i["reason"].startswith("職場の送別") == ("回選ばれ" in i["reason"]))
     if backend.name == "fake":  # FD-1 の P09 は仕様 SP-03 の例 X1 と一字一句同じ
         reason = {i["product_id"]: i["reason"] for i in saved}["P09"]
         assert reason == "職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。"

@@ -1,5 +1,5 @@
 /* 土台の最小スタイル。色は D-37 の 9 色（--s-）を 1 か所に置き、これまでの名前（--bg など）はそこを指す（N-14）。
-   ボタン・タイルの色の当て直しは R3（#288）で、各画面の CSS から --s-coral-ink などを直接使う。 */
+   ボタン・タイルなどの色の当て直しは R3（#288）。 */
 :root {
   --s-bg: #F7F3EF;
   --s-paper: #FFFFFF;
@@ -66,6 +66,10 @@ header.top {
   font: inherit;
 }
 .hsearch input::placeholder { color: #8a7d75; }
+/* D-49 SP-35: 検索ボタン・スマホの虫めがねと閉じる「×」（PC では虫めがねと「×」を出さない） */
+.hsearch .hsgo { min-width: 56px; min-height: 44px; padding: 0 14px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.hsearch .hsgo:hover { background: var(--peach); }
+.hsearch .hsclose, .hbtn.hmag { display: none; }
 .spacer { flex: 1; }
 .hbtn {
   display: flex;
@@ -106,6 +110,11 @@ header.top {
   .hbtn .tag { display: none; }
   .hbtn[aria-disabled="true"] .ico { opacity: .5; }
   .hsearch { display: none; }
+  /* D-25 SP-35: 虫めがね（アイコン・文字は他の 3 つと同じ）。開いた（data-open="true"）ときは、入力欄をヘッダーの下に出す */
+  .hbtn.hmag { display: flex; }
+  header.top { position: relative; }
+  .hsearch[data-open="true"] { display: flex; position: absolute; top: 100%; left: 0; right: 0; z-index: 25; max-width: none; border-radius: 0; border-width: 1px 0; box-shadow: 0 4px 8px rgba(58, 51, 49, .15); }
+  .hsearch .hsclose { display: block; min-width: 44px; min-height: 44px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
   .spacer { display: none; }
 }
 

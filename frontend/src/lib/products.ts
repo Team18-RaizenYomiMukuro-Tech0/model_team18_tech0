@@ -27,8 +27,13 @@ export type VoiceList = { voices: Voice[] };
 export type SimilarList = { items: Product[] };
 
 // sort は recommend（既定）のときは付けない（SP-21）。R-02（シーンなし）の取得なので scene は付けない
-export function productsUrl(q: Pick<SearchQuery, "priceBand" | "categories" | "page"> & { sort?: SortKey }): string {
+// q（D-49。言葉）があるときは、シーンも条件として付ける（言葉で絞るときは R-02 の12件ずつ。SP-35 ③）
+export function productsUrl(q: Pick<SearchQuery, "priceBand" | "categories" | "page"> & { sort?: SortKey; q?: string; scene?: string | null }): string {
   const p = new URLSearchParams();
+  if (q.q) {
+    if (q.scene) p.set("scene", q.scene);
+    p.set("q", q.q);
+  }
   if (q.priceBand) p.set("price_band", q.priceBand);
   for (const c of q.categories) p.append("category", c);
   if (q.sort && q.sort !== "recommend") p.set("sort", q.sort);
@@ -78,7 +83,8 @@ export const isProductDetail = (v: unknown): v is ProductDetail =>
   typeof v === "object" && v !== null && typeof (v as ProductDetail).name === "string" && typeof (v as ProductDetail).price === "number";
 
 // 0件の文言は選んでいる条件で出し分ける。優先はカテゴリー→価格帯→シーン（#55-2、#56-4）。シーンは R3 で足す
-export function emptyMessageR02(q: Pick<SearchQuery, "priceBand" | "categories">): string {
+export function emptyMessageR02(q: Pick<SearchQuery, "priceBand" | "categories"> & { q?: string }): string {
+  if (q.q) return `「${q.q}」に合う商品が見つかりませんでした`; // SP-35 ⑥（文言は案）
   if (q.categories.length) return "この条件に合う商品がありません。カテゴリーを変えてみてください";
   if (q.priceBand) return "条件に合う商品がありません。価格帯を変えてみてください";
   return "この条件に合う商品がありません。シーンを変えてみてください";
