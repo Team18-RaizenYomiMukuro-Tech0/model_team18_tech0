@@ -1,6 +1,7 @@
 import { categoryNote } from "@/lib/searchMode";
 import { emptyMessageR02 } from "@/lib/products";
 import type { SearchQuery } from "@/lib/searchQuery";
+import { RelaxHelp } from "./RelaxHelp";
 import type { SearchState } from "@/lib/api";
 import { Searching } from "./Searching";
 import styles from "./search.module.css";
@@ -14,7 +15,7 @@ export function SearchStatus({
   state,
   q,
   onRetry,
-}: Readonly<{ state: SearchState; q: Pick<SearchQuery, "priceBand" | "categories">; onRetry: () => void }>) {
+}: Readonly<{ state: SearchState; q: SearchQuery; onRetry: () => void }>) {
   switch (state.status) {
     case "initial":
       return null;
@@ -29,9 +30,12 @@ export function SearchStatus({
       );
     case "empty":
       return (
-        <p className={styles.empty} role="status">
-          {emptyMessageR02(q)}
-        </p>
+        <>
+          <p className={styles.empty} role="status">
+            {emptyMessageR02(q)}
+          </p>
+          <RelaxHelp q={q} relax={state.relax} />
+        </>
       );
     case "error":
       return (

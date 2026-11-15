@@ -56,6 +56,7 @@ export class ProductRunner {
 
   // ② 結果が出たとき（0件も含む。R-02 はシーンなし）。0件のときは ⑦ に条件（価格帯・カテゴリー）を持たせて別に送る（SP-34・D-40）
   private trackResult(url: string, total: number): void {
+    // D-49 SP-35 ⑨（PM 11/15）: 言葉付きの結果でも ②・⑦ は今までどおり送る。言葉（q）は送らない（下の q は価格帯・カテゴリーの有無だけを見る）
     this.tracker(2);
     if (total > 0) return;
     const q = new URLSearchParams(url.split("?")[1] ?? "");
