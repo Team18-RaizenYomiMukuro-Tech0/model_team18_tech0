@@ -5,11 +5,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { productImage } from "@/lib/images";
+import { ratingText } from "@/lib/products";
 import { buildSearchHref, fetchRecommended, type RecommendedItem } from "@/lib/topPage";
+import { CartButton } from "./CardButtons";
+import { DecisionChips } from "./DecisionChips";
+import { HeartButton } from "./HeartButton";
+import g from "./cardParts.module.css";
 import styles from "./top.module.css";
 
 // SP-09 D-26 #46-2 #53-1: おすすめの商品。GET /api/products を条件なしで呼んだ先頭4件を4列に並べる。
-// 押すと検索結果へ移り、その商品の詳細の欄を開く（詳細の欄は R6）。ハート・カートは後の Issue。
+// R6 SP-30 SP-16: カードは検索結果と同じ部品の並び（画像・商品名・価格・評価「4.0（120件）」・決め手の 1 行・ハート・「カートに入れる」）。画像か商品名を押すと検索結果へ移り、その商品の詳細の欄を開く。
 export function Recommended() {
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [items, setItems] = useState<RecommendedItem[]>([]);
@@ -50,23 +55,37 @@ export function Recommended() {
         </div>
       )}
       <ul className={styles.rec}>
-        {items.map((p) => (
-          <li key={p.product_id}>
-            <Link className={styles.card} href={buildSearchHref({ productId: p.product_id })}>
-              <span className={styles.pic}>
-                <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
-                <span className={styles.imgtag}>イメージ</span>
-              </span>
-              <span className={styles.name}>{p.name}</span>
-              <span className={styles.price}>{formatPrice(p.price)}</span>
-              {p.rating != null && p.review_count != null && (
-                <span className={styles.rating}>
-                  ★ {p.rating}（{p.review_count}件）
+        {items.map((p) => {
+          const href = buildSearchHref({ productId: p.product_id });
+          return (
+            <li key={p.product_id} className={`${styles.card} ${g.wrap}`}>
+              <div className={g.grid}>
+                <Link href={href} tabIndex={-1} aria-hidden="true" className={`${styles.pic} ${g.pic}`}>
+                  <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
+                  <span className={styles.imgtag}>イメージ</span>
+                </Link>
+                <Link href={href} className={`${styles.name} ${g.name}`}>
+                  {p.name}
+                </Link>
+                <span className={`${styles.price} ${g.price}`}>{formatPrice(p.price)}</span>
+                {p.rating != null && p.review_count != null && (
+                  <span className={`${styles.rating} ${g.meta}`}>
+                    ★ {ratingText(p.rating)}（{p.review_count}件）
+                  </span>
+                )}
+                <div className={g.chips}>
+                  <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
+                </div>
+                <span className={g.heart}>
+                  <HeartButton productId={p.product_id} name={p.name} />
                 </span>
-              )}
-            </Link>
-          </li>
-        ))}
+                <span className={g.cart}>
+                  <CartButton productId={p.product_id} name={p.name} />
+                </span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

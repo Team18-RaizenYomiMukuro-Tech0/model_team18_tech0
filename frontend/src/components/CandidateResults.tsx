@@ -24,15 +24,21 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
   const scene = q.scene;
   const [state, setState] = useState<{ url: string; s: SearchState }>({ url: "", s: { status: "loading" } });
   const [tries, setTries] = useState(0);
+  const [last, setLast] = useState<Extract<SearchState, { status: "results" }> | null>(null); // 直前の結果（検索中に薄く残す。SP-33）
 
   useEffect(() => {
     if (!scene) return;
-    const runner = new SearchRunner((s) => setState({ url, s }));
+    const runner = new SearchRunner((s) => {
+      setState({ url, s });
+      if (s.status === "results") setLast(s);
+    });
     runner.run({ scene, priceBand: q.priceBand, categories: q.categories });
     return () => runner.cancel(); // 条件が変わったら・画面を離れたら、前の検索の応答は捨てる
   }, [url, tries]); // eslint-disable-line react-hooks/exhaustive-deps -- url が scene・価格帯・カテゴリーのすべてを含む
 
   const s: SearchState = state.url === url ? state.s : { status: "loading" };
+  // R6 SP-33: 検索中は前の結果（10件）を薄くして残す。見出しの位置の中央に検索中の表示（SearchStatus）。応答が返ったら置き換える
+  const prev = s.status === "loading" ? last : null;
   const detailId = q.product;
   const { picked } = useAppState();
   const [tab, setTab] = useState<RightTab>("detail"); // 最初はいつも詳細（URL には入れない。再読み込みも 900px をまたいでも詳細に戻る）
@@ -54,9 +60,14 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
   return (
     <div className={results.layout}>
       <section aria-label="検索結果" className={results.results}>
-        <div aria-live="polite">
+        <div aria-live="polite" className={s.status === "loading" ? results.searchslot : undefined}>
           <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
         </div>
+        {prev && (
+          <div className={results.stale} aria-busy="true">
+            <CandidateList items={prev.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />
+          </div>
+        )}
         {s.status === "results" && (
           <div onClick={onCards}>
             <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />

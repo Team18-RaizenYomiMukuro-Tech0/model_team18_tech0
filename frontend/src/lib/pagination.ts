@@ -25,3 +25,21 @@ export function prevNext(total: number, page: number, pageSize: number = PAGE_SI
   const n = pageCount(total, pageSize);
   return { prev: page > 1 && n > 0 ? page - 1 : null, next: page < n ? page + 1 : null };
 }
+
+// R6 SP-32 U-72: 短いページ番号。最初と最後のページ、今のページとその前後 2 つを出し、間が 1 ページでも空けば "gap"（画面では「…」）。
+// 全ページ数が 7 以下なら全部出す。1 ページだけなら番号は 1 つ。例: 全 223 ページの 6 ページ目は 1 … 4 5 6 7 8 … 223。
+export type PageItem = number | "gap";
+export function pageItems(total: number, page: number, pageSize: number = PAGE_SIZE): PageItem[] {
+  const n = pageCount(total, pageSize);
+  if (n <= 0) return [];
+  if (n <= 7) return Array.from({ length: n }, (_, i) => i + 1);
+  const keep = new Set<number>([1, n]);
+  for (let i = page - 2; i <= page + 2; i++) if (i >= 1 && i <= n) keep.add(i);
+  const sorted = [...keep].sort((a, b) => a - b);
+  const out: PageItem[] = [];
+  sorted.forEach((v, i) => {
+    if (i > 0 && v - sorted[i - 1] > 1) out.push("gap");
+    out.push(v);
+  });
+  return out;
+}
