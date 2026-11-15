@@ -9,6 +9,13 @@
 :root{--bg:#f4f1ee;--paper:#fff;--ink:#3a3331;--sub:#7a6f6a;--line:#e8dfd9;--peach:#fdeee6;--coral:#ee6c4d;--coral-d:#d4553a;--sage:#e6ebdd;--sage-d:#5d7a4e;--green:#6f8a5a;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8;
  --surf:#fff;--sel:#fff6f2;--muted:#f5f2ef;--imgbg:#faf7f4;--bd2:#8a7d75;--btn-sel:#b8422a;--btn-sel-d:#8f321e;--ink2:#5c514d;--badge-bg:#fbe3d9;--badge-ink:#a2402a;
  --hero-bg:var(--peach);--hero-ink:var(--ink);--hero-sub:var(--sub);--rl:12px;--rm:8px;--shadow:0 1px 2px rgba(0,0,0,.04);--shadow-h:0 2px 6px rgba(0,0,0,.08);--gold:#c9a227}
+/* 実装③を強調（レビュー用の表示だけ。outline と疑似要素で描くので押せる範囲・並びは変わらない） */
+body.hl3 [data-i3]{outline:3px solid #B388FF;outline-offset:2px;position:relative}
+body.hl3 #dock[data-i3]{position:fixed}
+body.hl3 [data-i3]::before{content:"実装③ " attr(data-i3);position:absolute;top:-11px;left:8px;z-index:2;background:#B388FF;color:#2A1B3D;font:700 10px/1 "Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;padding:3px 6px;border-radius:8px;white-space:nowrap;pointer-events:none}
+body.hl3 .dlg[data-i3]::before,body.hl3 #dock[data-i3]::before{top:2px;left:8px}
+body.hl3 :is(#app,#ov,#dock)>:not([data-i3]):not(:has([data-i3])):not([data-i3] *),
+body.hl3 :is(#app,#ov,#dock) :has([data-i3])>:not([data-i3]):not(:has([data-i3])):not([data-i3] *){filter:grayscale(.85) brightness(1.12) contrast(.7)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -301,7 +308,7 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
   <b>レビュー用操作</b><button id="barToggle" aria-expanded="true">操作を隠す</button>
   <div class="grp">画面：<button data-view="top" aria-pressed="true">トップ</button><button data-view="result" aria-pressed="false">検索結果</button><button data-view="share" aria-pressed="false">共有ページ</button></div>
   <div class="grp">幅：<button data-w="375" aria-pressed="false">375px</button><button data-w="1280" aria-pressed="true">1280px</button></div>
-  <div class="grp"><label><input type="checkbox" id="tSp" checked> 仕様ID</label><label><input type="checkbox" id="tNote" checked> 付箋</label></div>
+  <div class="grp"><label><input type="checkbox" id="tSp" checked> 仕様ID</label><label><input type="checkbox" id="tNote" checked> 付箋</label><label><input type="checkbox" id="tI3"> 実装③を強調</label></div>
   <div class="grp" id="stateBtns">検索の状態：
     <button data-st="initial">初期</button><button data-st="loading">検索中</button><button data-st="results">結果あり</button><button data-st="empty">0件</button><button data-st="error">失敗</button></div>
   <div class="grp">詳細の状態：<button data-ds="ok">表示</button><button data-ds="fail">通信失敗</button><button data-ds="nf">見つからない（404）</button></div>
@@ -554,7 +561,7 @@ function keyHTML(p){
   if(p.stock>=1)a.push(`<span class="key">在庫あり</span>`);
   const sc=S.mode==="r01"?S.scene:null,n=sc?SCN(p,sc):0;
   if(sc&&n>=1)a.push(`<span class="key">${esc(sc)}で${n}回</span>`);
-  return a.length?`<div class="keys" aria-label="決め手">${a.join("")}${sp("SP-16 SP-26")}</div>`:"";
+  return a.length?`<div class="keys" data-i3="SP-16・26" aria-label="決め手">${a.join("")}${sp("SP-16 SP-26")}</div>`:"";
 }
 function metaHTML(p,mini){return `<div class="meta">${hasRating(p)?`<span><span class="star">★</span> ${mini?p.r.toFixed(1):p.r}（${p.v}件）</span>`:""}</div>${keyHTML(p)}`}
 function pickHTML(p,picked){return `<label class="pick"><input type="checkbox" data-pick="${p.id}" ${picked?"checked":""}> ${picked?"共有リストに入れています（外す）":"共有リストに入れる"}</label>`}
@@ -568,7 +575,7 @@ function cardHTML(p,o){
    ${imgHTML(p)}
    <button class="name" ${o.mini?`data-rec="${p.id}"`:`data-detail="${p.id}"`}>${esc(p.name)}</button>${priceHTML(p.price)}${metaHTML(p,o.mini)}
    ${r01?`<p class="reason">${esc(p.reason)}${sp("SP-03")}</p>`:""}
-   <div class="cardfoot">${r01?pickHTML(p,picked):""}<button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="${esc(p.name)}をお気に入り${fav?"から外す":"に追加"}">${fav?"♥":"♡"}</button><button class="primary" data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"カートに入れる"}</button>${sp("SP-30")}</div></article>`;
+   <div class="cardfoot" data-i3="SP-30">${r01?pickHTML(p,picked):""}<button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="${esc(p.name)}をお気に入り${fav?"から外す":"に追加"}">${fav?"♥":"♡"}</button><button class="primary" data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"カートに入れる"}</button>${sp("SP-30")}</div></article>`;
 }
 function detailHTML(sheet){
   const p=S.detailOpen&&S.detailId?(S.items.find(x=>x.id===S.detailId)||PRODUCTS.find(x=>x.id===S.detailId)):null;
@@ -578,27 +585,27 @@ function detailHTML(sheet){
     if(S.dstate==="nf") return o+`<div class="msgbox empty" role="status">この商品は見つかりません${sp("H-34 #55-4")}</div></aside>`;
     return o+`<div class="msgbox err" role="alert">商品の情報を読み込めませんでした<br><button class="ghost" id="dRetry" style="margin-top:8px">もう一度</button>${sp("H-34 #55-4")}</div></aside>`;
   }
-  if(!p) return `<aside class="detail hint" aria-label="商品の詳細">カードを押すと、ここに詳細が出ます${sp("SP-29 D-46 A")}</aside>`;
+  if(!p) return `<aside class="detail hint" data-i3="SP-29" aria-label="商品の詳細">カードを押すと、ここに詳細が出ます${sp("SP-29 D-46 A")}</aside>`;
   const fav=FAV.includes(p.id),hi=isHigh(p),out=noStock(p);
   const sc=S.mode==="r01"?S.scene:null;
   const vs=voicesOf(p);
   const sim=sc?PRODUCTS.filter(x=>x.id!==p.id&&x.scenes.includes(sc)&&x.stock>=1&&bandOf(x.price)===bandOf(p.price)).sort((a,b)=>rdesc(a,b)||(b.v||0)-(a.v||0)||a.id-b.id).slice(0,3):[];
-  const gift=p.d!=null?`<div class="gift"><label>贈る日（任意）<input type="date" id="giftDate" value="${esc(S.giftDate)}"></label><span class="res" id="giftRes" role="status"></span>${sp("SP-27")}</div>`:"";
+  const gift=p.d!=null?`<div class="gift" data-i3="SP-27"><label>贈る日（任意）<input type="date" id="giftDate" value="${esc(S.giftDate)}"></label><span class="res" id="giftRes" role="status"></span>${sp("SP-27")}</div>`:"";
   return `<aside class="detail ${S.detailOpen?"open":""}" aria-label="商品の詳細" id="detail">
    <h3>${esc(p.name)}</h3><button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="お気に入り">${fav?"♥":"♡"}</button>
-   ${sheet?"":`<button class="primary full" data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"🛒 カートに入れる"}</button>${sp("SP-18 SP-29")}`}
+   ${sheet?"":`<button class="primary full" ${out?'data-i3="SP-18"':""} data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"🛒 カートに入れる"}</button>${sp("SP-18 SP-29")}`}
    ${imgHTML(p)}${hi?`<div class="topline"><span class="badge">高評価の商品</span></div>`:""}
    <div>${priceHTML(p.price)}</div>
    ${metaHTML(p)}${gift}
-   ${vs.length?`<section class="voices" aria-label="贈った人の声"><h4>贈った人の声${sp("SP-17")}</h4>${vs.map(v=>`<blockquote>「${esc(v[1])}」<span class="st">★${v[0]}</span></blockquote>`).join("")}</section>`:""}
-   ${sim.length?`<section class="similar" aria-label="似た商品"><h4>同じシーン・同じ価格帯の商品${sp("SP-25")}</h4><ul>${sim.map(x=>`<li><button data-detail="${x.id}">${miniImg(x)}<span><b>${esc(x.name)}</b><br>${yen(x.price)}${TAX}${x.d!=null?"　"+arrTxt(x):""}</span></button></li>`).join("")}</ul></section>`:""}
+   ${vs.length?`<section class="voices" data-i3="SP-17" aria-label="贈った人の声"><h4>贈った人の声${sp("SP-17")}</h4>${vs.map(v=>`<blockquote>「${esc(v[1])}」<span class="st">★${v[0]}</span></blockquote>`).join("")}</section>`:""}
+   ${sim.length?`<section class="similar" data-i3="SP-25" aria-label="似た商品"><h4>同じシーン・同じ価格帯の商品${sp("SP-25")}</h4><ul>${sim.map(x=>`<li><button data-detail="${x.id}">${miniImg(x)}<span><b>${esc(x.name)}</b><br>${yen(x.price)}${TAX}${x.d!=null?"　"+arrTxt(x):""}</span></button></li>`).join("")}</ul></section>`:""}
    ${S.mode==="r01"&&p.reason?`<p class="reason">${esc(p.reason)}</p>`:""}
    <dl>${p.desc?`<dt>商品の特徴</dt><dd>${esc(p.desc)}</dd>`:""}${p.set?`<dt>セット内容</dt><dd>${esc(p.set)}</dd>`:""}</dl>
    <button class="ghost full" data-fav="${p.id}">♡ お気に入りに${fav?"から外す":"追加"}</button><div>${sp("AC-08")}</div></aside>`;
 }
 function resultHTML(){
   const sumTxt=[S.scene,S.band?BANDS.find(x=>x[0]===S.band)[1]:null,...CATS.filter(c=>S.cats.includes(c))].filter(Boolean).join("・")||"条件を選ぶ";
-  let h=`<button type="button" class="foldbar" id="foldBtn" aria-expanded="${S.foldOpen}">${esc(sumTxt)} ${S.foldOpen?"▲":"▼"} 絞り込み${sp("SP-31")}</button><section class="filters ${S.foldOpen?"":"shut"}" aria-label="検索条件">
+  let h=`<button type="button" class="foldbar" data-i3="SP-31" id="foldBtn" aria-expanded="${S.foldOpen}">${esc(sumTxt)} ${S.foldOpen?"▲":"▼"} 絞り込み${sp("SP-31")}</button><section class="filters ${S.foldOpen?"":"shut"}" aria-label="検索条件">
    <div class="frow">
     <div class="fgrp fsm"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
     <div class="fgrp fsm"><b>価格（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
@@ -611,7 +618,7 @@ function resultHTML(){
   if(S.st==="empty"||(S.st==="results"&&!S.items.length)){
     const msg="この条件に合う商品がありません。"+(S.cats.length?"カテゴリー":S.band?"価格帯":"シーン")+"を変えてみてください";/* #56-4: カテゴリー→価格帯→シーンの順 */
     const hb=S.band?matchCount(S.scene,null,S.cats):0,hc=S.cats.length?matchCount(S.scene,S.band,[]):0;
-    const help=(hb>0||hc>0)?`<div class="help">${hb>0?`<button class="ghost" data-help="band">価格帯をはずすと ${hb} 件</button>`:""}${hc>0?`<button class="ghost" data-help="cat">カテゴリーをはずすと ${hc} 件</button>`:""}${sp("SP-24")}</div>`:"";
+    const help=(hb>0||hc>0)?`<div class="help" data-i3="SP-24">${hb>0?`<button class="ghost" data-help="band">価格帯をはずすと ${hb} 件</button>`:""}${hc>0?`<button class="ghost" data-help="cat">カテゴリーをはずすと ${hc} 件</button>`:""}${sp("SP-24")}</div>`:"";
     return h+`<div class="msgbox empty" role="status">${msg}${sp("SP-01 0件 #56-4")}${help}</div>`+recentHTML();
   }
   if(S.st!=="results"&&!loadingOld) return h+`<div class="msgbox init">トップでシーンを押すか、上の条件を選んでください。</div>`+"";
@@ -619,28 +626,28 @@ function resultHTML(){
   const total=S.items.length;
   if(S.page<1||S.page>Math.max(1,Math.ceil(total/PER))) S.page=1;
   const shown=r01?S.items:S.items.slice((S.page-1)*PER,S.page*PER);
-  if(loadingOld)h+=`<div class="loadhere msgbox empty" role="status">${spinnerHTML()}検索中…${sp("SP-33")}</div>`;
-  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?"":`<span class="sortbar"><label for="sortSel">並び</label><select id="sortSel">${SORTS.map(x=>`<option value="${x[0]}" ${S.sort===x[0]?"selected":""}>${x[1]}</option>`).join("")}</select>${sp("SP-21 D-43")}</span>`}${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cats.length?"・"+CATS.filter(c=>S.cats.includes(c)).map(esc).join("・")/* #59-1: タイルの並び順 */:""}</span>`:""}</div>
+  if(loadingOld)h+=`<div class="loadhere msgbox empty" data-i3="SP-33" role="status">${spinnerHTML()}検索中…${sp("SP-33")}</div>`;
+  h+=`<div style="margin-top:14px"><b style="font-size:16px">${r01?`候補（${total}件）${sp("SP-02 上位10件")}`:"絞り込み結果"}</b>${r01?"":`<span class="sortbar" data-i3="SP-21"><label for="sortSel">並び</label><select id="sortSel">${SORTS.map(x=>`<option value="${x[0]}" ${S.sort===x[0]?"selected":""}>${x[1]}</option>`).join("")}</select>${sp("SP-21 D-43")}</span>`}${r01?`<span style="font-size:12px;color:var(--sub);margin-left:8px">${S.scene?esc(S.scene):""}${S.band?"・"+BANDS.find(x=>x[0]===S.band)[1]+"（税込）":"・価格帯なし"}${S.cats.length?"・"+CATS.filter(c=>S.cats.includes(c)).map(esc).join("・")/* #59-1: タイルの並び順 */:""}</span>`:""}</div>
   <div class="layout ${loadingOld?"dimmed":""}"><div><div class="grid">${shown.map(p=>cardHTML(p)).join("")}</div>`;
   if(!r01){
     const pages=Math.max(1,Math.ceil(total/PER)),a=(S.page-1)*PER+1,b=Math.min(total,S.page*PER);
-    h+=`<nav class="pager" aria-label="ページ送り"><span>全 ${total} 件中 ${a} 〜 ${b} 件を表示${sp("#45-5 12件ずつ")}</span><span class="pg"><button data-pg="${S.page-1}" ${S.page<=1?"disabled":""} aria-label="前へ">‹</button>${pageList(S.page,pages).map(n=>n==="…"?`<span class="ell" aria-hidden="true">…</span>`:`<button data-pg="${n}" ${S.page===n?'aria-current="page"':""}>${n}</button>`).join("")}${sp("SP-32")}<button data-pg="${S.page+1}" ${S.page>=pages?"disabled":""} aria-label="次へ">›</button></span></nav>`;
+    h+=`<nav class="pager" aria-label="ページ送り"><span>全 ${total} 件中 ${a} 〜 ${b} 件を表示${sp("#45-5 12件ずつ")}</span><span class="pg" data-i3="SP-32"><button data-pg="${S.page-1}" ${S.page<=1?"disabled":""} aria-label="前へ">‹</button>${pageList(S.page,pages).map(n=>n==="…"?`<span class="ell" aria-hidden="true">…</span>`:`<button data-pg="${n}" ${S.page===n?'aria-current="page"':""}>${n}</button>`).join("")}${sp("SP-32")}<button data-pg="${S.page+1}" ${S.page>=pages?"disabled":""} aria-label="次へ">›</button></span></nav>`;
   }
   h+=recentHTML()+`</div>${sideHTML()}</div>`;
   return h;
 }
 function recentHTML(){
   const items=RECENT.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
-  if(S.recentBad)return `<section class="recent" aria-label="最近見た商品"><h3>最近見た商品</h3><div class="msgbox err" role="alert">最近見た商品を読み込めませんでした <button class="ghost" id="recentRetry">もう一度</button>${sp("SP-22 D-47")}</div></section>`;
+  if(S.recentBad)return `<section class="recent" data-i3="SP-22" aria-label="最近見た商品"><h3>最近見た商品</h3><div class="msgbox err" role="alert">最近見た商品を読み込めませんでした <button class="ghost" id="recentRetry">もう一度</button>${sp("SP-22 D-47")}</div></section>`;
   if(!items.length)return "";
-  return `<section class="recent" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini"><img src="${prodImg(p.cat)}" alt=""></span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="recent" data-i3="SP-22" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini"><img src="${prodImg(p.cat)}" alt=""></span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
 }
 function listHTML(){return chosenHTML()+sharebar()}
 function sideHTML(){
   const r01=S.mode==="r01",n=S.picked.size;
   let tabs="",body;
   if(r01){
-    tabs=`<div class="tabs" role="tablist" aria-label="右の列">
+    tabs=`<div class="tabs" data-i3="SP-29" role="tablist" aria-label="右の列">
       <button role="tab" id="tabDetail" data-tab="detail" aria-selected="${S.tab==="detail"}">詳細</button>
       <button role="tab" id="tabList" data-tab="list" aria-selected="${S.tab==="list"}">共有リスト（${n}件）</button></div>${sp("SP-29 D-46 PC: C")}`;
   }
@@ -682,14 +689,14 @@ function shareHTML(){
 }
 function likeHTML(pid){
   const r=store[S.shId]||{},cnt=(r.likes||{})[pid]||0,on=!!ls.get("giftia:likes:"+S.shId,{})[pid];
-  return `<button class="likebtn" data-like="${pid}" aria-pressed="${on}">${on?"♥ いいねした":"♡ いいね"} ${cnt}</button>${sp("SP-28 D-39 上限30")}`;
+  return `<button class="likebtn" data-i3="SP-28" data-like="${pid}" aria-pressed="${on}">${on?"♥ いいねした":"♡ いいね"} ${cnt}</button>${sp("SP-28 D-39 上限30")}`;
 }
 function renderDock(){
   const d=$("#dock");if(!d)return;
   const show=narrow()&&S.view==="result"&&!S.panel&&(S.st==="results"||S.st==="empty");
-  if(!show){d.className="";d.innerHTML="";$("#toast").classList.remove("up");return}
+  if(!show){d.className="";delete d.dataset.i3;d.innerHTML="";$("#toast").classList.remove("up");return}
   const r=$("#app").getBoundingClientRect();
-  d.className="on";d.style.left=r.left+"px";d.style.width=r.width+"px";
+  d.className="on";d.dataset.i3="SP-29";d.style.left=r.left+"px";d.style.width=r.width+"px";
   d.innerHTML=`${S.mode==="r01"&&S.picked.size>=1?`<button id="dockList">共有リスト ${S.picked.size}件</button>`:""}<button class="cartb" id="dockCart">カート（${nKinds()}点）</button>`;
   $("#toast").classList.add("up");
   const l=$("#dockList");if(l)l.onclick=()=>{S.panel="list";render()};
@@ -702,17 +709,17 @@ function renderOv(){
   ov.className="on"+(S.panel==="detail"||S.panel==="list"?" sheetmode":"");{const r=$("#app").getBoundingClientRect();ov.style.cssText=`left:${r.left}px;width:${r.width}px;top:${$("#bar").offsetHeight}px;bottom:0`}
   if(S.panel==="detail"){
     const p=PRODUCTS.find(x=>x.id===S.detailId)||S.items.find(x=>x.id===S.detailId);
-    ov.innerHTML=`<div class="dlg sheet"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${detailHTML(true)}${p?`<div class="sheetfoot"><span>${priceHTML(p.price)}</span><button class="primary" data-cart="${p.id}" ${noStock(p)?"disabled":""}>${noStock(p)?"在庫なし":"カートに入れる"}</button></div>`:""}${sp("SP-29 U-5・9")}</div>`;
+    ov.innerHTML=`<div class="dlg sheet" data-i3="SP-29"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${detailHTML(true)}${p?`<div class="sheetfoot"><span>${priceHTML(p.price)}</span><button class="primary" data-cart="${p.id}" ${noStock(p)?"disabled":""}>${noStock(p)?"在庫なし":"カートに入れる"}</button></div>`:""}${sp("SP-29 U-5・9")}</div>`;
     return;
   }
   if(S.panel==="list"){
-    ov.innerHTML=`<div class="dlg sheet"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${S.picked.size||S.creating||S.link?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます</div>`+sharebar()}</div>`;
+    ov.innerHTML=`<div class="dlg sheet" data-i3="SP-29"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${S.picked.size||S.creating||S.link?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます</div>`+sharebar()}</div>`;
     return;
   }
   if(S.panel==="fav"&&S.cmpOpen){
     const ps=[...S.cmp].map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean);
     const dash="—";
-    ov.innerHTML=`<div class="dlg"><button class="ghost" data-cmpback>← お気に入りにもどる</button>${sp("SP-23 D-47")}<h3 style="font-size:15px">比べる（${ps.length}件）</h3><div class="cmpwrap"><table class="cmp"><thead><tr><th scope="col"></th>${ps.map(p=>`<th scope="col">${miniImg(p)}<br><button class="name linkbtn" data-openprod="${p.id}">${esc(p.name)}</button>${noStock(p)?`<br><span class="note out">在庫なし</span>`:""}</th>`).join("")}</tr></thead><tbody>
+    ov.innerHTML=`<div class="dlg" data-i3="SP-23"><button class="ghost" data-cmpback>← お気に入りにもどる</button>${sp("SP-23 D-47")}<h3 style="font-size:15px">比べる（${ps.length}件）</h3><div class="cmpwrap"><table class="cmp"><thead><tr><th scope="col"></th>${ps.map(p=>`<th scope="col">${miniImg(p)}<br><button class="name linkbtn" data-openprod="${p.id}">${esc(p.name)}</button>${noStock(p)?`<br><span class="note out">在庫なし</span>`:""}</th>`).join("")}</tr></thead><tbody>
      <tr><th scope="row">価格（税込）</th>${ps.map(p=>`<td>${yen(p.price)}</td>`).join("")}</tr>
      <tr><th scope="row">届く日（目安）</th>${ps.map(p=>`<td>${p.d!=null?arrTxt(p).replace("までに届く（目安）",""):dash}</td>`).join("")}</tr>
      <tr><th scope="row">ラッピング</th>${ps.map(p=>`<td>${p.wrap?"あり":"なし"}</td>`).join("")}</tr>
@@ -722,18 +729,18 @@ function renderOv(){
   }
   if(S.panel==="fav"){
     const sel=S.cmp.size;
-    ov.innerHTML=`<div class="dlg"><b>お気に入り（${FAV.length}件）</b>${sp("FAV #46-6 D-29 開くたびに商品名・価格を取る")}<ul>${FAV.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return p?`<li><span class="nm"><button class="name linkbtn" data-openprod="${id}">${esc(p.name)}</button><br>${priceHTML(p.price)}</span><label class="cmppick"><input type="checkbox" data-cmp="${id}" ${S.cmp.has(id)?"checked":""} ${!S.cmp.has(id)&&S.cmp.size>=3?"disabled":""}>比べる</label><span class="rowbtns"><button class="primary" data-cart="${id}" ${noStock(p)?"disabled":""}>${noStock(p)?"在庫なし":"カートに入れる"}</button><button class="ghost" data-fav="${id}">外す</button></span></li>`:`<li><span class="nm">この商品は見つかりません${sp("D-30 #86 の7（404）")}</span><button class="ghost" data-fav="${id}">外す</button></li>`}).join("")||'<li style="color:var(--sub)">まだありません。</li>'}</ul>${sp("SP-18 SP-23")}<button class="primary full" data-cmpgo ${sel<2?"disabled":""}>${sel?`比べる（${sel}件選択中）`:"比べる"}</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
+    ov.innerHTML=`<div class="dlg"><b>お気に入り（${FAV.length}件）</b>${sp("FAV #46-6 D-29 開くたびに商品名・価格を取る")}<ul>${FAV.map(id=>{const p=PRODUCTS.find(x=>x.id===id);return p?`<li data-i3="SP-18"><span class="nm"><button class="name linkbtn" data-openprod="${id}">${esc(p.name)}</button><br>${priceHTML(p.price)}</span><label class="cmppick"><input type="checkbox" data-cmp="${id}" ${S.cmp.has(id)?"checked":""} ${!S.cmp.has(id)&&S.cmp.size>=3?"disabled":""}>比べる</label><span class="rowbtns"><button class="primary" data-cart="${id}" ${noStock(p)?"disabled":""}>${noStock(p)?"在庫なし":"カートに入れる"}</button><button class="ghost" data-fav="${id}">外す</button></span></li>`:`<li><span class="nm">この商品は見つかりません${sp("D-30 #86 の7（404）")}</span><button class="ghost" data-fav="${id}">外す</button></li>`}).join("")||'<li style="color:var(--sub)">まだありません。</li>'}</ul>${sp("SP-18 SP-23")}<button class="primary full" data-cmpgo ${sel<2?"disabled":""}>${sel?`比べる（${sel}件選択中）`:"比べる"}</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
   }else{
     const ids=Object.keys(CART).map(Number);let total=0,buyable=0;
     const rows=ids.map(id=>{const p=PRODUCTS.find(x=>x.id===id);
       if(!p)return `<li><span class="nm">（販売終了の商品）<br><span class="note end">販売終了</span>${sp("#46-6 合計に入れない")}</span><button class="ghost" data-qx="${id}">削除</button></li>`;
       const ns=noStock(p);
-      if(ns)return `<li>${miniImg(p)}<span class="nm"><button class="name linkbtn" data-openprod="${id}">${esc(p.name)}</button><br>${priceHTML(p.price)} <span class="note out">在庫なし</span>${sp("#50-2 合計に入れない")}</span><button class="ghost" data-qx="${id}">削除</button></li>`;
+      if(ns)return `<li data-i3="SP-18">${miniImg(p)}<span class="nm"><button class="name linkbtn" data-openprod="${id}">${esc(p.name)}</button><br>${priceHTML(p.price)} <span class="note out">在庫なし</span>${sp("#50-2 合計に入れない")}</span><button class="ghost" data-qx="${id}">削除</button></li>`;
       total+=p.price*CART[id];buyable++;
       return `<li>${miniImg(p)}<span class="nm"><button class="name linkbtn" data-openprod="${id}">${esc(p.name)}</button><br>${priceHTML(p.price)}${p.d!=null?`<br><span style="font-size:12px;color:var(--ink2)">${arrTxt(p)}</span>`:""}</span><span class="qty"><button data-qd="${id}" aria-label="減らす" ${CART[id]<=1?"disabled":""}>−</button><input class="qin" data-qin="${id}" type="text" inputmode="numeric" value="${CART[id]}" aria-label="数量（1〜99）"><button data-qu="${id}" aria-label="増やす" ${CART[id]>=99?"disabled":""}>＋</button></span><button class="ghost" data-qx="${id}">削除</button></li>`}).join("")||'<li style="color:var(--sub)">カートは空です。</li>';
     const dis=S.cartChecking||buyable===0;
     ov.innerHTML=`<div class="dlg"><b>カート</b>${sp("OPEN-05 #46-6")}<ul>${rows}</ul>
-     <div style="font-weight:700;margin:8px 0">合計 ${yen(total)}${TAX}</div>${!S.cartChecking&&buyable===0?`<div class="contmsg" role="status">買える商品がありません${sp("SP-18 U-15")}</div>`:""}<button class="primary full" data-order ${dis?"disabled":""}>注文へ進む</button><button class="ghost full" data-continue style="margin-top:8px">買い物を続ける</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
+     <div style="font-weight:700;margin:8px 0">合計 ${yen(total)}${TAX}</div>${!S.cartChecking&&buyable===0?`<div class="contmsg" data-i3="SP-18" role="status">買える商品がありません${sp("SP-18 U-15")}</div>`:""}<button class="primary full" data-order ${dis?"disabled":""}>注文へ進む</button><button class="ghost full" data-i3="SP-18" data-continue style="margin-top:8px">買い物を続ける</button><button class="ghost full" data-close style="margin-top:8px">閉じる</button></div>`;
   }
 }
 /* ---------- 操作 ---------- */
@@ -838,6 +845,7 @@ document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
   else render()});
 document.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{S.panel=null;document.querySelectorAll("[data-w]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#app").classList.toggle("w375",b.dataset.w==="375");S.catOpen=false;/* #62-2: 幅を変えたら閉じた状態から */render()});
 $("#tSp").onchange=e=>document.body.classList.toggle("show-sp",e.target.checked);
+$("#tI3").onchange=e=>document.body.classList.toggle("hl3",e.target.checked);
 $("#tNote").onchange=e=>document.body.classList.toggle("show-note",e.target.checked);
 document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{
   S.token++; const st=b.dataset.st; S.st=st; S.creating=false;
