@@ -11,6 +11,15 @@
  --sage:#e6ebdd;--sage-d:#5d7a4e;--green:#6f8a5a;--err:#b3261e;--errbg:#fdecea;--note:#fff3a8;
  --surf:#FFFFFF;--sel:#FBE6DC;--muted:#F7F3EF;--imgbg:#F2D6CB;--bd2:#6E655F;--btn-sel:#E2603F;--btn-sel-d:#9A3F27;--ink2:#6E655F;--badge-bg:#FBE6DC;--badge-ink:#9A3F27;
  --hero-bg:var(--peach);--hero-ink:var(--ink);--hero-sub:var(--sub);--rl:12px;--rm:8px;--shadow:0 1px 2px rgba(0,0,0,.04);--shadow-h:0 2px 6px rgba(0,0,0,.08);--gold:#c9a227}
+/* SP-20 T2: シーン・カテゴリーのタイルは枠線なしの白い面 / T3: オレンジは選択中・ロゴ・カートに入れる・共有リストを作るだけ / T5: 商品カードは色の面（絵は無し）に「イメージ」 */
+.tiles .tile,.cats .tile.cat{border:0}
+.cats .tile.cat{flex-direction:row;gap:10px;padding:12px;justify-content:flex-start;text-align:left;min-height:56px}
+.cats .tile.cat img{width:22px;height:22px}
+.primary#cp,.primary[data-order]{background:var(--ink)}
+.imgwrap.face{background:var(--fc);aspect-ratio:4/3}
+.imgwrap.face .imgtag{right:6px;bottom:6px}
+.detail .imgwrap.face{aspect-ratio:16/9}
+.mini.face{background:var(--fc)}
 /* 実装③を強調（レビュー用の表示だけ。outline と疑似要素で描くので押せる範囲・並びは変わらない） */
 body.hl3 [data-i3]{outline:3px solid #B388FF;outline-offset:2px;position:relative}
 body.hl3 #dock[data-i3]{position:fixed}
@@ -32,7 +41,7 @@ button:disabled{cursor:not-allowed;opacity:.45}
 #bar button[aria-pressed=true]{background:var(--coral);border-color:var(--coral)}
 #bar label{display:flex;gap:4px;align-items:center}
 #stage{padding:14px 8px 40px;display:flex;justify-content:center}
-#app{container-type:inline-size;width:100%;max-width:1280px;background:var(--paper);border:1px solid var(--line);border-radius:var(--rl);overflow:clip;position:relative;min-height:70vh}
+#app{container-type:inline-size;width:100%;max-width:1280px;background:var(--bg);border:1px solid var(--line);border-radius:var(--rl);overflow:clip;position:relative;min-height:70vh}
 #app.w375{max-width:375px}
 .sp{display:none;font:600 10px/1 monospace;background:#e3efff;color:#1a4fa0;border:1px solid #9bbcf0;border-radius:4px;padding:2px 4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
 body.show-sp .sp{display:inline-block}
@@ -51,9 +60,9 @@ header.top{position:sticky;top:var(--barh,0px);z-index:20;background:var(--paper
 .spacer{flex:1}
 .hbtn{position:relative;background:none;border:0;padding:6px 8px;border-radius:var(--rm);display:flex;gap:4px;align-items:center;font-size:13px;min-height:44px}
 .hbtn:hover{background:var(--peach)}
-.cnt{background:var(--coral);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px;text-align:center}
+.cnt{background:var(--ink);color:#fff;border-radius:9px;font-size:10px;padding:0 5px;min-width:16px;text-align:center}
 .tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px;background:#E3DBD3;color:#2B2522}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#3a3331;color:#fff;padding:9px 16px;border-radius:var(--rm);font-size:13px;z-index:40;display:none;max-width:90%}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:var(--rm);font-size:13px;z-index:40;display:none;max-width:90%}
 .toast.on{display:block}
 main{padding:20px}
 h1{font-size:20px;margin:0 0 4px}
@@ -79,7 +88,7 @@ label.lb{font-weight:700;font-size:13px;display:block;margin-bottom:6px}
 .msgbox.err{background:var(--errbg);color:var(--err)}
 .msgbox.empty{background:var(--muted);color:var(--sub)}
 .msgbox.init{background:var(--sage);color:var(--sage-d)}
-.spinner{width:28px;height:28px;border:4px solid var(--line);border-top-color:var(--coral);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 8px}
+.spinner{width:28px;height:28px;border:4px solid var(--line);border-top-color:var(--sub);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
 .filters{background:var(--peach);border-radius:var(--rl);padding:14px 18px;display:grid;gap:10px}
@@ -104,7 +113,7 @@ label.lb{font-weight:700;font-size:13px;display:block;margin-bottom:6px}
 .card.focus{border:2px solid var(--coral);padding:11px}
 .card.sel{background:var(--sel)}
 .topline{display:flex;gap:6px;align-items:center;min-height:24px;flex-wrap:wrap;padding-right:44px}
-.rank{background:#3a3331;color:#fff;font-size:11px;border-radius:var(--rm);padding:1px 8px}
+.rank{background:var(--ink);color:#fff;font-size:11px;border-radius:var(--rm);padding:1px 8px}
 .badge{background:var(--badge-bg);color:var(--badge-ink);font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
 .selbadge{background:var(--coral);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 8px}
 .heart{position:absolute;right:6px;top:4px;background:none;border:0;font-size:20px;min-width:44px;min-height:44px;color:var(--sub)}
@@ -129,7 +138,7 @@ button.name{background:none;border:0;padding:0;text-align:left;font-weight:700;m
 .pager .pg{display:flex;gap:6px;align-items:center}
 .pager button{min-width:44px;min-height:44px;border-radius:22px;border:0;background:none}
 .pager button[aria-current=page]{background:var(--green);color:#fff;font-weight:700}
-.chosen{margin-top:18px;border:2px solid var(--coral);border-radius:var(--rl);padding:12px;background:var(--sel)}
+.chosen{margin-top:18px;border:2px solid var(--peach2);border-radius:var(--rl);padding:12px;background:var(--sel)}
 .chosen ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
 .chosen li{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);border-radius:var(--rm);padding:6px 10px}
 .chosen li .nm{flex:1 1 160px}
@@ -258,7 +267,7 @@ h2.sec{margin:22px 0 10px}
 #dock{position:fixed;bottom:0;z-index:14;display:none;gap:10px;align-items:center;justify-content:space-between;background:var(--surf);border-top:1px solid var(--bd2);padding:8px 12px;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
 #dock.on{display:flex}
 #dock button{min-height:44px;border:1px solid var(--bd2);border-radius:var(--rm);background:var(--surf);padding:6px 14px;font-weight:700}
-#dock .cartb{background:var(--coral);color:#fff;border-color:var(--coral);margin-left:auto}
+#dock .cartb{background:var(--ink);color:#fff;border-color:var(--ink);margin-left:auto}
 .toast.up{bottom:72px}
 .dimmed{opacity:.45;pointer-events:none}
 .loadhere{display:flex;justify-content:center;margin:10px 0}
@@ -279,11 +288,11 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 .srlive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ヒーロー: design/hero.css（SP-20 T1）。背景と床の帯は CSS、絵は hero.svg（右下）。mock は幅を #app の幅で決めるので @container と cqw にしてある */
-.hero{--ah:288px;position:relative;height:340px;overflow:hidden;border-radius:var(--rm);background:linear-gradient(to top,#fbe3d9 calc(var(--ah)*.183),#e8dfd9 calc(var(--ah)*.183) calc(var(--ah)*.2),#fdeee6 calc(var(--ah)*.2));box-shadow:none}
+.hero{--ah:288px;position:relative;height:340px;overflow:hidden;border-radius:var(--rm);background:linear-gradient(to top,var(--peach2) calc(var(--ah)*.183),var(--line) calc(var(--ah)*.183) calc(var(--ah)*.2),var(--peach) calc(var(--ah)*.2));box-shadow:none}
 .hero img{position:absolute;right:max(24px,4cqw);bottom:0;height:var(--ah);width:auto}
 .hero .txt{position:absolute;left:48px;top:50%;transform:translateY(-50%);max-width:calc(100% - var(--ah)*1.445 - 48px - max(24px,4cqw) - 24px)}
-.hero h1{margin:0 0 8px;font-size:30px;line-height:1.3;color:#3a3331}
-.hero p{margin:0;color:#5c514d;font-size:14px}
+.hero h1{margin:0 0 8px;font-size:30px;line-height:1.3;color:var(--ink)}
+.hero p{margin:0;color:var(--sub);font-size:14px}
 .hero p span.l{display:block}
 @container (max-width:899px){.hero{--ah:clamp(108px,calc((100cqw - 380px)/1.444),220px);height:260px}.hero .txt{left:16px;top:16px;transform:none;max-width:calc(100% - 32px)}.hero img{right:16px}}
 @container (max-width:480px){.hero{--ah:96px;height:232px}.hero h1{font-size:24px}}
@@ -406,7 +415,9 @@ const priceHTML=n=>`<span class="price">${yen(n)}${TAX}</span>`;
 const spinnerHTML=()=>`<img class="spinner" src="akapu.png" alt="" width="96" height="96" style="display:block;border:0;border-radius:50%;width:96px;height:96px;object-fit:cover">`;
 
 /* イラスト風の仮画像（SVG）。「イメージ」と明記（OPEN-06） */
-function imgHTML(p){return `<span class="pic imgwrap"><img src="${prodImg(p.cat)}" alt="" width="400" height="400"><span class="imgtag">イメージ</span></span>`}
+const FACE={"生活雑貨":"#EADFD3","食品":"#F2D6CB","コスメ":"#EFDCD8","飲料":"#E0E2D3","家電":"#EADFD3","インテリア":"#E0E2D3","ビジネス小物":"#EADFD3","フラワー":"#EFDCD8","酒類":"#EFDCD8","カタログギフト":"#F2D6CB"};/* 商品の色の面（SP-20 T5）。カテゴリーとの対応は仕様に書かれていません（モックで仮に置く） */
+const faceC=c=>FACE[c]||"#EADFD3";
+function imgHTML(p){return `<span class="pic imgwrap face" style="--fc:${faceC(p.cat)}"><span class="imgtag">イメージ</span></span>`}
 const heroSVG=`<svg viewBox="0 0 150 120" aria-hidden="true"><rect x="30" y="50" width="90" height="60" rx="6" fill="#fff" stroke="#F3CDBC"/><rect x="24" y="38" width="102" height="18" rx="5" fill="#fff" stroke="#F3CDBC"/><rect class="rib" x="70" y="38" width="12" height="72"/><path class="ribs" d="M76 38c-22-26-40-8-24 0M76 38c22-26 40-8 24 0" fill="none" stroke-width="7" stroke-linecap="round"/><circle cx="20" cy="30" r="3" fill="#f4a58f"/><circle cx="132" cy="22" r="3" fill="#8a9a6e"/><circle cx="138" cy="70" r="3" fill="#c9a227"/></svg>`;
 
 /* ---------- ブラウザ内保存（お気に入り・カート。D-10） ---------- */
@@ -459,7 +470,7 @@ const VOICES={1:[[5,"毎日使っていて、肌ざわりが本当にやさし�
 const voicesOf=p=>{const seen=new Set();return (VOICES[p.id]||[]).filter(v=>v[0]!=null&&v[0]>=4&&v[1]&&v[1].trim()).sort((a,b)=>b[2].localeCompare(a[2])||a[1].localeCompare(b[1])).filter(v=>!seen.has(v[1])&&seen.add(v[1])).slice(0,2)};
 const arrDate=p=>{if(p.d==null)return null;const t=new Date();t.setDate(t.getDate()+p.d);return t};
 const arrTxt=p=>{const t=arrDate(p);return t?`${t.getMonth()+1}/${t.getDate()}までに届く（目安）`:""};
-const miniImg=p=>`<span class="mini" aria-hidden="true"><img src="${prodImg(p.cat)}" alt=""></span>`;
+const miniImg=p=>`<span class="mini face" style="--fc:${faceC(p.cat)}" aria-hidden="true"></span>`;
 const bandOf=price=>BANDS.find(b=>b[2](price))[0];
 const matchCount=(scene,band,cats)=>{const bd=BANDS.find(x=>x[0]===band);return PRODUCTS.filter(p=>p.stock>=1&&(!scene||p.scenes.includes(scene))&&(!bd||bd[2](p.price))&&catOk(cats,p)).length};
 const SORTS=[["recommend","おすすめ"],["price_asc","安い順"],["rating_desc","評価順"],["delivery_asc","早く届く順"]];
@@ -642,7 +653,7 @@ function recentHTML(){
   const items=RECENT.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
   if(S.recentBad)return `<section class="recent" data-i3="SP-22" aria-label="最近見た商品"><h3>最近見た商品</h3><div class="msgbox err" role="alert">最近見た商品を読み込めませんでした <button class="ghost" id="recentRetry">もう一度</button>${sp("SP-22 D-47")}</div></section>`;
   if(!items.length)return "";
-  return `<section class="recent" data-i3="SP-22" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini"><img src="${prodImg(p.cat)}" alt=""></span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="recent" data-i3="SP-22" aria-label="最近見た商品"><h3>最近見た商品${sp("SP-22 D-47")}</h3><div class="strip">${items.map(p=>`<button class="rcard" data-recent="${p.id}" aria-label="${esc(p.name)}の詳細を開く"><span class="mini face" style="--fc:${faceC(p.cat)}"></span><span class="nm">${esc(p.name)}</span><span>${noStock(p)?"在庫なし":yen(p.price)+TAX}</span>${p.d!=null?`<span>${arrTxt(p)}</span>`:""}</button>`).join("")}</div></section>`;
 }
 function listHTML(){return chosenHTML()+sharebar()}
 function sideHTML(){
