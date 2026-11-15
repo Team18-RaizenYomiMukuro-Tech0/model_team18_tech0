@@ -209,7 +209,7 @@ function render2(st){
   var li=el('li','lb'+(now?' now':'')+(lit?'':' dim'));li.dataset.n=g.n;
   li.appendChild(el('span','no','STAGE '+g.n));
   li.appendChild(el('h3','nm',g.name));li.lastChild.style.margin='0';
-  li.appendChild(el('p','st',lit?'点灯 ✓':(now?'いまここ':'これから')));
+  if(lit||!now)li.appendChild(el('p','st',lit?'点灯 ✓':'これから'));
   li.appendChild(el('p','sub',g.orig+'（'+g.w+' '+g.range+'）'));
   labels.appendChild(li);
  });

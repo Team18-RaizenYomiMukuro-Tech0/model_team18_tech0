@@ -40,7 +40,6 @@
 .gl li{position:relative;--c:var(--m1);text-align:center;padding:4px 2px;border-radius:10px;border:2px solid transparent;line-height:1.35}
 .gl li[data-n="2"]{--c:var(--m2)}.gl li[data-n="3"]{--c:var(--m3)}.gl li[data-n="3.5"]{--c:#B388FF}.gl li[data-n="4"]{--c:#fff}
 .gl li.now{border-color:#fff}
-.gl .hr{display:inline-block;margin-top:2px;padding:0 8px;border-radius:999px;background:#fff;color:#2A1B3D;font-size:.7rem;font-weight:800;line-height:1.6}
 .gl li.done .no::after{content:" ✓"}
 .gl .no{display:block;font-size:.75rem;font-weight:800;letter-spacing:.08em;color:var(--c)}
 .gl .nm{display:block;font-size:.95rem;font-weight:800;word-break:keep-all}

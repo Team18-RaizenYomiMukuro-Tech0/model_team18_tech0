@@ -136,7 +136,8 @@ def test_product_status(fake: Backend) -> None:
     got = {i["product_id"]: i for i in r.json()["items"]}
     assert {k: v["status"] for k, v in got.items()} == {"P01": "available", "P02": "discontinued", "P09": "out_of_stock"}
     for pid, item in got.items():  # どの状態でも、作成時点の名前・価格・理由が返る
-        assert set(item) == {"product_id", "status", "name", "price", "reason"}
+        base = {"product_id", "status", "name", "price", "reason", "like_count"}  # 第2弾: like_count が加わる（D-39。I-55）
+        assert set(item) == (base if item["status"] == "discontinued" else base | {"category"})  # category は商品があるときだけ（#295）
         assert (item["name"], item["price"], item["reason"]) == (saved[pid]["name"], saved[pid]["price"], saved[pid]["reason"])
     assert got["P01"]["name"] != "改名" and got["P01"]["price"] != 1  # 現在の DB の値ではない
     row = db.raw.execute("SELECT product_name, price FROM products WHERE product_id = 'P01'").fetchone()
