@@ -25,15 +25,17 @@ p.lead{margin:6px 0 8px;color:var(--sub);font-size:13px}
 .sw.gp{border:2px dashed var(--gap);background:var(--gapbg)}
 .sw.w2{border:0;border-left:6px solid var(--w2);background:var(--w2bg);width:22px}
 input.tab,input.t{position:absolute;opacity:0;pointer-events:none}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:12px 0 14px;padding:0 4px;border-bottom:3px solid var(--ink)}
 .pill{display:inline-block;padding:3px 16px;border:2px solid var(--ink);border-radius:999px;background:#fff;font:800 14px/1.6 var(--body);cursor:pointer;color:var(--ink)}
-.tabs .pill{padding:5px 18px;font-size:15px}
-input:focus-visible+*,input.tab:focus-visible~.tabs label{outline:3px solid var(--ink);outline-offset:2px}
+.tabs .pill{padding:6px 20px 5px;font-size:15px;border:3px solid var(--ink);border-bottom:3px solid var(--ink);border-radius:14px 14px 0 0;margin-bottom:-3px;background:#fff}
+.sub .pill{border:0;border-bottom:4px solid transparent;border-radius:0;background:transparent;padding:2px 10px 3px;font-size:13px;color:var(--sub)}
+.sub{gap:4px 14px}
+
 .panel{display:none}
 .sub{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 12px}
 .pn{display:none}
 .sumline{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:10px 0 2px;font-weight:800}
-.lane{display:inline-block;padding:2px 14px;border:2px solid var(--ink);border-radius:999px;font-weight:800;font-size:14px}
+.lane{display:inline-block;padding:2px 14px;border:0;border-radius:5px;font-weight:800;font-size:14px}
 .lane.ui{background:var(--m1)}.lane.api{background:var(--m2)}.lane.db{background:var(--m3)}.lane.plain{background:#fff}
 .ar{font-weight:800;font-size:18px}
 .sumnote{font-size:13px;font-weight:500;margin:0 0 0 8px}
@@ -47,8 +49,8 @@ input:focus-visible+*,input.tab:focus-visible~.tabs label{outline:3px solid var(
 .ephead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 8px}
 .ephead b{font-size:17px}
 .flow{display:grid;grid-template-columns:1fr 36px 1fr 36px 1fr;align-items:stretch}
-.flowcard{background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;min-width:0}
-.flowcard h4{margin:0;padding:5px 12px;font-size:13px;border-bottom:2px solid var(--ink)}
+.flowcard{background:#fff;border:0;border-radius:6px;box-shadow:none;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.flowcard h4{margin:0;padding:5px 12px;font-size:13px;border-bottom:0}
 .flowcard.ui h4,.flowcard.c1 h4{background:var(--m1)}.flowcard.api h4,.flowcard.c2 h4{background:var(--m2)}.flowcard.db h4{background:var(--m3)}.flowcard.c3 h4{background:var(--ink);color:#fff}
 .flowcard .bd{padding:10px 12px}
 .t1{font-weight:800;font-size:16px;line-height:1.45;margin:0}
@@ -61,10 +63,10 @@ details>summary{cursor:pointer;font-weight:800;font-size:13px}
 .fails{margin-top:10px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:6px 12px;font-size:13px}
 .fails .fl>div{margin:6px 0}
 .fchip{display:inline-block;font:800 11.5px var(--body);border:2px solid var(--ink);border-radius:999px;padding:0 9px;background:#fff;margin-right:6px}
-.w2m .flowcard{background:var(--w2bg);border:3px solid var(--w2);box-shadow:5px 5px 0 var(--w2)}
-.w2m .flowcard h4{border-bottom:2px solid var(--ink)}
+.w2m .flowcard{background:var(--w2bg);border:3px solid var(--w2);box-shadow:none}
+.w2m .flowcard h4{border-bottom:0}
 .infocard,.gapcard,.infobox{display:flex;flex-direction:column;gap:3px;background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:10px 14px;margin:0 0 14px;font-size:13.5px}
-.infocard.w2m,.infobox.w2m{background:var(--w2bg);border:3px solid var(--w2);box-shadow:5px 5px 0 var(--w2)}
+.infocard.w2m,.infobox.w2m{background:var(--w2bg);border:3px solid var(--w2);box-shadow:none}
 .infocard b,.infobox>b{font-size:15px}
 .infocard .stick,.infobox>.stick{align-self:flex-start;margin:0 0 4px}
 .gapcard{background:var(--gapbg);border:2px dashed var(--gap);box-shadow:none}
@@ -141,7 +143,15 @@ table.dt th{background:var(--m1)}
 }
 
 .arch{display:grid;grid-template-columns:minmax(0,.8fr) 58px minmax(0,1.15fr) 58px minmax(0,1.3fr) 58px minmax(0,1.05fr);align-items:stretch;margin:10px 0 0}
-.arch.bt{grid-template-columns:minmax(0,1.9fr) minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-top:6px}
+.arch.bt{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px;align-items:start}
+.ac.band{margin-top:12px}
+.arch>.ac,.arch>.stack{align-self:start}
+.arch>.al{align-self:stretch}
+.why3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 18px;font-size:12.5px;margin-top:6px}
+.why3 b{display:block}
+.why3 code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:700}
+.arch2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;align-items:start}
+.arch2 .impact,.arch2 .gapcard{margin:0}
 .ac{background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);overflow:hidden;min-width:0;display:flex;flex-direction:column}
 .ac h4{margin:0;padding:7px 10px;font-size:14px;border-bottom:2px solid var(--ink);background:#fff}
 .ac.ui h4{background:var(--m1)}.ac.api h4{background:var(--m2)}.ac.db h4{background:var(--m3)}.ac.warn h4{background:var(--ink);color:#fff}
@@ -159,7 +169,9 @@ table.dt th{background:var(--m1)}
 .arch .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
 .archnote{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:12px;color:var(--sub);margin:12px 2px 0}
 .counts{display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 6px;font-size:13px;font-weight:800}
-.counts span{border:2px solid var(--ink);border-radius:999px;padding:1px 12px;background:#fff}
+.counts span{border:0;border-radius:6px;padding:2px 12px;background:#fff;font-size:13px}
+.grp{margin:10px 0 0;font-size:13px;font-weight:800;border-bottom:3px solid var(--ink);display:inline-block;padding-bottom:1px}
+.grp+.kv{margin-top:4px}
 .arrowline{text-align:center;color:var(--sub);font-size:13px;font-weight:800;margin:8px 0}
 .ac .infocard{box-shadow:none}
 #t5:checked~.p5{width:min(1240px,calc(100vw - 32px));position:relative;left:50%;transform:translateX(-50%)}
@@ -179,16 +191,16 @@ table.dt th{background:var(--m1)}
 .impact b{display:block;font-size:12.5px}
 .ac .big{line-height:1.4}
 .kv details{grid-column:1/-1;font-size:12px;color:var(--sub);border-top:0;padding:0}
-@media (max-width:1000px){.points ul{grid-template-columns:1fr}}
+@media (max-width:1000px){.points ul,.why3,.arch2{grid-template-columns:1fr}}
 @media (max-width:1000px){.arch,.arch.bt{grid-template-columns:1fr}.al{flex-direction:row;gap:8px;padding:4px 0}.al i{transform:rotate(90deg)}}
-#t1:checked~.p1{display:block}#t1:checked~.tabs label[for=t1]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t2:checked~.p2{display:block}#t2:checked~.tabs label[for=t2]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t3:checked~.p3{display:block}#t3:checked~.tabs label[for=t3]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t4:checked~.p4{display:block}#t4:checked~.tabs label[for=t4]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t5:checked~.p5{display:block}#t5:checked~.tabs label[for=t5]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t10:checked~.t1p0{display:block}#t10:checked~.sub label[for=t10]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t11:checked~.t1p1{display:block}#t11:checked~.sub label[for=t11]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t12:checked~.t1p2{display:block}#t12:checked~.sub label[for=t12]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t13:checked~.t1p3{display:block}#t13:checked~.sub label[for=t13]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t14:checked~.t1p4{display:block}#t14:checked~.sub label[for=t14]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t15:checked~.t1p5{display:block}#t15:checked~.sub label[for=t15]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t20:checked~.t2p0{display:block}#t20:checked~.sub label[for=t20]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t21:checked~.t2p1{display:block}#t21:checked~.sub label[for=t21]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t22:checked~.t2p2{display:block}#t22:checked~.sub label[for=t22]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t23:checked~.t2p3{display:block}#t23:checked~.sub label[for=t23]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t24:checked~.t2p4{display:block}#t24:checked~.sub label[for=t24]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t25:checked~.t2p5{display:block}#t25:checked~.sub label[for=t25]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t26:checked~.t2p6{display:block}#t26:checked~.sub label[for=t26]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
-#t30:checked~.t3p0{display:block}#t30:checked~.sub label[for=t30]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t31:checked~.t3p1{display:block}#t31:checked~.sub label[for=t31]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t32:checked~.t3p2{display:block}#t32:checked~.sub label[for=t32]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}#t33:checked~.t3p3{display:block}#t33:checked~.sub label[for=t33]{background:var(--m1);box-shadow:3px 3px 0 var(--ink)}
+#t1:checked~.p1{display:block}#t1:checked~.tabs label[for=t1]{background:var(--m1);border-bottom-color:var(--m1)}#t1:focus-visible~.tabs label[for=t1]{outline:3px solid var(--ink);outline-offset:-5px}
+#t2:checked~.p2{display:block}#t2:checked~.tabs label[for=t2]{background:var(--m1);border-bottom-color:var(--m1)}#t2:focus-visible~.tabs label[for=t2]{outline:3px solid var(--ink);outline-offset:-5px}
+#t3:checked~.p3{display:block}#t3:checked~.tabs label[for=t3]{background:var(--m1);border-bottom-color:var(--m1)}#t3:focus-visible~.tabs label[for=t3]{outline:3px solid var(--ink);outline-offset:-5px}
+#t4:checked~.p4{display:block}#t4:checked~.tabs label[for=t4]{background:var(--m1);border-bottom-color:var(--m1)}#t4:focus-visible~.tabs label[for=t4]{outline:3px solid var(--ink);outline-offset:-5px}
+#t5:checked~.p5{display:block}#t5:checked~.tabs label[for=t5]{background:var(--m1);border-bottom-color:var(--m1)}#t5:focus-visible~.tabs label[for=t5]{outline:3px solid var(--ink);outline-offset:-5px}
+#t10:checked~.t1p0{display:block}#t10:checked~.sub label[for=t10]{border-bottom-color:var(--ink);color:var(--ink)}#t10:focus-visible~.sub label[for=t10]{outline:3px solid var(--ink);outline-offset:2px}#t11:checked~.t1p1{display:block}#t11:checked~.sub label[for=t11]{border-bottom-color:var(--ink);color:var(--ink)}#t11:focus-visible~.sub label[for=t11]{outline:3px solid var(--ink);outline-offset:2px}#t12:checked~.t1p2{display:block}#t12:checked~.sub label[for=t12]{border-bottom-color:var(--ink);color:var(--ink)}#t12:focus-visible~.sub label[for=t12]{outline:3px solid var(--ink);outline-offset:2px}#t13:checked~.t1p3{display:block}#t13:checked~.sub label[for=t13]{border-bottom-color:var(--ink);color:var(--ink)}#t13:focus-visible~.sub label[for=t13]{outline:3px solid var(--ink);outline-offset:2px}#t14:checked~.t1p4{display:block}#t14:checked~.sub label[for=t14]{border-bottom-color:var(--ink);color:var(--ink)}#t14:focus-visible~.sub label[for=t14]{outline:3px solid var(--ink);outline-offset:2px}#t15:checked~.t1p5{display:block}#t15:checked~.sub label[for=t15]{border-bottom-color:var(--ink);color:var(--ink)}#t15:focus-visible~.sub label[for=t15]{outline:3px solid var(--ink);outline-offset:2px}
+#t20:checked~.t2p0{display:block}#t20:checked~.sub label[for=t20]{border-bottom-color:var(--ink);color:var(--ink)}#t20:focus-visible~.sub label[for=t20]{outline:3px solid var(--ink);outline-offset:2px}#t21:checked~.t2p1{display:block}#t21:checked~.sub label[for=t21]{border-bottom-color:var(--ink);color:var(--ink)}#t21:focus-visible~.sub label[for=t21]{outline:3px solid var(--ink);outline-offset:2px}#t22:checked~.t2p2{display:block}#t22:checked~.sub label[for=t22]{border-bottom-color:var(--ink);color:var(--ink)}#t22:focus-visible~.sub label[for=t22]{outline:3px solid var(--ink);outline-offset:2px}#t23:checked~.t2p3{display:block}#t23:checked~.sub label[for=t23]{border-bottom-color:var(--ink);color:var(--ink)}#t23:focus-visible~.sub label[for=t23]{outline:3px solid var(--ink);outline-offset:2px}#t24:checked~.t2p4{display:block}#t24:checked~.sub label[for=t24]{border-bottom-color:var(--ink);color:var(--ink)}#t24:focus-visible~.sub label[for=t24]{outline:3px solid var(--ink);outline-offset:2px}#t25:checked~.t2p5{display:block}#t25:checked~.sub label[for=t25]{border-bottom-color:var(--ink);color:var(--ink)}#t25:focus-visible~.sub label[for=t25]{outline:3px solid var(--ink);outline-offset:2px}#t26:checked~.t2p6{display:block}#t26:checked~.sub label[for=t26]{border-bottom-color:var(--ink);color:var(--ink)}#t26:focus-visible~.sub label[for=t26]{outline:3px solid var(--ink);outline-offset:2px}
+#t30:checked~.t3p0{display:block}#t30:checked~.sub label[for=t30]{border-bottom-color:var(--ink);color:var(--ink)}#t30:focus-visible~.sub label[for=t30]{outline:3px solid var(--ink);outline-offset:2px}#t31:checked~.t3p1{display:block}#t31:checked~.sub label[for=t31]{border-bottom-color:var(--ink);color:var(--ink)}#t31:focus-visible~.sub label[for=t31]{outline:3px solid var(--ink);outline-offset:2px}#t32:checked~.t3p2{display:block}#t32:checked~.sub label[for=t32]{border-bottom-color:var(--ink);color:var(--ink)}#t32:focus-visible~.sub label[for=t32]{outline:3px solid var(--ink);outline-offset:2px}#t33:checked~.t3p3{display:block}#t33:checked~.sub label[for=t33]{border-bottom-color:var(--ink);color:var(--ink)}#t33:focus-visible~.sub label[for=t33]{outline:3px solid var(--ink);outline-offset:2px}
 .ptitle{font-size:17px;margin:14px 0 4px}
 .erwrap{margin-top:12px}
 .erwrap .stick{margin:0}.tb .band .stick{margin:0}
@@ -235,9 +247,9 @@ table.dt th{background:var(--m1)}
 <div class="flowline"><span class="lk">いいね</span> 押す → <code>POST …/likes</code> → <code>share_likes</code> に +1 → <code>GET /api/share-links/{id}</code> が <code>like_count</code> を返す → 共有ページに数が出る <span class="ids">D-38, D-39</span></div>
 <div class="flowline"><span class="lk ev">計測</span> 画面が送る → <code>POST /api/events</code> → <code>usage_events</code> に 1 行 → 通過率の SELECT（読むだけ） <span class="ids">D-40, D-41</span></div>
 </div>
-  <div class="counts" aria-label="数">    <span>画面 3 ページ</span><span>API 9 本（実装③で 4 本）</span><span>表 10（実装③で 2）</span><span>デプロイ 2 本＋ハブ（Pages）</span>  </div>  <div class="arch">    <div class="stack">      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>      <div class="ac"><h4>② データ</h4><div class="bd"><p class="big">架空データだけ</p>班の DB（<code>giftia_t501</code>）に配られた分。実データは使わない。<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></div></div>    </div>    <div class="al"><span>操作</span><i>→</i></div>    <div class="ac ui"><h4>③ 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">      <p class="big">3 ページ</p>      <div class="kv">        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>      </div>      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>    </div></div>    <div class="al"><span>呼出</span><i>→</i></div>    <div class="ac api"><h4>④ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">      <p class="big">9 本</p>      <div class="kv">        <code>GET /api/candidates</code><span><b>レビューが少ない商品だけが上に来ないよう点数を補正して上位 10 件。</b>理由は毎回同じ型の文で、出し方がぶれない（AI なしのテンプレート）。<span class="ids">D-01, D-03</span></span>        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="stick">実装③</span> 並び替え・0件の助け舟</span>        <code>GET /api/products/{id}</code><span>詳細。<span class="stick">実装③</span> 届く日・回数</span>        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="stick">実装③</span> <span class="lk">いいね</span> <code>share_likes</code> を読んで <code>like_count</code> を返す（共有ページに数が出る）。<span class="ids">D-06, D-39</span></span>        <code>GET …/{id}/voices</code><span><span class="stick">実装③</span> 贈った人の声（最大2件）</span>        <code>GET …/{id}/similar</code><span><span class="stick">実装③</span> 似た商品（最大3件）</span>        <code>POST …/{share_id}/likes</code><span>
+  <div class="counts" aria-label="数">    <span>ページ 3 つ（第2弾では増やさず、中の部品を足した）</span><span>API 9 本（第1弾 5・第2弾 4）</span><span>テーブル 10 個（第2弾で 2）</span><span>自動で公開する仕組み 3 つ（画面・API・開発ハブ）</span>  </div>  <div class="arch">    <div class="stack">      <div class="ac"><h4>① 利用者</h4><div class="bd"><p class="big">仲間・Aさん</p>ブラウザから使う。スマホ幅（375px）と PC（1280px）。ログインなし。<span class="ids">要求.md ／ SP-06 ／ ADR-005</span></div></div>          </div>    <div class="al"><span>操作</span><i>→</i></div>    <div class="ac ui"><h4>② 画面　Next.js（Azure App Service・Node 24）</h4><div class="bd">      <p class="big">ページ 3 つ</p><p class="mini">第2弾では増やさず、中の部品を足した</p>      <div class="kv">        <code>/</code><span>トップ（シーン・価格帯・カテゴリー・おすすめ）</span>        <code>/search</code><span>検索結果・詳細の欄・R-01 の共有リスト・カート／お気に入りのパネル</span>        <code>/s/[share_id]</code><span>共有ページ（ログインなし）</span>      </div>      <div class="sub"><b>ブラウザの中に保存するもの（サーバーには送らない）</b>お気に入り・カート（<code>giftia:favorites</code>・<code>giftia:cart</code>）<span class="ids">D-10, D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>第2弾の保存</b>最近見た商品（最大6件）・いいねの押した印・匿名の訪問者 ID と訪問<span class="ids">SP-22, SP-28, SP-34 ／ D-47</span></div>      <div class="sub w2"><b><span class="stick">実装③</span>画面の部品</b>決め手・カードの共通部品・詳細のシート・固定帯・スマホの条件の欄・ページ番号<span class="ids">D-34, D-46</span></div>    </div></div>    <div class="al"><span>呼出</span><i>→</i></div>    <div class="ac api"><h4>③ API　FastAPI（Azure Functions・Flex 従量課金・Python 3.14）</h4><div class="bd">      <p class="big">API 9 本（第1弾 5・第2弾 4）</p>      <h5 class="grp">第1弾の 5 本</h5><div class="kv">        <code>GET /api/candidates</code><span><b>レビューが少ない商品だけが上に来ないよう点数を補正して上位 10 件。</b>理由は毎回同じ型の文で、出し方がぶれない（AI なしのテンプレート）。<span class="ids">D-01, D-03</span></span>        <code>GET /api/products</code><span>R-02 の一覧12件ずつ。<span class="stick">実装③</span> 並び替え・0件の助け舟</span>        <code>GET /api/products/{id}</code><span>詳細。<span class="stick">実装③</span> 届く日・回数</span>        <code>POST /api/share-links</code><span>共有リンクを作る（22文字の識別子）</span>        <code>GET /api/share-links/{id}</code><span>リンクを開く（720時間）。<span class="stick">実装③</span> <span class="lk">いいね</span> <code>share_likes</code> を読んで <code>like_count</code> を返す（共有ページに数が出る）。<span class="ids">D-06, D-39</span></span>        </div><h5 class="grp">第2弾の 4 本</h5><div class="kv"><code>GET …/{id}/voices</code><span><span class="stick">実装③</span> 贈った人の声（最大2件）</span>        <code>GET …/{id}/similar</code><span><span class="stick">実装③</span> 似た商品（最大3件）</span>        <code>POST …/{share_id}/likes</code><span>
 <span class="stick">実装③</span> <span class="lk">いいね</span> <code>share_likes</code> に書く（数を +1）。<span class="ids">D-39</span></span>        <code>POST /api/events</code><span>
-<span class="stick">実装③</span> <span class="lk ev">計測</span> インパクト評価の計測（訪問→詳細→カート→注文）。応答は 204。<span class="ids">D-40</span></span>      </div>      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>    </div></div>    <div class="al"><span>読み<br>書き</span><i>→</i></div>    <div class="ac db"><h4>⑤ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">      <p class="big">表 10</p>      <div class="kv one">        <b>既存 7</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>        <b>share_links</b><span>INSERT</span>        <b>
+<span class="stick">実装③</span> <span class="lk ev">計測</span> インパクト評価の計測（訪問→詳細→カート→注文）。応答は 204。<span class="ids">D-40</span></span>      </div>      <div class="sub"><b>全 API に共通</b>入力の検証・10秒で打ち切り・全応答に <code>X-Robots-Tag: noindex</code>・CORS は画面のドメインだけ<span class="ids">D-12, D-16 ／ N-07</span></div>    </div></div>    <div class="al"><span>読み<br>書き</span><i>→</i></div>    <div class="ac db"><h4>④ DB　MySQL 8.4.9（班の DB）</h4><div class="bd">      <p class="big">テーブル 10 個（配られた 7・第1弾 1・第2弾 2）</p><p class="mini"><b>架空データだけ</b>（班の DB <code>giftia_t501</code> に配られた分。実データは使わない）<span class="ids">CLAUDE.md ／ D-33 ／ N-13</span></p>      <div class="kv one">        <b>配られた 7 個（読むだけ）</b><span>products・product_scenes・product_facts・orders・order_items・reviews・users。<b>SELECT だけ</b>（users は読まない）</span>        <b>share_links <span class="lk ev">第1弾</span></b><span>INSERT</span>        <b>
 <span class="stick">実装③</span> share_likes <span class="lk">いいね</span></b>
 <span>1 行＝共有リンク 1 本×商品 1 つ。<code>like_count</code> で数だけ持つ。押した人は残さない。<details><summary>くわしく</summary>1 候補の上限は 30。0 を下回らない。書き方は INSERT … ON DUPLICATE KEY UPDATE・UPDATE。<span class="ids">D-38, D-39, ADR-009</span></details></span>        <b>
 <span class="stick">実装③</span> usage_events <span class="lk ev">計測</span></b>
@@ -267,17 +279,23 @@ table.dt th{background:var(--m1)}
       <details><summary>くわしく</summary>手書きページ（<code>docs/</code>）・5 文書（ビルド時に HTML 化）・進捗ページ（Issue から自動）。main へのマージと毎朝 6:00（日本時間）に更新。秘匿値は使わない（<code>pages.yml</code>）。</details>
     </div>
 </div>
-    <div class="ac warn">
+  </div>
+    <div class="ac warn band">
 <h4>外部公開・実データ利用前</h4>
 <div class="bd">
       <p class="big">公開しても安全と言える理由</p>
-      <ul class="why">
-        <li><b>見せるもの</b>架空データだけ・ログインなし（ADR-005）・noindex（<code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta。N-07）・共有リンクは 720 時間で期限切れ（N-02）。公開は 11/12〜12/12（ADR-004）。</li>
-        <li><b>DB に触る範囲</b>班の DB は、既存 7 表を読むだけ。書くのは share_links・share_likes・usage_events の 3 表だけ。表の作成・削除は PM が手で（D-45 ／ DB管理手順.md）。</li>
-        <li><b>ブラウザの中だけ</b>お気に入り・カート・最近見た商品・いいねの印・匿名の訪問者 ID は、サーバーに送らない（D-10, D-47 ／ N-13）。</li>
-      </ul>
+      <div class="why3">
+        <div><b>見せるもの</b>架空データだけ・ログインなし（ADR-005）・noindex（<code>robots.txt</code> 全拒否・全応答のヘッダー・共有ページの meta。N-07）・共有リンクは 720 時間で期限切れ（N-02）。公開は 11/12〜12/12（ADR-004）。</div>
+        <div><b>DB に触る範囲</b>班の DB は、既存 7 表を読むだけ。書くのは share_links・share_likes・usage_events の 3 表だけ。表の作成・削除は PM が手で（D-45 ／ DB管理手順.md）。</div>
+        <div><b>ブラウザの中だけ</b>お気に入り・カート・最近見た商品・いいねの印・匿名の訪問者 ID は、サーバーに送らない（D-10, D-47 ／ N-13）。</div>
+      </div>
+    </div>
+</div>
+    <div class="arch2">
       <div class="impact"><b>インパクト評価で数えるもの</b>通過率は <code>usage_events</code>（訪問は 30 分で区切る）。購入件数は既存の <code>orders</code>。名前・メール・IP は残さない。<span class="ids">ADR-011 ／ N-13, N-16</span></div>
-      <div class="gapcard"><b>仕様に書かれていません｜実データを使うときの認証・認可</b><span>文書にありません（発展は運営の承認後）。</span></div>    </div></div>  </div>  </section>
+      <div class="gapcard"><b>仕様に書かれていません｜実データを使うときの認証・認可</b><span>文書にありません（発展は運営の承認後）。</span></div>
+    </div>
+  </section>
 </main>
 <p class="foot">作成: Takahiro（設計）／ Mi-rin（見た目）／ 根拠: 要求.md・仕様.md・設計.md・inputs/キックオフ記録.md（#22〜#32）／ 外部読み込みは開発ハブと同じ Google Fonts のみ・単体の HTML。</p>
 </div>
