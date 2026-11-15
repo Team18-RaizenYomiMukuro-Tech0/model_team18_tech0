@@ -238,13 +238,14 @@ table.sys .rt .code{overflow-wrap:anywhere;word-break:normal;font-size:12px}
 .points li details{margin-top:2px;font-size:12.5px;color:var(--sub)}
 .points li details summary{font-weight:800;font-size:12px}
 .p5leg{margin:2px 0 6px}
+.ovlink{margin:8px 0 4px;font-size:13px;font-weight:800}.ovlink a{color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="wrap">
 <a class="hubback" href="../../../hub.html">← 開発ハブに戻る</a><br>
 <h1><span class="mk"><i></i><i></i><i></i></span>Giftia 主要フロー図（R-01 共同購入者）</h1>
-<div class="sum3" aria-label="この図の3行まとめ"><div><b>誰が</b>贈りものを仲間と決めたい人（R-01 共同購入者。例: 同僚3人で送別品を選ぶ A さん）と、リンクを受け取る仲間。</div><div><b>何をする</b>予算とシーンで候補を出し、選んで共有リンクを作り、仲間に送って決める。</div><div><b>どこに残る</b>共有リンクは班の DB の share_links（720時間）。お気に入り・カートはブラウザの中だけ。使い方の記録は匿名で DB の usage_events。</div></div>
+<p class="ovlink">何を作るか・誰のためかは <a href="../../../overview.html">開発の全体像</a>。</p>
 <details class="howto"><summary>この図の見方（正本・凡例・対象版）</summary><p class="lead" style="margin-top:0">チームレビュー用。正本は 要求.md・仕様.md・設計.md・キックオフ記録（#22〜#32）。文書にある流れだけを描き、文書に無い所は紫の破線＋「仕様に書かれていません」で示します。ID は小さく付けています（SP＝仕様、D＝設計、AC＝受入基準）。第2弾（実装③。開発 11/15〜11/18）で足した所は、薄紫の地・太い紫の枠・札「実装③」で区別します（第2弾の対象版は 5 文書 <code>8243007</code>、この図は main <code>3921d99</code> の文書から描きました）。説明と ID は「くわしく」、失敗は「失敗したとき」を押すと開きます。</p>
 <div class="legend" aria-label="凡例"><span><i class="sw ui"></i>画面・利用者</span><span><i class="sw api"></i>API（FastAPI）</span><span><i class="sw db"></i>DB（MySQL）</span><span><i class="sw w2"></i><span class="stick">実装③</span>第2弾で足した所（薄紫の地・太い紫の枠）</span><span><i class="sw gp"></i>仕様に書かれていない（紫の破線）</span><span>つまずき・失敗は「失敗したとき」に畳んでいます</span></div>
 </details>
