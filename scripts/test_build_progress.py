@@ -150,20 +150,45 @@ class T(unittest.TestCase):
         self.assertIn("全体 57% <span>（完了 4 / 7）</span>", out)
         self.assertIn("3.5 実装③", out)
         self.assertIn('<b>魔族覚醒</b>', out)
-        self.assertRegex(out, r'<li class="w35 now"><span class="sn">3\.5 実装③ <b>聖光気</b></span><span class="hr">いまここ</span>')  # 今いる段（11/16）の行に「いまここ」
-        self.assertEqual(out.count('class="hr"'), 1)
+        self.assertRegex(out, r'<li class="w35 now"><span class="sn">3\.5 実装③ <b>聖光気</b></span>')  # 今いる段（11/16）の行は枠（now）。「いまここ」の札は無い（PM 11/15）
+        self.assertNotIn('いまここ', out)
         out15 = bp.render(bp.build_model(issues, ms, NAMES, dt.date(2026, 11, 15)), "x")  # 11/15 は段 3 と 3.5 の期間が重なる → 後の段
         self.assertIn('<li class="w35 now">', out15)
         self.assertNotIn('<li class="w3 now">', out15)
         self.assertIn(".stg2 li.w35{--c:#B388FF}", out)  # 3.5 専用の色（段 1〜4 の色と別）
 
+    def test_hub_and_overview_pick_the_later_stage_on_overlap_day(self):
+        """PM 11/15: 11/15 は 実装②（〜11/15）と 実装③（11/15〜）の期間が重なる。「開発の全体像」の点と概要の地図は後の段（実装③）を今にする"""
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        self.assertIn('(S[i]===null||S[i]<=t)&&t<=E[i])c=i', hub)  # 期間（S〜E）に入る最後の段
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        self.assertIn('<div class="stage" data-start="2026-11-15" data-end="2026-11-18">', ov)
+
+    def test_no_now_badge_in_overview_and_gauge_mock(self):
+        """PM 11/15「いまここ消す」: 概要とゲージのモックにも札は無い（枠は残る）"""
+        for f in ("overview.html", os.path.join("mock", "clickable", "hub-stage-gauge.html")):
+            src = open(os.path.join(D, "..", "docs", f), encoding="utf-8").read()
+            self.assertNotIn("いまここ", src, f)
+            self.assertNotIn("いま ここ", src, f)
+
+    def test_overview_has_the_second_round(self):
+        """PM 11/15「開発の全体像のアップデート漏れ」: 概要ページに第2弾（実装③）の中身と版が載っている"""
+        ov = open(os.path.join(D, "..", "docs", "overview.html"), encoding="utf-8").read()
+        for needle in ("f87b699", "share_likes・usage_events", "POST /api/events", "いいねの API", "11/15〜11/18",
+                       "11/19〜11/21", "決め手・並び替え・声・似た商品が返り", "共有ページで「いいね」を押す"):
+            self.assertIn(needle, ov, needle)
+        self.assertEqual(ov.count("初回提出版を固定"), 1)  # 11/18（実装③）の 1 つだけ（実装計画: 18 日の終わりに固める）
+        self.assertNotIn("11/15 初回提出版を固定", ov)
+        hub = open(os.path.join(D, "..", "docs", "hub.html"), encoding="utf-8").read()
+        self.assertIn("<code>8243007</code>", hub)
+
     def test_band_js_names_3_5_and_keeps_stage_4(self):
-        """PM 11/15: 3.5 は「STAGE 3.5／聖光気／実装③（W3）／11/15〜11/18」。評価・受入は元の「STAGE 4／魔族覚醒（W4）」のまま。11/15 は 3.5 が「いまここ」"""
+        """PM 11/15: 3.5 は「STAGE 3.5／聖光気／実装③（W3）／11/15〜11/18」。評価・受入は元の「STAGE 4／魔族覚醒（W4）」のまま。11/15 は 3.5 が今の段（枠・日付・ゲージの印）"""
         src = open(os.path.join(D, "..", "docs", "hub-assets", "band.js"), encoding="utf-8").read()
         self.assertIn('["聖光気","実装③","W3","11/15〜11/18","3.5"]', src)
         self.assertIn('["魔族覚醒","評価・受入","W4","11/19〜11/21","4"]', src)
         self.assertIn('"STAGE "+s[4]', src)  # 番号は段の番号（3.5・4）。並びの順番で振り直さない
-        self.assertIn('"いまここ"', src)
+        self.assertNotIn('いまここ', src)  # 札は消した（スマホ幅で折れるため。PM 11/15）。今の段は枠・日付・ゲージの印
 
     def test_band_js_reads_3_5_as_a_stage(self):
         """band.js の段の読み方（正規表現）が build-progress.py の HUB_STAGE_RE と同じ。3.5 を 3 と読まない"""

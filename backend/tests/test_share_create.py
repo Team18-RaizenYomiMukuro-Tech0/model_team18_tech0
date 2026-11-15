@@ -30,6 +30,9 @@ class FakeShareDb(CandidateDb):
     def __init__(self) -> None:
         super().__init__(fd1(), fd1_counts())
         self.raw.execute("CREATE TABLE share_links (share_id TEXT PRIMARY KEY, items TEXT, created_at TEXT, is_test INTEGER)")
+        self.raw.execute(  # 第2弾のいいねの表（設計 D-38。取得が LEFT JOIN するため）
+            "CREATE TABLE share_likes (share_id TEXT, product_id TEXT, like_count INTEGER, updated_at TEXT, PRIMARY KEY (share_id, product_id))"
+        )
         self.reads: list[str] = []
         self.writes: list[str] = []
 
