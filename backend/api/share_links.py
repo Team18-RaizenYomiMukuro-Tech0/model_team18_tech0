@@ -1,7 +1,7 @@
 # share_links.py — POST /api/share-links（設計.md D-05・D-07・D-15、DATA-02、仕様 SP-05・SP-07）
 # 選んだ商品 ID から、作成時点の商品名・価格・理由を保存した共有リンクを 1 件作る（POST）。
 # GET /api/share-links/{share_id}（D-06、SP-06）は保存した値を返し、販売終了・在庫なしだけ開いた時点で商品テーブルを確かめる。
-#  各 items[] に like_count（share_likes に行が無ければ 0。D-39）を足す。
+#  各 items[] に like_count（share_likes に行が無ければ 0。D-39）と、商品が DB にあれば category（開いた時点で商品テーブルから。#295 案 A）を足す。
 # POST /api/share-links/{share_id}/likes（D-39、SP-28、N-17）はいいねを 1 つの共有リンク × 1 つの商品ごとに数えるだけ（名前・IP は持たない）。
 #  上限は config.LIKE_MAX_PER_ITEM（30）。on:false は取り消し（0 を下回らない）。書き込みは許可した 2 つの文だけ（Db.write。D-45）。
 #  - 本文は商品 ID と任意の scene（無い・空は送別。不正は 422 invalid_scene。設計 D-05）。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
@@ -54,7 +54,7 @@ UPDATE_UNLIKE = (
     "UPDATE share_likes SET like_count = GREATEST(like_count - 1, 0), updated_at = %s "
     "WHERE share_id = %s AND product_id = %s"
 )
-SELECT_STOCK_HEAD = "SELECT p.product_id, p.stock FROM products p WHERE p.product_id IN ("
+SELECT_STOCK_HEAD = "SELECT p.product_id, p.stock, p.category FROM products p WHERE p.product_id IN ("
 SELECT_STOCK_TAIL = ")"
 INSERT_SHARE_LINK = "INSERT INTO share_links (share_id, items, created_at, is_test) VALUES (%s, %s, %s, %s)"
 
@@ -190,10 +190,13 @@ def _read(share_id: str, db: Db, clock: Clock) -> JSONResponse:
     raw = rows[0]["items"]
     stored: list[dict[str, Any]] = json.loads(raw) if isinstance(raw, str | bytes) else raw
     stocks: dict[str, Any] = {}
+    categories: dict[str, str] = {}  # 画面が画像を選ぶ（#295 案 A）。商品が DB に無い（販売終了）ときは入れない
     if stored:
         marks = ", ".join(["%s"] * len(stored))
         sql = SELECT_STOCK_HEAD + marks + SELECT_STOCK_TAIL
-        stocks = {str(r["product_id"]): r["stock"] for r in db.fetch_all(sql, tuple(i["product_id"] for i in stored))}
+        found = db.fetch_all(sql, tuple(i["product_id"] for i in stored))
+        stocks = {str(r["product_id"]): r["stock"] for r in found}
+        categories = {str(r["product_id"]): str(r["category"]) for r in found if r["category"] not in (None, "")}
 
     items = []
     for item in stored:  # 保存した並び（選んだ順）のまま。名前・価格・理由は保存値（SP-06）
@@ -212,6 +215,7 @@ def _read(share_id: str, db: Db, clock: Clock) -> JSONResponse:
                 "price": item["price"],
                 "reason": item["reason"],
                 "like_count": likes.get(pid, 0),  # 第1弾で作ったリンクなど、行が無ければ 0（D-39）
+                **({"category": categories[pid]} if pid in categories else {}),  # 開いた時点の商品テーブルから（#295 案 A）
             }
         )
     expires = created + timedelta(hours=SETTINGS.SHARE_EXPIRY_HOURS)
