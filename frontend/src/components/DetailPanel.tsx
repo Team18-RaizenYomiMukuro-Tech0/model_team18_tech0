@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
 import { arrivesText } from "@/lib/arrival";
-import { GIFT_DATE_LABEL, giftVerdict } from "@/lib/giftDate";
+import { GIFT_DATE_LABEL, giftVerdict, todayLocal } from "@/lib/giftDate";
 import { track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
@@ -35,7 +35,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
   const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
-  const [gift, setGift] = useState(""); // 贈る日（SP-27）。保存しない。別の商品に替えても残す
+  const [gift, setGift] = useState(() => todayLocal()); // 贈る日（SP-27）。初期値は今日（PM 1B）。保存しない。別の商品に替えても残す
   const tracked = useRef("");
 
   useEffect(() => {
@@ -164,7 +164,7 @@ function Body({ p, focusName, focusKey, voices, scene, similarHref, gift, onGift
         <div className={styles.gift}>
           <label className={styles.giftlabel}>
             {GIFT_DATE_LABEL}
-            <input type="date" className={styles.giftinput} value={gift} onChange={(e) => onGift(e.target.value)} />
+            <input type="date" className={styles.giftinput} value={gift} min={todayLocal()} onChange={(e) => onGift(e.target.value)} />
           </label>
           <span role="status" className={styles.verdict}>
             {verdict}

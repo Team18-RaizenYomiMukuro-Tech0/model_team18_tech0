@@ -11,3 +11,9 @@ export function giftVerdict(arrivesOn: string | null | undefined, giftDate: stri
   if (typeof arrivesOn !== "string" || !ISO.test(arrivesOn) || !ISO.test(giftDate)) return null;
   return arrivesOn <= giftDate ? ON_TIME : TOO_LATE;
 }
+
+// 贈る日の入力の初期値と min（PM 決定 1B）: ブラウザの今日（端末の日付）を YYYY-MM-DD で返す。
+export function todayLocal(d: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
