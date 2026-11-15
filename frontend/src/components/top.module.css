@@ -46,3 +46,9 @@
 }
 @media (min-width: 481px) and (max-width: 760px) { .rec { grid-template-columns: repeat(2, 1fr); } .cats { grid-template-columns: repeat(3, 1fr); } }
 .recerr { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
+/* R2 SP-20 T7（PM 判断 2026-11-15 で R2 に入れた）: トップの価格帯の札 3 つは、スマホの幅（480px 以下）でも 1 段に並べる */
+@media (max-width: 480px) {
+  .row { flex-wrap: nowrap; }
+  .row .btn { flex: 1 1 0; min-width: 0; padding: 8px 2px; font-size: 13px; white-space: nowrap; }
+}
+@media (max-width: 360px) { .row .btn { font-size: 12px; } }
