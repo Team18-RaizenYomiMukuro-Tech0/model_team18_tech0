@@ -230,7 +230,7 @@ table.dt th{background:var(--m1)}
 <li><b>画面・API・DB の役割を分けている</b>画面は見せるだけ、API が検証して DB を読み書きする。<span class="ids">設計.md D-33</span></li>
 <li><b>接続情報は環境変数だけ</b>コードにも文書にも書かない。<span class="ids">D-12, D-13 ／ N-04</span></li>
 <li><b>画面の保存はブラウザの中だけ</b>お気に入り・カートなどはサーバーに送らない。<span class="ids">D-10, D-47</span></li>
-<li><b><span class="stick">実装③</span> 第2弾で増えた分は薄紫の地と太い紫の枠</b>いいね（share_likes）と計測（usage_events）の 2 つの線がつながっている。<span class="ids">ADR-009, ADR-010</span></li>
+<li><b><span class="stick">実装③</span> 第2弾で増えた分は薄紫の地と太い紫の枠</b>いいね（share_likes）と計測（usage_events）の 2 つの線がつながっている。<span class="ids">ADR-009, ADR-011</span></li>
 </ul>
 <div class="flowline"><span class="lk">いいね</span> 押す → <code>POST …/likes</code> → <code>share_likes</code> に +1 → <code>GET /api/share-links/{id}</code> が <code>like_count</code> を返す → 共有ページに数が出る <span class="ids">D-38, D-39</span></div>
 <div class="flowline"><span class="lk ev">計測</span> 画面が送る → <code>POST /api/events</code> → <code>usage_events</code> に 1 行 → 通過率の SELECT（読むだけ） <span class="ids">D-40, D-41</span></div>
