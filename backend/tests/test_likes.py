@@ -223,7 +223,8 @@ def test_old_link_regression(fake: Backend) -> None:
     body = r.json()
     assert set(body) == {"created_at", "expires_at", "items"}
     for item in body["items"]:
-        assert set(item) == {"product_id", "status", "name", "price", "reason", "like_count"} and item["like_count"] == 0
+        assert set(item) == {"product_id", "status", "name", "price", "reason", "like_count", "category"}  # category は #295
+        assert item["like_count"] == 0
     assert [i["product_id"] for i in body["items"]] == fake.ids[:2]  # 並びは選んだ順のまま（数で並べ替えない）
     assert push(link, fake.ids[1]).json()["like_count"] == 1
     assert [i["like_count"] for i in get(link).json()["items"]] == [0, 1]
