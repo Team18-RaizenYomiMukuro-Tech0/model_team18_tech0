@@ -347,6 +347,7 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 .primary[data-cmpgo]{background:#fff;color:var(--ink);border:1px solid var(--ink)}
 .card .picbtn{display:block;width:100%;min-height:44px;padding:0;margin:0;border:0;border-radius:var(--rm);background:none;cursor:pointer;font:inherit;color:inherit;text-align:left}
 .card .picbtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.detail .detailfoot{margin:10px -14px -14px;padding:10px 14px;border-radius:0 0 var(--rl) var(--rl);z-index:3}
 </style>
 </head>
 <body class="show-sp show-note">
@@ -644,14 +645,13 @@ function detailHTML(sheet){
   const gift=p.d!=null?`<div class="gift" data-i3="SP-27"><label>贈る日（任意）<input type="date" id="giftDate" value="${esc(S.giftDate)}"></label><span class="res" id="giftRes" role="status"></span>${sp("SP-27")}</div>`:"";
   return `<aside class="detail ${S.detailOpen?"open":""}" aria-label="商品の詳細" id="detail">
    <h3>${esc(p.name)}</h3><button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="お気に入り">${ic(fav?"heart-filled":"heart")}</button>
-   ${sheet?"":`<button class="primary full" ${out?'data-i3="SP-18"':""} data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"カートに入れる"}</button>${sp("SP-18 SP-29")}`}
    ${imgHTML(p)}${hi?`<div class="topline"><span class="badge">高評価の商品</span></div>`:""}
    <div>${priceHTML(p.price)}</div>
    ${metaHTML(p)}${gift}
    ${vs.length?`<section class="voices" data-i3="SP-17" aria-label="贈った人の声"><h4>贈った人の声${sp("SP-17")}</h4>${vs.map(v=>`<blockquote>「${esc(v[1])}」<span class="st">★${v[0]}</span></blockquote>`).join("")}</section>`:""}
    ${sim.length?`<section class="similar" data-i3="SP-25" aria-label="似た商品"><h4>同じシーン・同じ価格帯の商品${sp("SP-25")}</h4><ul>${sim.map(x=>`<li><button data-detail="${x.id}">${miniImg(x)}<span><b>${esc(x.name)}</b><br>${yen(x.price)}${TAX}${x.d!=null?"　"+arrTxt(x):""}</span></button></li>`).join("")}</ul></section>`:""}
    <dl>${p.desc?`<dt>商品の特徴</dt><dd>${esc(p.desc)}</dd>`:""}${p.set?`<dt>セット内容</dt><dd>${esc(p.set)}</dd>`:""}</dl>
-   <button class="ghost full" data-fav="${p.id}">${ic("heart",20)} お気に入りに${fav?"から外す":"追加"}</button><div>${sp("AC-08")}</div></aside>`;
+   <button class="ghost full" data-fav="${p.id}">${ic("heart",20)} お気に入りに${fav?"から外す":"追加"}</button><div>${sp("AC-08")}</div>${sheet?"":`<div class="sheetfoot detailfoot" data-i3="SP-29"><span>${priceHTML(p.price)}${sp("SP-18 SP-29")}</span><button class="primary" ${out?'data-i3="SP-18"':""} data-cart="${p.id}" ${out?"disabled":""}>${out?"在庫なし":"カートに入れる"}</button></div>`}</aside>`;
 }
 function resultHTML(){
   const sumTxt=[S.scene,S.band?BANDS.find(x=>x[0]===S.band)[1]:null,...CATS.filter(c=>S.cats.includes(c))].filter(Boolean).join("・")||"条件を選ぶ";
