@@ -22,7 +22,7 @@ import styles from "./results.module.css";
 // どちらも一番下に「{価格}（税込）［カートに入れる］」の帯を固定する（`position: sticky; bottom: 0`。在庫 0 は「在庫なし」で押せない）。
 // R4 SP-12 SP-16 SP-17 D-29 D-35: 商品名・画像・価格・評価のすぐ下に決め手の 1 行（カードと同じ部品）、その下に「贈った人の声」（読めた分だけ。0 件・失敗は欄ごと出さない）。
 // scene は R-01 から開いたときだけ渡す（D-29。「{シーン}で{n}回」を出すため）。R-02・おすすめ・お気に入り・カート・共有ページから開いたときは渡さない。
-export function DetailPanel({ productId, onClose, scene = null }: Readonly<{ productId: string; onClose: () => void; scene?: string | null }>) {
+export function DetailPanel({ productId, onClose, scene = null, focusKey = null }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null }>) {
   const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
@@ -74,7 +74,7 @@ export function DetailPanel({ productId, onClose, scene = null }: Readonly<{ pro
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} voices={voices.id === productId ? voices.v : null} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} />}
       {r?.status === "ok" && <Foot p={r.data} />}
     </>
   );
@@ -111,13 +111,13 @@ function Foot({ p }: Readonly<{ p: ProductDetail }>) {
   );
 }
 
-function Body({ p, focusName, voices }: Readonly<{ p: ProductDetail; focusName: boolean; voices: VoiceList | null }>) {
+function Body({ p, focusName, focusKey, voices }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null }>) {
   const img = productImage(p.category);
   const views = voiceViews(voices?.voices);
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    if (focusName) name.current?.focus(); // シートが開いたら、読めた商品名へ焦点（D-46）
-  }, [focusName, p.product_id]);
+    if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）
+  }, [focusName, focusKey, p.product_id]);
   return (
     <div className={`${styles.detbody} ${styles.detpad}`}>
       <h2 className={styles.detname} ref={name} tabIndex={-1}>

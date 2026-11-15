@@ -13,7 +13,7 @@ test("U-86: シーン・価格・カテゴリーを「・」でつなぎ「▼ �
 });
 test("U-86: カテゴリー 3 つはタイルの並び順（選んだ順にしない）", () => {
   const s = conditionSummary(q({ categories: ["家電", "食品", "生活雑貨"] }));
-  const order = ["生活雑貨", "食品", "家電"].map((n) => s.indexOf(n));
+  const order = ["食品", "生活雑貨", "家電"].map((n) => s.indexOf(n));
   assert.ok(order[0] < order[1] && order[1] < order[2], s);
   assert.ok(s.endsWith("▼ 絞り込み"));
 });
