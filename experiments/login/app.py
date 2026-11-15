@@ -1,4 +1,4 @@
-"""ログインの試作（#136・ADR-005）。手元の SQLite だけを使う。班の DB・.env・Azure には触れない。
+"""ログインの試作（#136・ADR-005）。手元の SQLite だけを使う。班の DB・秘密の設定ファイル・クラウドには触れない。
 main には入れない（ブランチ experiment/login だけ）。"""
 import secrets
 import sqlite3
@@ -47,7 +47,7 @@ _DUMMY = bcrypt.hashpw(b"dummy", bcrypt.gensalt())
 
 
 def make_app(db_path: str = "login_trial.sqlite3", jwt_secret: str | None = None, now: Any = time.time) -> FastAPI:
-    """jwt_secret は呼び出し側が渡す。無ければ起動ごとにランダム（ファイルにも .env にも置かない）"""
+    """jwt_secret は呼び出し側が渡す。無ければ起動ごとにランダム（どこにも保存しない）"""
     db = connect(db_path)
     secret = jwt_secret or secrets.token_urlsafe(32)
     app = FastAPI()
