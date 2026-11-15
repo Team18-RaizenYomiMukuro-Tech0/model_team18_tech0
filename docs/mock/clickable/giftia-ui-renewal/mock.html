@@ -207,14 +207,12 @@ h2.sec{margin:22px 0 10px}
  .hbtn .tag{font-size:9px;padding:1px 4px}
 }
 
-/* #61 スマホ幅（480px以下）でトップのカテゴリーを折りたたむ。パソコン幅と検索結果は変えない */
-.cat-toggle{display:none}
-.cathead{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;background:none;border:0;padding:0;font:inherit;font-weight:inherit;color:inherit;text-align:left;cursor:pointer}
-.cathead .chev{margin-left:auto;font-size:14px;padding-right:4px}
+/* F-30・T-1 スマホ幅（480px以下）: トップのカテゴリーは最初から 4 つ、「ほか6個を見る」で残りが開く。パソコン幅と検索結果は変えない */
+.ghost.catmore{display:none;margin-top:8px}
 @container (max-width:480px){
- .cat-static{display:none}
- .cat-toggle{display:block}
- .cats.shut{display:none}
+ .ghost.catmore{display:flex;justify-content:center;width:100%}
+ .cats .more{display:none}
+ .cats.open .more{display:inline-flex}
 }
 
 /* ===== 第2弾（実装③）の部品 ===== */
@@ -386,7 +384,8 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 /* ---------- 架空データ（実在の商品ではありません） ---------- */
 const SLUG={"生活雑貨":"living","食品":"food","コスメ":"cosme","飲料":"drink","家電":"appliance","インテリア":"interior","ビジネス小物":"business","フラワー":"flower","酒類":"liquor","カタログギフト":"catalog"};
 const catIcon=c=>`categories/${SLUG[c]||"living"}.svg`,prodImg=c=>`products/${SLUG[c]||"living"}.svg`;
-const CATS=["生活雑貨","食品","コスメ","飲料","家電","インテリア","ビジネス小物","フラワー","酒類","カタログギフト"];/* DB の10種（#54-5） */
+const CATS=["食品","飲料","生活雑貨","フラワー","コスメ","酒類","インテリア","家電","ビジネス小物","カタログギフト"];/* 10 種の並び（T-5。トップ・検索結果、PC・スマホ共通の 1 つの定数。先頭 4 つがスマホで最初に出る＝F-30・T-1） */
+const CAT_FIRST=4;
 const CIC={"飲料":"🥤","生活雑貨":"🧴","インテリア":"🪴","カタログギフト":"📖","コスメ":"💄","ビジネス小物":"📓","フラワー":"💐","家電":"🔌","酒類":"🍶","食品":"🍱"};
 const HUE={"飲料":90,"生活雑貨":15,"インテリア":120,"カタログギフト":200,"コスメ":340,"ビジネス小物":220,"フラワー":320,"家電":190,"酒類":50,"食品":70};
 const P=(id,name,cat,price,stock,scenes,r,v,n,d,wrap,extra)=>Object.assign({id,name,cat,price,stock,scenes,r,v,n,d,wrap},extra||{});
@@ -594,9 +593,9 @@ function topHTML(){
       ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
-  <h2 class="sec cat-static">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
-  <h2 class="sec cat-toggle"><button type="button" id="catToggle" class="cathead" aria-expanded="${S.catOpen}" aria-controls="catlist">カテゴリーから探す<span class="multi">（複数選べます）</span><span class="chev" aria-hidden="true">${S.catOpen?"▲":"▼"}</span></button>${sp("AC-04 #61")}</h2>
-  <div class="cats ${S.catOpen?"":"shut"}" id="catlist">${CATS.map(c=>`<button type="button" class="tile cat" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><img src="${catIcon(c)}" alt="" width="40" height="40">${c}</button>`).join("")}</div>
+  <h2 class="sec">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
+  <div class="cats ${S.catOpen?"open":""}" id="catlist">${CATS.map((c,i)=>`<button type="button" class="tile cat${i>=CAT_FIRST?" more":""}" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><img src="${catIcon(c)}" alt="" width="40" height="40">${c}</button>`).join("")}</div>
+  <button type="button" id="catToggle" class="ghost full catmore" aria-expanded="${S.catOpen}" aria-controls="catlist" data-i3="F-30・T-5">${S.catOpen?"ほか"+(CATS.length-CAT_FIRST)+"個を閉じる":"ほか"+(CATS.length-CAT_FIRST)+"個を見る"}</button>${sp("F-30 T-1・T-5")}
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
   ${$("#fRec").checked?`<div class="msgbox err" role="alert">おすすめの商品を読み込めませんでした<br><button type="button" class="ghost" id="recRetry" style="margin-top:8px">もう一度</button>${sp("D-26 キックオフ記録 #86 の1")}</div>`:`<div class="grid rec4">${rec.map(p=>cardHTML(p,{mini:true})).join("")}</div>`}`;
 }
