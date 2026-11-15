@@ -12,6 +12,7 @@ import { buildSearchHref } from "@/lib/topPage";
 import { canDecrease, canIncrease, cartStore, cartTotal, normalizeQty, stepQty, useCart } from "@/state/cart";
 import { CartChecker, continueTarget, orderGate, pressOrder, rowHasProduct, type CartFound } from "@/state/cartCheck";
 import { ADDED_MESSAGE, CORRUPT_MESSAGE, cartNotice } from "@/state/cartNotice";
+import { Icon } from "./icons";
 import fav from "./favorites.module.css";
 import styles from "./cart.module.css";
 
@@ -29,8 +30,8 @@ export function CartButton() {
   return (
     <>
       <button ref={btn} type="button" className="hbtn" aria-label="カート" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span aria-hidden="true">🛒</span> <span className="t">カート</span>
-        {count > 0 && <span className={fav.count}>{count}</span>}
+        <span className="ico"><Icon name="cart" /></span> <span className="t">カート</span>
+        {count > 0 && <span className={`${fav.count} cnt`}>{count}</span>}
       </button>
       <CartToast onView={() => setOpen(true)} />
       {open && (

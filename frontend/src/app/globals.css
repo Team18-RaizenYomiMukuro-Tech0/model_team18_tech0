@@ -1,11 +1,21 @@
-/* 土台の最小スタイル（色はモック mock.html のヘッダーに合わせた仮置き。全体の色の設計は T2 の確認後に別 Issue） */
+/* 土台の最小スタイル。色は D-37 の 9 色（--s-）を 1 か所に置き、これまでの名前（--bg など）はそこを指す（N-14）。
+   ボタン・タイルなどの色の当て直しは R3（#288）。 */
 :root {
-  --bg: #f4f1ee;
-  --paper: #fff;
-  --ink: #3a3331;
-  --line: #e8dfd9;
-  --peach: #fdeee6;
-  --coral: #ee6c4d;
+  --s-bg: #F7F3EF;
+  --s-paper: #FFFFFF;
+  --s-ink: #2B2522;
+  --s-sub: #6E655F;
+  --s-line: #CDBFB3;
+  --s-coral: #E2603F; /* 枠・アイコンなど文字の無い所 */
+  --s-coral-ink: #9A3F27; /* 文字が載るオレンジの面・オレンジの文字（白文字 6.74:1） */
+  --s-peach: #FBE6DC;
+  --s-peach2: #F3CDBC;
+  --bg: var(--s-bg);
+  --paper: var(--s-paper);
+  --ink: var(--s-ink);
+  --line: var(--s-line);
+  --peach: var(--s-peach);
+  --coral: var(--s-coral);
   --muted: #f5f2ef;
   --bd2: #8a7d75;
   --badge-bg: #fbe3d9;
@@ -32,30 +42,11 @@ header.top {
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
   min-height: 44px;
-  font-weight: 800;
-  font-size: 22px;
   color: var(--ink);
   text-decoration: none;
 }
-.logo i {
-  display: inline-block;
-  position: relative;
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--coral);
-  border-radius: 4px;
-}
-.logo i::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: -2px;
-  width: 2px;
-  height: 22px;
-  background: var(--coral);
-}
+.logo img { display: block; height: 28px; width: auto; }
 .hsearch {
   display: flex;
   flex: 1 1 180px;
@@ -75,6 +66,10 @@ header.top {
   font: inherit;
 }
 .hsearch input::placeholder { color: #8a7d75; }
+/* D-49 SP-35: 検索ボタン・スマホの虫めがねと閉じる「×」（PC では虫めがねと「×」を出さない） */
+.hsearch .hsgo { min-width: 56px; min-height: 44px; padding: 0 14px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.hsearch .hsgo:hover { background: var(--peach); }
+.hsearch .hsclose, .hbtn.hmag { display: none; }
 .spacer { flex: 1; }
 .hbtn {
   display: flex;
@@ -92,6 +87,8 @@ header.top {
   white-space: nowrap;
   cursor: pointer;
 }
+.hbtn { position: relative; }
+.hbtn .ico { display: inline-flex; flex: none; }
 .hbtn:hover { background: var(--peach); }
 .hbtn[aria-disabled="true"] { cursor: default; }
 .hbtn .tag {
@@ -102,15 +99,22 @@ header.top {
   font-size: 10px;
   font-weight: 700;
 }
+/* SP-08: 480px 以下のヘッダーは 1 段。ロゴ左、右にお気に入り・ログイン・カート（アイコンの下に 10px の文字。数の丸はアイコンの右上） */
 @media (max-width: 480px) {
-  header.top { padding: 8px 12px; gap: 4px 4px; }
-  .logo { order: 1; font-size: 18px; margin-right: auto; }
-  .logo i { width: 18px; height: 18px; }
-  .logo i::after { left: 6px; height: 18px; }
-  .hbtn { order: 2; gap: 2px; min-width: 44px; padding: 4px 3px; }
-  .hbtn .t { font-size: 10.5px; }
-  .hbtn .tag { padding: 0 4px; font-size: 9px; }
-  .hsearch { order: 3; flex: 1 1 100%; max-width: none; }
+  header.top { flex-wrap: nowrap; padding: 6px 12px; gap: 0; }
+  .logo { margin-right: auto; }
+  .logo img { height: 24px; }
+  .hbtn { flex-direction: column; justify-content: center; gap: 0; min-width: 44px; min-height: 44px; padding: 2px 4px; }
+  .hbtn .t { font-size: 10px; line-height: 1.2; }
+  .hbtn .cnt { position: absolute; top: 0; left: calc(50% + 4px); margin: 0; }
+  .hbtn .tag { display: none; }
+  .hbtn[aria-disabled="true"] .ico { opacity: .5; }
+  .hsearch { display: none; }
+  /* D-25 SP-35: 虫めがね（アイコン・文字は他の 3 つと同じ）。開いた（data-open="true"）ときは、入力欄をヘッダーの下に出す */
+  .hbtn.hmag { display: flex; }
+  header.top { position: relative; }
+  .hsearch[data-open="true"] { display: flex; position: absolute; top: 100%; left: 0; right: 0; z-index: 25; max-width: none; border-radius: 0; border-width: 1px 0; box-shadow: 0 4px 8px rgba(58, 51, 49, .15); }
+  .hsearch .hsclose { display: block; min-width: 44px; min-height: 44px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
   .spacer { display: none; }
 }
 

@@ -54,6 +54,12 @@
 .fold { display: grid; gap: 8px; max-width: 1200px; margin: 0 auto 16px; }
 .foldbtn { width: 100%; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
 
+/* D-49 SP-35: 言葉で探しているときの見出しの横の表示・0件の「言葉をはずすと n 件」 */
+.qnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 12px; font-weight: 700; }
+.empty p { margin: 0 0 8px; }
+.empty p:last-child { margin: 0; }
+
+
 /* R5 SP-29 D-46: PC（900px 以上）の R-01 の右の列。タブ（詳細／共有リスト（N件））と中身。列全体を固定し、中身は残りの高さで中だけ縦にスクロールする */
 .rcol { position: sticky; top: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 24px); min-width: 0; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); overflow: hidden; }
 .tablist { display: flex; }
