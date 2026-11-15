@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "./icons";
 import { Q_MAX, cleanQ, parseSearchQuery, searchHref } from "@/lib/searchQuery";
 
 // D-49 SP-35 SP-08 F-46: ヘッダーの検索欄（PC）と虫めがね（スマホ 480px 以下）。
@@ -73,7 +74,7 @@ export function HeaderSearch() {
         </button>
       </form>
       <button ref={mag} type="button" className="hbtn hmag" aria-label="検索" aria-expanded={open} onClick={() => (open ? close() : setOpen(true))}>
-        <span aria-hidden="true">🔍</span> <span className="t">検索</span>
+        <span className="ico"><Icon name="search" /></span> <span className="t">検索</span>
       </button>
     </>
   );

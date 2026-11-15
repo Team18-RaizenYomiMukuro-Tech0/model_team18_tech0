@@ -23,15 +23,36 @@
 .empty { margin: 0; padding: 16px; border-radius: var(--rm); background: var(--muted); text-align: center; }
 .deterr { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
 .btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
-/* 詳細の欄: 広い幅では右に置き、画面内に収める（下端が切れない）。狭い幅では結果の上に出す */
-.detail { padding: 14px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); min-width: 0; order: -1; }
-@media (min-width: 900px) { .detail { order: 0; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; } }
+/* 詳細の欄（900px 以上）: 右に置き、画面内に収める。一番下の帯（.detfoot）は sticky で欄をスクロールしても見える（SP-29）。899px 以下は Sheet（下から出る） */
+.detail { padding: 0; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); min-width: 0; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
+.detpad { padding: 14px; margin: 0; }
+.detfoot { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--paper); }
+.footprice { font-weight: 700; }
+.footbtn { min-width: 44px; min-height: 44px; padding: 8px 18px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+.footbtn[data-primary="true"] { background: #b8422a; border-color: #8f321e; color: #fff; }
+.footbtn:disabled { background: var(--muted); color: #5c514d; cursor: not-allowed; }
 .detbody { display: grid; gap: 6px; }
 .detname { margin: 0; font-size: 18px; }
 .stockout { align-self: flex-start; padding: 0 10px; border-radius: 999px; background: #3a3331; color: #fff; font-size: 13px; font-weight: 700; }
 .dt { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
 .favrow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+
+/* R2 SP-29 D-46: 899px 以下のシート（詳細・共有リスト）と下端の帯。z-index は 帯 30 < シート 40 < カート・お気に入りのパネル 50 */
+.scrim { position: fixed; inset: 0; z-index: 39; background: rgba(58, 51, 49, .45); }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; flex-direction: column; max-height: 88vh; border-radius: 12px 12px 0 0; background: var(--paper); box-shadow: 0 -4px 16px rgba(58, 51, 49, .25); outline: none; }
+.sheethead { display: flex; justify-content: flex-end; padding: 4px 8px 0; }
+.sheetclose { min-width: 44px; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--rm); background: none; color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+.sheetscroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.listpad { padding: 0 14px 14px; }
+.band { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; gap: 8px; height: 56px; padding: 6px 12px; background: var(--paper); border-top: 1px solid var(--line); }
+.bandbtn { flex: 1; min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+.bandbtn[data-primary="true"] { background: #b8422a; border-color: #8f321e; color: #fff; }
+@media (max-width: 899px) { .layout { padding-bottom: 72px; } }
+@media (min-width: 900px) { .band { display: none; } }
+/* SP-31: 480px 以下の条件の 1 行 */
+.fold { display: grid; gap: 8px; max-width: 1200px; margin: 0 auto 16px; }
+.foldbtn { width: 100%; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
 
 /* D-49 SP-35: 言葉で探しているときの見出しの横の表示・0件の「言葉をはずすと n 件」 */
 .qnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 12px; font-weight: 700; }

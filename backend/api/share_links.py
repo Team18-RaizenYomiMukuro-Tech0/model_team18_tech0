@@ -51,7 +51,7 @@ INSERT_LIKE = (
     "ON DUPLICATE KEY UPDATE like_count = IF(like_count < %s, like_count + 1, like_count), updated_at = %s"
 )
 UPDATE_UNLIKE = (
-    "UPDATE share_likes SET like_count = GREATEST(like_count - 1, 0), updated_at = %s "
+    "UPDATE share_likes SET like_count = IF(like_count > 0, like_count - 1, 0), updated_at = %s "
     "WHERE share_id = %s AND product_id = %s"
 )
 SELECT_STOCK_HEAD = "SELECT p.product_id, p.stock, p.category FROM products p WHERE p.product_id IN ("
