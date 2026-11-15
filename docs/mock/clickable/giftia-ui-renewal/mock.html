@@ -593,7 +593,7 @@ function topHTML(){
       ${budgetFormHTML()}
   </form>
   ${S.st==="loading"&&S.view==="top"?`<div class="msgbox empty" role="status">${spinnerHTML()}検索中…</div>`:""}
-  <h2 class="sec">カテゴリーから探す<span class="multi">（複数選べます）</span>${sp("AC-04 #45-4")}</h2>
+  <h2 class="sec">カテゴリーから探す${sp("SP-09 F-30 T-5")}</h2>
   <div class="cats ${S.catOpen?"open":""}" id="catlist">${CATS.map((c,i)=>`<button type="button" class="tile cat${i>=CAT_FIRST?" more":""}" data-cat="${c}" aria-pressed="${S.cats.includes(c)}"><img src="${catIcon(c)}" alt="" width="40" height="40">${c}</button>`).join("")}</div>
   <button type="button" id="catToggle" class="ghost full catmore" aria-expanded="${S.catOpen}" aria-controls="catlist" data-i3="F-30・T-5">${S.catOpen?"ほか"+(CATS.length-CAT_FIRST)+"個を閉じる":"ほか"+(CATS.length-CAT_FIRST)+"個を見る"}</button>${sp("F-30 T-1・T-5")}
   <h2 class="sec">おすすめの商品${sp("#53-1 4列")}</h2>
