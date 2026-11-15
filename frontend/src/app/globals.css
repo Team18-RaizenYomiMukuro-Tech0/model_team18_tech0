@@ -75,6 +75,10 @@ header.top {
   font: inherit;
 }
 .hsearch input::placeholder { color: #8a7d75; }
+/* D-49 SP-35: 検索ボタン・スマホの虫めがねと閉じる「×」（PC では虫めがねと「×」を出さない） */
+.hsearch .hsgo { min-width: 56px; min-height: 44px; padding: 0 14px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.hsearch .hsgo:hover { background: var(--peach); }
+.hsearch .hsclose, .hbtn.hmag { display: none; }
 .spacer { flex: 1; }
 .hbtn {
   display: flex;
@@ -107,10 +111,16 @@ header.top {
   .logo { order: 1; font-size: 18px; margin-right: auto; }
   .logo i { width: 18px; height: 18px; }
   .logo i::after { left: 6px; height: 18px; }
-  .hbtn { order: 2; gap: 2px; min-width: 44px; padding: 4px 3px; }
-  .hbtn .t { font-size: 10.5px; }
+  /* D-25 SP-08 SP-35: 1 段・4 つのボタン（虫めがね・お気に入り・ログイン・カート）。アイコン 24px の下に 10px の文字。ログインは文字の代わりに「準備中」の札 */
+  .hbtn { order: 2; position: relative; flex-direction: column; justify-content: center; gap: 0; min-width: 44px; padding: 2px 4px; }
+  .hbtn > span[aria-hidden="true"] { font-size: 24px; line-height: 1.1; }
+  .hbtn .t { font-size: 10px; line-height: 1.2; }
+  .hbtn.hlogin .t { display: none; }
   .hbtn .tag { padding: 0 4px; font-size: 9px; }
   .hsearch { order: 3; flex: 1 1 100%; max-width: none; }
+  .hsearch[data-open="false"] { display: none; }
+  .hbtn.hmag { display: flex; }
+  .hsearch .hsclose { display: block; min-width: 44px; min-height: 44px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
   .spacer { display: none; }
 }
 

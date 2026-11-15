@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { emptyMessageR02, type Fetched, type ProductList } from "@/lib/products";
 import { ProductRunner } from "@/lib/searchRequest";
@@ -24,7 +25,7 @@ export function SearchResults() {
   return (
     <>
       <SearchConditions q={q} />
-      {q.scene ? <CandidateResults q={q} /> : <ProductResults q={q} />}
+      {q.scene && !q.q ? <CandidateResults q={q} /> : <ProductResults q={q} />}
     </>
   );
 }
@@ -33,6 +34,7 @@ function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
   const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
   const runner = useRef<ProductRunner | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const r = new ProductRunner((u, v) => setRes({ url: u, r: v }));
@@ -49,6 +51,14 @@ function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
   return (
     <div className={styles.layout}>
       <section aria-label="検索結果" className={styles.results}>
+        {q.q && (
+          <p className={styles.qnote}>
+            <span>「{q.q}」で探しています</span>
+            <button type="button" className={styles.btn} onClick={() => router.push(searchHref(q, { q: "", page: 1, product: null }))}>
+              言葉を消す
+            </button>
+          </p>
+        )}
         {!r && <Searching />}
         {r?.status === "error" && (
           <div role="alert" className={styles.deterr}>
@@ -64,9 +74,14 @@ function ProductResults({ q }: Readonly<{ q: SearchQuery }>) {
         )}
         {r?.status === "notfound" && <p role="status">{emptyMessageR02(q)}</p>}
         {r?.status === "ok" && r.data.items.length === 0 && (
-          <p className={styles.empty} role="status">
-            {emptyMessageR02(q)}
-          </p>
+          <div className={styles.empty} role="status">
+            <p>{emptyMessageR02(q)}</p>
+            {q.q && (r.data.relax?.no_q ?? 0) > 0 && (
+              <button type="button" className={styles.btn} onClick={() => router.push(searchHref(q, { q: "", page: 1, product: null }))}>
+                言葉をはずすと {r.data.relax?.no_q} 件
+              </button>
+            )}
+          </div>
         )}
         {r?.status === "ok" && r.data.items.length > 0 && (
           <>

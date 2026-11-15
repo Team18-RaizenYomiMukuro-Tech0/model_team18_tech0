@@ -142,3 +142,16 @@ test("searchRequest SP-21: setSort は1ページ目に戻り、ほかの条件�
   assert.equal(clearConditions(q).sort, "price_asc");
   assert.equal(togglePrice(q, "5000plus").sort, "price_asc");
 });
+
+// D-49 SP-35 ⑨: 言葉（q）で探した結果は計測の記録を増やさない（0件でも）。q が無ければ今までどおり ② を送る
+test("searchRequest SP-35: q 付きの結果は計測を送らない。q が無ければ送る", async () => {
+  const steps: number[] = [];
+  const empty = (async () => ({ ok: true, status: 200, json: async () => ({ items: [], count: 0, total: 0, page: 1, page_size: 12 }) })) as unknown as typeof fetch;
+  const runner = new ProductRunner(() => {}, empty, (s) => void steps.push(s));
+  runner.run("/api/products?q=zzz&price_band=under3000");
+  await flush();
+  assert.deepEqual(steps, []);
+  runner.run("/api/products?price_band=under3000");
+  await flush();
+  assert.deepEqual(steps, [2, 7]);
+});

@@ -8,7 +8,9 @@ import type { SearchQuery } from "./searchQuery.ts";
 // シーンが無ければ GET /api/products（R-02 の12件ずつ。価格帯・カテゴリーがあっても無くても）。どちらも budget は送らない。
 export type SearchMode = { mode: "r01" | "r02"; url: string };
 
-export function searchMode(q: Pick<SearchQuery, "scene" | "priceBand" | "categories" | "page">): SearchMode {
+export function searchMode(q: Pick<SearchQuery, "scene" | "priceBand" | "categories" | "page"> & { q?: string }): SearchMode {
+  // D-49 SP-35 ③: 言葉があれば、シーンを選んでいても R-02 の12件ずつ（R-01 の10件は出さない。シーンは条件として付ける）
+  if (q.q) return { mode: "r02", url: productsUrl(q) };
   if (q.scene) return { mode: "r01", url: candidatesUrl({ scene: q.scene, priceBand: q.priceBand, categories: q.categories }) };
   return { mode: "r02", url: productsUrl(q) };
 }

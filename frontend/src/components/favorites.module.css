@@ -34,3 +34,6 @@
 .table tbody th { width: 64px; font-weight: 700; background: #faf7f5; }
 .table a { color: inherit; text-decoration: underline; }
 .stockout { display: block; margin-top: 4px; color: #b3261e; font-weight: 700; }
+
+/* D-25 SP-08: スマホの幅（480px 以下）の 1 段のヘッダーでは、数の丸をアイコンの右上に重ねる */
+@media (max-width: 480px) { .count { position: absolute; top: 0; right: 0; margin: 0; min-width: 16px; padding: 0 4px; font-size: 10px; line-height: 16px; } }

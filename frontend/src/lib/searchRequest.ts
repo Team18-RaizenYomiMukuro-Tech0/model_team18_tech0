@@ -56,6 +56,7 @@ export class ProductRunner {
 
   // ② 結果が出たとき（0件も含む。R-02 はシーンなし）。0件のときは ⑦ に条件（価格帯・カテゴリー）を持たせて別に送る（SP-34・D-40）
   private trackResult(url: string, total: number): void {
+    if (new URLSearchParams(url.split("?")[1] ?? "").has("q")) return; // D-49 SP-35 ⑨: 言葉で探した結果は計測の記録を増やさない（言葉もログに残さない）
     this.tracker(2);
     if (total > 0) return;
     const q = new URLSearchParams(url.split("?")[1] ?? "");
