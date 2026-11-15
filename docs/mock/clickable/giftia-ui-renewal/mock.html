@@ -334,6 +334,15 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
  header.top #bLogin .t{display:none}
  header.top #bLogin .tag{font-size:10px;padding:0 4px;margin-top:1px}
 }
+/* スマホ幅（480px 以下）のトップを上に詰める（PM 11/15）: 説明は 1 行・ヒーロー約 160px・シーンの札 48px */
+.note1 .ns{display:none}
+@container (max-width:480px){
+ .note1 .nl,.note2{display:none}.note1 .ns{display:inline}
+ .hero{--ah:72px;height:160px}.hero h1{font-size:24px;margin-bottom:6px}
+ .tiles .tile{min-height:48px}
+ h2.sec{margin:16px 0 8px}
+}
+@container (max-width:340px){.hero{--ah:56px}.hero p{font-size:12px}}
 </style>
 </head>
 <body class="show-sp show-note">
@@ -573,8 +582,8 @@ function budgetFormHTML(){
   return `<h2 class="sec">予算から探す（任意）${sp("SP-01 #49-1〜3")}</h2>
    <div class="bands" role="group" aria-label="価格帯（税込）">${BANDS.map(b=>`<button type="button" class="tile" data-tband="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div>
    ${S.band&&!S.scene?`<div style="margin-top:8px"><button type="button" class="linkbtn" id="bandGo">この価格帯の商品を見る →</button>${sp("R2-14 #53-3")}</div>`:""}
-   <div style="font-size:12px;color:var(--sub);margin-top:6px">価格は税込です。選ばなければ価格では絞りません。もう一度押すと解除します。</div>
-   <div style="font-size:12px;color:var(--sub);margin-top:6px">シーンを押すと候補が出ます。価格帯は先に選んでも、あとから選んでもかまいません。</div>`;
+   <div class="note1" style="font-size:12px;color:var(--sub);margin-top:6px"><span class="nl">価格は税込です。選ばなければ価格では絞りません。もう一度押すと解除します。</span><span class="ns">価格は税込。もう一度押すと解除します。</span></div>
+   <div class="note2" style="font-size:12px;color:var(--sub);margin-top:6px">シーンを押すと候補が出ます。価格帯は先に選んでも、あとから選んでもかまいません。</div>`;
 }
 function topHTML(){
   const rec=orderBy(PRODUCTS.filter(p=>p.stock>=1)).slice(0,4);
