@@ -122,6 +122,20 @@ def test_q_no_match_relax(client: TestClient, db: SearchDb) -> None:
     assert "no_q" not in r3.get("relax", {}) and "no_q" not in r2.get("relax", {})
 
 
+def test_q_relax_keeps_q(client: TestClient, db: SearchDb) -> None:
+    """D-44: 価格帯・カテゴリーをはずした数にも言葉を残す（言葉もほかの条件の 1 つ）"""
+    r = get(client, "q=紅茶&price_band=under3000&category=家電").json()
+    assert r["total"] == 0
+    no_cat = get(client, "q=紅茶&price_band=under3000").json()["total"]
+    no_price = get(client, "q=紅茶&category=家電").json()["total"]
+    assert r["relax"]["category"] == no_cat and r["relax"]["price_band"] == no_price
+    plain = get(client, "category=家電").json()["total"]
+    assert plain > 0 and no_price < plain  # 言葉なしの数（家電すべて）とは違う
+    # 言葉に合う商品が無いなら、はずしても 0
+    z = get(client, "q=zzzzqqqq&price_band=under3000&category=家電").json()["relax"]
+    assert z["price_band"] == 0 and z["category"] == 0
+
+
 def test_q_sort_wins(client: TestClient, db: SearchDb) -> None:
     by_match = [i["product_id"] for i in get(client, "q=紅茶 ギフト").json()["items"]]
     prices = [i["price"] for i in get(client, "q=紅茶 ギフト&sort=price_asc").json()["items"]]

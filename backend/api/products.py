@@ -92,6 +92,26 @@ def relax_counts(
     }
 
 
+def _count_with_q(
+    db: Db,
+    words: list[str],
+    scene: str | None,
+    price_range: tuple[int, int],
+    categories: list[str],
+    slots: list[str],
+) -> int:
+    """助け舟（D-44）で、ある条件をはずしたうえで言葉にも合う商品の数（言葉はほかの条件と同じく残す）"""
+    params: tuple[Any, ...] = (
+        1 if scene is not None else 0,
+        scene or "",
+        price_range[0],
+        price_range[1],
+        1 if categories else 0,
+        *slots,
+    )
+    return len(match(words, db.fetch_all(SELECT_PRODUCTS, params)))
+
+
 def _error(code: str, message: str) -> JSONResponse:
     return JSONResponse({"error": {"code": code, "message": message}}, status_code=422)
 
@@ -231,7 +251,11 @@ def list_products(
     }
     if total == 0:  # 0 件のときだけ助け舟の件数を足す（D-44。+1 往復）
         relax = relax_counts(db, scene, price_range if band != "" else None, categories)
-        if words is not None:
+        if words is not None:  # 言葉があるときは、はずす条件以外に言葉も残して数える（D-44。言葉もほかの条件の 1 つ）
+            if band != "":
+                relax["price_band"] = _count_with_q(db, words, scene, NO_PRICE_LIMIT, categories, slots)
+            if categories:
+                relax["category"] = _count_with_q(db, words, scene, price_range, [], [""] * _CATEGORY_SLOTS)
             relax["no_q"] = conditions_total  # 言葉をはずしたときの件数（①の件数。D-49。言葉が無いときは付けない）
         body["relax"] = relax
     return body
