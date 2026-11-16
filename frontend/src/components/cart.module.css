@@ -20,5 +20,7 @@
 .retry { width: 100%; }
 /* 通知（カートに入れました）。画面の下に出し、パネルは開かない */
 .toastBox { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; max-width: calc(100vw - 32px); }
+/* SP-29 ⑤ D-46: 帯（下端 56px）がある検索結果では、通知を帯の上（下端から 72px）に出して帯のボタンを隠さない。パネルを開いている間・トップは 16px のまま */
+:global(body[data-band="1"]):not(:has([role="dialog"])) .toastBox { bottom: 72px; }
 .toast { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--rm); background: #3a3331; color: #fff; font-size: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
 .toastLink { border-color: #fff; background: transparent; color: #fff; }

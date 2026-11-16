@@ -9,6 +9,7 @@ import { useAppState } from "@/state/AppState";
 import { CandidateList } from "./CandidateList";
 import { DetailPanel } from "./DetailPanel";
 import { Sheet } from "./Sheet";
+import { RecentViewed } from "./RecentViewed";
 import { RightColumn } from "./RightColumn";
 import { SearchStatus } from "./SearchStatus";
 import { SelectedList } from "./SelectedList";
@@ -62,6 +63,7 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
             <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />
           </div>
         )}
+        <RecentViewed q={q} />
         {narrow && (
           <Sheet open={listOpen} label="共有リスト" onClose={onCloseList}>
             <div className={results.listpad}>
@@ -71,9 +73,9 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
         )}
       </section>
       {narrow ? (
-        detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} />
+        detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />
       ) : (
-        <RightColumn tab={tab} onTab={setTab} detailId={detailId} onCloseDetail={onCloseDetail} focusKey={focusKey} picked={picked.length} scene={q.scene} />
+        <RightColumn tab={tab} onTab={setTab} detailId={detailId} onCloseDetail={onCloseDetail} focusKey={focusKey} picked={picked.length} scene={q.scene} similarHref={(id) => searchHref(q, { product: id })} />
       )}
     </div>
   );

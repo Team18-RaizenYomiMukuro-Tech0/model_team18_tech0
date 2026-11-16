@@ -4,13 +4,13 @@ type: knowledge
 origin: internal
 tags: [mistake]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-16
 ---
 
 # ブランチの状態を確認せず git を実行して衝突する
 
-- 発生回数: 3（2026-10-26〜2026-11-08 の収集分。初回要約）
-- 最終発生日: 2026-11-07
+- 発生回数: 7（〜2026-11-08 に 3、2026-11-09〜11-15 の収集分で +4）
+- 最終発生日: 2026-11-15
 - 収集源: claude-bash
 - デプロイ系: いいえ
 
@@ -19,6 +19,7 @@ updated: 2026-11-09
 - `git pull --ff-only origin main` → `Diverging branches can't be fast-forwarded`
 - `git worktree add -b feat/click-shapes` → `a branch named ... already exists`
 - `pathspec 'docs' did not match any files`
+- 今週: 終了コード 128 が 3 回（`feat/b5-share-create` が origin と食い違う状態の `git status` 後、`git show 98e88f2:…`、`git fetch … && HEAD is now at …` の後）、`fatal: Needed a single revision` 1 回。個々の原因は要確認。
 
 ## 原因
 
