@@ -4,19 +4,20 @@ type: knowledge
 origin: internal
 tags: [mistake]
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-16
 ---
 
 # 一時ディレクトリのパスが無くなっている
 
-- 発生回数: 9（2026-10-26〜2026-11-08 の収集分。初回要約）
-- 最終発生日: 2026-11-08
+- 発生回数: 15（〜2026-11-08 に 9、2026-11-09〜11-15 の収集分で +6）
+- 最終発生日: 2026-11-15
 - 収集源: claude-bash
 - デプロイ系: いいえ
 
 ## 症状・実行コマンド
 
 - `cd $TMPDIR/wt/docs` や `cp /tmp/claude-501/r7.png ...`、`ls $TMPDIR/ps` が `No such file or directory`。
+- 今週も同じ型: `cd /private/tmp/claude-501/…/<セッションID>…` が `no such file or directory`、`ls /tmp/claude-501/hs`、`cut -c1-260 $TMPDIR/d5.txt`、`wc …/scratchpad/…`、`mv x.json ../x.held.json`（移動先が無い）。
 
 ## 原因
 
