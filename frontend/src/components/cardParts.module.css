@@ -15,7 +15,7 @@
 .pick { order: 10; }
 .heart { order: 11; grid-column: 1; justify-self: start; margin-top: 4px; }
 .cart { order: 12; grid-column: 2; margin-top: 4px; }
-.cartbtn { min-width: 44px; min-height: 44px; padding: 8px 6px; border: 1px solid var(--ink); border-radius: var(--rm); background: var(--ink); color: #fff; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.cartbtn { min-width: 44px; min-height: 44px; padding: 8px 6px; border: 1px solid var(--s-coral-ink); border-radius: var(--rm); background: var(--s-coral-ink); color: #fff; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
 .cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; font-weight: 400; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* ハートを価格の行の右へ（スマホの幅。カードの幅が 179px 以下のときも） */
