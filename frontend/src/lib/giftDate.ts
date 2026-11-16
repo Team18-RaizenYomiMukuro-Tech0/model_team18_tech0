@@ -7,8 +7,10 @@ export const TOO_LATE = "間に合わない（目安）";
 
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-export function giftVerdict(arrivesOn: string | null | undefined, giftDate: string): string | null {
+// today（YYYY-MM-DD）を渡すと、今日より前の贈る日（手で打った過去の日。SP-27「今日より前は選べない」）は判定しない（#390）
+export function giftVerdict(arrivesOn: string | null | undefined, giftDate: string, today?: string): string | null {
   if (typeof arrivesOn !== "string" || !ISO.test(arrivesOn) || !ISO.test(giftDate)) return null;
+  if (today !== undefined && giftDate < today) return null;
   return arrivesOn <= giftDate ? ON_TIME : TOO_LATE;
 }
 

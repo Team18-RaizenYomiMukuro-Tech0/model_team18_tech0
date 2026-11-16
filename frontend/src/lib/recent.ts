@@ -29,3 +29,8 @@ export function addRecent(list: readonly string[], id: string): string[] {
 export function removeRecent(list: readonly string[], id: string): string[] {
   return list.filter((x) => x !== id);
 }
+
+/** 取得結果の覚え。画面（部品）ごとに 1 つ作る。同じ画面の間だけ覚え、開き直したら空に戻る（SP-22。#390） */
+export function newRecentCache<T>(): Map<string, T> {
+  return new Map<string, T>();
+}

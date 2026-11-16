@@ -23,3 +23,10 @@ test("giftDate 1B: 初期値・min は端末の今日（月・日は 2 桁）", 
   assert.equal(todayLocal(new Date(2027, 0, 1, 0, 0)), "2027-01-01");
   assert.match(todayLocal(), /^\d{4}-\d{2}-\d{2}$/);
 });
+
+test("giftDate #390: 今日より前の贈る日（手で打った過去の日）は判定しない。今日・先の日は今までどおり", () => {
+  assert.equal(giftVerdict("2026-11-17", "2026-11-15", "2026-11-16"), null);
+  assert.equal(giftVerdict("2026-11-17", "2026-11-16", "2026-11-16"), "間に合わない（目安）");
+  assert.equal(giftVerdict("2026-11-17", "2026-11-17", "2026-11-16"), "間に合う（目安）");
+  assert.equal(giftVerdict("2027-01-02", "2026-12-31", "2027-01-01"), null); // 年をまたぐ
+});
