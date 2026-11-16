@@ -38,7 +38,7 @@ export function categoryToggle(open: boolean, total: number): { expanded: boolea
 }
 
 // おすすめ: GET /api/products を条件なしで呼んだ先頭4件（D-26）
-export type RecommendedItem = { product_id: string; name: string; price: number; category: string; rating: number | null; review_count: number | null; high_rating: boolean };
+export type RecommendedItem = { product_id: string; name: string; price: number; category: string; rating: number | null; review_count: number | null; high_rating: boolean; arrives_on?: string | null; wrapping?: boolean | null };
 export function pickRecommended(items: readonly RecommendedItem[]): RecommendedItem[] {
   return items.slice(0, RECOMMEND_COUNT);
 }

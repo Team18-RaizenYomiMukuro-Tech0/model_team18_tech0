@@ -73,11 +73,15 @@ function ConditionsFold({ q }: Readonly<{ q: SearchQuery }>) {
 function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onCloseDetail: () => void }>) {
   const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
+  const [last, setLast] = useState<ProductList | null>(null); // 直前に出た結果（検索中に薄く残す。SP-33）
   const runner = useRef<ProductRunner | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const r = new ProductRunner((u, v) => setRes({ url: u, r: v }));
+    const r = new ProductRunner((u, v) => {
+      setRes({ url: u, r: v });
+      if (v?.status === "ok" && v.data.items.length > 0) setLast(v.data);
+    });
     runner.current = r;
     return () => r.cancel();
   }, []);
@@ -86,6 +90,8 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
   }, [url]);
 
   const r = res.url === url ? res.r : null;
+  // R6 SP-33 S-92: 検索中は、前の結果を薄くして残し、「候補（N件）」の見出しの位置の中央に検索中の表示を出す。応答が返ったら新しい結果に置き換える
+  const prev = r == null ? last : null;
   const detailId = q.product;
 
   return (
@@ -99,7 +105,21 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
             </button>
           </p>
         )}
-        {!r && <Searching />}
+        {!r && (
+          <div className={styles.searchslot}>
+            <Searching />
+          </div>
+        )}
+        {prev && (
+          <div className={styles.stale} aria-busy="true">
+            <ul className={styles.cards}>
+              {prev.items.map((p) => (
+                <ProductCard key={p.product_id} p={p} href={searchHref(q, { page: prev.page, product: p.product_id })} selected={p.product_id === detailId} />
+              ))}
+            </ul>
+            <Pagination q={q} total={prev.total} page={prev.page} pageSize={prev.page_size} />
+          </div>
+        )}
         {r?.status === "error" && (
           <div role="alert" className={styles.deterr}>
             失敗しました。もう一度お試しください
