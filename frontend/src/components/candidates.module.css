@@ -1,7 +1,9 @@
 /* F2 候補のカード・「選んだ候補」の欄。globals.css は触らない */
 .cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 1000px) { .cards { grid-template-columns: repeat(5, 1fr); } }
+/* PM 決定 1A: カード幅 154px 以上で「（税込）」とボタンが収まる。4 列は 1080px 以上、5 列は 1280px 以上 */
+@media (min-width: 1080px) { .cards { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1280px) { .cards { grid-template-columns: repeat(5, 1fr); } }
 .card { position: relative; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); font-size: 14px; }
 a.name { color: inherit; }
 .card[data-selected="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
@@ -34,6 +36,3 @@ a.name { color: inherit; }
 .sharelink { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .url { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; user-select: all; }
 .copymsg { flex-basis: 100%; min-height: 1.2em; }
-/* PM 3B: 右の列が付いて 5 列のカードが狭い 1000〜1159px だけ、「共有リストに入れる」の字を 11px にして 1 行に収める */
-@media (min-width: 1000px) and (max-width: 1159px) { .pick { font-size: 11px; padding-left: 4px; padding-right: 4px; } .card button[class*=cartbtn] { padding-left: 2px; padding-right: 2px; } }
-@media (min-width: 1000px) and (max-width: 1019px) { .pick { font-size: 10px; } }
