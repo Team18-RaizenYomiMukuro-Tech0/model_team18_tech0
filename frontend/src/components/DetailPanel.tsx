@@ -135,7 +135,7 @@ function Foot({ p }: Readonly<{ p: ProductDetail }>) {
 function Body({ p, focusName, focusKey, voices, scene, similarHref, gift, onGift }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null; scene: string | null; similarHref?: (id: string) => string; gift: string; onGift: (v: string) => void }>) {
   const img = productImage(p.category);
   const views = voiceViews(voices?.voices);
-  const verdict = giftVerdict(p.arrives_on, gift);
+  const verdict = giftVerdict(p.arrives_on, gift, todayLocal());
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）

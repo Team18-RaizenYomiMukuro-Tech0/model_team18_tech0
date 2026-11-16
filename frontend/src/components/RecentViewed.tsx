@@ -6,7 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { arrivesText } from "@/lib/arrival";
 import { formatPrice } from "@/lib/formatPrice";
 import { productImage } from "@/lib/images";
-import { RECENT_FAILED, RECENT_HEADING } from "@/lib/recent";
+import { newRecentCache, RECENT_FAILED, RECENT_HEADING } from "@/lib/recent";
 import { fetchJson, isProductDetail, productUrl, type ProductDetail } from "@/lib/products";
 import { searchHref, type SearchQuery } from "@/lib/searchQuery";
 import { recentStore } from "@/state/recent";
@@ -17,10 +17,10 @@ import styles from "./recent.module.css";
 // 取得中は「読み込み中」の枠。404 は出さず、保存からも消す。在庫なしは価格の代わりに「在庫なし」。通信に失敗した商品はその商品だけ出さず（保存は残す）、読めた分だけ出す。
 // 全部読めなかったときだけ帯の位置に「最近見た商品を読み込めませんでした」と「もう一度」。0 件・保存できないときは欄ごと出さない。
 type Got = { s: "ok"; p: ProductDetail } | { s: "gone" } | { s: "error" };
-const cache = new Map<string, Got>(); // 画面を開いている間の覚え（ok と gone だけ）
 
 export function RecentViewed({ q }: Readonly<{ q: SearchQuery }>) {
   const raw = useSyncExternalStore(recentStore.subscribe, recentStore.getSnapshot, recentStore.getServerSnapshot);
+  const [cache] = useState(() => newRecentCache<Got>()); // この画面を開いている間だけの覚え（ok と gone だけ。開き直したら空。SP-22）
   const ids = raw ? raw.split(",") : [];
   const [, bump] = useState(0);
   const [errs, setErrs] = useState<ReadonlySet<string>>(new Set());
@@ -41,7 +41,7 @@ export function RecentViewed({ q }: Readonly<{ q: SearchQuery }>) {
       });
     }
     return () => abort.abort();
-  }, [raw, tries]);
+  }, [raw, tries, cache]);
 
   const gots = ids.map((id) => ({ id, g: cache.get(id) ?? (errs.has(id) ? ({ s: "error" } as Got) : null) }));
   const visible = gots.filter((x) => x.g === null || x.g.s !== "gone");

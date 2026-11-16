@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addRecent, parseRecent, removeRecent } from "./recent.ts";
+import { addRecent, newRecentCache, parseRecent, removeRecent } from "./recent.ts";
 
 test("recent U-75: 7 商品を開くと最大 6 件で、一番古いものが消える。新しい順", () => {
   let l: string[] = [];
@@ -21,4 +21,11 @@ test("recent U-75: 保存の読み出し。壊れた値・配列でない値・�
   assert.deepEqual(parseRecent('{"a":1}'), []);
   assert.deepEqual(parseRecent('["G0001","G0001","bad",3,"G0002"]'), ["G0001", "G0002"]);
   assert.equal(parseRecent(JSON.stringify(Array.from({ length: 9 }, (_, i) => `G000${i}`))).length, 6);
+});
+
+test("recent #390: 取得結果の覚えは画面ごとに別。開き直した（新しく作った）ら空", () => {
+  const a = newRecentCache<string>();
+  a.set("G1", "在庫なし");
+  assert.equal(a.get("G1"), "在庫なし");
+  assert.equal(newRecentCache<string>().has("G1"), false);
 });
