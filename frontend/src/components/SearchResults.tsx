@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { COLLAPSE_MAX_WIDTH, conditionSummary, SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
+import { COLLAPSE_MAX_WIDTH, conditionSummary, SHEET_MAX_WIDTH, shouldFocusListBand } from "@/lib/mobileLayout";
 import { emptyMessageR02, type Fetched, type ProductList } from "@/lib/products";
 import { ProductRunner } from "@/lib/searchRequest";
 import { searchMode } from "@/lib/searchMode";
@@ -36,10 +36,20 @@ export function SearchResults() {
   const [listOpen, setListOpen] = useState(false);
   // 詳細を閉じる: product だけ外した検索結果に戻る（おすすめ・お気に入り・カートから開いたときも一覧が見える。元の画面には戻さない。SP-29）
   const closeDetail = useCallback(() => router.replace(searchHref(q, { product: null })), [router, q]);
-  const closeList = useCallback(() => setListOpen(false), []);
+  const backToBand = useRef(false);
+  // NF-47: 共有リストのシートを閉じたら、帯「共有リスト N件」へ焦点を戻す（シートを開いている間は帯が無く、開いたときの要素が消えているため、閉じたあとに帯が戻ってから探す）
+  const closeList = useCallback(() => {
+    backToBand.current = true;
+    setListOpen(false);
+  }, []);
   const isR01 = q.scene != null && !q.q; // D-49 SP-35 ③: シーン＋言葉は R-02
   const listShown = listOpen && picked.length > 0; // 全部外したら、空のシートを残さない
   const bar = narrow && q.product == null && !listShown; // シートを開いている間は帯を出さない
+  useEffect(() => {
+    if (!shouldFocusListBand(listShown, backToBand.current)) return;
+    backToBand.current = false;
+    document.querySelector<HTMLElement>('nav button[data-band="list"]')?.focus();
+  }, [listShown]);
   return (
     <>
       <ConditionsFold q={q} />

@@ -22,7 +22,7 @@ export function BottomBar({ isR01, picked, onOpenList }: Readonly<{ isR01: boole
   return (
     <nav className={styles.band} aria-label="共有リストとカート">
       {list && (
-        <button type="button" className={styles.bandbtn} onClick={onOpenList}>
+        <button type="button" className={styles.bandbtn} data-band="list" onClick={onOpenList}>
           {list}
         </button>
       )}

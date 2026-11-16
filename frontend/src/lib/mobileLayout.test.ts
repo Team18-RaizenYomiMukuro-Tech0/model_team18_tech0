@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cartBandText, conditionSummary, listBandText } from "./mobileLayout.ts";
+import { cartBandText, conditionSummary, listBandText, shouldFocusListBand } from "./mobileLayout.ts";
 
 const q = (o: Partial<Parameters<typeof conditionSummary>[0]> = {}) => ({ scene: null, priceBand: null, categories: [], ...o });
 
@@ -25,4 +25,11 @@ test("SP-29: 帯の左は R-01 で 1 件以上のときだけ", () => {
 test("SP-29: 帯の右は「カート（N点）」（N は種類の数）", () => {
   assert.equal(cartBandText(0), "カート（0点）");
   assert.equal(cartBandText(2), "カート（2点）");
+});
+
+test("NF-47: 共有リストのシートを閉じたあとだけ、帯「共有リスト N件」へ焦点を戻す", () => {
+  assert.equal(shouldFocusListBand(false, true), true); // Esc・「閉じる」で閉じ終えた
+  assert.equal(shouldFocusListBand(true, true), false); // まだ開いている
+  assert.equal(shouldFocusListBand(false, false), false); // 閉じる操作なし（最初の表示など）
+  assert.equal(shouldFocusListBand(true, false), false);
 });

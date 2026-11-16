@@ -27,3 +27,8 @@ export function listBandText(isR01: boolean, picked: number): string | null {
 export function cartBandText(kinds: number): string {
   return `カート（${kinds}点）`;
 }
+
+/** NF-47: 共有リストのシートを閉じ終えたあと、焦点を帯「共有リスト N件」へ戻すか（閉じる操作があり、シートがもう出ていないときだけ。帯は閉じ終えてから戻る） */
+export function shouldFocusListBand(listShown: boolean, closedByUser: boolean): boolean {
+  return closedByUser && !listShown;
+}
