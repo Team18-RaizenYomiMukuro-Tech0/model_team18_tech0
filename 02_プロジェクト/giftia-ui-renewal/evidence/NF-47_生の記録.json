@@ -1,0 +1,434 @@
+{
+ "取得": "main `6839ba4`（2026-11-16）",
+ "キー操作（nf47b）": {
+  "375": {
+   "more_before": {
+    "text": "ほか6個を見る",
+    "pressed": null,
+    "expanded": "false",
+    "selected": null,
+    "label": null
+   },
+   "more_after_enter": {
+    "text": "ほか6個を閉じる",
+    "pressed": null,
+    "expanded": "true",
+    "selected": null,
+    "label": null
+   },
+   "more_cats_after": 10,
+   "more_after_space": {
+    "text": "ほか6個を見る",
+    "pressed": null,
+    "expanded": "false",
+    "selected": null,
+    "label": null
+   },
+   "cond_before": {
+    "text": "送別・3,000〜4,999円 ▼ 絞り込み",
+    "pressed": null,
+    "expanded": "false",
+    "selected": null,
+    "label": null
+   },
+   "cond_after_enter": {
+    "text": "送別・3,000〜4,999円 ▼ 絞り込み",
+    "pressed": null,
+    "expanded": "true",
+    "selected": null,
+    "label": null
+   },
+   "cond_after_space": {
+    "text": "送別・3,000〜4,999円 ▼ 絞り込み",
+    "pressed": null,
+    "expanded": "false",
+    "selected": null,
+    "label": null
+   },
+   "listadd_before": {
+    "text": "共有リストに入れる （P09の商品）",
+    "pressed": "false",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "listadd_after": {
+    "text": "✓ リストに入れた （P09の商品）",
+    "pressed": "true",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "listband_trigger": "button:共有リスト 1件",
+   "listsheet_focus": "div:閉じる 共有リスト（1件） P09の商品 3,800円（税込 [枠内:共有リスト]",
+   "listsheet_role": {
+    "modal": "true",
+    "label": "共有リスト"
+   },
+   "listsheet_tab12": [
+    "button:閉じる [枠内:共有リスト]",
+    "button:外す （P09の商品） [枠内:共有リスト]",
+    "button:共有リストを作る [枠内:共有リスト]",
+    "button:閉じる [枠内:共有リスト]",
+    "button:外す （P09の商品） [枠内:共有リスト]",
+    "button:共有リストを作る [枠内:共有リスト]",
+    "button:閉じる [枠内:共有リスト]",
+    "button:外す （P09の商品） [枠内:共有リスト]",
+    "button:共有リストを作る [枠内:共有リスト]",
+    "button:閉じる [枠内:共有リスト]",
+    "button:外す （P09の商品） [枠内:共有リスト]",
+    "button:共有リストを作る [枠内:共有リスト]"
+   ],
+   "listsheet_inside": true,
+   "listsheet_esc": {
+    "focus": "body",
+    "dialog": true
+   },
+   "detail_open_focus": "h2:P09の商品 [枠内:商品の詳細]",
+   "detail_dialog": {
+    "modal": "true",
+    "label": "共有リスト"
+   },
+   "detail_tab14": [
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "a:P08の商品 3,800円（税込） 11/18までに届く（目 [枠内:商品の詳細]",
+    "a:P01の商品 4,999円（税込） 11/18までに届く（目 [枠内:商品の詳細]",
+    "a:P07の商品 4,000円（税込） 11/18までに届く（目 [枠内:商品の詳細]",
+    "button:♡ [枠内:商品の詳細]",
+    "button:カートに入れる [枠内:商品の詳細]",
+    "button:閉じる [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]",
+    "input:date [枠内:商品の詳細]"
+   ],
+   "detail_inside": true,
+   "detail_esc": {
+    "focus": "body",
+    "dialog": true,
+    "url": "/search?scene=%E9%80%81%E5%88%A5&price_band=3000to4999"
+   },
+   "card_link_trigger": "a:P09の商品",
+   "card_open_focus": "h2:P09の商品 [枠内:商品の詳細]",
+   "card_esc_focus": "a:P09の商品",
+   "sort_focus": "select:おすすめ 安い順 評価順 早く届く順",
+   "sort_options": {
+    "label": "並び\nおすすめ\n安い順\n評価順\n早く届く順",
+    "opts": [
+     "おすすめ",
+     "安い順",
+     "評価順",
+     "早く届く順"
+    ],
+    "value": "recommend"
+   },
+   "sort_after": {
+    "url": "/search?price_band=3000to4999",
+    "value": "recommend"
+   },
+   "relax_before": {
+    "text": "価格帯をはずすと 1 件",
+    "pressed": null,
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "relax_focus": "a:価格帯をはずすと 1 件",
+   "relax_after": {
+    "url": "/search?scene=%E8%AA%95%E7%94%9F%E6%97%A5",
+    "text": "候補（1件）"
+   },
+   "fav_trigger": "button:お気に入り 4",
+   "fav_open_focus": "button:閉じる [枠内:お気に入り]",
+   "cmp_checked": 2,
+   "cmp_button": "button:比べる（2件選択中） [枠内:お気に入り]",
+   "cmp_table": true,
+   "cmp_focus": "button:← お気に入りにもどる [枠内:お気に入り]",
+   "cmp_esc1": {
+    "focus": "button:比べる（2件選択中） [枠内:お気に入り]",
+    "table": false
+   },
+   "cmp_esc2": {
+    "focus": "button:お気に入り 4",
+    "dialog": false
+   },
+   "like_before": {
+    "text": "♡ いいね 0",
+    "pressed": "false",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "like_focus": "button:♡ いいね 0",
+   "like_after": [
+    {
+     "text": "♥ いいねした 1",
+     "pressed": "true",
+     "label": null
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false",
+     "label": null
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false",
+     "label": null
+    }
+   ],
+   "like_after_undo": [
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    }
+   ],
+   "like_live": [],
+   "emoji": [
+    [
+     "イメージ",
+     "♥"
+    ],
+    []
+   ],
+   "emoji_text": [
+    "♥",
+    "♥",
+    "♡",
+    "♡",
+    "♡",
+    "♥",
+    "♡",
+    "♥"
+   ],
+   "emoji_unhidden": [],
+   "hsearch_focus": "input:商品名や言葉で探す",
+   "hsearch_esc": "button:検索"
+  },
+  "1280": {
+   "listadd_before": {
+    "text": "共有リストに入れる （P09の商品）",
+    "pressed": "false",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "listadd_after": {
+    "text": "✓ リストに入れた （P09の商品）",
+    "pressed": "true",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "tabs_before": {
+    "text": "共有リスト（1件）",
+    "pressed": null,
+    "expanded": null,
+    "selected": "false",
+    "label": null
+   },
+   "tabs_after_enter": {
+    "text": "共有リスト（1件）",
+    "pressed": null,
+    "expanded": null,
+    "selected": "true",
+    "label": null
+   },
+   "tabs_detail": {
+    "text": "詳細",
+    "pressed": null,
+    "expanded": null,
+    "selected": "false",
+    "label": null
+   },
+   "tabs_arrow": "button:詳細",
+   "detail_open_focus": "body",
+   "detail_dialog": null,
+   "detail_tabs": {
+    "text": "詳細",
+    "pressed": null,
+    "expanded": null,
+    "selected": "true",
+    "label": null
+   },
+   "card_link_trigger": "a:P09の商品",
+   "card_open_focus": "h2:P09の商品",
+   "card_esc_focus": "h2:P09の商品",
+   "sort_focus": "select:おすすめ 安い順 評価順 早く届く順",
+   "sort_options": {
+    "label": "並び\nおすすめ\n安い順\n評価順\n早く届く順",
+    "opts": [
+     "おすすめ",
+     "安い順",
+     "評価順",
+     "早く届く順"
+    ],
+    "value": "recommend"
+   },
+   "sort_after": {
+    "url": "/search?price_band=3000to4999",
+    "value": "recommend"
+   },
+   "relax_before": {
+    "text": "価格帯をはずすと 1 件",
+    "pressed": null,
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "relax_focus": "a:価格帯をはずすと 1 件",
+   "relax_after": {
+    "url": "/search?scene=%E8%AA%95%E7%94%9F%E6%97%A5",
+    "text": "候補（1件）"
+   },
+   "fav_trigger": "button:お気に入り 4",
+   "fav_open_focus": "button:閉じる [枠内:お気に入り]",
+   "cmp_checked": 2,
+   "cmp_button": "button:比べる（2件選択中） [枠内:お気に入り]",
+   "cmp_table": true,
+   "cmp_focus": "button:← お気に入りにもどる [枠内:お気に入り]",
+   "cmp_esc1": {
+    "focus": "button:比べる（2件選択中） [枠内:お気に入り]",
+    "table": false
+   },
+   "cmp_esc2": {
+    "focus": "button:お気に入り 4",
+    "dialog": false
+   },
+   "like_before": {
+    "text": "♡ いいね 0",
+    "pressed": "false",
+    "expanded": null,
+    "selected": null,
+    "label": null
+   },
+   "like_focus": "button:♡ いいね 0",
+   "like_after": [
+    {
+     "text": "♥ いいねした 1",
+     "pressed": "true",
+     "label": null
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false",
+     "label": null
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false",
+     "label": null
+    }
+   ],
+   "like_after_undo": [
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    },
+    {
+     "text": "♡ いいね 0",
+     "pressed": "false"
+    }
+   ],
+   "like_live": [],
+   "emoji": [
+    [
+     "イメージ",
+     "♥"
+    ],
+    []
+   ],
+   "emoji_text": [
+    "✓",
+    "✓",
+    "♥",
+    "♥",
+    "♡",
+    "♡",
+    "♡",
+    "♥",
+    "♡",
+    "♥"
+   ],
+   "emoji_unhidden": []
+  }
+ },
+ "シート・並び替え・絵文字（nf47c）": {
+  "detail_open": {
+   "focus": "h2:P09の商品 [枠内:商品の詳細]",
+   "visible": [
+    {
+     "label": "商品の詳細",
+     "modal": "true"
+    }
+   ],
+   "url": "/search?scene=%E9%80%81%E5%88%A5&price_band=3000to4999&product=P09"
+  },
+  "detail_esc": {
+   "focus": "a:P09の商品",
+   "visible": [],
+   "url": "/search?scene=%E9%80%81%E5%88%A5&price_band=3000to4999"
+  },
+  "detail_close_btn_focus": "button:閉じる [枠内:商品の詳細]",
+  "detail_close": {
+   "focus": "a:P09の商品",
+   "visible": []
+  },
+  "list_trigger": "button:共有リスト 1件",
+  "list_open": {
+   "focus": "div:閉じる 共有リスト（1件） P09の商品 3,800円（ [枠内:共有リスト]",
+   "visible": [
+    {
+     "label": "共有リスト",
+     "modal": "true"
+    }
+   ]
+  },
+  "list_esc": {
+   "focus": "body",
+   "visible": []
+  },
+  "list_close": {
+   "focus": "body",
+   "visible": []
+  },
+  "sort_type": {
+   "url": "/search?price_band=3000to4999",
+   "value": "recommend",
+   "first": ""
+  },
+  "emoji_top": {
+   "n": 0,
+   "unhidden": 0,
+   "sample": [],
+   "chips": 12
+  },
+  "emoji_results": {
+   "n": 0,
+   "unhidden": 0,
+   "sample": [],
+   "chips": 22
+  },
+  "emoji_detail": {
+   "n": 0,
+   "unhidden": 0,
+   "sample": [],
+   "chips": 27
+  }
+ }
+}
