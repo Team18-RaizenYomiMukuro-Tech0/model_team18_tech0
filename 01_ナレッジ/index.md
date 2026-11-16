@@ -17,14 +17,16 @@
 
 ## ミスの型（週1要約が更新。発生回数の多い順）
 
-- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 32回。記録のノイズの可能性（要確認）
-- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 9回
-- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 5回
-- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 4回
-- [git 管理外のディレクトリで git/gh を実行している](mistakes/non-git-dir-command.md) — 3回
-- [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 3回
-- [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 3回
-- [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 3回
+- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 128回。記録のノイズの可能性（要確認）
+- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 15回
+- [使い捨ての Python スクリプトが失敗する](mistakes/python-adhoc-script-errors.md) — 15回（新規 2026-11-16）
+- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 14回
+- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 10回
+- [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 9回
+- [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 8回
+- [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 7回
+- [シェルからの書き込みが拒否される（メモリ・一時領域）](mistakes/protected-path-write-denied.md) — 7回（新規 2026-11-16）
+- [git 管理外のディレクトリで git/gh を実行している](mistakes/non-git-dir-command.md) — 4回
 - [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
 - [証拠が完了条件と違うのに ○ にする・Draft で止める・パスを書き違える](mistakes/evidence-and-review-slips.md) — 3回（2026-11-11〜12。手書き）
 - [Python のモジュールが無い（PIL）](mistakes/python-module-missing.md) — 2回

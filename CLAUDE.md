@@ -61,14 +61,16 @@
 <!-- auto:mistakes start -->
 ## よくあるミス（自動更新・手書き禁止）
 
-発生2回以上の型（2026-11-09 の週1要約。詳細は `01_ナレッジ/mistakes/`）:
+発生2回以上の型（2026-11-16 の週1要約。詳細は `01_ナレッジ/mistakes/`）:
 
-- 一時ディレクトリのパスが無くなっている（9回）— 使う直前に `mkdir -p`、絶対パスで書く → `tmp-path-vanished.md`
-- zsh の glob が一致せず止まる（5回）— glob・`?` を含む引数はクォートする → `zsh-glob-no-match.md`
-- サンドボックスや証明書で外部通信が失敗（4回）— 許可ドメインの承認を取る → `sandbox-network-denied.md`
-- git 管理外の場所で git/gh を実行（3回）— リポジトリのルートへ `cd` する → `non-git-dir-command.md`
-- macOS(BSD) と GNU のコマンド差（3回）— `sed -i ''` を使う → `macos-bsd-command-diff.md`
-- gh の使い方違い・ブランチ保護（3回）— ラベルとチェックを先に確認 → `gh-usage-and-branch-policy.md`
-- ブランチ状態を確認せず git を実行（3回）— 実行前に `git status` → `git-branch-state-conflict.md`
+- 一時ディレクトリのパスが無くなっている（15回）— 使う直前に `mkdir -p`、絶対パスで書く → `tmp-path-vanished.md`
+- 使い捨ての Python スクリプトが失敗（15回）— 絶対パスで開く・`test -f` で確認・`py_compile` → `python-adhoc-script-errors.md`
+- サンドボックスや証明書で外部通信が失敗（14回）— 許可ドメインの承認を取る → `sandbox-network-denied.md`
+- zsh の glob が一致せず止まる（10回）— glob・`?`・`[ ]` を含む引数はクォートする → `zsh-glob-no-match.md`
+- macOS(BSD) と GNU のコマンド差（9回）— `sed -i ''` を使う・ugrep の正規表現は分ける → `macos-bsd-command-diff.md`
+- gh の使い方違い・ブランチ保護（8回）— ラベルとチェックを先に確認 → `gh-usage-and-branch-policy.md`
+- ブランチ状態を確認せず git を実行（7回）— 実行前に `git status` → `git-branch-state-conflict.md`
+- シェルからの書き込みが拒否される（7回）— メモリは Write/Edit ツールで書く → `protected-path-write-denied.md`
+- git 管理外の場所で git/gh を実行（4回）— リポジトリのルートへ `cd` する → `non-git-dir-command.md`
 - Python モジュール（PIL）が無い（2回）— 実行前に import で確認 → `python-module-missing.md`
 <!-- auto:mistakes end -->
