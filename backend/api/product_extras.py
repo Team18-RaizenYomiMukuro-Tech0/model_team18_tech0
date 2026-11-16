@@ -42,7 +42,7 @@ SELECT_SIMILAR = (
     "WHERE p.stock >= 1 AND p.product_id <> %s "
     "AND p.product_id IN (SELECT s.product_id FROM product_scenes s WHERE s.scene_tag = %s) "
     "AND p.price >= %s AND p.price <= %s "
-    "ORDER BY (p.rating IS NULL), p.rating DESC, p.review_count DESC, p.product_id "
+    "ORDER BY (p.rating IS NULL), p.rating DESC, p.review_count DESC, LENGTH(p.product_id), p.product_id "
     "LIMIT %s"
 )
 

@@ -190,6 +190,13 @@ def test_similar_picks_and_orders() -> None:
             assert item["arrives_on"] is not None
 
 
+# SP-25 D-42 #398: 評価も件数も同じなら商品 ID は番号の大きさの順（G9999 ＜ G10000）
+def test_similar_tie_uses_number_size() -> None:
+    items = [product("O1", "送別", 1, 4000, 4.0, 10)] + [product(pid, "送別", 1, 4100, 4.5, 20) for pid in ("G10000", "G1001", "G9999")]
+    for client in serve(ExtrasDb(items)):
+        assert [i["product_id"] for i in similar(client, "O1")[1]["items"]] == ["G1001", "G9999", "G10000"]
+
+
 # SP-25 D-42 U-78
 def test_similar_order_rules_and_unrated_last() -> None:
     items = [

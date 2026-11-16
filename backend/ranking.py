@@ -11,6 +11,11 @@ from fractions import Fraction
 from config import SETTINGS
 
 
+def id_key(pid: str) -> tuple[int, str]:
+    """商品ID順（番号の大きさの順）のキー。桁数が少ない方が先、同じ桁数なら文字の順（G9999 ＜ G10000。#398）"""
+    return (len(pid), pid)
+
+
 def _fraction(value: Decimal | float | str) -> Fraction:
     return Fraction(str(value))
 
@@ -45,7 +50,7 @@ def order_by_score(
 ) -> list[str]:
     """点数の高い順。同点は商品ID順（R-02。送別回数は数えない。#46-2・#50-3）"""
     scores = score_products(items)
-    return sorted(scores, key=lambda pid: (-scores[pid], pid))
+    return sorted(scores, key=lambda pid: (-scores[pid], id_key(pid)))
 
 
 SORTS = ("recommend", "price_asc", "rating_desc", "delivery_asc")  # D-43。省略・空は recommend
@@ -67,11 +72,11 @@ def order_by_sort(
     keys: dict[str, tuple[object, ...]] = {}
     for pid, price, rating, count, days in items:
         if sort == "price_asc":
-            keys[pid] = (price, rating_desc(rating), pid)
+            keys[pid] = (price, rating_desc(rating), id_key(pid))
         elif sort == "rating_desc":
-            keys[pid] = (rating_desc(rating), -(count or 0), pid)
+            keys[pid] = (rating_desc(rating), -(count or 0), id_key(pid))
         elif sort == "delivery_asc":
-            keys[pid] = ((1, 0) if days is None else (0, days), rating_desc(rating), pid)
+            keys[pid] = ((1, 0) if days is None else (0, days), rating_desc(rating), id_key(pid))
         else:
             raise ValueError(sort)
     return sorted(keys, key=lambda pid: keys[pid])
@@ -80,7 +85,7 @@ def order_by_sort(
 # SP-02 D-01 D-02 手順5・6
 def candidate_pool(scores: dict[str, Fraction], limit: int) -> list[str]:
     """送別回数を数える範囲: 点数の上位 limit 件と、limit 位と同点の商品（点数→商品ID順）"""
-    ordered = sorted(scores, key=lambda pid: (-scores[pid], pid))
+    ordered = sorted(scores, key=lambda pid: (-scores[pid], id_key(pid)))
     if len(ordered) <= limit:
         return ordered
     cutoff = scores[ordered[limit - 1]]
@@ -95,5 +100,5 @@ def top_by_score_then_count(
     limit: int,
 ) -> list[str]:
     """点数の高い順 → 同点は送別回数の多い順 → なお同じなら商品ID順。上位 limit 件"""
-    ordered = sorted(pool, key=lambda pid: (-scores[pid], -counts.get(pid, 0), pid))
+    ordered = sorted(pool, key=lambda pid: (-scores[pid], -counts.get(pid, 0), id_key(pid)))
     return ordered[:limit]

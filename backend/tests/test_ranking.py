@@ -14,7 +14,14 @@ from candidates_support import (
 )
 from fastapi.testclient import TestClient
 
-from ranking import candidate_pool, score_products, top_by_score_then_count
+from ranking import (
+    candidate_pool,
+    id_key,
+    order_by_score,
+    order_by_sort,
+    score_products,
+    top_by_score_then_count,
+)
 
 FD1_BAND = ["P01", "P02", "P03", "P07", "P08", "P09", "P10", "P11"]
 
@@ -83,3 +90,32 @@ def test_pool_includes_ties_at_the_cutoff() -> None:
     assert "Y3" in pool and "Z" not in pool
     top = top_by_score_then_count(scores, {"Y3": 5}, pool, 10)
     assert top[8:] == ["Y3", "Y1"] and "Y2" not in top  # 同点の Y1・Y2・Y3 のうち、回数の多い Y3 が先。10 件で切る
+
+
+# #398: 商品ID順は番号の大きさの順（5 桁の G10000 が来ても G9999 の後ろ）
+IDS5 = ["G10000", "G1001", "G2000", "G9999"]
+NUMERIC = ["G1001", "G2000", "G9999", "G10000"]
+
+
+def test_id_key_orders_by_number_size() -> None:
+    assert sorted(IDS5) == ["G10000", "G1001", "G2000", "G9999"]  # 文字の順なら G10000 が先頭（直す前）
+    assert sorted(IDS5, key=id_key) == NUMERIC
+    assert id_key("G9999") < id_key("G10000") and id_key("G1001") < id_key("G9999")
+
+
+def test_order_by_score_tie_uses_number_size() -> None:
+    assert order_by_score([(pid, 4.0, 10) for pid in IDS5]) == NUMERIC
+    # 点数が違えば商品ID順は関係しない（点数の高い順のまま）
+    assert order_by_score([("G10000", 5.0, 10), ("G9999", 3.0, 10)])[0] == "G10000"
+
+
+def test_order_by_sort_tie_uses_number_size() -> None:
+    for sort in ("price_asc", "rating_desc", "delivery_asc", "recommend"):
+        items = [(pid, 3000, 4.0, 10, 3) for pid in IDS5]
+        assert order_by_sort(items, sort) == NUMERIC, sort
+
+
+def test_pool_and_top_tie_use_number_size() -> None:
+    scores = {pid: Fraction(4) for pid in IDS5}
+    assert candidate_pool(scores, 4) == NUMERIC
+    assert top_by_score_then_count(scores, {pid: 2 for pid in IDS5}, IDS5, 3) == NUMERIC[:3]
