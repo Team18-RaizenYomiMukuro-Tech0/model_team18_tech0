@@ -6,6 +6,8 @@
 @media (min-width: 1280px) { .cards { grid-template-columns: repeat(5, 1fr); } }
 .card { position: relative; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); font-size: 14px; }
 a.name { color: inherit; }
+/* NF-46: 商品名リンクのタップ領域を縦 44px 以上に（padding を足し、同じだけ負の margin で戻すので、文字の大きさ・並びは変わらない） */
+a.name { display: inline-block; min-width: 44px; padding: 11px 0; margin: -11px 0; }
 .card[data-selected="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
 .card[data-picked="true"] { border: 2px solid #b8422a; }
 .rank { align-self: flex-start; font-weight: 700; font-size: 15px; }

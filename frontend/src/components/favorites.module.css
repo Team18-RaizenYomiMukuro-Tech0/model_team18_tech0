@@ -34,3 +34,7 @@
 .table tbody th { width: 64px; font-weight: 700; background: #faf7f5; }
 .table a { color: inherit; text-decoration: underline; }
 .stockout { display: block; margin-top: 4px; color: #b3261e; font-weight: 700; }
+
+/* NF-46: 行・比べる表の商品名リンクのタップ領域を縦横 44px 以上に（padding と負の margin で、見た目の文字・並びは変えない） */
+.nm a { display: inline-block; min-width: 44px; padding: 10px 0; margin: -10px 0; }
+.table thead th a { display: inline-block; min-width: 44px; padding: 12px 0; margin: -12px 0; }
