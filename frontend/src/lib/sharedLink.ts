@@ -38,10 +38,6 @@ export const OTHERS_HREF = "/"; // トップへ
 export const itemImage = (it: { category?: string }): string | null => (it.category ? productImage(it.category) : null);
 export const canShowDetail = (status: SharedStatus): boolean => status !== "discontinued";
 export const detailHref = (productId: string): string => buildSearchHref({ productId });
-// F-47 SP-04: 共有ページから開いた詳細には「共有リストに入れる」を置かない。目印は URL の from=share（共有ページのリンクだけが付ける）
-export const FROM_SHARE_PARAM = "from";
-export const FROM_SHARE_VALUE = "share";
-export const detailFromShareHref = (productId: string): string => `${detailHref(productId)}&${FROM_SHARE_PARAM}=${FROM_SHARE_VALUE}`;
 
 export async function fetchShared(shareId: string, signal?: AbortSignal, fetchImpl: typeof fetch = fetch): Promise<SharedResult> {
   const abort = new AbortController();
