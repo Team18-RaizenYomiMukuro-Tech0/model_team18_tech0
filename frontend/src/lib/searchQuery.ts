@@ -6,10 +6,10 @@ import { PRICE_BANDS, type PriceBand } from "./priceBand.ts";
 // scene・price_band・category（複数は同じ名前をくり返す）・page。おすすめの商品は product=<product_id>（詳細の欄を開く）。
 // 値の形が違うもの（範囲外の価格帯・10種類以外のカテゴリー・整数でないページ・商品ID）は無いものとして読む。
 
-// D-43 SP-21: 並び替え。recommend（おすすめ）は既定で URL に付けない。scene_count_desc（「{シーン}で選ばれた回数順」）はシーンを選んだ R-01 だけ
+// D-43 SP-21: 並び替え。recommend（おすすめ順）は既定で URL に付けない。scene_count_desc（「{シーン}で選ばれた回数順」）はシーンを選んだ R-01 だけ
 export type SortKey = "recommend" | "price_asc" | "rating_desc" | "delivery_asc" | "scene_count_desc";
 export const SORTS: readonly { value: SortKey; label: string }[] = [
-  { value: "recommend", label: "おすすめ" },
+  { value: "recommend", label: "おすすめ順" },
   { value: "price_asc", label: "安い順" },
   { value: "rating_desc", label: "評価順" },
   { value: "delivery_asc", label: "早く届く順" },

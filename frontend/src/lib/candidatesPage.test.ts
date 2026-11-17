@@ -22,7 +22,7 @@ test("candidatesPage S-127: searchMode はシーンあり（言葉なし）で p
 });
 
 test("candidatesPage S-127: 並びは 5 つ。回数順はシーンありの R-01 だけ（ラベルは「{シーン}で選ばれた回数順」）", () => {
-  assert.deepEqual(sortOptions("送別").map((o) => o.label), ["おすすめ", "安い順", "評価順", "早く届く順", "送別で選ばれた回数順"]);
+  assert.deepEqual(sortOptions("送別").map((o) => o.label), ["おすすめ順", "安い順", "評価順", "早く届く順", "送別で選ばれた回数順"]);
   assert.equal(sortOptions(null).length, 4);
 });
 
