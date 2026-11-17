@@ -54,6 +54,7 @@ def order_by_score(
 
 
 SORTS = ("recommend", "price_asc", "rating_desc", "delivery_asc")  # D-43。省略・空は recommend
+SCENE_COUNT_DESC = "scene_count_desc"  # D-43。R-01 だけ（「{シーン}で選ばれた回数順」。PM 決定 2026-11-17「2B」）
 
 
 # SP-21 D-43
@@ -80,6 +81,13 @@ def order_by_sort(
         else:
             raise ValueError(sort)
     return sorted(keys, key=lambda pid: keys[pid])
+
+
+# SP-15 D-43 U-91
+def order_by_scene_count(scores: dict[str, Fraction], counts: dict[str, int]) -> list[str]:
+    """選んだシーンの回数の多い順。同じ回数ならおすすめの点数の高い順、なお同じなら商品ID順（番号の大きさの順）。
+    回数 0 は点数が高くても最後（回数が 0 の商品どうしも点数 → 商品ID順）"""
+    return sorted(scores, key=lambda pid: (-counts.get(pid, 0), -scores[pid], id_key(pid)))
 
 
 # SP-02 D-01 D-02 手順5・6

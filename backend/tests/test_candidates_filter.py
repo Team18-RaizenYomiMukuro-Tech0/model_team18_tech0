@@ -1,4 +1,4 @@
-# 完了条件 #1・#3（U-01〜U-03・U-09・U-10・U-22・U-34、I-27・I-28、設計.md D-01）: 抽出と上位 10 件。
+# 完了条件 #1・#3（U-01〜U-03・U-09・U-10・U-22・U-34、I-27・I-28、設計.md D-01）: 抽出と 12 件ずつのページ（#418。以前は上位 10 件）。
 # DB は使わない（偽の DB。SQL は本物と同じ文を流す）。
 from typing import Any
 
@@ -42,13 +42,13 @@ def test_out_of_stock_is_never_listed(fd1_client: TestClient) -> None:
         assert ids(client, "scene=送別&price_band=3000to4999") == []
 
 
-def test_top10() -> None:
-    """U-09: 12 件が該当するとき、点数上位 10 件だけが順位順（A12 → A03）。下位の A01・A02 は出ない"""
+def test_all_twelve_on_one_page() -> None:
+    """U-09（#418 で変更）: 12 件が該当するとき、全件が点数順に 1 ページに出る（A12 → A01）。以前の上位 10 件の切り捨てはない"""
     for client in client_for(CandidateDb(fd2())):
         got = ids(client, "scene=送別&price_band=3000to4999")
-        assert got == [f"A{i:02d}" for i in range(12, 2, -1)]
+        assert got == [f"A{i:02d}" for i in range(12, 0, -1)]
         r = client.get("/api/candidates?scene=送別&price_band=3000to4999").json()
-        assert r["count"] == 10 and len(r["items"]) == 10
+        assert (r["count"], r["total"], r["page"], r["page_size"]) == (12, 12, 1, 12)
 
 
 def test_empty(fd1_client: TestClient) -> None:
@@ -59,12 +59,12 @@ def test_empty(fd1_client: TestClient) -> None:
         assert r.status_code == 200 and (body["items"], body["count"]) == ([], 0) and "relax" in body  # 0 件には relax（D-44）
 
 
-def test_no_price_band_top10_of_eleven() -> None:
-    """U-34・I-27: 価格帯なし。在庫 1 以上の送別 11 件から、価格で絞らず上位 10 件（P13 が先頭、P10 は 11 番目で出ない）"""
+def test_no_price_band_all_eleven() -> None:
+    """U-34・I-27（#418 で変更）: 価格帯なし。在庫 1 以上の送別 11 件を価格で絞らず全件（P13 が先頭、P10 は 11 件目として出る）"""
     for client in client_for(CandidateDb(fd1(), fd1_counts())):
         got = ids(client, "scene=送別")
-        assert got == ["P13", "P09", "P01", "P04", "P05", "P02", "P08", "P07", "P03", "P11"]
-        assert "P10" not in got and "P06" not in got and "P12" not in got
+        assert got == ["P13", "P09", "P01", "P04", "P05", "P02", "P08", "P07", "P03", "P11", "P10"]
+        assert "P06" not in got and "P12" not in got
         assert got == ids(client, "scene=送別&price_band=")  # 空の price_band= も同じ
         assert got == ids(client, "scene=送別&budget=4500")  # budget は読まずに無視
 
@@ -82,12 +82,12 @@ class LoggingDb(CandidateDb):
 
 
 def test_sendoff_counts_cover_only_ranked_range() -> None:
-    """設計 手順 6: 回数を数えるのは上位 10 件と 10 位と同点の商品だけ（全候補は数えない）"""
+    """設計 D-04: おすすめ順の回数は、表示するページまで（12 件）と 12 位と同点の商品だけ数える（全候補は数えない）"""
     products = [product(f"R{i:02d}", "送別", 1, 3500, 4.0 + i * 0.01, 20) for i in range(1, 16)]
     db = LoggingDb(products, {"R01": 3, "R02": 3})
     for client in client_for(db):
-        assert ids(client, "scene=送別") == [f"R{i:02d}" for i in range(15, 5, -1)]
+        assert ids(client, "scene=送別") == [f"R{i:02d}" for i in range(15, 0, -1)][:12]
     counted = [params for sql, params in db.log if "COUNT(*)" in sql]
     assert len(counted) == 1
     assert counted[0][:4] == ("送別", "送別", 1, "会社")  # 値は params で渡す（D-04。送別は会社宛てに限る）
-    assert set(counted[0][4:]) == {f"R{i:02d}" for i in range(6, 16)}  # R01〜R05 は数えない
+    assert set(counted[0][4:]) == {f"R{i:02d}" for i in range(4, 16)}  # R01〜R03 は数えない

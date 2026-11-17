@@ -61,7 +61,7 @@ def test_no_price_band() -> None:
         base = get(client, [("scene", "送別")])
         assert (
             base[0] == 200
-            and base[1]["count"] == 10
+            and base[1]["count"] == 11  # 全件（R-01 は 12 件ずつ。#418）
             and base[1]["items"][0]["product_id"] == "P13"
         )
         for extra in (
@@ -72,7 +72,17 @@ def test_no_price_band() -> None:
         ):
             assert get(client, [("scene", "送別"), *extra]) == base, extra
         # 0 件には助け舟の件数 relax がつく（D-44）。条件を付けていないので price_band・category は null
-        assert get(client, [("scene", "お礼")]) == (200, {"items": [], "count": 0, "relax": {"price_band": None, "category": None}})
+        assert get(client, [("scene", "お礼")]) == (
+            200,
+            {
+                "items": [],
+                "count": 0,
+                "total": 0,
+                "page": 1,
+                "page_size": 12,
+                "relax": {"price_band": None, "category": None},
+            },
+        )
 
 
 def test_category() -> None:

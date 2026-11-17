@@ -7,7 +7,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Settings:
     BAYES_K: int = 20  # SP-02 ベイズ平均の係数
-    TOP_N: int = 10  # SP-01 候補の上位件数
+    CANDIDATE_PAGE_SIZE: int = 12  # SP-01・SP-15・N-14 R-01 の1ページの件数（旧 TOP_N＝上位10件。PM 決定 2026-11-17「1A」。#418）
     HIGH_RATING_MIN: float = 4.5  # SP-03 高評価の基準
     BUDGET_MIN: int = 1000  # SP-01、#31
     BUDGET_MAX: int = 999999  # SP-01、#31
@@ -15,7 +15,7 @@ class Settings:
     SHARE_EXPIRY_HOURS: int = 720  # SP-06 共有リンクの有効時間
     SHARE_ID_LENGTH: int = 22  # SP-05 共有リンクの識別子の長さ
     REQUEST_TIMEOUT_SECONDS: int = 10  # #29-14 サーバーの DB 問い合わせの上限（E-13）
-    PAGE_SIZE: int = 12  # D-28・N-14 絞り込み API の1ページの件数（決定。キックオフ記録 80）
+    PAGE_SIZE: int = CANDIDATE_PAGE_SIZE  # D-28・N-14 R-02 の1ページの件数。R-01 と同じ値（12 は上の 1 か所だけ。NF-31）
     DB_IDLE_MAX: int = 4  # D-45 残しておく DB 接続の本数（3〜4 本。詳細の画面の 3 つの API が同時に使う）
     LIKE_MAX_PER_ITEM: int = 30  # N-17・D-39 1 共有リンク × 1 候補のいいねの上限
     EVENT_BODY_MAX_BYTES: int = 1024  # D-40 計測の本文の上限（1KB）

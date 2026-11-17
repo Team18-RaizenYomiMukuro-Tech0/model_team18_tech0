@@ -12,7 +12,8 @@ BACKEND = Path(__file__).resolve().parent.parent
 
 def test_SP_N14_values() -> None:
     assert SETTINGS.BAYES_K == 20
-    assert SETTINGS.TOP_N == 10
+    assert SETTINGS.CANDIDATE_PAGE_SIZE == 12  # R-01 の1ページ（旧 TOP_N＝10。#418）
+    assert SETTINGS.PAGE_SIZE == SETTINGS.CANDIDATE_PAGE_SIZE == 12
     assert SETTINGS.HIGH_RATING_MIN == 4.5
     assert SETTINGS.BUDGET_MIN == 1000
     assert SETTINGS.BUDGET_MAX == 999999
@@ -25,8 +26,8 @@ def test_SP_N14_values() -> None:
 
 def test_settings_are_frozen_and_ignore_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(dataclasses.FrozenInstanceError):
-        SETTINGS.TOP_N = 99  # type: ignore[misc]  # 変更できないことを確かめるため、わざと代入する
-    for name in ("TOP_N", "REQUEST_TIMEOUT_SECONDS", "SHARE_EXPIRY_HOURS", "BAYES_K"):
+        SETTINGS.CANDIDATE_PAGE_SIZE = 99  # type: ignore[misc]  # 変更できないことを確かめるため、わざと代入する
+    for name in ("CANDIDATE_PAGE_SIZE", "REQUEST_TIMEOUT_SECONDS", "SHARE_EXPIRY_HOURS", "BAYES_K"):
         monkeypatch.setenv(name, "1")
     assert Settings() == SETTINGS  # 環境変数で値は変わらない
 

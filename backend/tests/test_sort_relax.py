@@ -62,9 +62,10 @@ def test_invalid_sort_and_candidates_ignore_sort() -> None:
         for bad in ("cheap", "PRICE_ASC", "price_asc%20", "price_desc"):
             r = client.get(f"/api/products?sort={bad}")
             assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_sort", bad
-        base = client.get("/api/candidates?scene=送別").json()
-        assert client.get("/api/candidates?scene=送別&sort=price_asc").json() == base
-        assert client.get("/api/candidates?scene=送別&sort=cheap").status_code == 200  # 読まないので 422 にしない
+        # R-01 にも sort を付けられる（D-01・D-43。#418）。表以外は 422
+        r = client.get("/api/candidates?scene=送別&sort=cheap")
+        assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_sort"
+        assert client.get("/api/candidates?scene=送別&sort=").json() == client.get("/api/candidates?scene=送別").json()
 
 
 def relax_data() -> list[dict]:
