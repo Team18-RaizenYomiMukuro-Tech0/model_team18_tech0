@@ -6,7 +6,8 @@ import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
 import { arrivesText } from "@/lib/arrival";
-import { GIFT_DATE_LABEL, giftVerdict, todayLocal } from "@/lib/giftDate";
+import { GIFT_DATE_INITIAL, GIFT_DATE_LABEL, giftVerdict, todayLocal } from "@/lib/giftDate";
+import { LIKE_FAILED_MESSAGE, likeLabel, type LikeView } from "@/lib/sharedLink";
 import { track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
@@ -30,12 +31,15 @@ import styles from "./results.module.css";
 // scene は R-01 から開いたときだけ渡す（D-29。「{シーン}で{n}回」を出すため）。R-02・おすすめ・お気に入り・カート・共有ページから開いたときは渡さない。
 // R8 SP-22 SP-25 SP-27 SP-34 D-42 D-46 D-47: 詳細が出たら最近見た商品の先頭に入れ（404・失敗は入れない）、③「詳細を開く」の計測を 1 回送る（声の有無つき。声の取得が済んでから）。
 // 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。届く日のそばに「贈る日（任意）」（入れた日は保存せず、別の商品に替えても残す）。
-export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string }>) {
-  const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
+// #410 SP-06 SP-12: 共有ページの上で開くときは like を渡す。主ボタンは「いいね」（共有ページのカードと同じ状態）、カートは出さず、幅によらず下からのシートで開く。
+export type DetailLike = { view: LikeView; onToggle: () => void };
+export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike }>) {
+  const narrow = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
+  const sheet = narrow || like != null;
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
   const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
-  const [gift, setGift] = useState(() => todayLocal()); // 贈る日（SP-27）。初期値は今日（PM 1B）。保存しない。別の商品に替えても残す
+  const [gift, setGift] = useState(GIFT_DATE_INITIAL); // 贈る日（SP-27）。初期値は空（PM 2026-11-17 決定3。11/16 の 1B を変更）。保存しない。別の商品に替えても残す
   const tracked = useRef("");
 
   useEffect(() => {
@@ -96,7 +100,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
         </div>
       )}
       {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} gift={gift} onGift={setGift} />}
-      {r?.status === "ok" && <Foot p={r.data} />}
+      {r?.status === "ok" && <Foot p={r.data} like={like} />}
     </>
   );
   if (sheet) {
@@ -114,12 +118,23 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
 }
 
 // 一番下の固定の帯: {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
-function Foot({ p }: Readonly<{ p: ProductDetail }>) {
+function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
   const out = p.status === "out_of_stock";
   return (
     <div className={styles.detfoot}>
       <span className={styles.footprice}>{formatPrice(p.price)}</span>
-      {out ? (
+      {like ? (
+        <>
+          {like.view.failed && (
+            <span role="alert" className={styles.deterr}>
+              {LIKE_FAILED_MESSAGE}
+            </span>
+          )}
+          <button type="button" className={styles.footbtn} data-primary="true" aria-pressed={like.view.liked} onClick={like.onToggle}>
+            {likeLabel(like.view.liked)} {like.view.count}
+          </button>
+        </>
+      ) : out ? (
         <button type="button" className={styles.footbtn} disabled>
           在庫なし
         </button>
