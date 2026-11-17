@@ -11,7 +11,11 @@ export const AUTO_SEARCH_NOTE = "条件を選ぶと自動で検索されます";
 // 条件の見出し（SP-10・D-27、PM 判断 2026-11-14 #255）。1行目: シーン・価格帯（同じ行）、2行目: カテゴリー（複数選べます）
 export const CONDITION_HEADINGS = { scene: "シーン", price: "価格帯（税込）", category: "カテゴリー", categoryHint: "（複数選べます）" } as const;
 
-export const toggleScene = (q: SearchQuery, s: Scene): SearchQuery => ({ ...q, scene: q.scene === s ? null : s, page: 1 });
+// シーンを外すと R-02 になり、回数順は出ない（SP-21）ので既定の並びに戻す
+export const toggleScene = (q: SearchQuery, s: Scene): SearchQuery => {
+  const scene = q.scene === s ? null : s;
+  return { ...q, scene, page: 1, sort: scene || q.sort !== "scene_count_desc" ? q.sort : "recommend" };
+};
 export const togglePrice = (q: SearchQuery, b: PriceBand): SearchQuery => ({ ...q, priceBand: q.priceBand === b ? null : b, page: 1 });
 // 複数選べる。押したものだけ選ぶ・外すを切り替え、ほかは外さない（#58-5）
 export const toggleCategory = (q: SearchQuery, name: string): SearchQuery => ({
@@ -20,7 +24,7 @@ export const toggleCategory = (q: SearchQuery, name: string): SearchQuery => ({
   page: 1,
 });
 // シーン・価格帯・カテゴリーをすべて外す。選んだ候補は画面全体の状態（D-32）にあるので触らない（#50-2、#55-3）
-export const clearConditions = (q: SearchQuery): SearchQuery => ({ ...q, scene: null, priceBand: null, categories: [], page: 1 });
+export const clearConditions = (q: SearchQuery): SearchQuery => ({ ...q, scene: null, priceBand: null, categories: [], page: 1, sort: q.sort === "scene_count_desc" ? "recommend" : q.sort });
 // 並びを替える。同じ条件のまま1ページ目に戻る（SP-21）
 export const setSort = (q: SearchQuery, sort: SortKey): SearchQuery => ({ ...q, sort, page: 1 });
 export const hasConditions = (q: SearchQuery): boolean => q.scene !== null || q.priceBand !== null || q.categories.length > 0;

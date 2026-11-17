@@ -23,7 +23,7 @@ import cond from "./conditions.module.css";
 import { useMediaQuery } from "./useMediaQuery";
 import styles from "./results.module.css";
 
-// SP-11 SP-12 D-27 F-13 F-16 F-19: 検索結果 `/search`。シーンがあれば R-01 の10件（CandidateResults。GET /api/candidates）、
+// SP-11 SP-12 D-27 F-13 F-16 F-19: 検索結果 `/search`。シーンがあれば R-01 の全件を12件ずつ（CandidateResults。GET /api/candidates）、
 // 無ければ R-02 の12件ずつ（GET /api/products）。どちらを呼ぶかは searchMode（#51-2）。
 // URL のクエリは GET /api/products と同じ名前（#85）。product があれば、その商品の詳細の欄を開く。条件ボタンは SearchConditions（R8）。
 // R2 SP-29 SP-31 D-46: 899px 以下は詳細をシートで開き、画面の下端に 1 本の帯（共有リスト・カート）を固定する。480px 以下は条件を 1 行にたたむ。
@@ -153,7 +153,7 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
         )}
         {r?.status === "ok" && r.data.items.length > 0 && (
           <>
-            {/* SP-21: 結果の見出しの右に並び替え（R-01 の 10 件には出さない。見出しの文言はモックの「絞り込み結果」） */}
+            {/* SP-21: 結果の見出しの右に並び替え（R-01 は CandidateResults が同じ部品を出す。見出しの文言はモックの「絞り込み結果」） */}
             <div className={cond.rhead}>
               <h2 className={cond.rtitle}>絞り込み結果</h2>
               <SortSelect q={q} />
