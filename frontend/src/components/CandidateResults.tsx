@@ -66,12 +66,12 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
         </div>
         {prev && (
           <div className={results.stale} aria-busy="true">
-            <CandidateList items={prev.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />
+            <CandidateList items={prev.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} scene={q.scene} />
           </div>
         )}
         {s.status === "results" && (
           <div onClick={onCards}>
-            <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} />
+            <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} scene={q.scene} />
           </div>
         )}
         <RecentViewed q={q} />

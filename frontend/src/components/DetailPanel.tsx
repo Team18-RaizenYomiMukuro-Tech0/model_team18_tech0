@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
@@ -11,10 +12,14 @@ import { track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
 import { VOICES_HEADING, voiceViews } from "@/lib/voices";
+import { FROM_SHARE_PARAM, FROM_SHARE_VALUE } from "@/lib/sharedLink";
+import { productCandidate } from "@/lib/selection";
 import { cartStore } from "@/state/cart";
+import { useAppState } from "@/state/AppState";
 import type { Scene } from "@/lib/api";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import { Searching } from "./Searching";
 import { Sheet } from "./Sheet";
 import { SimilarProducts } from "./SimilarProducts";
@@ -32,6 +37,7 @@ import styles from "./results.module.css";
 // 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。届く日のそばに「贈る日（任意）」（入れた日は保存せず、別の商品に替えても残す）。
 export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string }>) {
   const sheet = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
+  const fromShare = useSearchParams().get(FROM_SHARE_PARAM) === FROM_SHARE_VALUE; // 共有ページから開いた詳細には「共有リストに入れる」を置かない（F-47）
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
   const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
@@ -96,7 +102,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
         </div>
       )}
       {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} gift={gift} onGift={setGift} />}
-      {r?.status === "ok" && <Foot p={r.data} />}
+      {r?.status === "ok" && <Foot p={r.data} fromShare={fromShare} />}
     </>
   );
   if (sheet) {
@@ -113,11 +119,17 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   );
 }
 
-// 一番下の固定の帯: {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
-function Foot({ p }: Readonly<{ p: ProductDetail }>) {
+// 一番下の固定の帯: 「共有リストに入れる」（F-47。共有ページから開いたときは無し）の下に {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
+function Foot({ p, fromShare }: Readonly<{ p: ProductDetail; fromShare: boolean }>) {
   const out = p.status === "out_of_stock";
+  const { isPicked, pick, unpick } = useAppState();
   return (
     <div className={styles.detfoot}>
+      {!fromShare && (
+        <div className={styles.footpick}>
+          <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} help={false} />
+        </div>
+      )}
       <span className={styles.footprice}>{formatPrice(p.price)}</span>
       {out ? (
         <button type="button" className={styles.footbtn} disabled>

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, detailFromShareHref, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -105,7 +105,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
             {note && <p className={styles.note}>{note}</p>}
             <div className={styles.actions}>
               {canShowDetail(it.status) && (
-                <Link href={detailHref(it.product_id)} className={styles.link}>
+                <Link href={detailFromShareHref(it.product_id)} className={styles.link}>
                   {DETAIL_LABEL}
                 </Link>
               )}
