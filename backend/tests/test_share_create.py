@@ -154,11 +154,12 @@ def test_create(backend: Backend) -> None:
             "SELECT product_name, price FROM products WHERE product_id = %s", (i["product_id"],)
         )[0]
         assert (i["name"], i["price"]) == (found["product_name"], found["price"])
-        # 送別回数が 1 以上なら文頭は回数の文、0 なら回数の文を出さず評価・配送の文から始まる（SP-03 第2弾。TPL-03 は取りやめ）
-        assert i["reason"].endswith("。") and (i["reason"].startswith("職場の送別") == ("回選ばれ" in i["reason"]))
-    if backend.name == "fake":  # FD-1 の P09 は仕様 SP-03 の例 X1 と一字一句同じ
+        # scene を付けない作成は、シーンに触れない文（回数の文なし）。材料が全部無ければ空（D-03。PM 11/17「1A」。U-90）
+        assert i["reason"] == "" or i["reason"].endswith("。")
+        assert "選ばれ" not in i["reason"] and "職場の送別" not in i["reason"]
+    if backend.name == "fake":  # FD-1 の P09
         reason = {i["product_id"]: i["reason"] for i in saved}["P09"]
-        assert reason == "職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。"
+        assert reason == "評価は4.6（120件）と高めです。2日で届き、ラッピングもできます。"
 
     # I-15: 選び直すと別の識別子の新しい行。古い行はそのまま
     again = create([ids[2], ids[0]])["share_id"]
@@ -219,7 +220,8 @@ def test_count(fake: Backend) -> None:
     assert [i["product_id"] for i in items_of(fake.row(create([c, a, b])["share_id"]))] == [c, a, b]
 
 
-# SP-03 SP-05 D-05 第2弾「シーンに合わせる」（PM 11/15 朝）: scene は任意。無い・空は送別。不正は 422 invalid_scene
+# SP-03 SP-05 D-05 第2弾「シーンに合わせる」（PM 11/15 朝）: scene は任意。不正は 422 invalid_scene。
+# 無い・空は、送別ではなくシーンに触れない文（D-03。PM 11/17「1A」。I-14 ④）
 def test_scene(fake: Backend) -> None:
     db: Any = fake.db
     for _ in range(3):
@@ -234,7 +236,9 @@ def test_scene(fake: Backend) -> None:
 
     tail = "評価も4.5（20件）と高めです。2日で届き、ラッピングもできます。"
     assert reason({"scene": "送別"}) == "職場の送別で12回選ばれていて、" + tail
-    assert reason({}) == reason({"scene": ""}) == reason({"scene": None}) == "職場の送別で12回選ばれていて、" + tail
+    no_scene = "評価は4.5（20件）と高めです。2日で届き、ラッピングもできます。"
+    assert reason({}) == reason({"scene": ""}) == reason({"scene": None}) == no_scene
+    assert "選ばれ" not in no_scene and "送別" not in no_scene
     assert reason({"scene": "お礼"}) == "お礼で3回選ばれていて、" + tail
     assert reason({"scene": "誕生日"}) == "誕生日で2回選ばれていて、" + tail
     # 回数 0 は回数の文を出さず、評価の文から始める

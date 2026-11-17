@@ -18,6 +18,25 @@ def test_examples() -> None:
     assert build_reason(0, Decimal("4.7"), 50, None, None) == X4
 
 
+# SP-03 D-03 U-90（PM 11/17「1A」）: シーンを選んでいない理由の文。回数の文は入れない
+def test_no_scene_reason() -> None:
+    rows = [
+        (Decimal("4.6"), 120, 2, True, "評価は4.6（120件）と高めです。2日で届き、ラッピングもできます。"),
+        (Decimal("4.2"), 30, 3, False, "評価は4.2（30件）です。3日で届きます。"),
+        (None, None, 2, True, "2日で届き、ラッピングもできます。"),
+        (None, None, 3, False, "3日で届きます。"),
+        (None, None, None, True, "ラッピングができます。"),
+        (None, None, None, None, ""),  # 理由の行ごと出さない（空の行も代わりの文言も作らない）
+        (None, 0, 2, True, "2日で届き、ラッピングもできます。"),  # 件数 0 は評価の文を出さない
+    ]
+    for rating, count, days, wrap, expected in rows:
+        # 回数が 1 以上でも、シーンなしなら回数の文を入れない
+        for n in (0, 48):
+            text = build_reason(n, rating, count, days, wrap, None)
+            assert text == expected, (rating, count, days, wrap, n)
+            assert "選ばれ" not in text and "職場の送別で" not in text and "評価も" not in text
+
+
 # SP-03 D-03 U-26 U-27
 def test_high_rating() -> None:
     assert "と高めです" in build_reason(12, Decimal("4.5"), 20, 2, True)  # P01
