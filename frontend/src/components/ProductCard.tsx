@@ -31,7 +31,7 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
             <HeartButton productId={p.product_id} name={p.name} />
           </span>
         </div>
-        {p.high_rating && <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span>}
+        {p.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
         <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
           {p.name}
         </Link>
