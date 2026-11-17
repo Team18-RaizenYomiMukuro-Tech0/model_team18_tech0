@@ -65,10 +65,15 @@ export function Recommended() {
           return (
             <li key={p.product_id} className={`${styles.card} ${g.wrap}`}>
               <div className={g.grid}>
-                <button type="button" tabIndex={-1} aria-hidden="true" onClick={open} className={`${styles.pic} ${styles.openbtn} ${g.pic}`}>
-                  <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
-                  <span className={styles.imgtag}>イメージ</span>
-                </button>
+                <div className={g.picwrap}>
+                  <button type="button" tabIndex={-1} aria-hidden="true" onClick={open} className={`${styles.pic} ${styles.openbtn} ${g.pic}`}>
+                    <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
+                    <span className={styles.imgtag}>イメージ</span>
+                  </button>
+                  <span className={g.heart}>
+                    <HeartButton productId={p.product_id} name={p.name} />
+                  </span>
+                </div>
                 <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`}>
                   {p.name}
                 </button>
@@ -81,15 +86,12 @@ export function Recommended() {
                 <div className={g.chips}>
                   <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
                 </div>
-                <div className={g.pick}>
+                <div className={g.actions}>
                   <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
+                  <span className={g.cart}>
+                    <CartButton productId={p.product_id} name={p.name} />
+                  </span>
                 </div>
-                <span className={g.heart}>
-                  <HeartButton productId={p.product_id} name={p.name} />
-                </span>
-                <span className={g.cart}>
-                  <CartButton productId={p.product_id} name={p.name} />
-                </span>
               </div>
             </li>
           );
