@@ -1,0 +1,263 @@
+{
+ "p1_1280": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17",
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "p2_1280": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&page=2",
+  "h": "候補（14件）",
+  "cards": 2,
+  "rank": false,
+  "range": "全14件中13〜14件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "2",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "sort_1280": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&sort=scene_count_desc",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "scene_count_desc",
+  "counts": [
+   "17",
+   "17",
+   "17",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "reload_1280": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&sort=scene_count_desc&page=2",
+  "h": "候補（14件）",
+  "cards": 2,
+  "rank": false,
+  "range": "全14件中13〜14件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "2",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "scene_count_desc",
+  "counts": [
+   "10",
+   "10"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "back_1280": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17",
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "p1_375": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17",
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "p2_375": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&page=2",
+  "h": "候補（14件）",
+  "cards": 2,
+  "rank": false,
+  "range": "全14件中13〜14件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "2",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "sort_375": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&sort=scene_count_desc",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "scene_count_desc",
+  "counts": [
+   "17",
+   "17",
+   "17",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "reload_375": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5&sort=scene_count_desc&page=2",
+  "h": "候補（14件）",
+  "cards": 2,
+  "rank": false,
+  "range": "全14件中13〜14件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "2",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "scene_count_desc",
+  "counts": [
+   "10",
+   "10"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "back_375": {
+  "url": "/search?scene=%E9%80%81%E5%88%A5",
+  "h": "候補（14件）",
+  "cards": 12,
+  "rank": false,
+  "range": "全14件中1〜12件を表示",
+  "pages": "前へ 1 2 次へ",
+  "current": "1",
+  "sortOpts": [
+   "おすすめ",
+   "安い順",
+   "評価順",
+   "早く届く順",
+   "送別で選ばれた回数順"
+  ],
+  "sortVal": "recommend",
+  "counts": [
+   "10",
+   "17",
+   "10",
+   "17"
+  ],
+  "reason": true,
+  "pick": true,
+  "hs": 0
+ },
+ "share10": {
+  "over": false,
+  "sel": "共有リスト（10件）"
+ },
+ "share11": {
+  "over": true,
+  "sel": "共有リスト（11件）",
+  "disabled": true
+ }
+}
