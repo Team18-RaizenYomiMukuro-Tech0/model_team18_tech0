@@ -1,35 +1,20 @@
-/* R6 SP-30 D-46: カードの部品（R-01・R-02・おすすめで同じ）。下段は「共有リストに入れる」（R-01 だけ）・ハート・「カートに入れる」の順。
-   スマホの幅（480px 以下）だけ、ハートは価格の行の右端に移す。カードの幅が狭すぎるとき（R-01 の 5 列など）も同じにして、ボタンが割れないようにする */
-.wrap { container-type: inline-size; }
-.grid { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 8px; row-gap: 4px; align-content: start; padding: 8px; color: var(--ink); font-size: 14px; }
-.grid > * { grid-column: 1 / -1; min-width: 0; }
-.rank { order: 1; justify-self: start; }
-.pic { order: 2; }
-.badge { order: 3; justify-self: start; }
+/* PM 11/17「B」 SP-30 D-46: カードの部品（R-01・R-02・おすすめで同じ）。ハートはどの幅・拡大でも画像の枠の右上に重ねる（absolute。44px 以上）。
+   カードは縦並びの flex。下のボタンの段（「共有リストに入れる」（R-01 だけ）・「カートに入れる」）は margin-top:auto でいつもカードの一番下にそろえ、同じ行のカードは行の高さいっぱいに伸ばす */
+.wrap { display: flex; flex-direction: column; }
+.grid { display: flex; flex-direction: column; flex: 1 1 auto; gap: 4px; padding: 8px; color: var(--ink); font-size: 14px; }
+.grid > * { min-width: 0; }
+.rank { order: 1; align-self: flex-start; }
+.picwrap { order: 2; position: relative; }
+.badge { order: 3; align-self: flex-start; }
 .name { order: 4; }
 .price { order: 5; }
 .meta { order: 7; }
 .chips { order: 8; }
 .chips:empty { display: none; }
 .reason { order: 9; }
-.pick { order: 10; }
-.heart { order: 11; grid-column: 1; justify-self: start; margin-top: 4px; }
-.cart { order: 12; grid-column: 2; margin-top: 4px; }
+.actions { order: 10; margin-top: auto; padding-top: 4px; display: flex; flex-direction: column; gap: 4px; }
+.heart { position: absolute; top: 4px; right: 4px; z-index: 1; }
+.cart { align-self: flex-start; }
 .cartbtn { min-width: 44px; min-height: 44px; padding: 8px 6px; border: 1px solid var(--s-coral-ink); border-radius: var(--rm); background: var(--s-coral-ink); color: #fff; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
 .cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; font-weight: 400; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-/* ハートを価格の行の右へ（スマホの幅。カードの幅が 179px 以下のときも） */
-@media (max-width: 480px) {
-  .grid { grid-template-columns: minmax(0, 1fr) 44px; }
-  .grid { column-gap: 4px; }
-  .price { grid-column: 1; align-self: center; white-space: nowrap; font-size: 13px; }
-  .heart { order: 6; grid-column: 2; justify-self: end; margin-top: 0; }
-  .cart { grid-column: 1 / -1; }
-}
-@container (max-width: 179px) {
-  .grid { grid-template-columns: minmax(0, 1fr) 44px; }
-  .grid { column-gap: 4px; }
-  .price { grid-column: 1; align-self: center; white-space: nowrap; font-size: 13px; }
-  .heart { order: 6; grid-column: 2; justify-self: end; margin-top: 0; }
-  .cart { grid-column: 1 / -1; }
-}
