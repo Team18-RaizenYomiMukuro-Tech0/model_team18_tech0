@@ -35,7 +35,7 @@ header.top {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px 12px;
-  padding: 8px 16px;
+  padding: 8px max(16px, calc((100% - 1200px) / 2));
   background: var(--paper);
   border-bottom: 1px solid var(--line);
 }
@@ -101,7 +101,7 @@ header.top {
 }
 /* SP-08: 480px 以下のヘッダーは 1 段。ロゴ左、右にお気に入り・ログイン・カート（アイコンの下に 10px の文字。数の丸はアイコンの右上） */
 @media (max-width: 480px) {
-  header.top { flex-wrap: nowrap; padding: 6px 12px; gap: 0; }
+  header.top { flex-wrap: nowrap; padding: 6px 16px; gap: 0; }
   .logo { margin-right: auto; }
   .logo img { height: 24px; }
   .hbtn { flex-direction: column; justify-content: center; gap: 0; min-width: 44px; min-height: 44px; padding: 2px 4px; }
