@@ -34,9 +34,10 @@ import styles from "./results.module.css";
 // 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。
 // #410 SP-06 SP-12: 共有ページの上で開くときは like を渡す。主ボタンは「いいね」（共有ページのカードと同じ状態）、カートは出さず、幅によらず下からのシートで開く。
 export type DetailLike = { view: LikeView; onToggle: () => void };
-export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike }>) {
+export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like, overlay = false }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike; overlay?: boolean }>) {
   const narrow = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
-  const sheet = narrow || like != null;
+  // 899px 以下は下からのシート。900px 以上は、トップ（overlay）の上では右から出るパネル、検索結果では今までの右の欄。共有ページ（like）の上でも右から出るパネル（#415 4A・#419）
+  const sheet = narrow || like != null || overlay;
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
   const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
@@ -105,7 +106,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   );
   if (sheet) {
     return (
-      <Sheet label="商品の詳細" onClose={onClose}>
+      <Sheet label="商品の詳細" side={!narrow} onClose={onClose}>
         {content}
       </Sheet>
     );

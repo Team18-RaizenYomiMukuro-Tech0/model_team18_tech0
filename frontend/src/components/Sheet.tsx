@@ -6,7 +6,8 @@ import styles from "./results.module.css";
 // D-46 SP-29: 下から出るシート（詳細・共有リスト）。`role="dialog"`・閉じるボタン・Esc・背景を押して閉じる。
 // 開いたらシートへ焦点を移し（中身が読めたら見出しへ。DetailPanel）、Tab はシートの中だけを回る。閉じたら開いたときの要素（押したカード・帯のボタン）へ戻す。
 // open=false のときは隠すだけで、中身は消さない（共有リストの作成中の状態や作ったリンクが消えないように）。
-export function Sheet({ open = true, label, onClose, children }: Readonly<{ open?: boolean; label: string; onClose: () => void; children: React.ReactNode }>) {
+// side: 900px 以上は右から出るパネル（お気に入り・カートと同じ形。#415 4A）。動きは同じ（暗幕・Esc・焦点・閉じたら戻す）
+export function Sheet({ open = true, side = false, label, onClose, children }: Readonly<{ open?: boolean; side?: boolean; label: string; onClose: () => void; children: React.ReactNode }>) {
   const frame = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   useEffect(() => {
@@ -47,7 +48,7 @@ export function Sheet({ open = true, label, onClose, children }: Readonly<{ open
   return (
     <div hidden={!open}>
       <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
-      <div ref={frame} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={styles.sheet}>
+      <div ref={frame} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={side ? `${styles.sheet} ${styles.side}` : styles.sheet}>
         <div className={styles.sheethead}>
           <button type="button" className={styles.sheetclose} onClick={onClose}>
             閉じる
