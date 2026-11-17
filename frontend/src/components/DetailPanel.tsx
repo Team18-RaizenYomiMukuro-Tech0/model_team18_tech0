@@ -36,7 +36,7 @@ import styles from "./results.module.css";
 export type DetailLike = { view: LikeView; onToggle: () => void };
 export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like, overlay = false }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike; overlay?: boolean }>) {
   const narrow = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
-  // 899px 以下は下からのシート。900px 以上は、トップ（overlay）の上では右から出るパネル、検索結果では今までの右の欄。共有ページ（like）の PC の形は #419
+  // 899px 以下は下からのシート。900px 以上は、トップ（overlay）の上では右から出るパネル、検索結果では今までの右の欄。共有ページ（like）の上でも右から出るパネル（#415 4A・#419）
   const sheet = narrow || like != null || overlay;
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
@@ -106,7 +106,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   );
   if (sheet) {
     return (
-      <Sheet label="商品の詳細" side={!narrow && like == null} onClose={onClose}>
+      <Sheet label="商品の詳細" side={!narrow} onClose={onClose}>
         {content}
       </Sheet>
     );
