@@ -1,7 +1,8 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import { REQUEST_TIMEOUT_MS, SHARE_FAILED_MESSAGE, ShareLinkRunner, shareFullUrl, shareRequestBody, type ShareState } from "./api.ts";
-import { canCreate } from "./selection.ts";
+import type { Candidate } from "../state/selection.ts";
+import { canCreate, shareScene } from "./selection.ts";
 
 // S-10〜S-13 S-39 S-40 S-51 E-04 E-05: 共有リンクの作成。API を偽物に差し替え、偽のタイマーで応答を遅らせる／失敗させる
 type Res = { ok: boolean; json: () => Promise<unknown> };
@@ -137,4 +138,23 @@ test("shareRequestBody F-47: scene を付ける／付けない", () => {
   assert.equal(shareRequestBody(["G0001"], "送別"), JSON.stringify({ product_ids: ["G0001"], scene: "送別" }));
   assert.equal(shareRequestBody(["G0001"], null), JSON.stringify({ product_ids: ["G0001"] }));
   assert.equal(shareRequestBody(["G0001"]), JSON.stringify({ product_ids: ["G0001"] }));
+});
+
+// #427 AC-16 SP-05 D-05: 選んだシーン（お礼・誕生日）が、作成の本文に入って API へ届く（画面は shareScene の値を create へ渡す）
+for (const scene of ["お礼", "誕生日"]) {
+  test(`shareLink #427: シーン「${scene}」で選んだ候補なら、作成の本文に scene が入る`, () => {
+    const picked: Candidate[] = ["G0001", "G0002"].map((id) => ({ productId: id, name: id, price: 1000, category: "食品", scene }));
+    const { runner, calls } = setup([{ delay: 0 }]);
+    runner.create(picked.map((c) => c.productId), shareScene(picked));
+    assert.deepEqual(JSON.parse(calls[0].init.body), { product_ids: ["G0001", "G0002"], scene });
+    mock.timers.reset();
+  });
+}
+
+test("shareLink #427: シーンなし（R-02 などで選んだ）は scene を送らない", () => {
+  const picked: Candidate[] = [{ productId: "G0001", name: "a", price: 1000, category: "食品" }];
+  const { runner, calls } = setup([{ delay: 0 }]);
+  runner.create(["G0001"], shareScene(picked));
+  assert.deepEqual(JSON.parse(calls[0].init.body), { product_ids: ["G0001"] });
+  mock.timers.reset();
 });
