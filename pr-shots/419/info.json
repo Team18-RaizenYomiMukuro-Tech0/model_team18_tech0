@@ -1,0 +1,94 @@
+{
+ "before_1280": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": false,
+  "l": null,
+  "w": null,
+  "top": null,
+  "vw": 1280,
+  "filtered": false,
+  "hasCart": false,
+  "y": 100,
+  "focus": "検索× 検索 お気に入り ログイン準備中|BODY",
+  "hs": 0
+ },
+ "open_1280": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": true,
+  "label": "商品の詳細",
+  "l": 860,
+  "w": 420,
+  "top": 0,
+  "vw": 1280,
+  "filtered": false,
+  "hasCart": false,
+  "title": "テスト商品1",
+  "y": 248,
+  "focus": "テスト商品1|H2",
+  "hs": 0
+ },
+ "open_btns_1280": [
+  "閉じる",
+  "♡",
+  "♡ いいね 2"
+ ],
+ "closed_1280": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": false,
+  "l": null,
+  "w": null,
+  "top": null,
+  "vw": 1280,
+  "filtered": false,
+  "hasCart": false,
+  "y": 248,
+  "focus": "くわしく見る|BUTTON",
+  "hs": 0
+ },
+ "before_375": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": false,
+  "l": null,
+  "w": null,
+  "top": null,
+  "vw": 375,
+  "filtered": false,
+  "hasCart": false,
+  "y": 100,
+  "focus": "検索× 検索 お気に入り ログイン準備中|BODY",
+  "hs": 0
+ },
+ "open_375": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": true,
+  "label": "商品の詳細",
+  "l": 0,
+  "w": 375,
+  "top": 60,
+  "vw": 375,
+  "filtered": false,
+  "hasCart": false,
+  "title": "テスト商品1",
+  "y": 242,
+  "focus": "テスト商品1|H2",
+  "hs": 0
+ },
+ "open_btns_375": [
+  "閉じる",
+  "♡",
+  "♡ いいね 2"
+ ],
+ "closed_375": {
+  "url": "/s/aaaaaaaaaaaaaaaaaaaaaa",
+  "dialog": false,
+  "l": null,
+  "w": null,
+  "top": null,
+  "vw": 375,
+  "filtered": false,
+  "hasCart": false,
+  "y": 242,
+  "focus": "くわしく見る|BUTTON",
+  "hs": 0
+ }
+}
