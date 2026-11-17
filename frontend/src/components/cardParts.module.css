@@ -6,6 +6,8 @@
 .rank { order: 1; align-self: flex-start; }
 .picwrap { order: 2; position: relative; }
 .badge { order: 3; align-self: flex-start; }
+/* #437 札が無いカードも札 1 行ぶんの高さを空け、商品名の位置を同じ行のほかのカードとそろえる（見た目だけ。読み上げには出さない） */
+.badgeph { visibility: hidden; }
 .name { order: 4; }
 .price { order: 5; }
 .meta { order: 7; }

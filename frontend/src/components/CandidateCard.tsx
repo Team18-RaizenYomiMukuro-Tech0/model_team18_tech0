@@ -40,7 +40,7 @@ export function CandidateCard({
             <HeartButton productId={item.product_id} name={item.name} />
           </span>
         </div>
-        {item.high_rating && <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span>}
+        {item.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
         {href ? (
           <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
             {item.name}

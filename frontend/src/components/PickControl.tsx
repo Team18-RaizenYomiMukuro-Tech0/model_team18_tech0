@@ -6,7 +6,7 @@ import styles from "./pick.module.css";
 
 // F-47 SP-04 SP-30: カードの「共有リストに入れる」（R-01・R-02・トップのおすすめで同じ）と、その横の「？」。
 // ボタンの文言: 「共有リストに入れる」、押した後「✓ リストに入れた」（もう一度押すと外れる）。「？」を押すとボタンのすぐ上に短い説明のふきだしを出し、
-// 外を押す・もう一度「？」を押す・Esc・画面を動かすと消える（画面をふさがない）。縦横 44px 以上。カードが狭くて並ばないときは「？」を下の行に回す。
+// 外を押す・もう一度「？」を押す・Esc・画面を動かすと消える（画面をふさがない）。「？」は見た目 16px の丸をボタンの右上に寄せ、押せる範囲は透明な余白で 44px。
 export function PickControl({ name, picked, onToggle, help = true }: Readonly<{ name: string; picked: boolean; onToggle: () => void; help?: boolean }>) {
   const [open, setOpen] = useState(false);
   const row = useRef<HTMLDivElement>(null);
@@ -56,7 +56,7 @@ export function PickControl({ name, picked, onToggle, help = true }: Readonly<{ 
       {help && (
         <>
           <button ref={q} type="button" className={styles.help} aria-label={SHARE_HELP_LABEL} aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
-            <span aria-hidden="true">？</span>
+            <span className={styles.helpdot} aria-hidden="true">？</span>
           </button>
           {open && (
             <div ref={bubble} id={id} role="note" className={styles.bubble}>
