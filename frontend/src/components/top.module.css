@@ -40,6 +40,8 @@
 .rec { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .card { height: 100%; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); color: var(--ink); font-size: 14px; }
 .card a.name { color: inherit; text-decoration: none; }
+/* おすすめの画像・商品名はボタン（詳細をトップの上で開く）。見た目は今のリンクと同じ */
+.openbtn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .pic { position: relative; display: block; }
 .pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
 .imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
