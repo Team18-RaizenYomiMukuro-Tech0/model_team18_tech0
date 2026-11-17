@@ -4,15 +4,16 @@
 #  - 在庫 0 でも 404 にせず、商品情報と status＝out_of_stock を返す（#50-4・#53-5）。存在しなければ 404 not_found。
 #  - SQL は固定の 1 本の文。値は %s と params で渡す（N-04）。形式が不正な ID は DB を呼ばずに 422。
 import re
+import time
 from datetime import date
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from api.products import SCENES, _item
 from clock import Clock, get_clock
-from db import Db, get_db
+from db import Db, get_db, server_timing
 from decision import scene_params, today_jst
 
 router = APIRouter()
@@ -51,11 +52,13 @@ def _detail(row: dict[str, Any], today: date, scene: str | None) -> dict[str, An
 def get_product(
     product_id: str,
     request: Request,
+    response: Response,
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
 ) -> Any:
     """商品の詳細。形式が不正なら 422（invalid_product_id・invalid_scene）、存在しなければ 404（not_found）。
     scene（任意。お礼・誕生日・送別）を付けると scene_count を返す（D-34）。空・無しは指定なし"""
+    started = time.perf_counter()
     if PRODUCT_ID_RE.fullmatch(product_id) is None:
         return JSONResponse(
             {"error": {"code": "invalid_product_id", "message": "product_id の形式が正しくありません"}},
@@ -76,4 +79,6 @@ def get_product(
         return JSONResponse(
             {"error": {"code": "not_found", "message": "この商品は見つかりません"}}, status_code=404
         )
-    return _detail(rows[0], today_jst(clock.now()), scene)
+    body = _detail(rows[0], today_jst(clock.now()), scene)
+    response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
+    return body

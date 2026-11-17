@@ -9,6 +9,7 @@
 #  - 書き込みは share_links への INSERT 1 回だけ（Db.insert_share_link。N-04）。SQL はプレースホルダ。
 #  - 時刻は Clock（D-11）、テスト用の印は get_test_mark（D-19）から受け取る。
 import json
+import time
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
@@ -21,7 +22,7 @@ from api.product_detail import PRODUCT_ID_RE
 from api.products import SCENES
 from clock import Clock, get_clock
 from config import SETTINGS
-from db import Db, DbError, get_db
+from db import Db, DbError, get_db, server_timing
 from decision import scene_counts
 from expiry import is_expired
 from reasons import build_reason
@@ -236,7 +237,11 @@ async def get_share_link(
     clock: Annotated[Clock, Depends(get_clock)],
 ) -> Any:
     """共有リンクを開く。DB の呼び出しは別スレッドで行い、待ち中も他の要求を止めない"""
-    return await run_in_threadpool(_read, share_id, db, clock)
+    started = time.perf_counter()
+    result = await run_in_threadpool(_read, share_id, db, clock)
+    if result.status_code == 200:  # 200 だけ内訳を付ける（数値だけ。一覧と同じ。NF-54・#256）
+        result.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)
+    return result
 
 
 def _like_error(code: str, message: str, status: int) -> JSONResponse:
