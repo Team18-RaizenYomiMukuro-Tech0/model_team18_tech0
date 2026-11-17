@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
+import { productCandidate } from "@/lib/selection";
+import { useAppState } from "@/state/AppState";
 import { productImage } from "@/lib/images";
 import { ratingText, type Product } from "@/lib/products";
 import { CartButton } from "./CardButtons";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./results.module.css";
 
@@ -15,6 +18,7 @@ import styles from "./results.module.css";
 // 一覧は在庫 0 を出さないので、決め手の「在庫あり」はいつも出る。R-02 はシーンを選んでいないので「{シーン}で{n}回」は出ない。
 export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: string; selected: boolean }>) {
   const img = productImage(p.category);
+  const { isPicked, pick, unpick } = useAppState();
   return (
     <li className={`${styles.card} ${g.wrap}`} data-selected={selected}>
       <div className={g.grid}>
@@ -41,6 +45,7 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
           <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
         </div>
         <div className={g.actions}>
+          <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
           <span className={g.cart}>
             <CartButton productId={p.product_id} name={p.name} />
           </span>

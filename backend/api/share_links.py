@@ -4,7 +4,7 @@
 #  各 items[] に like_count（share_likes に行が無ければ 0。D-39）と、商品が DB にあれば category（開いた時点で商品テーブルから。#295 案 A）を足す。
 # POST /api/share-links/{share_id}/likes（D-39、SP-28、N-17）はいいねを 1 つの共有リンク × 1 つの商品ごとに数えるだけ（名前・IP は持たない）。
 #  上限は config.LIKE_MAX_PER_ITEM（30）。on:false は取り消し（0 を下回らない）。書き込みは許可した 2 つの文だけ（Db.write。D-45）。
-#  - 本文は商品 ID と任意の scene（無い・空は送別。不正は 422 invalid_scene。設計 D-05）。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
+#  - 本文は商品 ID と任意の scene（無い・空はシーンなし＝シーンに触れない文。不正は 422 invalid_scene。設計 D-05）。名前・価格・理由はサーバーが作成時点で作り直す（画面から受けた値を信用しない）。
 #  - 検査の順: 型 → 配列の長さ（50）→ 重複を除く → 0 件 → 11 件以上 → 存在確認（U-33、NF-13）。
 #  - 書き込みは share_links への INSERT 1 回だけ（Db.insert_share_link。N-04）。SQL はプレースホルダ。
 #  - 時刻は Clock（D-11）、テスト用の印は get_test_mark（D-19）から受け取る。
@@ -71,9 +71,9 @@ def _invalid() -> JSONResponse:
     return _error("invalid_product_ids", "product_ids は商品IDの配列で、存在する商品だけを指定してください")
 
 
-def _parse_body(raw: bytes) -> tuple[list[str], str] | JSONResponse:
+def _parse_body(raw: bytes) -> tuple[list[str], str | None] | JSONResponse:
     """本文を検査して、商品 ID の並び（重複込み）とシーンを返す。型が不正なら 422（invalid_product_ids）、
-    scene が お礼・誕生日・送別 以外なら 422（invalid_scene）。scene は任意で、無い・空なら送別（設計 D-05）"""
+    scene が お礼・誕生日・送別 以外なら 422（invalid_scene）。scene は任意で、無い・空ならシーンなし（None。シーンに触れない文。設計 D-05・D-03。PM 11/17「1A」）"""
     try:
         body = json.loads(raw)
     except ValueError:
@@ -85,13 +85,13 @@ def _parse_body(raw: bytes) -> tuple[list[str], str] | JSONResponse:
         return _invalid()
     scene = body.get("scene")
     if scene is None or scene == "":
-        scene = "送別"
+        return [str(i) for i in ids], None
     if not isinstance(scene, str) or scene not in SCENES:
         return _error("invalid_scene", "scene は お礼・誕生日・送別 のどれかです")
     return [str(i) for i in ids], scene
 
 
-def _create(ids: list[str], scene: str, db: Db, clock: Clock, mark: int) -> JSONResponse:
+def _create(ids: list[str], scene: str | None, db: Db, clock: Clock, mark: int) -> JSONResponse:
     if len(ids) > SETTINGS.SHARE_REQUEST_MAX_LENGTH:  # 重複を除く前の長さ（H-23）
         return _error("too_many_items", "選べるのは10件までです")
     unique = list(dict.fromkeys(ids))  # 最初に出てきた順で重複を除く（H-23）
@@ -106,7 +106,8 @@ def _create(ids: list[str], scene: str, db: Db, clock: Clock, mark: int) -> JSON
     if any(pid not in by_id for pid in unique):
         return _invalid()
 
-    counts = scene_counts(db, scene, unique)  # 理由の文は作る時に選んでいたシーンに合わせる（SP-03・D-05）
+    # 理由の文は作る時に選んでいたシーンに合わせる（SP-03・D-05）。シーンなしは回数を数えない
+    counts: dict[str, int] = {} if scene is None else scene_counts(db, scene, unique)
 
     items = []
     for pid in unique:

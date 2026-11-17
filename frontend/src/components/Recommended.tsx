@@ -4,12 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
+import { productCandidate } from "@/lib/selection";
+import { useAppState } from "@/state/AppState";
 import { productImage } from "@/lib/images";
 import { ratingText } from "@/lib/products";
 import { buildSearchHref, fetchRecommended, type RecommendedItem } from "@/lib/topPage";
 import { CartButton } from "./CardButtons";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./top.module.css";
 
@@ -19,6 +22,7 @@ export function Recommended() {
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [items, setItems] = useState<RecommendedItem[]>([]);
   const [tries, setTries] = useState(0); // 「もう一度」で増やして取り直す
+  const { isPicked, pick, unpick } = useAppState();
 
   useEffect(() => {
     let alive = true;
@@ -82,6 +86,7 @@ export function Recommended() {
                   <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
                 </div>
                 <div className={g.actions}>
+                  <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
                   <span className={g.cart}>
                     <CartButton productId={p.product_id} name={p.name} />
                   </span>

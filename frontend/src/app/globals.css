@@ -30,7 +30,12 @@ body {
   font: 16px/1.6 system-ui, "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 main { padding: 16px; }
+/* SP-08 D-46: ヘッダーはすべての幅で画面の上に固定（sticky。z-index 20 ＜ 帯 30 ＜ 暗幕 39 ＜ シート 40 ＜ パネル 50）。--hh は実測の高さ（HeaderHeight が入れる。入る前の初期値は 1 段の高さ） */
+html { --hh: 61px; scroll-padding-top: var(--hh); }
 header.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -112,7 +117,6 @@ header.top {
   .hsearch { display: none; }
   /* D-25 SP-35: 虫めがね（アイコン・文字は他の 3 つと同じ）。開いた（data-open="true"）ときは、入力欄をヘッダーの下に出す */
   .hbtn.hmag { display: flex; }
-  header.top { position: relative; }
   .hsearch[data-open="true"] { display: flex; position: absolute; top: 100%; left: 0; right: 0; z-index: 25; max-width: none; border-radius: 0; border-width: 1px 0; box-shadow: 0 4px 8px rgba(58, 51, 49, .15); }
   .hsearch .hsclose { display: block; min-width: 44px; min-height: 44px; border: 0; border-left: 1px solid var(--bd2); background: var(--paper); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
   .spacer { display: none; }
