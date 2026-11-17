@@ -38,12 +38,13 @@ export function apiUrl(path: string, base: string | undefined = process.env.NEXT
   return `${(base ?? "").trim().replace(/\/+$/, "")}${path}`;
 }
 
-export type SearchParams = { scene: Scene; priceBand: PriceBand | null; categories?: readonly string[] };
+// page は 1 以上（省略は 1）。sort は D-43 の並び（省略・recommend は付けない）
+export type SearchParams = { scene: Scene; priceBand: PriceBand | null; categories?: readonly string[]; page?: number; sort?: string };
 
 export type SearchState =
   | { status: "initial" }
   | { status: "loading" }
-  | { status: "results"; items: CandidateItem[]; count: number }
+  | { status: "results"; items: CandidateItem[]; count: number; total: number; page: number; pageSize: number }
   | { status: "empty"; relax?: Relax | null }
   | { status: "error" };
 
@@ -54,6 +55,8 @@ export function candidatesUrl(p: SearchParams): string {
   const q = new URLSearchParams({ scene: p.scene });
   if (p.priceBand) q.set("price_band", p.priceBand);
   for (const c of p.categories ?? []) q.append("category", c); // 選んだ数だけくり返す（#55-1）
+  if (p.sort && p.sort !== "recommend") q.set("sort", p.sort);
+  if (p.page && p.page > 1) q.set("page", String(p.page));
   return apiUrl(`/api/candidates?${q.toString()}`);
 }
 
@@ -89,7 +92,7 @@ export class SearchRunner {
     this.fetchImpl(candidatesUrl(params), { signal: abort.signal })
       .then(async (res) => {
         if (!res.ok) throw new Error("bad status");
-        const body = (await res.json()) as { items?: CandidateItem[]; count?: number; relax?: Relax | null };
+        const body = (await res.json()) as { items?: CandidateItem[]; count?: number; total?: number; page?: number; page_size?: number; relax?: Relax | null };
         if (mine !== this.token) return;
         clearTimeout(timer);
         const items = Array.isArray(body.items) ? body.items : [];
@@ -99,7 +102,7 @@ export class SearchRunner {
           const zc = zeroCondOf({ scene: true, priceBand: !!params.priceBand, categories: (params.categories ?? []).length > 0 });
           if (zc) this.tracker(7, { zero_cond: zc });
         }
-        this.onChange(items.length ? { status: "results", items, count: body.count ?? items.length } : { status: "empty", relax: body.relax ?? null });
+        this.onChange(items.length ? { status: "results", items, count: body.count ?? items.length, total: body.total ?? items.length, page: body.page ?? 1, pageSize: body.page_size ?? 12 } : { status: "empty", relax: body.relax ?? null });
       })
       .catch(() => {
         if (mine !== this.token) return;

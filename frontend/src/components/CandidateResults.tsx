@@ -7,6 +7,9 @@ import type { RightTab } from "@/lib/rightColumn";
 import { searchHref, type SearchQuery } from "@/lib/searchQuery";
 import { useAppState } from "@/state/AppState";
 import { CandidateList } from "./CandidateList";
+import { Pagination } from "./Pagination";
+import { SortSelect } from "./SortSelect";
+import cond from "./conditions.module.css";
 import { DetailPanel } from "./DetailPanel";
 import { Sheet } from "./Sheet";
 import { RecentViewed } from "./RecentViewed";
@@ -15,7 +18,7 @@ import { SearchStatus } from "./SearchStatus";
 import { SelectedList } from "./SelectedList";
 import results from "./results.module.css";
 
-// F-19 SP-15 D-27 D-08 D-32: 検索結果 `/search?scene=…` の R-01（シーンあり）。10件を順位・理由・「選ぶ」つきで出し、下に「選んだ候補」の欄。
+// F-19 SP-15 D-27 D-08 D-32: 検索結果 `/search?scene=…` の R-01（シーンあり）。全件を 12 件ずつ（ページ送り・並び替えは R-02 と同じ部品。順位の番号は出さない。#418）、理由・「共有リストに入れる」つきで出し、下に「選んだ候補」の欄。
 // 条件（シーン・価格帯・カテゴリー）は URL から読む。変わったら出し直し、古い応答は捨てる・10秒で打ち切る（SearchRunner。F1 から引き継ぎ）。
 // 選んだ候補は layout の Context（D-32）にあるので、トップへ戻って押し直しても残る。
 // R5 SP-29 D-46: 900px 以上は右の列をタブ（詳細／共有リスト（N件））にする。カードを押すと、いつも詳細のタブが出る。キーボードの Enter で押したときだけ詳細の商品名へ焦点を移す。
@@ -33,7 +36,7 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
       setState({ url, s });
       if (s.status === "results") setLast(s);
     });
-    runner.run({ scene, priceBand: q.priceBand, categories: q.categories });
+    runner.run({ scene, priceBand: q.priceBand, categories: q.categories, page: q.page, sort: q.sort });
     return () => runner.cancel(); // 条件が変わったら・画面を離れたら、前の検索の応答は捨てる
   }, [url, tries]); // eslint-disable-line react-hooks/exhaustive-deps -- url が scene・価格帯・カテゴリーのすべてを含む
 
@@ -62,16 +65,25 @@ export function CandidateResults({ q, narrow, listOpen, onCloseList, onCloseDeta
     <div className={results.layout}>
       <section aria-label="検索結果" className={results.results}>
         <div aria-live="polite" className={s.status === "loading" ? results.searchslot : undefined}>
-          <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
+          {s.status === "results" ? (
+            <div className={cond.rhead}>
+              <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
+              <SortSelect q={q} />
+            </div>
+          ) : (
+            <SearchStatus state={s} q={q} onRetry={() => setTries(tries + 1)} />
+          )}
         </div>
         {prev && (
           <div className={results.stale} aria-busy="true">
             <CandidateList items={prev.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} scene={q.scene} />
+            <Pagination q={q} total={prev.total} page={prev.page} pageSize={prev.pageSize} />
           </div>
         )}
         {s.status === "results" && (
           <div onClick={onCards}>
             <CandidateList items={s.items} hrefFor={(id) => searchHref(q, { product: id })} selectedId={detailId} scene={q.scene} />
+            <Pagination q={q} total={s.total} page={s.page} pageSize={s.pageSize} />
           </div>
         )}
         <RecentViewed q={q} />

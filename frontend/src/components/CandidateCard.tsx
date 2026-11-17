@@ -10,24 +10,20 @@ import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./candidates.module.css";
 
-// F2 SP-01 D-08 S-02 S-36 #41-6: 候補のカード。順位・画像（カテゴリー共通イラスト＋「イメージ」）・商品名・価格・理由の文・
+// F2 SP-01 D-08 S-02 S-36 #41-6: 候補のカード。画像（順位の番号は出さない。SP-15・3C）（カテゴリー共通イラスト＋「イメージ」）・商品名・価格・理由の文・
 // 決め手の 1 行（SP-16）・高評価バッジ（high_rating が true のとき）。画像と商品名のどちらを押しても詳細を開く（SP-11）。
 // SP-30: 下段は「共有リストに入れる」・ハート・「カートに入れる」の順（カートの上の行が共有リスト）。ボタンは「共有リストに入れる」、押した後は「✓ リストに入れた」（SP-04。もう一度押すと外れる）。決め手の「{シーン}で{n}回」は R-01 だけ（scene_count が来る）。
 export function CandidateCard({
   item,
-  rank,
   picked,
   onToggle,
   href,
   selected = false,
-}: Readonly<{ item: CandidateItem; rank: number; picked: boolean; onToggle: () => void; href?: string; selected?: boolean }>) {
+}: Readonly<{ item: CandidateItem; picked: boolean; onToggle: () => void; href?: string; selected?: boolean }>) {
   const img = productImage(item.category);
   return (
     <li className={`${styles.card} ${g.wrap}`} data-picked={picked} data-selected={selected}>
       <div className={g.grid}>
-        <span className={`${styles.rank} ${g.rank}`} aria-label={`${rank}位`}>
-          {rank}位
-        </span>
         <div className={g.picwrap}>
           {href ? (
             <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
