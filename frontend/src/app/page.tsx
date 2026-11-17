@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { CategoryTiles } from "@/components/CategoryTiles";
 import { Recommended } from "@/components/Recommended";
+import { TopListBand } from "@/components/TopListBand";
 import { TopSearch } from "@/components/TopSearch";
 import { HERO_IMAGE } from "@/lib/images";
 import { TOP_SUBLINES } from "@/lib/pageMeta";
@@ -28,6 +29,7 @@ export default function Home() {
       <TopSearch />
       <CategoryTiles />
       <Recommended />
+      <TopListBand />
     </div>
   );
 }

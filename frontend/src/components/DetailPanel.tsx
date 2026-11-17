@@ -5,17 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
-import { arrivesText } from "@/lib/arrival";
-import { GIFT_DATE_INITIAL, GIFT_DATE_LABEL, giftVerdict, todayLocal } from "@/lib/giftDate";
 import { LIKE_FAILED_MESSAGE, likeLabel, type LikeView } from "@/lib/sharedLink";
 import { track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
 import { VOICES_HEADING, voiceViews } from "@/lib/voices";
+import { productCandidate } from "@/lib/selection";
 import { cartStore } from "@/state/cart";
+import { useAppState } from "@/state/AppState";
 import type { Scene } from "@/lib/api";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import { Searching } from "./Searching";
 import { Sheet } from "./Sheet";
 import { SimilarProducts } from "./SimilarProducts";
@@ -30,7 +31,7 @@ import styles from "./results.module.css";
 // R4 SP-12 SP-16 SP-17 D-29 D-35: 商品名・画像・価格・評価のすぐ下に決め手の 1 行（カードと同じ部品）、その下に「贈った人の声」（読めた分だけ。0 件・失敗は欄ごと出さない）。
 // scene は R-01 から開いたときだけ渡す（D-29。「{シーン}で{n}回」を出すため）。R-02・おすすめ・お気に入り・カート・共有ページから開いたときは渡さない。
 // R8 SP-22 SP-25 SP-27 SP-34 D-42 D-46 D-47: 詳細が出たら最近見た商品の先頭に入れ（404・失敗は入れない）、③「詳細を開く」の計測を 1 回送る（声の有無つき。声の取得が済んでから）。
-// 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。届く日のそばに「贈る日（任意）」（入れた日は保存せず、別の商品に替えても残す）。
+// 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。
 // #410 SP-06 SP-12: 共有ページの上で開くときは like を渡す。主ボタンは「いいね」（共有ページのカードと同じ状態）、カートは出さず、幅によらず下からのシートで開く。
 export type DetailLike = { view: LikeView; onToggle: () => void };
 export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like, overlay = false }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike; overlay?: boolean }>) {
@@ -40,7 +41,6 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
   const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
-  const [gift, setGift] = useState(GIFT_DATE_INITIAL); // 贈る日（SP-27）。初期値は空（PM 2026-11-17 決定3。11/16 の 1B を変更）。保存しない。別の商品に替えても残す
   const tracked = useRef("");
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} gift={gift} onGift={setGift} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} />}
       {r?.status === "ok" && <Foot p={r.data} like={like} />}
     </>
   );
@@ -121,8 +121,14 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
 // 一番下の固定の帯: {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
 function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
   const out = p.status === "out_of_stock";
+  const { isPicked, pick, unpick } = useAppState();
   return (
     <div className={styles.detfoot}>
+      {!like && (
+        <div className={styles.footpick}>
+          <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} help={false} />
+        </div>
+      )}
       <span className={styles.footprice}>{formatPrice(p.price)}</span>
       {like ? (
         <>
@@ -148,10 +154,9 @@ function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
   );
 }
 
-function Body({ p, focusName, focusKey, voices, scene, similarHref, gift, onGift }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null; scene: string | null; similarHref?: (id: string) => string; gift: string; onGift: (v: string) => void }>) {
+function Body({ p, focusName, focusKey, voices, scene, similarHref }: Readonly<{ p: ProductDetail; focusName: boolean; focusKey: number | null; voices: VoiceList | null; scene: string | null; similarHref?: (id: string) => string}>) {
   const img = productImage(p.category);
   const views = voiceViews(voices?.voices);
-  const verdict = giftVerdict(p.arrives_on, gift, todayLocal());
   const name = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (focusName || focusKey != null) name.current?.focus(); // シートが開いたら・PC でキーボードのカードを押したら、読めた商品名へ焦点（D-46）
@@ -176,17 +181,6 @@ function Body({ p, focusName, focusKey, voices, scene, similarHref, gift, onGift
         )}
       </span>
       <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock={p.status === "available"} sceneCount={p.scene_count} />
-      {arrivesText(p.arrives_on) && (
-        <div className={styles.gift}>
-          <label className={styles.giftlabel}>
-            {GIFT_DATE_LABEL}
-            <input type="date" className={styles.giftinput} value={gift} min={todayLocal()} onChange={(e) => onGift(e.target.value)} />
-          </label>
-          <span role="status" className={styles.verdict}>
-            {verdict}
-          </span>
-        </div>
-      )}
       {views.length > 0 && (
         <section className={styles.voices} aria-labelledby="h-voices">
           <h3 id="h-voices" className={styles.vh3}>

@@ -63,3 +63,8 @@
   .row .btn { flex: 1 1 0; min-width: 0; padding: 8px 2px; font-size: 13px; white-space: nowrap; }
 }
 @media (max-width: 360px) { .row .btn { font-size: 12px; } }
+/* F-47 SP-04 D-46: トップの下端の帯「共有リスト n件」（1 件以上のとき。899px 以下も 900px 以上も出す）。検索結果の帯（results.module.css の .band）と同じ作り。通知は帯の上 72px */
+.topband { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; height: 56px; padding: 6px 12px; background: var(--paper); border-top: 1px solid var(--line); }
+.topbandbtn { flex: 1; min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+.bandgap { height: 56px; }
+.listpad { padding: 0 14px 14px; }

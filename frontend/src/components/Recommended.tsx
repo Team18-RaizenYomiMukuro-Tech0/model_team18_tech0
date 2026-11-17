@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
+import { productCandidate } from "@/lib/selection";
+import { useAppState } from "@/state/AppState";
 import { productImage } from "@/lib/images";
 import { ratingText } from "@/lib/products";
 import { fetchRecommended, type RecommendedItem } from "@/lib/topPage";
@@ -10,6 +12,7 @@ import { CartButton } from "./CardButtons";
 import { DetailPanel } from "./DetailPanel";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./top.module.css";
 
@@ -19,6 +22,7 @@ export function Recommended() {
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [items, setItems] = useState<RecommendedItem[]>([]);
   const [tries, setTries] = useState(0); // 「もう一度」で増やして取り直す
+  const { isPicked, pick, unpick } = useAppState();
   const [openId, setOpenId] = useState<string | null>(null); // 開いている詳細の商品。URL は変えない
 
   useEffect(() => {
@@ -76,6 +80,9 @@ export function Recommended() {
                 )}
                 <div className={g.chips}>
                   <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
+                </div>
+                <div className={g.pick}>
+                  <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
                 </div>
                 <span className={g.heart}>
                   <HeartButton productId={p.product_id} name={p.name} />
