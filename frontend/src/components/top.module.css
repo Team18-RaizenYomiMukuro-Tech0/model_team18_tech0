@@ -1,5 +1,5 @@
 /* R2 トップの見た目。ヒーローは R1（#285）で D-37 の `design/hero.css` の値に替えた */
-.page { display: grid; gap: 28px; max-width: 1100px; margin: 0 auto; }
+.page { display: grid; gap: 28px; max-width: 1200px; margin: 0 auto; }
 .hero { --ah: 288px; position: relative; height: 340px; overflow: hidden; border-radius: var(--rm); background: linear-gradient(to top, #EBBBA6 calc(var(--ah) * .183), var(--s-line) calc(var(--ah) * .183) calc(var(--ah) * .2), var(--s-peach2) calc(var(--ah) * .2)); }
 .heroimg { position: absolute; right: max(24px, 4vw); bottom: 0; height: var(--ah); width: auto; }
 .txt { position: absolute; left: 48px; top: 50%; transform: translateY(-50%); max-width: calc(100% - var(--ah) * 1.445 - 48px - max(24px, 4vw) - 24px); }
