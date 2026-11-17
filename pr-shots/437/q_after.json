@@ -1,0 +1,326 @@
+{
+ "top_320": {
+  "n": 4,
+  "pickOver": 0,
+  "pickMinW": 120,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r01_320": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 120,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r02_320": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 120,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "top_375": {
+  "n": 4,
+  "pickOver": 0,
+  "pickMinW": 148,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r01_375": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 148,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r02_375": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 148,
+  "pickMinH": 53,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "top_414": {
+  "n": 4,
+  "pickOver": 0,
+  "pickMinW": 167,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r01_414": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 167,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r02_414": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 167,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "top_1280": {
+  "n": 4,
+  "pickOver": 0,
+  "pickMinW": 273,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r01_1280": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 148,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ },
+ "r02_1280": {
+  "n": 6,
+  "pickOver": 0,
+  "pickMinW": 247,
+  "pickMinH": 44,
+  "anyClipped": false,
+  "hit": [
+   "44x44"
+  ],
+  "dot": [
+   "20x20"
+  ],
+  "dotRightGap": [
+   4
+  ],
+  "dotTopGap": [
+   -8
+  ],
+  "dotOutCard": 0,
+  "hitOutView": 0,
+  "hs": 0,
+  "bubble": {
+   "text": "選んだ候補をリンクにして",
+   "inView": true
+  },
+  "pickToggled": null
+ }
+}
