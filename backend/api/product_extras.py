@@ -3,16 +3,17 @@
 #  - GET /api/products/{product_id}/similar  同じシーン・同じ価格帯の商品（最大 3 件。D-42）
 # どちらも読み取りのみ。SQL は固定の文で、値はすべて %s と params で渡す（N-04）。
 # 形式が不正な値は DB を呼ばずに 422 を返す。
+import time
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from api.product_detail import PRODUCT_ID_RE
 from api.products import PRICE_BANDS, SCENES, _item
 from clock import Clock, get_clock
 from config import SETTINGS
-from db import Db, get_db
+from db import Db, get_db, server_timing
 from decision import today_jst
 
 router = APIRouter()
@@ -65,11 +66,13 @@ def _band_for(price: int) -> tuple[int, int]:
 
 # SP-17 D-35
 @router.get("/api/products/{product_id}/voices", response_model=None)
-def get_voices(product_id: str, db: Annotated[Db, Depends(get_db)]) -> Any:
+def get_voices(product_id: str, response: Response, db: Annotated[Db, Depends(get_db)]) -> Any:
     """贈った人の声。0〜2 件（0 件は []）。商品が無いときも 404 にせず []（404 は D-29 が返す）"""
+    started = time.perf_counter()
     if PRODUCT_ID_RE.fullmatch(product_id) is None:
         return _invalid_product_id()
     rows = db.fetch_all(SELECT_VOICES, (product_id, SETTINGS.VOICE_MIN_RATING, SETTINGS.VOICES_MAX))
+    response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
     return {"voices": [{"text": r["text"], "rating": int(r["rating"])} for r in rows]}
 
 
@@ -78,10 +81,12 @@ def get_voices(product_id: str, db: Annotated[Db, Depends(get_db)]) -> Any:
 def get_similar(
     product_id: str,
     request: Request,
+    response: Response,
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
 ) -> Any:
     """似た商品。scene は必須（お礼・誕生日・送別）。0 件は []。形式違い・scene なし・不正は 422、商品が無ければ 404"""
+    started = time.perf_counter()
     if PRODUCT_ID_RE.fullmatch(product_id) is None:
         return _invalid_product_id()
     scene = request.query_params.get("scene", "")
@@ -93,4 +98,5 @@ def get_similar(
     low, high = _band_for(int(opened[0]["price"]))
     rows = db.fetch_all(SELECT_SIMILAR, (product_id, scene, low, high, SIMILAR_MAX))
     today = today_jst(clock.now())
+    response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
     return {"items": [_item(r, today) for r in rows]}
