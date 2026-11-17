@@ -68,11 +68,6 @@
 .stars { white-space: nowrap; color: #5c514d; }
 .card a.name { color: inherit; text-decoration: none; }
 
-/* R8 SP-27: 贈る日（任意）。届く日のそば。日付の入力は縦 44px 以上 */
-.gift { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
-.giftlabel { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
-.giftinput { min-height: 44px; padding: 4px 8px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; }
-.verdict { font-weight: 700; font-size: 14px; }
 /* R5 SP-29 D-46: PC（900px 以上）の R-01 の右の列。タブ（詳細／共有リスト（N件））と中身。列全体を固定し、中身は残りの高さで中だけ縦にスクロールする */
 .rcol { position: sticky; top: 12px; display: flex; flex-direction: column; max-height: calc(100vh - 24px); min-width: 0; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); overflow: hidden; }
 .tablist { display: flex; }
