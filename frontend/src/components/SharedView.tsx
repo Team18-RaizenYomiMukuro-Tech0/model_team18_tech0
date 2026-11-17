@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, detailHref, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { DetailPanel } from "./DetailPanel";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -86,7 +87,10 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
   const [likes, setLikes] = useState<Readonly<Record<string, LikeView>> | null>(null);
   const [c] = useState(() => new LikeController(shareId, items, browserStorage(), (v) => setLikes(v)));
   const view = likes ?? c.snapshot;
+  const [openId, setOpenId] = useState<string | null>(null); // #410 SP-06: 詳細は共有ページの上で開く（URL は変えない）
+  const openView = openId ? view[openId] : null;
   return (
+    <>
     <ol className={styles.list}>
       {items.map((it) => {
         const note = itemNote(it.status);
@@ -105,9 +109,9 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
             {note && <p className={styles.note}>{note}</p>}
             <div className={styles.actions}>
               {canShowDetail(it.status) && (
-                <Link href={detailHref(it.product_id)} className={styles.link}>
+                <button type="button" className={styles.link} onClick={() => setOpenId(it.product_id)}>
                   {DETAIL_LABEL}
-                </Link>
+                </button>
               )}
               <button type="button" className={styles.like} aria-pressed={v.liked} onClick={() => void c.toggle(it.product_id)}>
                 {likeLabel(v.liked)} {v.count}
@@ -122,6 +126,8 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
         );
       })}
     </ol>
+    {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, onToggle: () => void c.toggle(openId) }} />}
+    </>
   );
 }
 
