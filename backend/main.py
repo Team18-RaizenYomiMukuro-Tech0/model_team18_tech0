@@ -4,6 +4,12 @@
 import os
 from typing import Annotated
 
+# 起動したてのサーバーの最初の要求が遅い（NF-54。約 5 秒）。DB の接続づくり（約 1 秒）を、重い部品の読み込み（FastAPI など）より前に
+# 始めて、読み込みと同時に進める。最初の要求が接続の完成を待つ時間（db_wait 約 0.85 秒）を縮めるため。db は接続の設定（.env）を自分で読む。
+from db import Db, get_db, warm_up
+
+warm_up()  # 起動時に DB の接続を 1 本先に作る（#256。別スレッド・失敗しても起動する）。uvicorn と Functions の両方がこの main を読む
+
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 
@@ -15,11 +21,8 @@ from api.product_detail import router as product_detail_router
 from api.product_extras import router as product_extras_router
 from api.products import router as products_router
 from api.share_links import router as share_links_router
-from db import Db, get_db, warm_up
 
 load_dotenv()
-
-warm_up()  # 起動時に DB の接続を 1 本先に作る（#256。別スレッド・失敗しても起動する）。uvicorn と Functions の両方がこの main を読む
 
 app = FastAPI(title="Team18 API")
 logging_setup.install(app)  # 時刻・API・結果だけのログ（N-13）

@@ -7,16 +7,17 @@
 #  - 入力の検証は DB に問い合わせる前に行う（不正なら DB を呼ばない）。
 import math
 import re
+import time
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from clock import Clock, get_clock
 from config import SETTINGS
-from db import Db, get_db
+from db import Db, get_db, server_timing
 from decision import arrives_on, scene_count_value, scene_counts, today_jst
 from ranking import SORTS, order_by_sort
 from search import match, parse_q
@@ -149,10 +150,12 @@ def _item(
 @router.get("/api/products", response_model=None)
 def list_products(
     request: Request,
+    response: Response,
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
 ) -> Any:
     """絞り込み。不正な値は 422（invalid_scene / invalid_price_band / invalid_category / invalid_page）"""
+    started = time.perf_counter()
     q = request.query_params  # budget など、ここで読まない名前は無視する（#51-4）
 
     scene: str | None = None
@@ -258,4 +261,5 @@ def list_products(
                 relax["category"] = _count_with_q(db, words, scene, price_range, [], [""] * _CATEGORY_SLOTS)
             relax["no_q"] = conditions_total  # 言葉をはずしたときの件数（①の件数。D-49。言葉が無いときは付けない）
         body["relax"] = relax
+    response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。候補取得と同じ。#256）
     return body
