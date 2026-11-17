@@ -647,7 +647,7 @@ function detailHTML(sheet){
   const sc=S.mode==="r01"?S.scene:null;
   const vs=voicesOf(p);
   const sim=sc?PRODUCTS.filter(x=>x.id!==p.id&&x.scenes.includes(sc)&&x.stock>=1&&bandOf(x.price)===bandOf(p.price)).sort((a,b)=>rdesc(a,b)||(b.v||0)-(a.v||0)||a.id-b.id).slice(0,3):[];
-  const gift=p.d!=null?`<div class="gift" data-i3="SP-27"><label>贈る日（任意）<input type="date" id="giftDate" value="${esc(S.giftDate)}"></label><span class="res" id="giftRes" role="status"></span>${sp("SP-27")}</div>`:"";
+  const gift="";
   return `<aside class="detail ${S.detailOpen?"open":""}" aria-label="商品の詳細" id="detail">
    <h3>${esc(p.name)}</h3><button class="heart" data-fav="${p.id}" aria-pressed="${fav}" aria-label="お気に入り">${ic(fav?"heart-filled":"heart")}</button>
    ${imgHTML(p)}${hi?`<div class="topline"><span class="badge">高評価の商品</span></div>`:""}
@@ -827,7 +827,6 @@ function bind(){
   const cb=$("[data-cmpback]"); if(cb) cb.onclick=()=>{S.cmpOpen=false;render();const e=$("[data-cmpgo]");if(e)e.focus()};
   document.querySelectorAll("[data-like]").forEach(b=>b.onclick=()=>doLike(+b.dataset.like));
   document.querySelectorAll("[data-continue]").forEach(b=>b.onclick=()=>{S.panel=null;if(S.view!=="result"||S.st==="initial"){S.view="result";S.mode="r02";S.scene=null;S.band=null;S.cats=[];S.page=1;S.items=filterR02();S.st="results";S.detailId=null;S.detailOpen=false}render()});
-  const gd=$("#giftDate"); if(gd){const upd=()=>{S.giftDate=gd.value;const p=S.items.find(x=>x.id===S.detailId)||PRODUCTS.find(x=>x.id===S.detailId);const t=p&&arrDate(p),el=$("#giftRes");if(!el)return;if(!gd.value||!t){el.textContent="";return}const g=new Date(gd.value+"T23:59:59");el.textContent=t<=g?"間に合う（目安）":"間に合わない（目安）"};gd.onchange=upd;gd.oninput=upd;upd()}
   document.querySelectorAll("[data-band]").forEach(b=>b.onclick=()=>{S.band=S.band===b.dataset.band?null:b.dataset.band;S.page=1;runSearch()});
   const ct=$("#catToggle"); if(ct) ct.onclick=()=>{S.catOpen=!S.catOpen;render();const n=$("#catToggle");if(n)n.focus()};
   const rr=$("#recRetry"); if(rr) rr.onclick=()=>render();
