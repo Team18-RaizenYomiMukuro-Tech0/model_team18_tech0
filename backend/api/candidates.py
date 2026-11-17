@@ -1,9 +1,12 @@
 # candidates.py — GET /api/candidates（設計.md D-01・D-02・D-04、仕様 SP-01・SP-02）
-# シーン（必須）・価格帯（任意）・カテゴリー（任意）で候補を抽出し、ベイズ平均で順位付けして上位 10 件を返す。読み取りのみ。
+# シーン（必須）・価格帯（任意）・カテゴリー（任意）で候補を抽出し、並びの順に全件を 12 件ずつのページで返す（PM 決定 2026-11-17「1A」）。読み取りのみ。
+#  - page（1 以上の整数。省略・空は 1。最後を超えたら items が空）・sort（D-43 の 4 つと scene_count_desc。省略・空は recommend）。
 #  - SQL は固定の文。値はすべて %s と params で渡す（N-04）。入力の検証は DB に問い合わせる前に行う。
-#  - 選んだシーンの回数は、順位が決まる範囲（上位 10 件と 10 位と同点）の商品だけを注文データから都度数える（D-04・手順 6）。
+#  - 選んだシーンの回数は、1 回の集計で数える（D-04）。おすすめ順のときは表示するページまでの商品と境目と同点の商品だけ、
+#    回数順のときは全候補。回数は同点の並びと理由の文・決め手 scene_count に使う。
 #    回数は同点の並びと理由の文・決め手 scene_count に使う（D-34。送別＝会社宛て、お礼、誕生日は decision.py）。
 #  - 理由の文は reasons.py（B4）。AI は使わない（ADR-003）。
+import re
 import time
 from decimal import Decimal
 from typing import Annotated, Any
@@ -16,7 +19,15 @@ from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
 from decision import arrives_on, scene_count_value, scene_counts, today_jst
-from ranking import candidate_pool, score_products, top_by_score_then_count
+from ranking import (
+    SCENE_COUNT_DESC,
+    SORTS,
+    candidate_pool,
+    order_by_scene_count,
+    order_by_sort,
+    score_products,
+    top_by_score_then_count,
+)
 from reasons import build_reason
 
 router = APIRouter()
@@ -82,6 +93,20 @@ def list_candidates(
         if value not in categories:  # 重なりは 1 つにまとめる（#58-3）
             categories.append(value)
 
+    page = 1
+    if q.get("page", "") != "":  # 空（page=）は 1 ページ目（D-28 と同じ）
+        raw = q["page"]
+        if re.fullmatch(r"[0-9]+", raw, re.ASCII) is None or int(raw) < 1:
+            return _error("invalid_page", "page は 1 以上の整数です")
+        page = int(raw)
+
+    sort = q.get("sort", "") or "recommend"  # 空・無しはおすすめ順（D-43）
+    if sort not in SORTS and sort != SCENE_COUNT_DESC:
+        return _error(
+            "invalid_sort",
+            "sort は recommend・price_asc・rating_desc・delivery_asc・scene_count_desc のどれかです",
+        )
+
     slots = (
         categories + [categories[0]] * (_CATEGORY_SLOTS - len(categories))
         if categories
@@ -103,12 +128,30 @@ def list_candidates(
             for r in rows
         ]
     )
-    pool = candidate_pool(scores, SETTINGS.TOP_N)
+    size = SETTINGS.CANDIDATE_PAGE_SIZE
+    total = len(rows)
+    start, end = (page - 1) * size, page * size
 
-    counts = scene_counts(db, scene, pool)  # 1 回の集計（D-04）
+    if sort == SCENE_COUNT_DESC:  # 回数順は全候補の回数が要る（1 回の集計。D-04）
+        counts = scene_counts(db, scene, list(scores))
+        ordered = order_by_scene_count(scores, counts)
+    elif sort == "recommend":  # 表示するページまでと、その境目と同点の商品だけ数える（D-04）
+        pool = candidate_pool(scores, min(end, total))
+        counts = scene_counts(db, scene, pool)  # 1 回の集計
+        ordered = top_by_score_then_count(scores, counts, pool, end)
+    else:  # 価格・評価・配送日数の順（D-43。同じ値は商品ID順）。回数は表示する分だけ数える
+        ordered = order_by_sort(
+            [
+                (str(r["product_id"]), r["price"], _to_decimal(r["rating"]), r["review_count"], r["delivery_days"])
+                for r in rows
+            ],
+            sort,
+        )
+        counts = {}
+    chosen = ordered[start:end]
+    if sort not in ("recommend", SCENE_COUNT_DESC):
+        counts = scene_counts(db, scene, chosen)
     today = today_jst(clock.now())
-
-    chosen = top_by_score_then_count(scores, counts, pool, SETTINGS.TOP_N)
     items = []
     for pid in chosen:
         r = by_id[pid]
@@ -135,8 +178,8 @@ def list_candidates(
                 ),
             }
         )
-    body: dict[str, Any] = {"items": items, "count": len(items)}
-    if not items:  # 0 件のときだけ助け舟の件数（D-44。同じ関数。シーンははずさない。+1 往復）
+    body: dict[str, Any] = {"items": items, "count": len(items), "total": total, "page": page, "page_size": size}
+    if total == 0:  # 0 件のときだけ助け舟の件数（D-44。同じ関数。シーンははずさない。+1 往復）
         body["relax"] = relax_counts(db, scene, price_range if band != "" else None, categories)
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。#256）
     return body
