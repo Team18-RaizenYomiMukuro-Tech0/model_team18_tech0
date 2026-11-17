@@ -32,9 +32,10 @@ def test_pages() -> None:
         second = page("page=2")
         assert [i["product_id"] for i in second["items"]] == order[12:]
         assert (second["count"], second["total"], second["page"]) == (2, 14, 2)
-        third = page("page=3")  # 最後を超えたら items が空（U-92）
-        assert (third["items"], third["count"], third["total"], third["page"]) == ([], 0, 14, 3)
+        third = page("page=3")  # 最後を超えたら 1 ページ目の結果で、応答の page は 1（D-28 と同じ。#46-5。U-92 の期待結果は Takahiro が別 PR で直す）
+        assert third == first and third["page"] == 1
         assert "relax" not in third  # 条件に合う商品はあるので助け舟は付けない
+        assert page("page=999") == first
         for bad in ("0", "-1", "abc", "1.5", "１"):
             r = client.get(f"/api/candidates?scene=送別&page={bad}")
             assert (r.status_code, r.json()["error"]["code"]) == (422, "invalid_page"), bad

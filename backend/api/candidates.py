@@ -1,11 +1,12 @@
 # candidates.py — GET /api/candidates（設計.md D-01・D-02・D-04、仕様 SP-01・SP-02）
 # シーン（必須）・価格帯（任意）・カテゴリー（任意）で候補を抽出し、並びの順に全件を 12 件ずつのページで返す（PM 決定 2026-11-17「1A」）。読み取りのみ。
-#  - page（1 以上の整数。省略・空は 1。最後を超えたら items が空）・sort（D-43 の 4 つと scene_count_desc。省略・空は recommend）。
+#  - page（1 以上の整数。省略・空は 1。最後を超えたら 1 ページ目。D-28 と同じ）・sort（D-43 の 4 つと scene_count_desc。省略・空は recommend）。
 #  - SQL は固定の文。値はすべて %s と params で渡す（N-04）。入力の検証は DB に問い合わせる前に行う。
 #  - 選んだシーンの回数は、1 回の集計で数える（D-04）。おすすめ順のときは表示するページまでの商品と境目と同点の商品だけ、
 #    回数順のときは全候補。回数は同点の並びと理由の文・決め手 scene_count に使う。
 #    回数は同点の並びと理由の文・決め手 scene_count に使う（D-34。送別＝会社宛て、お礼、誕生日は decision.py）。
 #  - 理由の文は reasons.py（B4）。AI は使わない（ADR-003）。
+import math
 import re
 import time
 from decimal import Decimal
@@ -130,6 +131,8 @@ def list_candidates(
     )
     size = SETTINGS.CANDIDATE_PAGE_SIZE
     total = len(rows)
+    if page > max(1, math.ceil(total / size)):  # 最後のページを超えたら 1 ページ目（D-28 と同じ。#46-5。PM 決定 2026-11-17「1A」）
+        page = 1
     start, end = (page - 1) * size, page * size
 
     if sort == SCENE_COUNT_DESC:  # 回数順は全候補の回数が要る（1 回の集計。D-04）
