@@ -16,8 +16,8 @@
 | 6 | 第1弾の共有ページ | `curl -s -w "\n%{http_code}\n" "<APIの URL>/api/share-links/<ID>"` | **既存の共有リンクの ID が文書・手順に無く、作らない約束のため、本物のリンクでは確かめていない**。形式だけ合うダミーの ID では `{"error":{"code":"not_found",…}}` ／ `404`（500 ではない） | －（未実施。PM が手順 9 で作るリンクで確かめる） |
 | 7 | 検索に載らない（D-16） | `curl -sI <画面の URL>/` と `curl -s -w "\n%{http_code}\n" <画面の URL>/robots.txt` | `X-Robots-Tag: noindex, nofollow`、robots.txt は `User-agent: *` ／ `Disallow: /` ／ `200` | ○ |
 | 8 | API を呼べるのは画面だけ（D-16・#65） | `curl -s -D- -o /dev/null -H "Origin: https://example.com" <APIの URL>/api/health`（GET）と、OPTIONS（`Access-Control-Request-Method: GET`） | GET: `200`、`Vary: Origin` のみ。OPTIONS: `204`、`access-control-allow-origin` なし。どちらも `access-control-allow-origin` は付かない（手順書の `curl -I` は HEAD なので `405`。ヘッダーは付かない） | ○ |
-| 10 | 速さ（NF-54） | `backend/perf/measure.py candidates [--no-price-band] --base-url <APIの URL>`、`backend/perf/measure_r02.py products`・`products-detail --base <APIの URL>`（GET だけ） | **候補（送別・価格帯なし）4.681 秒 ×、絞り込み（条件なし）4.972 秒 ×**。ほか 3 つは ○。詳しくは `NF-54.md` | × |
+| 10 | 速さ（NF-54。新基準 #403） | 各回の秒と `nth`・`up` を記録する GET だけのスクリプト（10 回・温めなし）。起点 main `25e6782` | 新基準（起動したて以外の遅い方から 2 番目が基準以内、起動したては 6 秒以内）で、候補（価格帯なし）1.435 秒・候補（3,000〜4,999円）1.255 秒（測り直し）・絞り込み（条件なし）1.749 秒・絞り込み（送別＋価格帯）1.231 秒は ○。**詳細は 3.416 秒 ×**（応答に `Server-Timing` が無く起動したてと分けられない）。詳しくは `NF-54.md` | × |
 
 ## 補足
-- 手順 10 の × 2 つは、10 回のうち 2〜3 回だけ 3〜5 秒かかる（残りは 1.1〜1.7 秒）ため。基準（遅い方から 2 番目で 2 秒以内）に引っかかった。原因は調べていない（直していない）。
+- 手順 10 は午前に旧基準で測り、候補（価格帯なし）・絞り込み（条件なし）が × だった。#403 の新基準・#404 の後に測り直した結果が上（詳細だけ ×）。旧基準の値は `NF-54.md` の末尾。
 - 計測は手元の Mac から。Python は 3.11、証明書は `SSL_CERT_FILE=/etc/ssl/cert.pem`（既定のままだと証明書の検証で止まる）。
