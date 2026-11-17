@@ -28,17 +28,22 @@ export function CandidateCard({
         <span className={`${styles.rank} ${g.rank}`} aria-label={`${rank}位`}>
           {rank}位
         </span>
-        {href ? (
-          <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
-            {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
-            <span className={styles.imgtag}>イメージ</span>
-          </Link>
-        ) : (
-          <span className={`${styles.pic} ${g.pic}`}>
-            {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
-            <span className={styles.imgtag}>イメージ</span>
+        <div className={g.picwrap}>
+          {href ? (
+            <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
+              {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
+              <span className={styles.imgtag}>イメージ</span>
+            </Link>
+          ) : (
+            <span className={`${styles.pic} ${g.pic}`}>
+              {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
+              <span className={styles.imgtag}>イメージ</span>
+            </span>
+          )}
+          <span className={g.heart}>
+            <HeartButton productId={item.product_id} name={item.name} />
           </span>
-        )}
+        </div>
         {item.high_rating && <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span>}
         {href ? (
           <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
@@ -52,15 +57,12 @@ export function CandidateCard({
           <DecisionChips arrivesOn={item.arrives_on} wrapping={item.wrapping} inStock sceneCount={item.scene_count} />
         </div>
         <span className={`${styles.reason} ${g.reason}`}>{item.reason}</span>
-        <div className={g.pick}>
+        <div className={g.actions}>
           <PickControl name={item.name} picked={picked} onToggle={onToggle} />
+          <span className={g.cart}>
+            <CartButton productId={item.product_id} name={item.name} />
+          </span>
         </div>
-        <span className={g.heart}>
-          <HeartButton productId={item.product_id} name={item.name} />
-        </span>
-        <span className={g.cart}>
-          <CartButton productId={item.product_id} name={item.name} />
-        </span>
       </div>
     </li>
   );
