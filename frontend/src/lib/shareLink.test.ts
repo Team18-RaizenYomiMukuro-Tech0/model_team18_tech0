@@ -131,3 +131,10 @@ test("shareLink #65: リンクの全体の URL は、いま開いているサイ
   assert.equal(shareFullUrl("https://giftia.azurewebsites.net", "/s/abc"), "https://giftia.azurewebsites.net/s/abc");
   assert.equal(shareFullUrl("https://giftia.azurewebsites.net/", "/s/abc"), "https://giftia.azurewebsites.net/s/abc");
 });
+
+// F-47 D-05: scene は付けられるときだけ本文に入る（無ければ今までの本文と同じ）
+test("shareRequestBody F-47: scene を付ける／付けない", () => {
+  assert.equal(shareRequestBody(["G0001"], "送別"), JSON.stringify({ product_ids: ["G0001"], scene: "送別" }));
+  assert.equal(shareRequestBody(["G0001"], null), JSON.stringify({ product_ids: ["G0001"] }));
+  assert.equal(shareRequestBody(["G0001"]), JSON.stringify({ product_ids: ["G0001"] }));
+});

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, SHARE_LIMIT, toCandidate } from "./selection.ts";
+import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, productCandidate, SHARE_LIMIT, shareScene, toCandidate } from "./selection.ts";
 import { initialState, reducer, type AppState, type Candidate } from "../state/selection.ts";
 
 // U-16 S-08 S-09 #36 #41-5〜7: 選択は上限なし／全部外すと0／重複なし／選んだ順／外して選び直すと末尾。
@@ -54,4 +54,18 @@ test("selection #36: 10件までは作れ、11件以上は押せない。0件も
 test("selection D-08: 選んだ時点の表示用の情報（category・高評価・理由）を持つ", () => {
   const c = toCandidate({ product_id: "G0007", name: "タオル", price: 4000, category: "生活雑貨", high_rating: true, reason: "理由" });
   assert.deepEqual(c, { productId: "G0007", name: "タオル", price: 4000, reason: "理由", category: "生活雑貨", highRating: true });
+});
+
+// F-47 SP-05 D-05: 共有リンクに送る scene。選んだ候補がどれも同じシーンのときだけ送る
+test("selection F-47: shareScene は同じシーンだけ・混ざる／無いは null", () => {
+  const c = (id: string, scene: string | null): Candidate => ({ productId: id, name: id, price: 1, scene });
+  assert.equal(shareScene([]), null);
+  assert.equal(shareScene([c("G0001", "送別"), c("G0002", "送別")]), "送別");
+  assert.equal(shareScene([c("G0001", "送別"), c("G0002", null)]), null);
+  assert.equal(shareScene([c("G0001", "送別"), c("G0002", "お礼")]), null);
+  assert.equal(shareScene([c("G0001", null)]), null);
+});
+test("selection F-47: productCandidate は理由・シーンを持たない", () => {
+  const p = productCandidate({ product_id: "G0003", name: "X", price: 1200, category: "食品", high_rating: true });
+  assert.deepEqual(p, { productId: "G0003", name: "X", price: 1200, category: "食品", highRating: true });
 });

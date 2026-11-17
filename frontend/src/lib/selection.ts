@@ -12,6 +12,19 @@ export const isOverLimit = (count: number): boolean => count > SHARE_LIMIT;
 export const canCreate = (count: number, creating = false): boolean => count >= 1 && !isOverLimit(count) && !creating;
 
 // 選んだ時点の表示用の情報（商品ID・商品名・価格・category・high_rating・理由）に写す
-export function toCandidate(i: CandidateItem): Candidate {
-  return { productId: i.product_id, name: i.name, price: i.price, reason: i.reason, category: i.category, highRating: i.high_rating };
+export function toCandidate(i: CandidateItem, scene: string | null = null): Candidate {
+  return { productId: i.product_id, name: i.name, price: i.price, reason: i.reason, category: i.category, highRating: i.high_rating, ...(scene ? { scene } : {}) };
+}
+
+// F-47: シーンなしの一覧（R-02）・トップのおすすめ・詳細から選ぶとき（理由の文は共有リンクを作るときに API が作る。ここでは持たない）
+export function productCandidate(p: { product_id: string; name: string; price: number; category: string; high_rating?: boolean }): Candidate {
+  return { productId: p.product_id, name: p.name, price: p.price, category: p.category, highRating: p.high_rating };
+}
+
+// F-47 SP-05 D-05: 共有リンクを作るときに送る scene。選んだ候補がどれも同じシーンのときだけそのシーン、
+// シーンが混ざる・無い（R-02 などで選んだ）ときは送らない（API がシーンに触れない文で保存する）。仕様に書かれていない混ざったときの扱いは PR に記載
+export function shareScene(picked: readonly Candidate[]): string | null {
+  const first = picked[0]?.scene ?? null;
+  if (!first) return null;
+  return picked.every((c) => c.scene === first) ? first : null;
 }

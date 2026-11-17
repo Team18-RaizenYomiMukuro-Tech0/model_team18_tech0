@@ -6,6 +6,7 @@ import type { CandidateItem } from "@/lib/api";
 import { CartButton } from "./CardButtons";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./candidates.module.css";
 
@@ -51,10 +52,9 @@ export function CandidateCard({
           <DecisionChips arrivesOn={item.arrives_on} wrapping={item.wrapping} inStock sceneCount={item.scene_count} />
         </div>
         <span className={`${styles.reason} ${g.reason}`}>{item.reason}</span>
-        <button type="button" className={`${styles.pick} ${g.pick}`} aria-pressed={picked} onClick={onToggle}>
-          {picked ? "✓ リストに入れた" : "共有リストに入れる"}
-          <span className={styles.vh}>（{item.name}）</span>
-        </button>
+        <div className={g.pick}>
+          <PickControl name={item.name} picked={picked} onToggle={onToggle} />
+        </div>
         <span className={g.heart}>
           <HeartButton productId={item.product_id} name={item.name} />
         </span>
