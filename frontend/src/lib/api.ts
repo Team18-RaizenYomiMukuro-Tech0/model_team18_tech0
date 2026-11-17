@@ -133,8 +133,9 @@ type PostFetch = (
 export const SHARE_FAILED_MESSAGE = "失敗しました。もう一度お試しください";
 
 // 送るのは商品IDの並びだけ（選んだ順。表示用の情報は送らない。D-05、#41-7）
-export function shareRequestBody(productIds: readonly string[]): string {
-  return JSON.stringify({ product_ids: [...productIds] });
+// scene は結果の画面でシーンを選んでいるときだけ付ける（D-05。無ければ送らず、API がシーンに触れない文で保存する。F-47）
+export function shareRequestBody(productIds: readonly string[], scene: string | null = null): string {
+  return JSON.stringify(scene ? { product_ids: [...productIds], scene } : { product_ids: [...productIds] });
 }
 
 // 画面が今開いているサイトの送信元に API の path をつないだ全体の URL（設計.md「共有リンクの URL の頭」）
@@ -166,7 +167,7 @@ export class ShareLinkRunner {
     this.tracker = tracker;
   }
 
-  create(productIds: readonly string[]): void {
+  create(productIds: readonly string[], scene: string | null = null): void {
     if (this.creating) return;
     this.creating = true;
     const mine = ++this.token;
@@ -189,7 +190,7 @@ export class ShareLinkRunner {
     this.fetchImpl(apiUrl("/api/share-links"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: shareRequestBody(productIds),
+      body: shareRequestBody(productIds, scene),
       signal: abort.signal,
     })
       .then(async (res) => {

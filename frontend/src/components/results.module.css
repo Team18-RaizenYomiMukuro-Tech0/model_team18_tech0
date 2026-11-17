@@ -26,7 +26,8 @@
 /* 詳細の欄（900px 以上）: 右に置き、画面内に収める。一番下の帯（.detfoot）は sticky で欄をスクロールしても見える（SP-29）。899px 以下は Sheet（下から出る） */
 .detail { padding: 0; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); min-width: 0; position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
 .detpad { padding: 14px; margin: 0; }
-.detfoot { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--paper); }
+.detfoot { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--paper); }
+.footpick { flex: 1 0 100%; }
 .footprice { font-weight: 700; }
 .footbtn { min-width: 44px; min-height: 44px; padding: 8px 18px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .footbtn[data-primary="true"] { background: #b8422a; border-color: #8f321e; color: #fff; }

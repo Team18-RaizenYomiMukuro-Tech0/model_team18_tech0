@@ -12,10 +12,13 @@ import { track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
 import { VOICES_HEADING, voiceViews } from "@/lib/voices";
+import { productCandidate } from "@/lib/selection";
 import { cartStore } from "@/state/cart";
+import { useAppState } from "@/state/AppState";
 import type { Scene } from "@/lib/api";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import { Searching } from "./Searching";
 import { Sheet } from "./Sheet";
 import { SimilarProducts } from "./SimilarProducts";
@@ -120,8 +123,14 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
 // 一番下の固定の帯: {価格}（税込）［カートに入れる］。在庫 0 は「在庫なし」で押せない（SP-18）。押すと giftia:cart に追加（同じ商品は数量+1。D-31）
 function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
   const out = p.status === "out_of_stock";
+  const { isPicked, pick, unpick } = useAppState();
   return (
     <div className={styles.detfoot}>
+      {!like && (
+        <div className={styles.footpick}>
+          <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} help={false} />
+        </div>
+      )}
       <span className={styles.footprice}>{formatPrice(p.price)}</span>
       {like ? (
         <>
