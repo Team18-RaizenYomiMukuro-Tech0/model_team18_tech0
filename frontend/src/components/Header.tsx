@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { CartButton } from "./CartPanel";
 import { FavoritesButton } from "./FavoritesPanel";
 import { HeaderSearch } from "./HeaderSearch";
+import { HeaderHeight } from "./HeaderHeight";
 import { Icon } from "./icons";
 
 // D-25 SP-08 F-10 #41-8 #46-7 #65: 共通ヘッダー（全ページ共通。app/layout に1つ置く）。
@@ -25,6 +26,7 @@ export function Header() {
         <span className="tag">準備中</span>
       </button>
       <CartButton />
+      <HeaderHeight />
     </header>
   );
 }

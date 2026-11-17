@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
+import { productCandidate } from "@/lib/selection";
+import { useAppState } from "@/state/AppState";
 import { productImage } from "@/lib/images";
 import { ratingText } from "@/lib/products";
 import { fetchRecommended, type RecommendedItem } from "@/lib/topPage";
@@ -10,6 +12,7 @@ import { CartButton } from "./CardButtons";
 import { DetailPanel } from "./DetailPanel";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./top.module.css";
 
@@ -19,6 +22,7 @@ export function Recommended() {
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
   const [items, setItems] = useState<RecommendedItem[]>([]);
   const [tries, setTries] = useState(0); // 「もう一度」で増やして取り直す
+  const { isPicked, pick, unpick } = useAppState();
   const [openId, setOpenId] = useState<string | null>(null); // 開いている詳細の商品。URL は変えない
 
   useEffect(() => {
@@ -61,10 +65,15 @@ export function Recommended() {
           return (
             <li key={p.product_id} className={`${styles.card} ${g.wrap}`}>
               <div className={g.grid}>
-                <button type="button" tabIndex={-1} aria-hidden="true" onClick={open} className={`${styles.pic} ${styles.openbtn} ${g.pic}`}>
-                  <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
-                  <span className={styles.imgtag}>イメージ</span>
-                </button>
+                <div className={g.picwrap}>
+                  <button type="button" tabIndex={-1} aria-hidden="true" onClick={open} className={`${styles.pic} ${styles.openbtn} ${g.pic}`}>
+                    <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
+                    <span className={styles.imgtag}>イメージ</span>
+                  </button>
+                  <span className={g.heart}>
+                    <HeartButton productId={p.product_id} name={p.name} />
+                  </span>
+                </div>
                 <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`}>
                   {p.name}
                 </button>
@@ -77,12 +86,12 @@ export function Recommended() {
                 <div className={g.chips}>
                   <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
                 </div>
-                <span className={g.heart}>
-                  <HeartButton productId={p.product_id} name={p.name} />
-                </span>
-                <span className={g.cart}>
-                  <CartButton productId={p.product_id} name={p.name} />
-                </span>
+                <div className={g.actions}>
+                  <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
+                  <span className={g.cart}>
+                    <CartButton productId={p.product_id} name={p.name} />
+                  </span>
+                </div>
               </div>
             </li>
           );

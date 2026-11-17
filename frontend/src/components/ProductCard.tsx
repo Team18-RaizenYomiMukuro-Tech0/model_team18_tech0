@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
+import { productCandidate } from "@/lib/selection";
+import { useAppState } from "@/state/AppState";
 import { productImage } from "@/lib/images";
 import { ratingText, type Product } from "@/lib/products";
 import { CartButton } from "./CardButtons";
 import { DecisionChips } from "./DecisionChips";
 import { HeartButton } from "./HeartButton";
+import { PickControl } from "./PickControl";
 import g from "./cardParts.module.css";
 import styles from "./results.module.css";
 
@@ -15,13 +18,19 @@ import styles from "./results.module.css";
 // 一覧は在庫 0 を出さないので、決め手の「在庫あり」はいつも出る。R-02 はシーンを選んでいないので「{シーン}で{n}回」は出ない。
 export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: string; selected: boolean }>) {
   const img = productImage(p.category);
+  const { isPicked, pick, unpick } = useAppState();
   return (
     <li className={`${styles.card} ${g.wrap}`} data-selected={selected}>
       <div className={g.grid}>
-        <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
-          {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
-          <span className={styles.imgtag}>イメージ</span>
-        </Link>
+        <div className={g.picwrap}>
+          <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
+            {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
+            <span className={styles.imgtag}>イメージ</span>
+          </Link>
+          <span className={g.heart}>
+            <HeartButton productId={p.product_id} name={p.name} />
+          </span>
+        </div>
         {p.high_rating && <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span>}
         <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
           {p.name}
@@ -35,12 +44,12 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
         <div className={g.chips}>
           <DecisionChips arrivesOn={p.arrives_on} wrapping={p.wrapping} inStock />
         </div>
-        <span className={g.heart}>
-          <HeartButton productId={p.product_id} name={p.name} />
-        </span>
-        <span className={g.cart}>
-          <CartButton productId={p.product_id} name={p.name} />
-        </span>
+        <div className={g.actions}>
+          <PickControl name={p.name} picked={isPicked(p.product_id)} onToggle={() => (isPicked(p.product_id) ? unpick(p.product_id) : pick(productCandidate(p)))} />
+          <span className={g.cart}>
+            <CartButton productId={p.product_id} name={p.name} />
+          </span>
+        </div>
       </div>
     </li>
   );
