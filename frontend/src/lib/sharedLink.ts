@@ -200,10 +200,10 @@ export class LikeController {
     return (await this.toggleEffect(productId)) === "seven";
   }
 
-  // 「6 個に戻す」（D-09）。画面の数だけ 6 にする。通信・保存・計測は呼ばない
+  // 「6 個に戻す」（D-09）。画面の数だけ 6 にする。通信・保存・計測は呼ばない。その商品が応答待ちの間は何もしない（応答後に古い数で上書きされないため）
   reset(productId: string): void {
     const cur = this.view[productId];
-    if (cur && canResetLikes(cur.count)) this.set(productId, resetLikeView(cur));
+    if (cur && !this.busy.has(productId) && canResetLikes(cur.count)) this.set(productId, resetLikeView(cur));
   }
 
   // 戻り値: 出す演出（7＝大当たり・8〜30＝ツッコミ・無し＝null）。数と段 8 を先に確定してから決める（D-09 処理の流れ）

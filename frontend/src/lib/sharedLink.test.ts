@@ -522,3 +522,20 @@ test("I-72 8 個目以上でも API は変わらない: 押しは on＝true の 
   const api = readFileSync(new URL("./api.ts", import.meta.url), "utf8");
   assert.doesNotMatch(api, /tsukkomi|harisen|reset/i); // API の層に新しい項目・呼び出しを足していない
 });
+
+test("U-102 応答待ちの間の「6 個に戻す」は何もしない（数を変えない）。応答後は押した分だけ増える", async () => {
+  let release: (r: LikeResult) => void = () => {};
+  const views: number[] = [];
+  const c = new LikeController(SID, [mk("G1", 7), mk("G2", 8)], mem(), (v) => views.push(v.G1.count), () => new Promise<LikeResult>((r) => (release = r)), () => {});
+  const p = c.toggleEffect("G1"); // 7 で押す（応答待ち）
+  c.reset("G1"); // 待つ間に戻す → 何もしない
+  assert.equal(c.snapshot.G1.count, 7);
+  assert.deepEqual(views, []);
+  c.reset("G2"); // 別の商品は応答待ちではないので戻る
+  assert.equal(c.snapshot.G2.count, 6);
+  release(ok("G1", 8));
+  assert.equal(await p, "tsukkomi"); // 7＋1＝8
+  assert.equal(c.snapshot.G1.count, 8);
+  c.reset("G1"); // 応答後は戻せる
+  assert.equal(c.snapshot.G1.count, 6);
+});
