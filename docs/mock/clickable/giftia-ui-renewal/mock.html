@@ -57,6 +57,7 @@ header.top{position:sticky;top:var(--barh,0px);z-index:20;background:var(--paper
 .hsearch{display:flex;flex:1 1 180px;max-width:420px;border:1px solid var(--bd2);border-radius:22px;overflow:hidden;background:var(--muted)}
 .hsearch input{flex:1;min-width:0;border:0;padding:8px 14px;font:inherit;min-height:44px;background:var(--muted)}
 .hsearch input::placeholder{color:#6E655F}
+header.top .hmag{display:none}
 .spacer{flex:1}
 .hbtn{position:relative;background:none;border:0;padding:6px 8px;border-radius:var(--rm);display:flex;gap:4px;align-items:center;font-size:13px;min-height:44px}
 .hbtn:hover{background:var(--peach)}
@@ -275,6 +276,9 @@ h2.sec{margin:22px 0 10px}
 .fgrp.fsm b{font-size:12px;color:var(--ink2)}
 @container (max-width:480px){
  header.top .hsearch,header.top>.sp{display:none}
+ header.top .hmag{display:flex;order:4}
+ header.top.qopen{flex-wrap:wrap}
+ header.top.qopen .hsearch{display:flex;order:9;flex:1 1 100%;max-width:none}
  .foldbar{display:flex;width:100%;min-height:44px;align-items:center;justify-content:space-between;gap:8px;background:var(--peach);border:1px solid var(--line);border-radius:var(--rl);padding:6px 14px;font-weight:700;text-align:left}
  .filters.shut{display:none}
 }
@@ -376,9 +380,10 @@ table.cmp .primary{width:100%;font-size:12px;padding:6px 4px;line-height:1.3}
 <div id="stage"><div id="app">
   <header class="top">
     <button class="logo" id="home" aria-label="Giftia トップへ"><img src="logo.svg" alt="Giftia" height="34"></button>
-    <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す（準備中）" placeholder="準備中" disabled></div>
-    <span class="sp">AC-03 #41-8</span>
+    <div class="hsearch"><input type="text" id="hq" aria-label="商品名で探す" placeholder="商品名や「甘いもの」で探す" maxlength="50"></div>
+    <span class="sp">SP-35 SP-08</span>
     <span class="spacer"></span>
+    <button class="hbtn hmag" id="bMag" aria-label="検索" aria-expanded="false"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg> <span class="t">検索</span></button>
     <button class="hbtn" id="bFav" aria-label="お気に入り"><img class="ic" src="icons/heart.svg" alt="" width="24" height="24"> <span class="t">お気に入り</span><span class="cnt" id="nFav">0</span></button>
     <button class="hbtn" id="bLogin" aria-label="ログイン（準備中）"><img class="ic" src="icons/user.svg" alt="" width="24" height="24"> <span class="t">ログイン</span><span class="tag">準備中</span></button>
     <button class="hbtn" id="bCart" aria-label="カート"><img class="ic" src="icons/cart.svg" alt="" width="24" height="24"> <span class="t">カート</span><span class="cnt" id="nCart">0</span></button>
@@ -499,7 +504,8 @@ function reason(p,sc){
 /* R-02 の絞り込み（単一選択・条件間 AND。在庫0は出さない。おすすめ順＝SP-02 と同じ式。#46-2・3） */
 function filterR02(){
   const b=BANDS.find(x=>x[0]===S.band);
-  const base=orderBy(PRODUCTS.filter(p=>p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))&&catOk(S.cats,p)));return sortItems(base,S.sort);
+  const qm=p=>!S.q||p.name.includes(S.q)||(p.cat||p.category||"").includes(S.q); /* SP-35: 言葉は商品名とカテゴリーに合うものだけ（モックは言い換え表なしの簡易版） */
+  const base=orderBy(PRODUCTS.filter(p=>qm(p)&&p.stock>=1&&(!S.scene||p.scenes.includes(tag(S.scene)))&&(!b||b[2](p.price))&&catOk(S.cats,p)));return sortItems(base,S.sort);
 }
 
 /* ===== 第2弾の架空データ（SP-16・17・22・26・28。mock 専用の値。本番の DB の値ではない） ===== */
@@ -538,7 +544,7 @@ const nKinds=()=>Object.keys(CART).filter(k=>PRODUCTS.some(p=>p.id==k&&!noStock(
 const live=t=>{const e=$("#srlive");if(e)e.textContent=t};
 const addRecent=id=>{RECENT=[id,...RECENT.filter(x=>x!==id)].slice(0,6);ls.set("giftia:recent",RECENT)};
 /* ---------- 状態 ---------- */
-const S={view:"top",st:"initial",mode:"r01",scene:null,band:null,cats:[],catOpen:false,page:1,items:[],detailId:null,detailOpen:false,
+const S={q:"",view:"top",st:"initial",mode:"r01",scene:null,band:null,cats:[],catOpen:false,page:1,items:[],detailId:null,detailOpen:false,
   dstate:"ok",picked:new Map(),creating:false,mkErr:false,link:null,copyMsg:null,token:0,shState:"ok",shId:null,shItems:null,panel:null,cmpMsg:"",sort:"recommend",giftDate:"",tab:"detail",foldOpen:false,cmp:new Set(),cmpOpen:false,cartChecking:false,recentBad:false};
 const store={};
 const HOUR=3600e3;
@@ -663,7 +669,7 @@ function resultHTML(){
   let h=`<button type="button" class="foldbar" data-i3="SP-31" id="foldBtn" aria-expanded="${S.foldOpen}">${esc(sumTxt)} ${S.foldOpen?"▲":"▼"}${sumTxt==="条件を選ぶ"?"":" 絞り込み"}${sp("SP-31")}</button><section class="filters ${S.foldOpen?"":"shut"}" aria-label="検索条件">
    <div class="frow">
     <div class="fgrp fsm"><b>シーン${sp("OPEN-02")}</b><div class="fbtns" role="group" aria-label="シーン">${TILES.map(x=>`<button class="fb" data-fscene="${x}" aria-pressed="${S.scene===x}">${x}</button>`).join("")}</div></div>
-    <div class="fgrp fsm"><b>価格（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
+    <div class="fgrp fsm"><b>価格帯（税込）${sp("OPEN-03")}</b><div class="fbtns" role="group" aria-label="価格帯">${BANDS.map(b=>`<button class="fb" data-band="${b[0]}" aria-pressed="${S.band===b[0]}">${b[1]}</button>`).join("")}</div></div>
    </div>
    <div class="fgrp fsm"><b>カテゴリー<span class="multi">（複数選べます）</span>${sp("AC-04")}</b><div class="fbtns">${CATS.map(c=>`<button class="fb txt" data-cat="${c}" aria-pressed="${S.cats.includes(c)}">${c}</button>`).join("")}</div></div>
   </section>  <div class="notice"><span>✓ 条件を選ぶと自動で検索されます${sp("AC-06")}</span><button id="clear">条件をクリア</button></div>`;
@@ -707,7 +713,7 @@ function sideHTML(){
       <button role="tab" id="tabList" data-tab="list" aria-selected="${S.tab==="list"}">共有リスト（${n}件）</button></div>${sp("SP-29 D-46 PC: C")}`;
   }
   if(r01&&S.tab==="list"){
-    body=(n||S.creating||S.link)?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます${sp("SP-29 D-46")}</div>`+sharebar();
+    body=(n||S.creating||S.link)?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます${sp("SP-29 D-46 #76")}</div>`;
   }else body=detailHTML();
   return `<div class="side">${tabs}${body}</div>`;
 }
@@ -728,7 +734,7 @@ function sharebar(){
   return h+"</div>";
 }
 function shareHTML(){
-  let h=`<h1>共有された贈りもの候補${sp("SP-06")}</h1>`;
+  let h=`<h1>贈りもの候補${sp("SP-06 #39")}</h1>`;
   const st=S.shState;
   if(st==="load") return h+`<div class="msgbox empty" role="status">${spinnerHTML()}読み込み中…${sp("読み込み中")}</div>`;
   if(st==="fail") return h+`<div class="msgbox err" role="alert">失敗しました。もう一度お試しください<br><button class="ghost" id="shRetry" style="margin-top:8px">再試行</button>${sp("SP-06 失敗")}</div>`;
@@ -769,7 +775,7 @@ function renderOv(){
     return;
   }
   if(S.panel==="list"){
-    ov.innerHTML=`<div class="dlg sheet" data-i3="SP-29"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${S.picked.size||S.creating||S.link?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます</div>`+sharebar()}</div>`;
+    ov.innerHTML=`<div class="dlg sheet" data-i3="SP-29"><div class="sheethead"><button class="ghost" data-sheetclose aria-label="閉じる">✕ 閉じる</button></div>${S.picked.size||S.creating||S.link?listHTML():`<div class="hint">候補の「共有リストに入れる」を押すと、ここに並びます</div>`}</div>`;
     return;
   }
   if(S.panel==="fav"&&S.cmpOpen){
@@ -891,6 +897,9 @@ function openShare(id){
    .catch(()=>{if(tk!==S.token)return;S.shState="fail";render()});
 }
 /* ヘッダー・レビューバー */
+/* SP-35: Enter（変換中は無視）で確定。空白だけなら何もしない。言葉があるときは R-02 の結果（条件は残す） */
+$("#hq").addEventListener("keydown",e=>{if(e.key!=="Enter"||e.isComposing)return;const v=e.target.value.trim();if(!v)return;S.q=v;S.mode="r02";S.scene=null;S.view="result";S.panel=null;S.page=1;S.items=filterR02();S.st=S.items.length?"results":"empty";S.detailId=null;S.detailOpen=false;render()});
+$("#bMag").onclick=()=>{const h=document.querySelector("header.top"),o=h.classList.toggle("qopen");$("#bMag").setAttribute("aria-expanded",String(o));if(o)$("#hq").focus()};
 $("#bFav").onclick=()=>{S.panel=S.panel==="fav"?null:"fav";render()};
 $("#bCart").onclick=()=>{S.panel=S.panel==="cart"?null:"cart";if(S.panel==="cart"){S.cartChecking=true;clearTimeout(S.cct);S.cct=setTimeout(()=>{S.cartChecking=false;if(S.panel==="cart")render()},700)}render()};
 $("#ov").onclick=e=>{if(e.target.id==="ov"){S.panel=null;S.cmp=new Set();S.cmpOpen=false;if(S.detailOpen&&narrow())S.detailOpen=false;render()}};
