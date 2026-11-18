@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Icon } from "./icons";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
-import { LIKE_FAILED_MESSAGE, likeLabel, type LikeView } from "@/lib/sharedLink";
+import { LIKE_FAILED_MESSAGE, type LikeView } from "@/lib/sharedLink";
+import { LikeRow } from "./LikeRow";
 import { noteDetailOpened, track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
@@ -141,9 +141,7 @@ function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
               {LIKE_FAILED_MESSAGE}
             </span>
           )}
-          <button type="button" className={styles.footbtn} data-primary="true" aria-pressed={like.view.liked} onClick={like.onToggle}>
-            <Icon name={like.view.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(like.view.liked)} {like.view.count}
-          </button>
+          <LikeRow v={like.view} onToggle={like.onToggle} buttonClass={styles.footbtn} primary />
         </>
       ) : out ? (
         <button type="button" className={styles.footbtn} disabled>

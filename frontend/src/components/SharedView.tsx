@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, LIKE_GIF, LIKE_GIF_STILL, likeGifs, likeLabel, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
 import { DetailPanel } from "./DetailPanel";
+import { LikeRow } from "./LikeRow";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -127,40 +128,6 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
     </ol>
     {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, onToggle: () => void c.toggle(openId) }} />}
     </>
-  );
-}
-
-// SP-06 D-09（PM 11/18）: いいねボタンのマークを指定の画像にし、いいねの数だけ（5 個まで。6 個目から「＋N」）ボタンのすぐ横に並べる。
-// 読み上げはボタンが「いいね」（aria-label・aria-pressed）。並んだ画像は飾り（aria-hidden）で、数は文字で読める。動きを減らす設定では静止画。
-function LikeGif({ size, alt = "" }: Readonly<{ size: number; alt?: string }>) {
-  return (
-    <picture>
-      <source media="(prefers-reduced-motion: reduce)" srcSet={LIKE_GIF_STILL} />
-      <img src={LIKE_GIF} alt={alt} width={size} height={size} className={styles.likegif} />
-    </picture>
-  );
-}
-
-function LikeRow({ v, onToggle }: Readonly<{ v: LikeView; onToggle: () => void }>) {
-  const g = likeGifs(v.count);
-  return (
-    <span className={styles.likerow}>
-      <button type="button" className={styles.like} aria-label="いいね" aria-pressed={v.liked} onClick={onToggle}>
-        <LikeGif size={28} alt="いいね" /> {likeLabel(v.liked)}
-      </button>
-      <span className={styles.likecount}>
-        <span className={styles.vh}>いいねの数 </span>
-        {v.count}
-      </span>
-      {g.shown > 0 && (
-        <span className={styles.gifs} aria-hidden="true">
-          {Array.from({ length: g.shown }, (_, i) => (
-            <LikeGif key={i} size={32} />
-          ))}
-          {g.more > 0 && <span className={styles.gifmore}>＋{g.more}</span>}
-        </span>
-      )}
-    </span>
   );
 }
 

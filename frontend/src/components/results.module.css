@@ -31,6 +31,8 @@
 .footprice { font-weight: 700; }
 .footbtn { min-width: 44px; min-height: 44px; padding: 8px 18px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .footbtn[data-primary="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; }
+/* 共有ページの上の詳細パネルのいいね（LikeRow。PM 11/18）: 画像と文字を横に並べる */
+.footbtn[aria-pressed] { display: inline-flex; align-items: center; gap: 6px; }
 .footbtn:disabled { background: var(--muted); color: #5c514d; cursor: not-allowed; }
 .detbody { display: grid; gap: 6px; }
 .detname { margin: 0; font-size: 18px; }
