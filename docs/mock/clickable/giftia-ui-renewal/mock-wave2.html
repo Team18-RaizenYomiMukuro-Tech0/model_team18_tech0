@@ -473,7 +473,7 @@ const arrTxt=p=>{const t=arrDate(p);return t?`${t.getMonth()+1}/${t.getDate()}�
 const miniImg=p=>`<span class="mini face" style="--fc:${faceC(p.cat)}" aria-hidden="true"></span>`;
 const bandOf=price=>BANDS.find(b=>b[2](price))[0];
 const matchCount=(scene,band,cats)=>{const bd=BANDS.find(x=>x[0]===band);return PRODUCTS.filter(p=>p.stock>=1&&(!scene||p.scenes.includes(scene))&&(!bd||bd[2](p.price))&&catOk(cats,p)).length};
-const SORTS=[["recommend","おすすめ"],["price_asc","安い順"],["rating_desc","評価順"],["delivery_asc","早く届く順"]];
+const SORTS=[["recommend","おすすめ順"],["price_asc","安い順"],["rating_desc","評価順"],["delivery_asc","早く届く順"]];
 const rdesc=(a,b)=>(b.r==null?-1:b.r)-(a.r==null?-1:a.r);
 function sortItems(items,k){/* D-43 の表 */
   const a=items.slice();
