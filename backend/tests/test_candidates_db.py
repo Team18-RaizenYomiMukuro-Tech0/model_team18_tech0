@@ -27,7 +27,7 @@ def test_scene_and_band(client: TestClient) -> None:
     for i in body["items"]:
         assert 3000 <= i["price"] <= 4999
         assert set(i) == {  # D-34 で delivery_days・wrapping・arrives_on・scene_count が増えた
-            "product_id", "name", "price", "category", "high_rating", "reason",
+            "product_id", "name", "price", "category", "high_rating", "rating", "review_count", "reason",
             "delivery_days", "wrapping", "arrives_on", "scene_count",
         }  # fmt: skip
 

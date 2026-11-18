@@ -167,6 +167,8 @@ def list_candidates(
                 "price": r["price"],
                 "category": r["category"],
                 "high_rating": _high_rating(rating),
+                "rating": None if rating is None else float(rating),
+                "review_count": r["review_count"],
                 "delivery_days": r["delivery_days"],
                 "wrapping": None if wrap is None else bool(wrap),
                 "arrives_on": arrives_on(today, r["delivery_days"]),
