@@ -24,7 +24,7 @@ import urllib.request
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 BACKEND = Path(__file__).resolve().parent.parent
 RUNS = 10
@@ -136,7 +136,7 @@ def timed_request(base: str, method: str, path: str, body: dict[str, Any] | None
         req.add_header("Content-Type", "application/json")
     start = time.perf_counter()
     try:
-        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:  # noqa: S310  127.0.0.1 か指定先のみ
+        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:  # 127.0.0.1 か指定先のみ
             payload = resp.read()
             status = resp.status
     except urllib.error.HTTPError as ex:
@@ -167,7 +167,7 @@ class LocalApi:
         self._server: Any = None
         self._thread: threading.Thread | None = None
 
-    def __enter__(self) -> LocalApi:
+    def __enter__(self) -> Self:
         if str(BACKEND) not in sys.path:
             sys.path.insert(0, str(BACKEND))
         import uvicorn
