@@ -95,7 +95,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
   const openView = openId ? view[openId] : null;
   // SP-28 D-09: 7 個目の演出（7 になるたび）と、8 個目以上のツッコミ（8〜30 になるたび）。同時には 2 つ出ない。
   // reach＝全画面の層（動きを減らさない版）、marks／tmarks＝動きを減らす版の「7 7 7」「押しすぎやろ！」（商品ごとに 2 秒）
-  const [reach, setReach] = useState<{ kind: LikeEffect; anchor: HTMLElement } | null>(null);
+  const [reach, setReach] = useState<{ kind: LikeEffect; count: number } | null>(null);
   const [marks, setMarks] = useState<readonly string[]>([]);
   const [tmarks, setTmarks] = useState<readonly string[]>([]);
   const marksRef = useRef<readonly string[]>([]);
@@ -127,7 +127,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
       else showMark(tmarksRef, setTmarks, id, TSUKKOMI.reducedMs);
     } else {
       back.current = button;
-      setReach({ kind: effect, anchor: button });
+      setReach({ kind: effect, count: c.snapshot[id]?.count ?? 0 }); // 札の数＝押した後の数
     }
   };
   const closeReach = () => {
@@ -175,7 +175,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
     </ol>
     {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, mark: markOf(openId), tmark: tmarkOf(openId), onReset: () => c.reset(openId), onToggle: (b) => void press(openId, b) }} />}
     {reach?.kind === "seven" && <SevenReach onClose={closeReach} />}
-    {reach?.kind === "tsukkomi" && <Tsukkomi anchor={reach.anchor} onClose={closeReach} />}
+    {reach?.kind === "tsukkomi" && <Tsukkomi count={reach.count} onClose={closeReach} />}
     </>
   );
 }
