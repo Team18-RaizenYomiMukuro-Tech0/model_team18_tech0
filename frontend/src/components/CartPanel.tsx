@@ -12,6 +12,7 @@ import { buildSearchHref } from "@/lib/topPage";
 import { canDecrease, canIncrease, cartStore, cartTotal, normalizeQty, stepQty, useCart } from "@/state/cart";
 import { CartChecker, continueTarget, orderGate, pressOrder, rowHasProduct, type CartFound } from "@/state/cartCheck";
 import { ADDED_MESSAGE, CORRUPT_MESSAGE, cartNotice } from "@/state/cartNotice";
+import { BodyPortal } from "./BodyPortal";
 import { Icon } from "./icons";
 import fav from "./favorites.module.css";
 import styles from "./cart.module.css";
@@ -33,15 +34,18 @@ export function CartButton() {
         <span className="ico"><Icon name="cart" /></span> <span className="t">カート</span>
         {count > 0 && <span className={`${fav.count} cnt`}>{count}</span>}
       </button>
-      <CartToast onView={() => setOpen(true)} />
-      {open && (
-        <CartPanel
-          onClose={() => {
-            setOpen(false);
-            btn.current?.focus();
-          }}
-        />
-      )}
+      {/* #485: ヘッダーの重なり（z-index 20）の外（body 直下）に出し、詳細のシート・パネル・暗幕より手前に見せる */}
+      <BodyPortal>
+        <CartToast onView={() => setOpen(true)} />
+        {open && (
+          <CartPanel
+            onClose={() => {
+              setOpen(false);
+              btn.current?.focus();
+            }}
+          />
+        )}
+      </BodyPortal>
     </>
   );
 }
