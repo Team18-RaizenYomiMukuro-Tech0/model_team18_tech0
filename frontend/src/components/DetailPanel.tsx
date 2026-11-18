@@ -34,7 +34,7 @@ import styles from "./results.module.css";
 // R8 SP-22 SP-25 SP-27 SP-34 D-42 D-46 D-47: 詳細が出たら最近見た商品の先頭に入れ（404・失敗は入れない）、③「詳細を開く」の計測を 1 回送る（声の有無つき。声の取得が済んでから）。
 // 声の下に似た商品（scene があるときだけ。similarHref は押したときの行き先）。
 // #410 SP-06 SP-12: 共有ページの上で開くときは like を渡す。主ボタンは「いいね」（共有ページのカードと同じ状態）、カートは出さず、幅によらず下からのシートで開く。
-export type DetailLike = { view: LikeView; onToggle: () => void };
+export type DetailLike = { view: LikeView; onToggle: (button: HTMLButtonElement) => void; mark?: boolean };
 export function DetailPanel({ productId, onClose, scene = null, focusKey = null, similarHref, like, overlay = false }: Readonly<{ productId: string; onClose: () => void; scene?: string | null; focusKey?: number | null; similarHref?: (id: string) => string; like?: DetailLike; overlay?: boolean }>) {
   const narrow = useMediaQuery(`(max-width: ${SHEET_MAX_WIDTH}px)`);
   // 899px 以下は下からのシート。900px 以上は、トップ（overlay）の上では右から出るパネル、検索結果では今までの右の欄。共有ページ（like）の上でも右から出るパネル（#415 4A・#419）
@@ -141,7 +141,7 @@ function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
               {LIKE_FAILED_MESSAGE}
             </span>
           )}
-          <LikeRow v={like.view} onToggle={like.onToggle} buttonClass={styles.footbtn} primary />
+          <LikeRow v={like.view} onToggle={like.onToggle} mark={like.mark} buttonClass={styles.footbtn} primary />
         </>
       ) : out ? (
         <button type="button" className={styles.footbtn} disabled>

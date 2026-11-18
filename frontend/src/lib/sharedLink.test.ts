@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LIKE_FAILED_MESSAGE, LikeController, likeGifs, likeLabel, likesKey, loadLikedIds, type LikeView, type SharedItem } from "./sharedLink.ts";
+import { LIKE_FAILED_MESSAGE, LikeController, likeGifs, addSevenMark, likeLabel, likesKey, loadLikedIds, SEVEN_REACH, sevenReachMode, shouldPlaySevenReach, type LikeView, type SharedItem } from "./sharedLink.ts";
 import type { LikeResult } from "./api.ts";
 import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, sharedUrl } from "./sharedLink.ts";
 
@@ -258,4 +258,97 @@ test("likes U-97: 詳細パネルのいいねも共有一覧と同じ関数で�
     { shown: 5, more: 0 },
     { shown: 5, more: 1 },
   ]);
+});
+
+// ---- U-100 / U-101 / I-68（11/19）7 個目の演出「B リーチからの大当たり」（SP-28・設計 D-09）----
+test("U-100 演出を出すかの判定: on・非 capped・押した後の数がちょうど 7 のときだけ true（印は持たない）", () => {
+  const f = (on: boolean, capped: boolean, countAfter: unknown) => shouldPlaySevenReach({ on, capped, countAfter });
+  assert.equal(f(true, false, 7), true); // ①
+  assert.equal(f(true, false, 6), false); // ②
+  assert.equal(f(true, false, 8), false); // ③
+  assert.equal(f(true, true, 30), false); // ④
+  assert.equal(f(false, false, 7), false); // ⑤ 取り消し
+  assert.equal(f(true, false, 0), false); // ⑥
+  for (const bad of [Number.NaN, "7", null, undefined, -7, -1, 7.5]) assert.equal(f(true, false, bad), false, String(bad)); // ⑦
+  assert.equal(f(true, true, 7), false); // ⑧
+  // ⑨ 取り消して 6 に戻した後の押し直し・⑩ 別の商品／詳細パネルの押し: 同じ関数・同じ入力で、何度でも true
+  assert.equal(f(true, false, 7), true);
+  assert.equal(f(true, false, 7), true);
+});
+
+test("U-100 ⑨⑩ LikeController: 7 になるたびに true（取り消して押し直しても・別の商品でも）。8 個目・取り消し・失敗・上限は false。判定の数は画面の数（応答の like_count ではない）", async () => {
+  // 画面の数は 6。応答の like_count は 99 でも、画面の数＋1＝7 で判定する
+  const { c } = ctl([mk("G1", 6), mk("G2", 6), mk("G3", 7)], [ok("G1", 99), ok("G1", 0), ok("G1", 0), ok("G2", 1), ok("G3", 1), ok("G3", 1)]);
+  assert.equal(await c.toggle("G1"), true); // 6→7
+  assert.equal(await c.toggle("G1"), false); // 取り消し 7→6
+  assert.equal(await c.toggle("G1"), true); // 押し直し 6→7（印を持たない）
+  assert.equal(await c.toggle("G2"), true); // 別の商品（詳細パネルの押しも同じ toggle）
+  assert.equal(await c.toggle("G3"), false); // 7→8
+  assert.equal(await c.toggle("nope"), false);
+});
+
+test("U-101 定数は設計 D-09 の表どおり。動きを減らす設定・動きの API が無い環境は印だけ", () => {
+  assert.equal(SEVEN_REACH.threshold, 7);
+  assert.equal(SEVEN_REACH.totalMs, 4700);
+  assert.equal(SEVEN_REACH.reducedMs, 2000);
+  assert.equal(SEVEN_REACH.reels, 3);
+  assert.deepEqual([...SEVEN_REACH.symbols], ["7", "akabu", "♥"]);
+  assert.equal(SEVEN_REACH.ringCount, 14);
+  assert.equal(SEVEN_REACH.bigPx, 220);
+  assert.equal(SEVEN_REACH.ringPx, 44);
+  assert.equal(SEVEN_REACH.reach, "リーチ！");
+  assert.equal(SEVEN_REACH.win, "7 人がいいね！");
+  assert.equal(SEVEN_REACH.mark, "7 7 7");
+  assert.equal(sevenReachMode({ reducedMotion: true, canAnimate: true }), "mark"); // ①
+  assert.equal(sevenReachMode({ reducedMotion: false, canAnimate: true }), "overlay"); // ②
+  assert.equal(sevenReachMode({ reducedMotion: false, canAnimate: false }), "mark"); // 動きの API が無い
+});
+
+test("U-101 音なし: 演出の部品は Audio・AudioContext を使わない。API・保存・計測の呼び出しも足していない", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../components/SevenReach.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /\bAudio(Context)?\b|\.play\(\)\s*;?\s*\/\/ audio|new Audio/);
+  assert.doesNotMatch(src, /fetch\(|track\(|localStorage|sessionStorage/);
+});
+
+test("I-68 順番: 応答が戻るまで演出（true）は出ず、戻った後、数・印・段 8 が先に確定してから true。失敗・打ち切り・上限は false で、通信は増えない", async () => {
+  const log: string[] = [];
+  let release: (r: LikeResult) => void = () => {};
+  const mkC = (post: () => Promise<LikeResult>) => {
+    let posts = 0;
+    const c = new LikeController(SID, [mk("G1", 6)], mem(), (v) => log.push(`view:${v.G1.count}:${v.G1.liked}:${v.G1.failed}`), async () => {
+      posts++;
+      return post();
+    }, (step) => void log.push(`track:${step}`));
+    return { c, posts: () => posts };
+  };
+  // ① 応答を遅らせて 200 like_count＝7
+  const a = mkC(() => new Promise<LikeResult>((r) => (release = r)));
+  const p = a.c.toggle("G1");
+  let settled = false;
+  void p.then(() => (settled = true));
+  await new Promise((r) => setTimeout(r, 20));
+  assert.equal(settled, false); // 応答が戻るまで演出は出ない
+  assert.deepEqual(log, []);
+  release(ok("G1", 7));
+  assert.equal(await p, true);
+  assert.deepEqual(log, ["view:7:true:false", "track:8"]); // 数が 7・印・段 8 のあとに true（演出が先に始まらない）
+  assert.equal(a.posts(), 1);
+  // ② 500 ④ 上限 ③ 打ち切り（postLike は error を返す）
+  for (const r of [{ status: "error" } as LikeResult, ok("G1", 30, true)]) {
+    log.length = 0;
+    const b = mkC(async () => r);
+    assert.equal(await b.c.toggle("G1"), false);
+    assert.equal(b.posts(), 1);
+    assert.ok(!(log as string[]).includes("track:8"));
+    assert.ok(!(log as string[]).includes("view:7:true:false"));
+  }
+});
+
+test("U-101 動きを減らす版の印は商品ごと（7個目-11）: X の印が出ている間に Y が 7 になれば Y にも印。同じ商品の押し直しは出し直さない（7個目-14）", () => {
+  const x = addSevenMark([], "X");
+  assert.deepEqual(x, { marks: ["X"], start: true });
+  const y = addSevenMark(x.marks, "Y"); // X の 2 秒の間に Y が 7 になる
+  assert.deepEqual(y, { marks: ["X", "Y"], start: true });
+  assert.deepEqual(addSevenMark(y.marks, "X"), { marks: ["X", "Y"], start: false }); // 同じ商品は出し直さない
 });
