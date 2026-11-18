@@ -74,8 +74,8 @@ export function Recommended() {
                     <HeartButton productId={p.product_id} name={p.name} />
                   </span>
                 </div>
-                <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`}>
-                  {p.name}
+                <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`} title={p.name}>
+                  <span className={g.clamp}>{p.name}</span>
                 </button>
                 <span className={`${styles.price} ${g.price}`}>{formatPrice(p.price)}</span>
                 {p.rating != null && p.review_count != null && (
