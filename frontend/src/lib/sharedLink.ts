@@ -34,6 +34,8 @@ export function itemNote(status: SharedStatus): string | null {
 // 第2弾 F-33 SP-06 K-6: 「くわしく見る」は検索結果の詳細の欄へ（/search?product=…）。販売終了の候補（商品が DB に無い）には置かない。在庫なしには置く
 export const DETAIL_LABEL = "くわしく見る";
 export const OTHERS_LABEL = "ほかの贈りものも探す";
+/** SP-06: 共有ページ（表示）の見出しの下にいつも出す固定の案内文（PM 11/18。保存しない・作成者は選べない） */
+export const SHARED_GUIDE = "プレゼントの候補を選びました。よいと思うものに『いいね』を押してください。";
 export const OTHERS_HREF = "/"; // トップへ
 // 画像（カテゴリー共通イラスト＋「イメージ」）。category が無い・知らないカテゴリーなら画像なし
 export const itemImage = (it: { category?: string }): string | null => (it.category ? productImage(it.category) : null);

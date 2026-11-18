@@ -5,7 +5,7 @@ import { Icon } from "./icons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
 import { DetailPanel } from "./DetailPanel";
 import styles from "./shared.module.css";
 
@@ -36,6 +36,7 @@ export function SharedView({ shareId }: Readonly<{ shareId: string }>) {
       )}
       {r?.status === "ok" && (
         <>
+          <p className={styles.guide}>{SHARED_GUIDE}</p>
           <p className={styles.lead}>作成時点の商品名・価格です</p>
           <SharedList key={`${shareId}:${tries}`} shareId={shareId} items={r.items} />
           <p className={styles.public}>このページはリンクを知っている人なら誰でも見られます</p>
