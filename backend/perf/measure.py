@@ -1,6 +1,6 @@
 # measure.py — 速さの測定（Issue #67 T3、設計.md N-03・D-17、テスト設計 NF-01〜03・NF-36）
 # アプリの外から、HTTP で 3 つの API を各 10 回呼んで経過時間を測る（1 回目も数える）。
-# 判定の値は「小さい順に並べた 9 番目」（遅い方から 2 番目）。基準: 候補 2 秒・作成 1 秒・取得 1 秒。
+# 判定の値は「小さい順に並べた 9 番目」（遅い方から 2 番目）。基準: 候補 2 秒・作成 2 秒・取得 2 秒（要件 N-03・NF-02・NF-03 の 2 秒にそろえる）。
 #
 #   python backend/perf/measure.py candidates                   # 送別・3,000〜4,999円（NF-01）
 #   python backend/perf/measure.py candidates --no-price-band   # 送別・価格帯なし（NF-36）
@@ -51,13 +51,13 @@ TARGETS: dict[str, dict[str, Any]] = {
     "create": {
         "title": "共有リンク作成 POST /api/share-links（商品 10 件）",
         "evidence": "NF-02.md",
-        "limit": 1.0,
+        "limit": 2.0,
         "status": 201,
     },
     "get": {
         "title": "共有リンク取得 GET /api/share-links/{id}（商品 10 件のリンク）",
         "evidence": "NF-03.md",
-        "limit": 1.0,
+        "limit": 2.0,
         "status": 200,
     },
 }
