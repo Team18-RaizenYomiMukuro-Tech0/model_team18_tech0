@@ -1,10 +1,10 @@
 /* F-47 SP-04 SP-30: 「共有リストに入れる」と「？」（カード 3 か所で同じ）。色は既存の変数だけ（押した状態は今の R-01 のボタンと同じ） */
 .row { position: relative; display: flex; align-items: center; }
-.pick { flex: 1 1 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; white-space: nowrap; cursor: pointer; }
+.pick { flex: 1 1 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--bd2); border-radius: 999px; background: var(--paper); color: var(--ink); font: inherit; white-space: nowrap; cursor: pointer; }
 /* #437 スマホの 2 列（カードの幅 146〜185px）。字幅の広い端末の字体でも枠からはみ出さないよう、余白を詰め、それでも入らないときだけ折り返す（高さ 44px 以上は保つ）。文言・並びは変えない */
 @media (max-width: 480px) { .pick { padding: 6px 4px; font-size: 15px; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; } }
 .pick:hover { background: var(--peach); }
-.pick[aria-pressed="true"] { background: #b8422a; border-color: #8f321e; color: #fff; font-weight: 700; }
+.pick[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
 /* #437 「？」は見た目 16px の丸を「共有リストに入れる」の右上に寄せる。押せる範囲は透明な余白で 44px（ボタンの右上の角にかぶる） */
 .help { position: absolute; top: -22px; right: -10px; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
 .helpdot { position: absolute; top: 14px; left: 14px; box-sizing: border-box; width: 16px; height: 16px; border: 1px solid var(--bd2); border-radius: 999px; background: var(--paper); font-size: 12px; font-weight: 700; line-height: 14px; text-align: center; }

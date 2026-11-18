@@ -1,6 +1,6 @@
 /* R2 トップの見た目。ヒーローは R1（#285）で D-37 の `design/hero.css` の値に替えた */
 .page { display: grid; gap: 28px; max-width: 1200px; margin: 0 auto; }
-.hero { --ah: 288px; position: relative; height: 340px; overflow: hidden; border-radius: var(--rm); background: linear-gradient(to top, #EBBBA6 calc(var(--ah) * .183), var(--s-line) calc(var(--ah) * .183) calc(var(--ah) * .2), var(--s-peach2) calc(var(--ah) * .2)); }
+.hero { --ah: 288px; position: relative; height: 340px; overflow: hidden; border-radius: 12px; background: linear-gradient(to top, #EBBBA6 calc(var(--ah) * .183), var(--s-line) calc(var(--ah) * .183) calc(var(--ah) * .2), var(--s-peach2) calc(var(--ah) * .2)); }
 .heroimg { position: absolute; right: max(24px, 4vw); bottom: 0; height: var(--ah); width: auto; }
 .txt { position: absolute; left: 48px; top: 50%; transform: translateY(-50%); max-width: calc(100% - var(--ah) * 1.445 - 48px - max(24px, 4vw) - 24px); }
 .hero h1 { margin: 0 0 8px; font-size: 30px; line-height: 1.3; color: var(--s-ink); }
@@ -18,7 +18,7 @@
 .set { display: grid; gap: 20px; }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 560px; }
 .tile, .btn, .cat {
-  min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: var(--rm);
+  min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: 999px;
   background: var(--paper); color: var(--ink); font: inherit; cursor: pointer;
 }
 /* SP-20 T2: シーン・カテゴリーのタイルは枠を外し、白い面にする */
@@ -30,7 +30,7 @@
 /* SP-20 T3: 選んだボタンは文字が載るオレンジの面 --s-coral-ink（白文字 6.74:1）。✓ も付けて色だけに頼らない */
 .btn[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
 .bandlink { margin: 10px 0 0; }
-.bandlink a { display: inline-flex; align-items: center; min-height: 44px; color: #8f321e; font-weight: 700; }
+.bandlink a { display: inline-flex; align-items: center; min-height: 44px; color: var(--s-coral-ink); font-weight: 700; }
 .cats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 /* SP-20 T4: アイコンは焦げ茶で、文字の横に並べる */
 .cat { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px; padding: 10px 8px; min-height: 56px; font-size: 14px; }
@@ -38,7 +38,7 @@
 /* 「ほか6個を見る」は 480px 以下だけ（SP-09）。広い幅では出さず、10 個を常に出す */
 .morebtn { display: none; }
 .rec { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.card { height: 100%; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); color: var(--ink); font-size: 14px; }
+.card { height: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); font-size: 14px; }
 .card a.name { color: inherit; text-decoration: none; }
 /* おすすめの画像・商品名はボタン（詳細をトップの上で開く）。見た目は今のリンクと同じ */
 .openbtn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }

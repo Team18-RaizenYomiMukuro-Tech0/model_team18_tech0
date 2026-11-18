@@ -60,7 +60,7 @@ export async function fetchShared(shareId: string, signal?: AbortSignal, fetchIm
 
 // ---- いいね（第2弾 F-34 SP-28 D-39 D-47 N-17）----
 export const LIKE_FAILED_MESSAGE = "いいねできませんでした。もう一度お試しください";
-export const likeLabel = (liked: boolean): string => (liked ? "♥ いいねした" : "♡ いいね");
+export const likeLabel = (liked: boolean): string => (liked ? "いいねした" : "いいね");
 export const likesKey = (shareId: string): string => `giftia:likes:${shareId}`; // 値は押した商品 ID の配列（D-47）
 
 export type LikeStorage = { getItem(k: string): string | null; setItem(k: string, v: string): void };
