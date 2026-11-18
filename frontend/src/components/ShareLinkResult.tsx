@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { shareFullUrl, SHARE_FAILED_MESSAGE, type ShareLink } from "@/lib/api";
+import { SHARE_CHANGED_MESSAGE } from "@/lib/selection";
 import { CopyController, COPIED_MESSAGE, COPY_FAILED_MESSAGE, type CopyStatus } from "@/lib/copyButton";
 import styles from "./candidates.module.css";
 
 // F3 D-08 #32-6 #41-1: できたリンク（選べる文字）とコピーボタン、コピーの結果、作成の失敗と再試行。
 // link は最新の1本だけ。新しいリンクに置き換わったらコピーの結果は消す。
-export function ShareLinkResult({ link, failed, onRetry }: Readonly<{ link: ShareLink | null; failed: boolean; onRetry: () => void }>) {
+export function ShareLinkResult({ link, failed, onRetry, changed = false }: Readonly<{ link: ShareLink | null; failed: boolean; onRetry: () => void; changed?: boolean }>) {
   const [copy, setCopy] = useState<CopyStatus>("idle");
   const ctl = useRef<CopyController | null>(null);
   useEffect(() => {
@@ -28,6 +29,11 @@ export function ShareLinkResult({ link, failed, onRetry }: Readonly<{ link: Shar
             再試行
           </button>
         </p>
+      )}
+      {link && (
+        <div role="status" className={styles.rebuild} data-on={changed}>
+          {changed ? SHARE_CHANGED_MESSAGE : ""}
+        </div>
       )}
       {link && (
         <div className={styles.sharelink}>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ShareLinkRunner, type ShareState } from "@/lib/api";
 import { formatPrice } from "@/lib/formatPrice";
-import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, shareArgs } from "@/lib/selection";
+import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, shareArgs, shareListChanged } from "@/lib/selection";
 import { useAppState } from "@/state/AppState";
 import styles from "./candidates.module.css";
 import { ShareLinkButton } from "./ShareLinkButton";
@@ -16,13 +16,24 @@ export function SelectedList() {
   const { picked, unpick } = useAppState();
   const [share, setShare] = useState<ShareState>({ status: "idle", link: null });
   const runner = useRef<ShareLinkRunner | null>(null);
+  // #482: 表示中のリンクを作ったときに送った商品 ID の並び。今の共有リストと違えば、リンクのすぐ上に作り直しの案内を出す
+  const [sent, setSent] = useState<string[] | null>(null);
+  const pending = useRef<string[] | null>(null);
+  const link = share.link;
+  useEffect(() => {
+    if (link) setSent(pending.current); // 新しいリンクに置き換わったとき（応答ごとに別のオブジェクト）、そのリンクを作ったときの並びを覚える
+  }, [link]);
   useEffect(() => {
     const r = new ShareLinkRunner(setShare);
     runner.current = r;
     return () => r.cancel();
   }, []);
   if (picked.length === 0) return null;
-  const create = () => runner.current?.create(...shareArgs(picked));
+  const create = () => {
+    const args = shareArgs(picked);
+    pending.current = args[0];
+    runner.current?.create(...args);
+  };
   const over = isOverLimit(picked.length);
   return (
     <section className={styles.selected} aria-labelledby="h-selected">
@@ -56,7 +67,7 @@ export function SelectedList() {
         disabled={!canCreate(picked.length, share.status === "creating")}
         onCreate={create}
       />
-      <ShareLinkResult link={share.link} failed={share.status === "error"} onRetry={create} />
+      <ShareLinkResult link={share.link} failed={share.status === "error"} onRetry={create} changed={shareListChanged(sent, picked.map((c) => c.productId))} />
     </section>
   );
 }

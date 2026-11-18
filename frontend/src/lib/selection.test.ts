@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, productCandidate, SHARE_LIMIT, shareScene, toCandidate } from "./selection.ts";
+import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, productCandidate, SHARE_CHANGED_MESSAGE, SHARE_LIMIT, shareListChanged, shareScene, toCandidate } from "./selection.ts";
 import { initialState, reducer, type AppState, type Candidate } from "../state/selection.ts";
 
 // U-16 S-08 S-09 #36 #41-5〜7: 選択は上限なし／全部外すと0／重複なし／選んだ順／外して選び直すと末尾。
@@ -68,4 +68,28 @@ test("selection F-47: shareScene は同じシーンだけ・混ざる／無い�
 test("selection F-47: productCandidate は理由・シーンを持たない", () => {
   const p = productCandidate({ product_id: "G0003", name: "X", price: 1200, category: "食品", high_rating: true });
   assert.deepEqual(p, { productId: "G0003", name: "X", price: 1200, category: "食品", highRating: true });
+});
+
+test("U-98 share changed: 作成時の並びと今の並びが同じなら案内は出ない（まだ作っていないときも出ない）", () => {
+  assert.equal(shareListChanged(["A", "B", "C"], ["A", "B", "C"]), false);
+  assert.equal(shareListChanged(null, ["A", "B"]), false);
+  assert.equal(shareListChanged(null, []), false);
+});
+test("U-98 share changed: 足した・外したら案内が出る", () => {
+  assert.equal(shareListChanged(["A", "B"], ["A", "B", "C"]), true);
+  assert.equal(shareListChanged(["A", "B", "C"], ["A", "B"]), true);
+  assert.equal(shareListChanged(["A"], []), true);
+});
+test("U-98 share changed: 順番が変わったら案内が出る（並びも比べる）", () => {
+  assert.equal(shareListChanged(["A", "B", "C"], ["B", "A", "C"]), true);
+  assert.equal(shareListChanged(["A", "B"], ["A", "C"]), true);
+});
+test("U-98 share changed: 元に戻したら案内が消える・作り直したら（送った並び＝今の並び）消える", () => {
+  const sent = ["A", "B", "C"];
+  assert.equal(shareListChanged(sent, ["A", "B"]), true);
+  assert.equal(shareListChanged(sent, ["A", "B", "C"]), false); // 元に戻した
+  assert.equal(shareListChanged(["A", "B"], ["A", "B"]), false); // 作り直して送った並びが今の並びになった
+});
+test("U-98 share changed: 文言は決まった 1 文（一字も変えない）", () => {
+  assert.equal(SHARE_CHANGED_MESSAGE, "共有リストを変更しました。変更後のリストを送るには、もう一度『共有リストを作る』を押してください。表示中のリンクは変更前のリストのままです。");
 });
