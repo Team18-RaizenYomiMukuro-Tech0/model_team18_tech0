@@ -35,7 +35,7 @@ mysql --host=$env:GIFTIA_DB_HOST --user=$env:GIFTIA_ADMIN_USER --database=giftia
 
 **mysql コマンドの代わりに、Python の道具を使ってもよい。** `backend/scripts/db_admin.py` が、この手順書の手順0・A・1・B・Bt（手順Bの1b。印ありの行を置く）・B5（手順Bの5。印なしの確認用の行を消す）・3・4・C の SQL を、手順書と一字一句同じに流す（SQL は変えていない。`tests/test_db_admin.py` が手順書と照合する）。`backend` フォルダで仮想環境に入り、`python scripts/db_admin.py <手順>` の形で1手順ずつ動かす。接続先は `giftia_t501` 固定（引数・環境変数では変えられない）、SSL は certifi＋ホスト名の確認、接続情報は `backend/.env`（`GIFTIA_DB_HOST`・`GIFTIA_DB_USER`・`GIFTIA_DB_PASSWORD`）から読み、画面にもファイルにも出さない。書き込む手順（1・B・Bt・B5・3・4）は、先に `SELECT DATABASE()` と対象の SELECT の結果を出し、`yes` と入力するまで書き込まない。記録は `evidence/db/<日付>_<手順>.md` に保存される（ホスト・ユーザーは `<伏せ>`）。
 
-第2弾で足した手順 1b・1c（表の作成）・3c・3d・5b（記録の行を消す）・5c（表を消す）は、`db_admin.py` には入れていない。PM が `mysql` コマンドで、配られたアカウントで手で流す（コードの変更になるので、道具に足すかは別に決める）。
+第2弾で足した手順 1b・1c（表の作成）・1d（`usage_events` に 2 列を足す。11/18）・3c・3d・5b（記録の行を消す）・5c（表を消す）は、`db_admin.py` には入れていない。PM が `mysql` コマンドで、配られたアカウントで手で流す（コードの変更になるので、道具に足すかは別に決める）。
 
 接続確認（これが出なければ先へ進まない）:
 
@@ -162,6 +162,62 @@ SELECT COUNT(*) FROM usage_events;
 ```
 
 - 列・型・`UNIQUE KEY uq_visit_step (visit_id, step)`・`KEY idx_occurred (occurred_at)` が上のとおり。`COUNT(*)` が 0。既存テーブル・`share_links`・`share_likes` の件数が変わっていない。
+
+## 1d. `usage_events` に 2 列を足す（ALTER TABLE。11/18。ADR-017）
+
+設計.md D-40（DATA-04）の「既にある表に 2 列を足す」のとおり。共有リンクの識別子 `share_id` と、⑤ の記録に入れる「開いた詳細の数」`detail_count` を足す。外部キー・索引は足さない。名前・メール・IP アドレス・ブラウザの情報・商品 ID・検索語の列は足さない（N-13）。PM が `mysql` コマンドで、配られたアカウントで手で流す（`db_admin.py` には入れない。1c と同じ）。`ALTER` の権限は配られたアカウントにある（穴 4 の表）。
+
+**流す順番（11/18）**: ① この手順 1d（PM）→ ② サーバーを出す（`backend/api/events.py`）→ ③ 画面を出す。①の前にサーバーを出すと、記録の書き込みが「列が無い」で 500 になる。②の前に画面を出すと、新しい本文が「知らない項目」で 422 になり、記録が全部落ちる（画面は何も出さずに動き続ける）。
+
+**実行前の確認**
+
+```sql
+SHOW CREATE TABLE usage_events;
+SELECT COUNT(*) FROM usage_events;
+SELECT is_test, COUNT(*) FROM usage_events GROUP BY is_test;
+```
+
+- 列が 10 個（`share_id`・`detail_count` が無い）こと。行数と `is_test` ごとの件数を控える（`evidence/db/` に書く）。
+
+**実行**
+
+```sql
+ALTER TABLE usage_events
+  ADD COLUMN share_id CHAR(22) CHARACTER SET ascii COLLATE ascii_bin NULL AFTER zero_cond,
+  ADD COLUMN detail_count SMALLINT UNSIGNED NULL AFTER share_id;
+```
+
+（今ある行は 2 列とも NULL になる。行は消えない。）
+
+**実行後の確かめ方**
+
+```sql
+SHOW CREATE TABLE usage_events;
+SELECT COUNT(*) FROM usage_events;
+SELECT is_test, COUNT(*) FROM usage_events GROUP BY is_test;
+SELECT COUNT(*) FROM usage_events WHERE share_id IS NOT NULL OR detail_count IS NOT NULL;
+```
+
+- 2 列が `zero_cond` の後ろにあり、`share_id` が `char(22)`・ascii・`ascii_bin`・NULL 可、`detail_count` が `smallint unsigned`・NULL 可。主キー・`UNIQUE KEY uq_visit_step (visit_id, step)`・`KEY idx_occurred (occurred_at)` が変わらない。
+- 行数と `is_test` ごとの件数が、実行前と同じ。最後の `COUNT(*)` が 0。既存テーブル・`share_links`・`share_likes` の件数が変わっていない。確かめは NF-58。
+
+**戻し方（DROP COLUMN）**
+
+- 先に、アプリ（サーバーと画面）を前の版に戻す。戻す前にこの戻し方を流さない（前の版は 2 列を知らないので、列を消してもアプリは動くが、新しい版が残っていると書き込みが 500 になる）。
+- 2 列の値は戻らない。先に控える（行数が少ないので全部でよい。個人を示す値は無い）:
+
+```sql
+SELECT event_id, visit_id, step, share_id, detail_count, is_test FROM usage_events WHERE share_id IS NOT NULL OR detail_count IS NOT NULL;
+```
+
+- 流す:
+
+```sql
+ALTER TABLE usage_events DROP COLUMN detail_count, DROP COLUMN share_id;
+```
+
+- 確かめ: `SHOW CREATE TABLE usage_events;` が 1c の定義と同じ（列が 10 個）。行数が戻し前と同じ。段 8 の行は残る（旧版の段 1〜6 の通過率の SELECT は段 8 を数えない）。残したくなければ、先に件数を確かめてから `DELETE FROM usage_events WHERE step = 8;`（手順 3c と同じく START TRANSACTION の中で。PM が決める）。
+- 新しく表を作り直す（1c から）ときは、続けてこの 1d も流す。
 
 ## 2. アプリ用アカウントは作らない（案A）
 
@@ -519,6 +575,15 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 4. 確認後に必要なら手順1からテーブルを作り直す。
 
 記録: `evidence/NF-19.md`（①の結果、②の比べた結果）。
+
+### D. NF-58 1d の確かめ（11/18）
+
+1. 手順 1d の「実行前の確認」を取る。
+2. 手順 1d の ALTER を流し、「実行後の確かめ方」を取る。
+3. 戻し方は、アプリを前の版に戻したときだけ流す（試すだけで流さない。流したら 1d の「戻し方」の確かめも取る）。
+4. 合格の基準は、テスト設計 NF-58 のとおり。
+
+記録: `evidence/NF-58.md`。
 
 ## 実行の記録
 
