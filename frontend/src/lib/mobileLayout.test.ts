@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { clearFoldOpen, foldOpenOnArrival, markFoldOpen } from "./foldHint.ts";
 import { cartBandText, conditionSummary, listBandText, shouldFocusListBand } from "./mobileLayout.ts";
 
 const q = (o: Partial<Parameters<typeof conditionSummary>[0]> = {}) => ({ scene: null, priceBand: null, categories: [], ...o });
@@ -10,6 +11,18 @@ test("U-86: 条件が無いときは「条件を選ぶ ▼」", () => {
 test("U-86: シーン・価格・カテゴリーを「・」でつなぎ「▼ 絞り込み」", () => {
   assert.equal(conditionSummary(q({ scene: "お礼" })), "お礼 ▼ 絞り込み");
   assert.equal(conditionSummary(q({ scene: "お礼", priceBand: "under3000", categories: ["食品"] })), "お礼・〜2,999円・食品 ▼ 絞り込み");
+});
+test("U-86: 欄が開いているときは ▼ が ▲ になる（文言の残りは同じ）", () => {
+  assert.equal(conditionSummary(q(), true), "条件を選ぶ ▲");
+  assert.equal(conditionSummary(q({ scene: "お礼", priceBand: "under3000", categories: ["食品"] }), true), "お礼・〜2,999円・食品 ▲ 絞り込み");
+  assert.equal(conditionSummary(q({ scene: "お礼" }), false), "お礼 ▼ 絞り込み");
+});
+test("U-86: トップから移ったときだけ最初から開く印（foldHint）", () => {
+  assert.equal(foldOpenOnArrival(), false); // 直接 /search を開いたとき
+  markFoldOpen();
+  assert.equal(foldOpenOnArrival(), true);
+  clearFoldOpen();
+  assert.equal(foldOpenOnArrival(), false);
 });
 test("U-86: カテゴリー 3 つはタイルの並び順（選んだ順にしない）", () => {
   const s = conditionSummary(q({ categories: ["家電", "食品", "生活雑貨"] }));

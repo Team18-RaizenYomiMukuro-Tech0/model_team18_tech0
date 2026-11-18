@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SCENES, type Scene } from "@/lib/api";
 import { PRICE_BANDS, togglePriceBand, type PriceBand } from "@/lib/priceBand";
+import { markFoldOpen } from "@/lib/foldHint";
 import { bandLinkHref, buildSearchHref } from "@/lib/topPage";
 import styles from "./top.module.css";
 
@@ -26,7 +27,10 @@ export function TopSearch() {
         </h2>
         <div className={styles.tiles} role="group" aria-label="シーン">
           {SCENES.map((s) => (
-            <button key={s} type="button" className={styles.tile} onClick={() => router.push(buildSearchHref({ scene: s, priceBand: band }))}>
+            <button key={s} type="button" className={styles.tile} onClick={() => {
+                markFoldOpen();
+                router.push(buildSearchHref({ scene: s, priceBand: band }));
+              }}>
               {s}
             </button>
           ))}
@@ -52,7 +56,7 @@ export function TopSearch() {
         </div>
         {link && (
           <p className={styles.bandlink}>
-            <Link href={link}>この価格帯の商品を見る</Link>
+            <Link href={link} onClick={markFoldOpen}>この価格帯の商品を見る</Link>
           </p>
         )}
       </section>
