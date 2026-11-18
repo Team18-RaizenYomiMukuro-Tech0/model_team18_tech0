@@ -19,9 +19,9 @@ export function conditionSummary(q: Pick<SearchQuery, "scene" | "priceBand" | "c
   return parts.length === 0 ? `条件を選ぶ ${arrow}` : `${parts.join("・")} ${arrow} 絞り込み`;
 }
 
-/** SP-29: 下端の帯の左。R-01 で 1 件以上のときだけ（それ以外は null） */
-export function listBandText(isR01: boolean, picked: number): string | null {
-  return isR01 && picked >= 1 ? `共有リスト ${picked}件` : null;
+/** SP-29: 下端の帯の左。共有リストが 1 件以上のときだけ（0 件は null）。R-01・R-02 のどちらでも同じ（#488。PM 11/19） */
+export function listBandText(picked: number): string | null {
+  return picked >= 1 ? `共有リスト ${picked}件` : null;
 }
 
 /** SP-29: 下端の帯の右。n はカートに入っている商品の種類の数（数量の合計ではない） */
