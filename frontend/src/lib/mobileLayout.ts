@@ -8,14 +8,15 @@ export const SHEET_MAX_WIDTH = 899;
 /** 条件を 1 行にたたむ幅（480px 以下。SP-31） */
 export const COLLAPSE_MAX_WIDTH = 480;
 
-/** SP-31: 条件の 1 行。選んでいなければ「条件を選ぶ ▼」。ほかは「{条件を「・」でつないだもの} ▼ 絞り込み」（順は シーン・価格・カテゴリー） */
-export function conditionSummary(q: Pick<SearchQuery, "scene" | "priceBand" | "categories">): string {
+/** SP-31: 条件の 1 行。選んでいなければ「条件を選ぶ ▼」。ほかは「{条件を「・」でつないだもの} ▼ 絞り込み」（順は シーン・価格・カテゴリー）。欄が開いているときは ▼ を ▲ にする */
+export function conditionSummary(q: Pick<SearchQuery, "scene" | "priceBand" | "categories">, open = false): string {
+  const arrow = open ? "▲" : "▼";
   const parts: string[] = [];
   if (q.scene) parts.push(q.scene);
   const band = PRICE_BANDS.find((b) => b.value === q.priceBand);
   if (band) parts.push(band.label);
   for (const c of CATEGORIES) if (q.categories.includes(c.name)) parts.push(c.name); // タイルの並び順（選んだ順にしない。D-08）
-  return parts.length === 0 ? "条件を選ぶ ▼" : `${parts.join("・")} ▼ 絞り込み`;
+  return parts.length === 0 ? `条件を選ぶ ${arrow}` : `${parts.join("・")} ${arrow} 絞り込み`;
 }
 
 /** SP-29: 下端の帯の左。R-01 で 1 件以上のときだけ（それ以外は null） */

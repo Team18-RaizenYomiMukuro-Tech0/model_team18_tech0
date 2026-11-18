@@ -11,6 +11,11 @@ test("U-86: シーン・価格・カテゴリーを「・」でつなぎ「▼ �
   assert.equal(conditionSummary(q({ scene: "お礼" })), "お礼 ▼ 絞り込み");
   assert.equal(conditionSummary(q({ scene: "お礼", priceBand: "under3000", categories: ["食品"] })), "お礼・〜2,999円・食品 ▼ 絞り込み");
 });
+test("U-86: 欄が開いているときは ▼ が ▲ になる（文言の残りは同じ）", () => {
+  assert.equal(conditionSummary(q(), true), "条件を選ぶ ▲");
+  assert.equal(conditionSummary(q({ scene: "お礼", priceBand: "under3000", categories: ["食品"] }), true), "お礼・〜2,999円・食品 ▲ 絞り込み");
+  assert.equal(conditionSummary(q({ scene: "お礼" }), false), "お礼 ▼ 絞り込み");
+});
 test("U-86: カテゴリー 3 つはタイルの並び順（選んだ順にしない）", () => {
   const s = conditionSummary(q({ categories: ["家電", "食品", "生活雑貨"] }));
   const order = ["食品", "生活雑貨", "家電"].map((n) => s.indexOf(n));
