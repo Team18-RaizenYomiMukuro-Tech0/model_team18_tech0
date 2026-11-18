@@ -105,7 +105,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
             )}
             <h2 className={styles.name}>{it.name}</h2>
             <p className={styles.price}>{formatPrice(it.price)}</p>
-            <p className={styles.reason}>{it.reason}</p>
+            {it.reason && <p className={styles.reason}>{it.reason}</p>}
             {note && <p className={styles.note}>{note}</p>}
             <div className={styles.actions}>
               {canShowDetail(it.status) && (

@@ -52,7 +52,7 @@ export function CandidateCard({
         <div className={g.chips}>
           <DecisionChips arrivesOn={item.arrives_on} wrapping={item.wrapping} inStock sceneCount={item.scene_count} />
         </div>
-        <span className={`${styles.reason} ${g.reason}`}>{item.reason}</span>
+        {item.reason && <span className={`${styles.reason} ${g.reason}`}>{item.reason}</span>}
         <div className={g.actions}>
           <PickControl name={item.name} picked={picked} onToggle={onToggle} />
           <span className={g.cart}>

@@ -50,6 +50,7 @@ export function TopSearch() {
             </button>
           ))}
         </div>
+        <p className={styles.pricenote}>価格は税込。もう一度押すと解除します。</p>
         {link && (
           <p className={styles.bandlink}>
             <Link href={link}>この価格帯の商品を見る</Link>
