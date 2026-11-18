@@ -28,3 +28,8 @@ export function shareScene(picked: readonly Candidate[]): string | null {
   if (!first) return null;
   return picked.every((c) => c.scene === first) ? first : null;
 }
+
+// SelectedList が create に渡す 2 つの値（商品 ID を選んだ順に・scene）。画面の部品は .tsx でテストできないので、ここに出して確かめる（#427）
+export function shareArgs(picked: readonly Candidate[]): [string[], string | null] {
+  return [picked.map((c) => c.productId), shareScene(picked)];
+}

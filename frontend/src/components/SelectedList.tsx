@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ShareLinkRunner, type ShareState } from "@/lib/api";
 import { formatPrice } from "@/lib/formatPrice";
-import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, shareScene } from "@/lib/selection";
+import { canCreate, isOverLimit, OVER_LIMIT_MESSAGE, shareArgs } from "@/lib/selection";
 import { useAppState } from "@/state/AppState";
 import styles from "./candidates.module.css";
 import { ShareLinkButton } from "./ShareLinkButton";
@@ -22,7 +22,7 @@ export function SelectedList() {
     return () => r.cancel();
   }, []);
   if (picked.length === 0) return null;
-  const create = () => runner.current?.create(picked.map((c) => c.productId), shareScene(picked));
+  const create = () => runner.current?.create(...shareArgs(picked));
   const over = isOverLimit(picked.length);
   return (
     <section className={styles.selected} aria-labelledby="h-selected">
