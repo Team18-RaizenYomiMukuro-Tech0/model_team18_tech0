@@ -2,7 +2,7 @@ import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import { REQUEST_TIMEOUT_MS, SHARE_FAILED_MESSAGE, ShareLinkRunner, shareFullUrl, shareRequestBody, type ShareState } from "./api.ts";
 import type { Candidate } from "../state/selection.ts";
-import { canCreate, shareScene } from "./selection.ts";
+import { canCreate, shareArgs, shareScene } from "./selection.ts";
 
 // S-10〜S-13 S-39 S-40 S-51 E-04 E-05: 共有リンクの作成。API を偽物に差し替え、偽のタイマーで応答を遅らせる／失敗させる
 type Res = { ok: boolean; json: () => Promise<unknown> };
@@ -121,6 +121,7 @@ test("shareLink S-51 #41-7: 3位・1位・2位・再検索後の D の順に選�
   runner.create(order);
   assert.equal(calls[0].init.method, "POST");
   assert.ok(calls[0].url.endsWith("/api/share-links"));
+  // S-51 は「選んだ順」の確認。scene を付けない（R-02 などで選んだ）ときの本文なので、期待に scene は入れない（scene 付きは下の #427 の 3 件で確かめる）
   assert.deepEqual(JSON.parse(calls[0].init.body), { product_ids: order });
   assert.equal(shareRequestBody(order), JSON.stringify({ product_ids: order }));
   mock.timers.tick(0);
@@ -157,4 +158,11 @@ test("shareLink #427: シーンなし（R-02 などで選んだ）は scene を�
   runner.create(["G0001"], shareScene(picked));
   assert.deepEqual(JSON.parse(calls[0].init.body), { product_ids: ["G0001"] });
   mock.timers.reset();
+});
+
+// #427: SelectedList が create に渡す値（shareArgs）。お礼で選んだ 2 件は、選んだ順の ID と scene「お礼」
+test("shareLink #427: SelectedList が渡す値は、選んだ順の商品 ID と、選んだシーン", () => {
+  const c = (id: string, scene?: string): Candidate => ({ productId: id, name: id, price: 1000, category: "食品", ...(scene ? { scene } : {}) });
+  assert.deepEqual(shareArgs([c("G0002", "お礼"), c("G0001", "お礼")]), [["G0002", "G0001"], "お礼"]);
+  assert.deepEqual(shareArgs([c("G0001")]), [["G0001"], null]);
 });
