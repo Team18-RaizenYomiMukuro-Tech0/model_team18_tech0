@@ -4,6 +4,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { LIKE_GIF, LIKE_GIF_STILL, SEVEN_REACH } from "@/lib/sharedLink";
+import { closeOnLeave } from "@/lib/effectClose";
 import styles from "./sevenReach.module.css";
 
 // SP-28 D-09 7 個目の演出「B リーチからの大当たり」。画面全体を覆う層（aria-hidden）。押す・Esc・時間が来るで閉じる。
@@ -70,11 +71,13 @@ export function SevenReach({ onClose }: Readonly<{ onClose: () => void }>) {
       close.current();
     };
     window.addEventListener("keydown", onKey, true);
+    const stopLeave = closeOnLeave(() => close.current(), window.matchMedia("(orientation: portrait)"), document); // 回転・タブを離れるで閉じる（出し直さない）
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden"; // 演出中はページを動かさない
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("keydown", onKey, true);
+      stopLeave();
       document.body.style.overflow = prev;
       anims.forEach((a) => a.cancel());
     };

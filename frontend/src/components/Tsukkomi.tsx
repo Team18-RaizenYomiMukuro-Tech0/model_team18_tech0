@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { LIKE_GIF, TSUKKOMI } from "@/lib/sharedLink";
 import { Harisen } from "./Harisen";
+import { closeOnLeave } from "@/lib/effectClose";
 import styles from "./tsukkomi.module.css";
 
 // SP-28 D-09 8 個目以上のツッコミ「B1 ハリセンでスパーン」。画面全体を覆う層（aria-hidden）。押す・Esc・時間（2.45 秒）で閉じる。
@@ -111,11 +112,13 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
       close.current();
     };
     window.addEventListener("keydown", onKey, true);
+    const stopLeave = closeOnLeave(() => close.current(), window.matchMedia("(orientation: portrait)"), document); // 回転・タブを離れるで閉じる（出し直さない）
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden"; // 演出中はページを動かさない
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("keydown", onKey, true);
+      stopLeave();
       document.body.style.overflow = prev;
       anims.forEach((x) => x.cancel());
     };
