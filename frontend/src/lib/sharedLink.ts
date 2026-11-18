@@ -1,4 +1,5 @@
 import { REQUEST_TIMEOUT_MS, apiUrl, postLike, type LikeResult } from "./api.ts";
+import { track, type Tracker } from "./tracking.ts";
 import { productImage } from "./images.ts";
 import { buildSearchHref } from "./topPage.ts";
 
@@ -60,7 +61,7 @@ export async function fetchShared(shareId: string, signal?: AbortSignal, fetchIm
 
 // ---- いいね（第2弾 F-34 SP-28 D-39 D-47 N-17）----
 export const LIKE_FAILED_MESSAGE = "いいねできませんでした。もう一度お試しください";
-export const likeLabel = (liked: boolean): string => (liked ? "♥ いいねした" : "♡ いいね");
+export const likeLabel = (liked: boolean): string => (liked ? "いいねした" : "いいね");
 export const likesKey = (shareId: string): string => `giftia:likes:${shareId}`; // 値は押した商品 ID の配列（D-47）
 
 export type LikeStorage = { getItem(k: string): string | null; setItem(k: string, v: string): void };
@@ -83,12 +84,14 @@ export class LikeController {
   private readonly shareId: string;
   private readonly storage: LikeStorage | null;
   private readonly post: PostLike;
+  private readonly tracker: Tracker;
   private readonly onChange: (v: Readonly<Record<string, LikeView>>) => void;
   private view: Record<string, LikeView> = {};
   private readonly busy = new Set<string>();
   private readonly abort = new AbortController();
 
-  constructor(shareId: string, items: readonly SharedItem[], storage: LikeStorage | null, onChange: (v: Readonly<Record<string, LikeView>>) => void, post: PostLike = postLike) {
+  constructor(shareId: string, items: readonly SharedItem[], storage: LikeStorage | null, onChange: (v: Readonly<Record<string, LikeView>>) => void, post: PostLike = postLike, tracker: Tracker = track) {
+    this.tracker = tracker;
     this.shareId = shareId;
     this.storage = storage;
     this.post = post;
@@ -114,6 +117,7 @@ export class LikeController {
     else {
       this.set(productId, { count: Math.max(0, cur.count + (on ? 1 : -1)), liked: on, failed: false });
       this.saveMarks();
+      if (on) this.tracker(8, { share_id: this.shareId }); // ⑧ 数が増えたときだけ。押した共有ページの share_id（SP-34・輪-2・3。取り消し・上限・失敗は送らない）
     }
   }
 

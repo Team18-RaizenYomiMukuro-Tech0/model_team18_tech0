@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Icon } from "./icons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
@@ -105,7 +106,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
             )}
             <h2 className={styles.name}>{it.name}</h2>
             <p className={styles.price}>{formatPrice(it.price)}</p>
-            <p className={styles.reason}>{it.reason}</p>
+            {it.reason && <p className={styles.reason}>{it.reason}</p>}
             {note && <p className={styles.note}>{note}</p>}
             <div className={styles.actions}>
               {canShowDetail(it.status) && (
@@ -114,7 +115,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
                 </button>
               )}
               <button type="button" className={styles.like} aria-pressed={v.liked} onClick={() => void c.toggle(it.product_id)}>
-                {likeLabel(v.liked)} {v.count}
+                <Icon name={v.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(v.liked)} {v.count}
               </button>
             </div>
             {v.failed && (

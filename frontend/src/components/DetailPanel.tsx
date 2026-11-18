@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { Icon } from "./icons";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
 import { productImage } from "@/lib/images";
 import { LIKE_FAILED_MESSAGE, likeLabel, type LikeView } from "@/lib/sharedLink";
-import { track } from "@/lib/tracking";
+import { noteDetailOpened, track } from "@/lib/tracking";
 import { recentStore } from "@/state/recent";
 import { fetchJson, fetchVoices, isProductDetail, productUrl, ratingText, type Fetched, type ProductDetail, type VoiceList } from "@/lib/products";
 import { VOICES_HEADING, voiceViews } from "@/lib/voices";
@@ -65,7 +66,10 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   const voicesDone = voices.id === productId && voices.done;
   const hasVoice = voices.id === productId && voiceViews(voices.v?.voices).length > 0;
   useEffect(() => {
-    if (okId) recentStore.add(okId); // 詳細に商品が出たとき（404・失敗は入れない。SP-22）
+    if (okId) {
+      recentStore.add(okId); // 詳細に商品が出たとき（404・失敗は入れない。SP-22）
+      noteDetailOpened(okId); // 開いた詳細の数（⑤ に数だけ入る。商品 ID はブラウザの中だけ。SP-34・輪-6）
+    }
   }, [okId]);
   useEffect(() => {
     if (!okId || !voicesDone || tracked.current === `${okId}|${scene ?? ""}`) return;
@@ -138,7 +142,7 @@ function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
             </span>
           )}
           <button type="button" className={styles.footbtn} data-primary="true" aria-pressed={like.view.liked} onClick={like.onToggle}>
-            {likeLabel(like.view.liked)} {like.view.count}
+            <Icon name={like.view.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(like.view.liked)} {like.view.count}
           </button>
         </>
       ) : out ? (

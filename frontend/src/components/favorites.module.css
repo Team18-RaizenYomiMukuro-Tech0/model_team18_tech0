@@ -1,10 +1,10 @@
 /* R4 お気に入り（ハートとパネル）。globals.css は触らない */
-.heart { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: 999px; background: var(--paper); color: #b3261e; font-size: 22px; line-height: 1; cursor: pointer; }
-.heart[aria-pressed="true"] { background: #fdecea; border-color: #b3261e; }
-.count { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 999px; background: #b8422a; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.heart { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: 1px solid var(--bd2); border-radius: 999px; background: var(--paper); color: var(--s-ink); line-height: 1; cursor: pointer; }
+.heart[aria-pressed="true"] { background: var(--s-peach); border-color: var(--s-ink); }
+.count { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 999px; background: var(--s-ink); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(58, 51, 49, .35); display: flex; justify-content: flex-end; }
 /* 右から出る */
-.panel { width: min(360px, 100%); height: 100%; overflow-y: auto; padding: 16px; background: var(--paper); border-left: 1px solid var(--line); box-shadow: -4px 0 16px rgba(0, 0, 0, .12); animation: slidein .2s ease-out; }
+.panel { width: min(360px, 100%); height: 100%; overflow-y: auto; padding: 16px; background: var(--paper); border-radius: 12px 0 0 12px; border-left: 1px solid var(--line); box-shadow: -4px 0 16px rgba(0, 0, 0, .12); animation: slidein .2s ease-out; }
 @keyframes slidein { from { transform: translateX(100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
 .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
@@ -22,7 +22,7 @@
 .cartAdd { min-width: 44px; min-height: 44px; padding: 6px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .cartAdd:disabled { color: #5c514d; background: #f1ece9; cursor: not-allowed; }
 .cartFull { width: 100%; padding: 6px 4px; font-size: 12px; line-height: 1.3; }
-.compare { width: 100%; min-height: 44px; margin-bottom: 4px; border: 1px solid #b8422a; border-radius: var(--rm); background: #b8422a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.compare { width: 100%; min-height: 44px; margin-bottom: 4px; border: 1px solid var(--s-ink); border-radius: var(--rm); background: var(--paper); color: var(--s-ink); font: inherit; font-weight: 700; cursor: pointer; }
 .compare:disabled { border-color: var(--bd2); background: #f1ece9; color: #5c514d; cursor: not-allowed; }
 .note { min-height: 1.4em; margin: 4px 0 8px; font-size: 13px; color: #5c514d; }
 .back { min-height: 44px; margin-bottom: 8px; padding: 6px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
