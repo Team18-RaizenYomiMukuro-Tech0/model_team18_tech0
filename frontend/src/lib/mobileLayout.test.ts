@@ -22,10 +22,10 @@ test("U-86: カテゴリー 3 つはタイルの並び順（選んだ順にし�
   assert.ok(order[0] < order[1] && order[1] < order[2], s);
   assert.ok(s.endsWith("▼ 絞り込み"));
 });
-test("SP-29: 帯の左は R-01 で 1 件以上のときだけ", () => {
-  assert.equal(listBandText(true, 0), null);
-  assert.equal(listBandText(false, 3), null);
-  assert.equal(listBandText(true, 3), "共有リスト 3件");
+test("SP-29: 帯の左は共有リストが 1 件以上のときだけ（R-01・R-02 のどちらでも同じ。#488）", () => {
+  assert.equal(listBandText(0), null);
+  assert.equal(listBandText(1), "共有リスト 1件");
+  assert.equal(listBandText(3), "共有リスト 3件");
 });
 test("SP-29: 帯の右は「カート（N点）」（N は種類の数）", () => {
   assert.equal(cartBandText(0), "カート（0点）");
