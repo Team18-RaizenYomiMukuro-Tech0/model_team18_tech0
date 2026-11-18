@@ -50,6 +50,10 @@ export function TopSearch() {
             </button>
           ))}
         </div>
+        <p className={styles.pricenote}>価格は税込。もう一度押すと解除します。</p>
+        {/* SP-09（#447）: PC・タブレットの幅（481px 以上）は説明を 2 文。480px 以下は上の 1 行 */}
+        <p className={styles.pcnote}>価格は税込です。選ばなければ価格では絞りません。もう一度押すと解除します。</p>
+        <p className={styles.pcnote}>シーンを押すと候補が出ます。価格帯は先に選んでも、あとから選んでもかまいません。</p>
         {link && (
           <p className={styles.bandlink}>
             <Link href={link}>この価格帯の商品を見る</Link>
