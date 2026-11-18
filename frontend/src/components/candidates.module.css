@@ -36,6 +36,9 @@ a.name { display: inline-block; min-width: 44px; padding: 11px 0; margin: -11px 
 .create { justify-self: start; background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
 .create:disabled { background: var(--muted); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; }
 .share { display: grid; gap: 8px; }
+/* #482: 作ったあとに共有リストが変わったときの作り直しの案内（リンクのすぐ上。変わっていないときは何も出さない） */
+.rebuild:empty { display: none; }
+.rebuild { margin: 0; padding: 10px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font-weight: 700; }
 .sharelink { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .url { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; user-select: all; }
 .copymsg { flex-basis: 100%; min-height: 1.2em; }

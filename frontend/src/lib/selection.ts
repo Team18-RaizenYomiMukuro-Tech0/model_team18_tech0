@@ -29,6 +29,14 @@ export function shareScene(picked: readonly Candidate[]): string | null {
   return picked.every((c) => c.scene === first) ? first : null;
 }
 
+// SP-05 D-08 #482（PM 11/18 1A・2A・3A）: リンクを作ったあとに共有リストが変わったときの案内。「変わった」＝作成時に送った商品 ID の並び（順番を含む）と、今の共有リストの並びが違う。
+// 元の並びに戻せば false（案内は消える）。まだリンクを作っていない（sent が null）ときは false。
+export const SHARE_CHANGED_MESSAGE = "共有リストを変更しました。変更後のリストを送るには、もう一度『共有リストを作る』を押してください。表示中のリンクは変更前のリストのままです。";
+export function shareListChanged(sent: readonly string[] | null, current: readonly string[]): boolean {
+  if (sent === null) return false;
+  return sent.length !== current.length || sent.some((id, i) => id !== current[i]);
+}
+
 // SelectedList が create に渡す 2 つの値（商品 ID を選んだ順に・scene）。画面の部品は .tsx でテストできないので、ここに出して確かめる（#427）
 export function shareArgs(picked: readonly Candidate[]): [string[], string | null] {
   return [picked.map((c) => c.productId), shareScene(picked)];
