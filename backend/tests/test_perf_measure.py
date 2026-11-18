@@ -44,16 +44,16 @@ def _md(name: str, values: list[float], statuses: list[int]) -> str:
 def test_render_pass() -> None:
     md = _md("create", VALUES, [201] * 10)
     assert "判定の値（小さい順の 9 番目）: 0.900 秒" in md
-    assert "基準: 1 秒以内（応答は 201）" in md
+    assert "基準: 2 秒以内（応答は 201）" in md
     assert "判定: ○" in md
     assert "小さい順: 0.100, 0.200, 0.300" in md
     assert "| 10 | 1.500 | 201 |" in md
 
 
 def test_render_fail_over_limit() -> None:
-    slow = [0.5] * 8 + [1.2, 3.0]
+    slow = [0.5] * 8 + [2.2, 3.0]
     md = _md("create", slow, [201] * 10)
-    assert "判定の値（小さい順の 9 番目）: 1.200 秒" in md
+    assert "判定の値（小さい順の 9 番目）: 2.200 秒" in md
     assert "判定: ×" in md
 
 
@@ -70,8 +70,8 @@ def test_render_has_no_connection_info() -> None:
 
 def test_targets_match_design() -> None:
     assert m.TARGETS["candidates"]["limit"] == 2.0 and m.TARGETS["candidates-no-band"]["limit"] == 2.0
-    assert m.TARGETS["create"]["limit"] == 1.0 and m.TARGETS["create"]["status"] == 201
-    assert m.TARGETS["get"]["limit"] == 1.0 and m.TARGETS["get"]["status"] == 200
+    assert m.TARGETS["create"]["limit"] == 2.0 and m.TARGETS["create"]["status"] == 201
+    assert m.TARGETS["get"]["limit"] == 2.0 and m.TARGETS["get"]["status"] == 200
     assert "price_band=3000to4999" in m.CANDIDATES_BAND and "price_band" not in m.CANDIDATES_NO_BAND
 
 
