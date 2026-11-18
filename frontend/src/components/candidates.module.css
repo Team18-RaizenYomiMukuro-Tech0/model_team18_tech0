@@ -17,6 +17,7 @@ a.name { display: inline-block; min-width: 44px; padding: 11px 0; margin: -11px 
 .badge { align-self: flex-start; padding: 0 8px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-ink); font-size: 12px; font-weight: 700; }
 .name { font-weight: 700; overflow-wrap: anywhere; }
 .price { font-weight: 700; }
+.meta { color: #5c514d; font-size: 13px; }
 .reason { color: #5c514d; font-size: 13px; overflow-wrap: anywhere; }
 .pick, .remove, .create { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .pick { white-space: nowrap; padding-left: 10px; padding-right: 10px; }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
+import { ratingText } from "@/lib/products";
 import { productImage } from "@/lib/images";
 import type { CandidateItem } from "@/lib/api";
 import { CartButton } from "./CardButtons";
@@ -49,6 +50,11 @@ export function CandidateCard({
           <span className={`${styles.name} ${g.name}`}>{item.name}</span>
         )}
         <span className={`${styles.price} ${g.price}`}>{formatPrice(item.price)}</span>
+        {item.rating != null && item.review_count != null && (
+          <span className={`${styles.meta} ${g.meta}`}>
+            ★ {ratingText(item.rating)}（{item.review_count}件）
+          </span>
+        )}
         <div className={g.chips}>
           <DecisionChips arrivesOn={item.arrives_on} wrapping={item.wrapping} inStock sceneCount={item.scene_count} />
         </div>
