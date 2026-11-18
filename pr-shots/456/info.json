@@ -1,0 +1,67 @@
+{
+ "card_375": {
+  "heartSvg": true,
+  "heartText": "",
+  "heartW": 44,
+  "heartH": 44,
+  "cardRadius": "12px",
+  "imgSrc": "/products/drink.svg"
+ },
+ "heart_on_375": {
+  "pressed": "true",
+  "svgFill": "rgb(43, 37, 34)"
+ },
+ "pager_375": {
+  "bg": "rgb(43, 37, 34)",
+  "color": "rgb(255, 255, 255)",
+  "border": "1px rgb(43, 37, 34)",
+  "radius": "999px",
+  "w": 44,
+  "h": 44
+ },
+ "fav_btn_375": {
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(43, 37, 34)",
+  "border": "1px rgb(43, 37, 34)",
+  "radius": "8px",
+  "w": 327,
+  "h": 44
+ },
+ "order_btn_375": null,
+ "card_1280": {
+  "heartSvg": true,
+  "heartText": "",
+  "heartW": 44,
+  "heartH": 44,
+  "cardRadius": "12px",
+  "imgSrc": "/products/drink.svg"
+ },
+ "heart_on_1280": {
+  "pressed": "true",
+  "svgFill": "rgb(43, 37, 34)"
+ },
+ "pager_1280": {
+  "bg": "rgb(43, 37, 34)",
+  "color": "rgb(255, 255, 255)",
+  "border": "1px rgb(43, 37, 34)",
+  "radius": "999px",
+  "w": 44,
+  "h": 44
+ },
+ "fav_btn_1280": {
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(43, 37, 34)",
+  "border": "1px rgb(43, 37, 34)",
+  "radius": "8px",
+  "w": 327,
+  "h": 44
+ },
+ "order_btn_1280": {
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(43, 37, 34)",
+  "border": "1px rgb(43, 37, 34)",
+  "radius": "8px",
+  "w": 109,
+  "h": 44
+ }
+}
