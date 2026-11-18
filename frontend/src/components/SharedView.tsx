@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Icon } from "./icons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, likeLabel, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
 import { DetailPanel } from "./DetailPanel";
+import { LikeRow } from "./LikeRow";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -115,9 +115,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
                   {DETAIL_LABEL}
                 </button>
               )}
-              <button type="button" className={styles.like} aria-pressed={v.liked} onClick={() => void c.toggle(it.product_id)}>
-                <Icon name={v.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(v.liked)} {v.count}
-              </button>
+              <LikeRow v={v} onToggle={() => void c.toggle(it.product_id)} />
             </div>
             {v.failed && (
               <p role="alert" className={styles.likeErr}>

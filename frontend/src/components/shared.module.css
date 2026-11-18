@@ -18,6 +18,13 @@
 .btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .link, .others { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; text-decoration: none; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.likerow { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.likegif { display: block; border-radius: 50%; }
+.like { display: inline-flex; align-items: center; gap: 6px; }
+.likecount { font-weight: 700; color: var(--ink); }
+.gifs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.gifmore { font-weight: 700; color: var(--ink); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .like { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .like[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; }
 .likeErr { margin: 0; font-size: 14px; color: #7a1812; }

@@ -63,6 +63,14 @@ export async function fetchShared(shareId: string, signal?: AbortSignal, fetchIm
 
 // ---- いいね（第2弾 F-34 SP-28 D-39 D-47 N-17）----
 export const LIKE_FAILED_MESSAGE = "いいねできませんでした。もう一度お試しください";
+/** SP-06 D-09（PM 11/18）: 共有ページのいいねボタンの画像と、いいねの数だけ並べる画像の数。5 個まで並べ、6 個目からは「＋N」（N は 5 を超えた分） */
+export const LIKE_GIF = "/like-akabu.gif";
+export const LIKE_GIF_STILL = "/like-akabu-still.png"; // 動きを減らす設定のときの静止画
+export const LIKE_GIF_MAX = 5;
+export function likeGifs(count: number): { shown: number; more: number } {
+  const n = Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+  return { shown: Math.min(n, LIKE_GIF_MAX), more: Math.max(0, n - LIKE_GIF_MAX) };
+}
 export const likeLabel = (liked: boolean): string => (liked ? "いいねした" : "いいね");
 export const likesKey = (shareId: string): string => `giftia:likes:${shareId}`; // 値は押した商品 ID の配列（D-47）
 
