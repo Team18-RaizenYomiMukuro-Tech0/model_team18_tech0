@@ -95,6 +95,10 @@ export function shouldPlaySevenReach({ on, capped, countAfter }: { on: boolean; 
 export function sevenReachMode({ reducedMotion, canAnimate }: { reducedMotion: boolean; canAnimate: boolean }): "overlay" | "mark" {
   return reducedMotion || !canAnimate ? "mark" : "overlay";
 }
+// 動きを減らす版の「7 7 7」は商品ごと（7個目-11）。同じ商品の印が出ている間の押し直しは出し直さない（7個目-14）が、別の商品は出す
+export function addSevenMark(marks: readonly string[], id: string): { marks: string[]; start: boolean } {
+  return marks.includes(id) ? { marks: [...marks], start: false } : { marks: [...marks, id], start: true };
+}
 export const likeLabel = (liked: boolean): string => (liked ? "いいねした" : "いいね");
 export const likesKey = (shareId: string): string => `giftia:likes:${shareId}`; // 値は押した商品 ID の配列（D-47）
 

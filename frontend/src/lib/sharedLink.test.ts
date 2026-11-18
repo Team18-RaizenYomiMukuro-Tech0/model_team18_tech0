@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LIKE_FAILED_MESSAGE, LikeController, likeGifs, likeLabel, likesKey, loadLikedIds, SEVEN_REACH, sevenReachMode, shouldPlaySevenReach, type LikeView, type SharedItem } from "./sharedLink.ts";
+import { LIKE_FAILED_MESSAGE, LikeController, likeGifs, addSevenMark, likeLabel, likesKey, loadLikedIds, SEVEN_REACH, sevenReachMode, shouldPlaySevenReach, type LikeView, type SharedItem } from "./sharedLink.ts";
 import type { LikeResult } from "./api.ts";
 import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, sharedUrl } from "./sharedLink.ts";
 
@@ -343,4 +343,12 @@ test("I-68 順番: 応答が戻るまで演出（true）は出ず、戻った後
     assert.ok(!(log as string[]).includes("track:8"));
     assert.ok(!(log as string[]).includes("view:7:true:false"));
   }
+});
+
+test("U-101 動きを減らす版の印は商品ごと（7個目-11）: X の印が出ている間に Y が 7 になれば Y にも印。同じ商品の押し直しは出し直さない（7個目-14）", () => {
+  const x = addSevenMark([], "X");
+  assert.deepEqual(x, { marks: ["X"], start: true });
+  const y = addSevenMark(x.marks, "Y"); // X の 2 秒の間に Y が 7 になる
+  assert.deepEqual(y, { marks: ["X", "Y"], start: true });
+  assert.deepEqual(addSevenMark(y.marks, "X"), { marks: ["X", "Y"], start: false }); // 同じ商品は出し直さない
 });
