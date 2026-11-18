@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { LIKE_FAILED_MESSAGE, LikeController, likeLabel, likesKey, loadLikedIds, type LikeView, type SharedItem } from "./sharedLink.ts";
 import type { LikeResult } from "./api.ts";
-import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, sharedUrl } from "./sharedLink.ts";
+import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, sharedUrl } from "./sharedLink.ts";
 
 // SP-06 D-06 D-09 S-14〜S-17: 共有リンクの取得と、状態（表示・期限切れ・見つからない・失敗）の振り分け
 const res = (status: number, body: unknown = {}): typeof fetch => (async () => ({ ok: status < 400, status, json: async () => body }) as Response) as typeof fetch;
@@ -46,6 +46,7 @@ test("sharedLink S-86: 「くわしく見る」は /search?product=… へ。販
 
 test("sharedLink S-86: 「ほかの贈りものも探す」はトップへ", () => {
   assert.equal(OTHERS_LABEL, "ほかの贈りものも探す");
+  assert.equal(SHARED_GUIDE, "プレゼントの候補を選びました。よいと思うものに『いいね』を押してください。"); // SP-06 S-42: 固定の案内文（一字も変えない）
   assert.equal(OTHERS_HREF, "/");
 });
 

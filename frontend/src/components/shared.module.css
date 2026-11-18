@@ -1,6 +1,7 @@
 /* F4 共有ページ（SP-06 D-09 N-15）。globals.css は触らない */
 .page { display: grid; gap: 16px; max-width: 720px; margin: 0 auto; min-width: 0; }
 .title { margin: 0; font-size: 22px; line-height: 1.4; }
+.guide { margin: 0; color: var(--ink); font-size: 16px; font-weight: 700; line-height: 1.6; }
 .lead { margin: 0; color: var(--ink); font-size: 14px; }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .item { display: grid; gap: 4px; padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--rm); min-width: 0; overflow-wrap: anywhere; }
