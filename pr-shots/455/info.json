@@ -1,0 +1,130 @@
+{
+ "top_375": [
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  }
+ ],
+ "topx_375": {
+  "notes": [
+   {
+    "t": "価格は税込。もう一度押すと解除します。",
+    "shown": true
+   },
+   {
+    "t": "価格は税込です。選ばなければ価格では絞りません。もう一度押す",
+    "shown": false
+   }
+  ],
+  "tileH": 48,
+  "h2Margin": "16px 8px"
+ },
+ "r01_375": [
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  }
+ ],
+ "r02_375": [
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  }
+ ],
+ "top_1280": [
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  },
+  {
+   "reasonRow": false
+  }
+ ],
+ "topx_1280": {
+  "notes": [
+   {
+    "t": "価格は税込。もう一度押すと解除します。",
+    "shown": false
+   },
+   {
+    "t": "価格は税込です。選ばなければ価格では絞りません。もう一度押す",
+    "shown": true
+   }
+  ],
+  "tileH": 64,
+  "h2Margin": "0px 10px"
+ },
+ "r01_1280": [
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": true
+  }
+ ],
+ "r02_1280": [
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  },
+  {
+   "name": "イメージ",
+   "reasonRow": false
+  }
+ ]
+}
