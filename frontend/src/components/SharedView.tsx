@@ -4,10 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
-import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, OTHERS_HREF, OTHERS_LABEL, addSevenMark, SEVEN_REACH, SHARED_GUIDE, sevenReachMode, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
+import { canShowDetail, DETAIL_LABEL, fetchShared, itemImage, itemNote, LIKE_FAILED_MESSAGE, LikeController, OTHERS_HREF, OTHERS_LABEL, addSevenMark, SEVEN_REACH, SHARED_GUIDE, sevenReachMode, TSUKKOMI, type LikeEffect, type LikeView, type SharedItem, type SharedResult } from "@/lib/sharedLink";
 import { DetailPanel } from "./DetailPanel";
 import { LikeRow } from "./LikeRow";
 import { SevenReach } from "./SevenReach";
+import { Tsukkomi } from "./Tsukkomi";
 import styles from "./shared.module.css";
 
 // SP-06 F-05 N-01 D-09 N-15: 共有リンクを開いたときの画面。読み込み中 → 表示／期限切れ／見つからない／失敗。
@@ -92,42 +93,51 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
   const view = likes ?? c.snapshot;
   const [openId, setOpenId] = useState<string | null>(null); // #410 SP-06: 詳細は共有ページの上で開く（URL は変えない）
   const openView = openId ? view[openId] : null;
-  // SP-28 D-09: 7 個目の演出。商品ごと・7 になるたびに出す（印は持たない）。layer＝全画面の層、mark＝動きを減らす版の「7 7 7」（2 秒）
-  const [reach, setReach] = useState(false); // 全画面の層を出しているか（動きを減らさない版）
-  const [marks, setMarks] = useState<readonly string[]>([]); // 動きを減らす版の「7 7 7」を出している商品 ID（商品ごとに 2 秒）
+  // SP-28 D-09: 7 個目の演出（7 になるたび）と、8 個目以上のツッコミ（8〜30 になるたび）。同時には 2 つ出ない。
+  // reach＝全画面の層（動きを減らさない版）、marks／tmarks＝動きを減らす版の「7 7 7」「押しすぎやろ！」（商品ごとに 2 秒）
+  const [reach, setReach] = useState<{ kind: LikeEffect; anchor: HTMLElement } | null>(null);
+  const [marks, setMarks] = useState<readonly string[]>([]);
+  const [tmarks, setTmarks] = useState<readonly string[]>([]);
   const marksRef = useRef<readonly string[]>([]);
+  const tmarksRef = useRef<readonly string[]>([]);
   const back = useRef<HTMLElement | null>(null); // 閉じたあとに焦点を戻す、押した「いいね」のボタン
   const markTimers = useRef<Set<number>>(new Set());
   useEffect(() => {
     const timers = markTimers.current;
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, []);
+  const showMark = (ref: { current: readonly string[] }, set: (m: readonly string[]) => void, id: string, ms: number) => {
+    const r = addSevenMark(ref.current, id);
+    if (!r.start) return; // 同じ商品の札が出ている間にもう一度なっても、出し直さず今の札の時間のまま
+    ref.current = r.marks;
+    set(r.marks);
+    const t = window.setTimeout(() => {
+      markTimers.current.delete(t);
+      ref.current = ref.current.filter((x) => x !== id);
+      set(ref.current);
+    }, ms);
+    markTimers.current.add(t);
+  };
   const press = async (id: string, button: HTMLElement) => {
-    if (!(await c.toggle(id))) return; // 成功して数がちょうど 7 になったときだけ（数と段 8 は toggle の中で先に確定している）
+    const effect = await c.toggleEffect(id);
+    if (!effect) return; // 成功して数が 7（大当たり）か 8〜30（ツッコミ）になったときだけ（数と段 8 は toggleEffect の中で先に確定している）
     const mode = sevenReachMode({ reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches, canAnimate: typeof Element.prototype.animate === "function" });
     if (mode === "mark") {
-      const r = addSevenMark(marksRef.current, id);
-      if (!r.start) return; // 同じ商品の印が出ている間にもう一度 7 になっても、出し直さず今の印の時間のまま
-      marksRef.current = r.marks;
-      setMarks(r.marks);
-      const t = window.setTimeout(() => {
-        markTimers.current.delete(t);
-        marksRef.current = marksRef.current.filter((x) => x !== id);
-        setMarks(marksRef.current);
-      }, SEVEN_REACH.reducedMs);
-      markTimers.current.add(t);
+      if (effect === "seven") showMark(marksRef, setMarks, id, SEVEN_REACH.reducedMs);
+      else showMark(tmarksRef, setTmarks, id, TSUKKOMI.reducedMs);
     } else {
       back.current = button;
-      setReach(true);
+      setReach({ kind: effect, anchor: button });
     }
   };
   const closeReach = () => {
-    setReach(false);
+    setReach(null);
     const b = back.current;
     back.current = null;
     if (b?.isConnected) requestAnimationFrame(() => b.focus()); // 層が外れたあとに押した「いいね」へ焦点を戻す
   };
   const markOf = (id: string) => marks.includes(id);
+  const tmarkOf = (id: string) => tmarks.includes(id);
   return (
     <>
     <ol className={styles.list}>
@@ -152,7 +162,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
                   {DETAIL_LABEL}
                 </button>
               )}
-              <LikeRow v={v} mark={markOf(it.product_id)} onToggle={(b) => void press(it.product_id, b)} />
+              <LikeRow v={v} mark={markOf(it.product_id)} tmark={tmarkOf(it.product_id)} onReset={() => c.reset(it.product_id)} onToggle={(b) => void press(it.product_id, b)} />
             </div>
             {v.failed && (
               <p role="alert" className={styles.likeErr}>
@@ -163,8 +173,9 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
         );
       })}
     </ol>
-    {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, mark: markOf(openId), onToggle: (b) => void press(openId, b) }} />}
-    {reach && <SevenReach onClose={closeReach} />}
+    {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, mark: markOf(openId), tmark: tmarkOf(openId), onReset: () => c.reset(openId), onToggle: (b) => void press(openId, b) }} />}
+    {reach?.kind === "seven" && <SevenReach onClose={closeReach} />}
+    {reach?.kind === "tsukkomi" && <Tsukkomi anchor={reach.anchor} onClose={closeReach} />}
     </>
   );
 }

@@ -26,6 +26,9 @@
 .gifmore { font-weight: 700; color: var(--ink); }
 /* D-09 動きを減らす設定の「7 7 7」の印（金色の枠。読み上げない） */
 .sevenmark { padding: 2px 10px; border: 2px solid #FFD34D; border-radius: 999px; background: #3a2a14; color: #FFD34D; font-weight: 700; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+.tsukkomimark { padding: 0 6px; border: 2px solid #D7261E; border-radius: 8px; background: #fff; color: #D7261E; font-weight: 900; font-size: 13px; line-height: 1.5; white-space: nowrap; }
+/* D-09「6 個に戻す」: 縦横 44px 以上（NF-46） */
+.reset { min-width: 44px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .like { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .like[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; }
