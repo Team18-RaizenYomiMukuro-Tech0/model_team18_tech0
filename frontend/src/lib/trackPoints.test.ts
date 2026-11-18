@@ -126,7 +126,7 @@ test("⑤ ShareLinkRunner: 作成に成功したときだけ段5。失敗では�
     const ok = recorder();
     new ShareLinkRunner(() => {}, (async () => ({ ok: true, json: async () => link })) as never, ok.tracker).create(["G0001"]);
     await flush();
-    assert.deepEqual(ok.calls, [[5, undefined]]);
+    assert.deepEqual(ok.calls, [[5, { share_id: "id1" }]]); // 作ったリンクの share_id（輪-1）
 
     const ng = recorder();
     new ShareLinkRunner(() => {}, (async () => ({ ok: false, json: async () => ({}) })) as never, ng.tracker).create(["G0001"]);

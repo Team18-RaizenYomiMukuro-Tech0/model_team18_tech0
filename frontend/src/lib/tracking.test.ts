@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  ID_RE, VISIT_GAP_MS, VISIT_KEY, VISITOR_KEY, TEST_KEY_STORE, buildEventBody, captureTestKey, randomId, readTestKey, sendEvent, touchVisit, track,
+  ID_RE, VISIT_GAP_MS, noteDetailOpened, shareIdOf, VISIT_KEY, VISITOR_KEY, TEST_KEY_STORE, buildEventBody, captureTestKey, randomId, readTestKey, sendEvent, touchVisit, track,
   type StorageLike,
 } from "./tracking.ts";
 
@@ -61,9 +61,10 @@ test("U-81 本文: 段ごとに入る項目だけ。名前・メール・IP・�
   assert.deepEqual(buildEventBody(ids, 1, { entry: "top", scene: "お礼", has_voice: true, zero_cond: "price" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 1, entry: "top" });
   assert.deepEqual(buildEventBody(ids, 2, { scene: "送別", entry: "top" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 2, scene: "送別" });
   assert.deepEqual(buildEventBody(ids, 3, { scene: "誕生日", has_voice: false }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 3, scene: "誕生日", has_voice: 0 });
-  for (const step of [4, 5, 6] as const) assert.deepEqual(Object.keys(buildEventBody(ids, step, { scene: "お礼", entry: "top", has_voice: true })).sort(), ["step", "visit_id", "visitor_id"]);
+  for (const step of [4, 6] as const) assert.deepEqual(Object.keys(buildEventBody(ids, step, { scene: "お礼", entry: "top", has_voice: true })).sort(), ["step", "visit_id", "visitor_id"]);
+  assert.deepEqual(buildEventBody(ids, 5, { scene: "お礼", entry: "top" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 5, detail_count: 0 }); // 開いた詳細が無ければ 0（NULL ではない）
   assert.deepEqual(buildEventBody(ids, 7, { zero_cond: "both", scene: "お礼" }), { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 7, zero_cond: "both" });
-  const all = JSON.stringify([1, 2, 3, 4, 5, 6, 7].map((s) => buildEventBody(ids, s as 1, { scene: "お礼", has_voice: true, entry: "top", zero_cond: "price" })));
+  const all = JSON.stringify([1, 2, 3, 4, 5, 6, 7, 8].map((s) => buildEventBody(ids, s as 1, { scene: "お礼", has_voice: true, entry: "top", zero_cond: "price" })));
   for (const bad of ["is_test", "product", "query", "name", "mail", "ip", "user"]) assert.ok(!all.includes(`"${bad}`), bad);
 });
 
@@ -124,4 +125,141 @@ test("track: 保存が使えれば本文を作って送る。使えなければ�
   assert.equal(track(2, {}, { local: null, session, now: T0, send: (b) => sent.push(b) }), false);
   assert.equal(sent.length, 1);
   assert.ok(!("test_key" in (track(1, { entry: "top" }, { local, session: null, now: T0 + 1, send: (b) => sent.push(b) }) ? sent[1]! : {})));
+});
+
+// ---- 共有リンクの輪の計測（11/18。ADR-017）U-81 直した版・U-93・U-94・U-95 の画面側 ----
+const L1 = "L".repeat(22);
+const L2 = "M".repeat(22);
+const L3 = "N".repeat(22);
+const shareLoc = (id: string) => ({ pathname: `/s/${id}`, search: "" });
+const topLoc = { pathname: "/", search: "" };
+const bodies = () => {
+  const sent: Record<string, unknown>[] = [];
+  return { sent, send: (b: Record<string, unknown>) => void sent.push(b) };
+};
+
+test("U-81 share_id・detail_count: 段1〜4・6 は訪問の値、段5 は作ったリンクと数、段8 は押したページ、段7 は入らない。detail_count は段5だけ", () => {
+  const v = { ...ids, shareId: L1, detailCount: 2 };
+  for (const step of [1, 2, 3, 4, 6] as const) {
+    const b = buildEventBody(v, step, { share_id: L2 });
+    assert.equal(b.share_id, L1, `段${step}`); // 呼び出し側の値では上書きできない
+    assert.ok(!("detail_count" in b));
+  }
+  assert.ok(!("share_id" in buildEventBody(v, 7, { zero_cond: "price", share_id: L2 })));
+  const five = buildEventBody(v, 5, { share_id: L2 });
+  assert.equal(five.share_id, L2);
+  assert.equal(five.detail_count, 2);
+  const eight = buildEventBody({ ...ids, detailCount: 3 }, 8, { share_id: L3, scene: "お礼", entry: "top", zero_cond: "both" });
+  assert.deepEqual(eight, { visit_id: ids.visitId, visitor_id: ids.visitorId, step: 8, share_id: L3 }); // 訪問に share_id が無くても押したページの値
+  assert.ok(!("share_id" in buildEventBody(ids, 1, { entry: "top" }))); // 共有ページ以外から始まった訪問は NULL
+  assert.ok(!("share_id" in buildEventBody(ids, 5, {}))); // 作ったリンクの値が無ければ入れない
+  assert.ok(!("share_id" in buildEventBody(ids, 8, { share_id: "short" }))); // 形の違う値は本文に作らない
+});
+
+test("U-93 ① 最初のページが /s/{22文字}: 訪問の share_id がその値。段1〜4・6 に入り、段7 に入らない", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  assert.equal(track(1, { entry: "share" }, { local: s, session: mem(), now: T0, random: rand, send, loc: shareLoc(L1) }), true);
+  for (const step of [2, 3, 4, 6] as const) track(step, {}, { local: s, session: mem(), now: T0 + 1000, random: rand, send, loc: topLoc });
+  track(7, { zero_cond: "price" }, { local: s, session: mem(), now: T0 + 2000, random: rand, send, loc: topLoc });
+  for (const b of sent.filter((x) => x.step !== 7)) assert.equal(b.share_id, L1, `段${String(b.step)}`);
+  assert.ok(!("share_id" in sent.find((x) => x.step === 7)!));
+  assert.equal(sent.length, 6); // 段 1・2・3・4・6・7（新しい訪問の ① は 1 回だけ）
+});
+
+test("U-93 ② トップから始まり、その後 /s/ を開く: 段1〜4・6 に share_id は入らない（輪-2）", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  track(1, { entry: "top" }, { local: s, session: mem(), now: T0, random: rand, send, loc: topLoc });
+  for (const step of [2, 3, 4, 6] as const) track(step, {}, { local: s, session: mem(), now: T0 + 1000, random: rand, send, loc: shareLoc(L1) });
+  assert.ok(sent.every((b) => !("share_id" in b)));
+});
+
+test("U-93 ③ 共有ページから始まり、途中で別の共有ページ: 最初の値のまま（輪-7）", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  track(1, { entry: "share" }, { local: s, session: mem(), now: T0, random: rand, send, loc: shareLoc(L1) });
+  track(3, {}, { local: s, session: mem(), now: T0 + 1000, random: rand, send, loc: shareLoc(L2) });
+  assert.deepEqual(sent.map((b) => b.share_id), [L1, L1]);
+});
+
+test("U-93 ④ 29分59秒後は同じ値。30分0秒後にトップで操作すると新しい訪問で、持たない", () => {
+  const s = mem();
+  const a = touchVisit(s, T0, rand, `/s/${L1}`)!;
+  const b = touchVisit(s, T0 + 29 * 60000 + 59000, rand, "/")!;
+  assert.equal(b.visitId, a.visitId);
+  assert.equal(b.shareId, L1);
+  const c = touchVisit(s, T0 + 29 * 60000 + 59000 + VISIT_GAP_MS, rand, "/")!;
+  assert.notEqual(c.visitId, b.visitId);
+  assert.equal(c.shareId, undefined);
+});
+
+test("U-93 ⑤ 30分あいた後、別の共有ページで操作: 新しい訪問の share_id がそのとき開いているページの値（輪-7）。① も同じ値で 1 回送る", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  track(1, { entry: "share" }, { local: s, session: mem(), now: T0, random: rand, send, loc: shareLoc(L1) });
+  sent.length = 0;
+  track(4, {}, { local: s, session: mem(), now: T0 + VISIT_GAP_MS, random: rand, send, loc: shareLoc(L2) });
+  assert.deepEqual(sent.map((b) => [b.step, b.share_id]), [[1, L2], [4, L2]]);
+  assert.equal(sent[0]!.entry, "share");
+});
+
+test("U-93 ⑥ 最初が /s/ ＋ 21文字（形が違う）: 入らない。段1 の entry は share。⑦ 保存が使えないと送信しない", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  track(1, { entry: "share" }, { local: s, session: mem(), now: T0, random: rand, send, loc: { pathname: `/s/${"L".repeat(21)}`, search: "" } });
+  assert.ok(!("share_id" in sent[0]!));
+  assert.equal(sent[0]!.entry, "share");
+  assert.equal(track(1, { entry: "share" }, { local: null, session: mem(), send, loc: shareLoc(L1) }), false);
+  assert.equal(sent.length, 1);
+  // パスだけから読む（クエリ・ハッシュ・長すぎるパスは含めない）
+  assert.equal(shareIdOf(`/s/${L1}`), L1);
+  assert.equal(shareIdOf(`/s/${L1}/`), L1);
+  assert.equal(shareIdOf(`/s/${L1}x`), null);
+  assert.equal(shareIdOf(`/s/${L1}?x=1`), null);
+  assert.equal(shareIdOf("/search"), null);
+});
+
+test("U-94 開いた詳細の数: A・A・B・(404 は呼ばない) → ⑤ の detail_count＝2。新しい訪問で 0 から。開かなければ 0。商品 ID はどの本文にも入らない", () => {
+  const s = mem();
+  const { sent, send } = bodies();
+  const d = { local: s, session: mem(), random: rand, send, loc: topLoc };
+  assert.equal(noteDetailOpened("G0001", { ...d, now: T0 }), true); // 新しい訪問を作るので ① だけ送る
+  noteDetailOpened("G0001", { ...d, now: T0 + 1000 }); // 重複
+  noteDetailOpened("G0002", { ...d, now: T0 + 2000 });
+  // 404・失敗の商品は noteDetailOpened を呼ばない（呼び出し元 DetailPanel は okId のときだけ）
+  track(5, { share_id: L2 }, { ...d, now: T0 + 3000 });
+  const five = sent.find((b) => b.step === 5)!;
+  assert.equal(five.detail_count, 2);
+  assert.equal(five.share_id, L2);
+  // 30 分あけた新しい訪問では 0 から数え直す
+  track(5, { share_id: L3 }, { ...d, now: T0 + 3000 + VISIT_GAP_MS });
+  assert.equal(sent.filter((b) => b.step === 5)[1]!.detail_count, 0);
+  noteDetailOpened("G0009", { ...d, now: T0 + 3000 + VISIT_GAP_MS + 1000 });
+  noteDetailOpened("G0009", { ...d, now: T0 + 3000 + VISIT_GAP_MS + 2000 });
+  // 全部の段の本文を作る: detail_count は段5だけ。商品 ID・一覧は無い
+  const all: Record<string, unknown>[] = [];
+  const s2 = mem();
+  noteDetailOpened("G0100", { local: s2, session: mem(), random: rand, send: () => {}, loc: topLoc, now: T0 });
+  for (const step of [1, 2, 3, 4, 5, 6, 7, 8] as const) track(step, { share_id: L1, zero_cond: "price" }, { local: s2, session: mem(), random: rand, send: (b) => void all.push(b), loc: topLoc, now: T0 + 10 });
+  assert.deepEqual(all.filter((b) => "detail_count" in b).map((b) => b.step), [5]);
+  const text = JSON.stringify([...sent, ...all]);
+  for (const bad of ["G0001", "G0002", "G0009", "G0100", "opened", "product"]) assert.ok(!text.includes(bad), bad);
+  // 一覧はブラウザの保存の中にだけある
+  assert.ok(s.data.get(VISIT_KEY)!.includes("opened"));
+});
+
+test("U-94 詳細を一度も開かずに ⑤ → detail_count＝0。保存が使えないと何も記録しない（S-116）", () => {
+  const { sent, send } = bodies();
+  track(5, { share_id: L2 }, { local: mem(), session: mem(), random: rand, send, loc: topLoc, now: T0 });
+  assert.equal(sent.find((b) => b.step === 5)!.detail_count, 0);
+  assert.equal(noteDetailOpened("G0001", { local: null, send, loc: topLoc }), false);
+});
+
+test("U-94 壊れた opened は空として扱う。訪問の保存に share_id が壊れて入っていても本文に出さない", () => {
+  const s = mem();
+  s.data.set(VISIT_KEY, JSON.stringify({ visit_id: "A".repeat(22), last_at: T0, share_id: "bad", opened: [1, "G1", null] }));
+  const v = touchVisit(s, T0 + 1000, rand, "/")!;
+  assert.equal(v.shareId, undefined);
+  assert.equal(v.detailCount, 1);
 });
