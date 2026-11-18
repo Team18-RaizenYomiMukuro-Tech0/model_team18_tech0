@@ -26,7 +26,7 @@ export function categoryIcon(name: string): string | null {
   return c ? `/categories/${c.slug}.svg` : null;
 }
 
-// 商品カードのカテゴリー共通イラスト（画像は API から返さず画面が出す。OPEN-06）。表記「イメージ」はカード側で付ける。
+// 商品カードのカテゴリー共通の色の面（D-37・SP-20 T5。カテゴリーと色の対応は仮置きで、モック mock.html の FACE と同じ）（画像は API から返さず画面が出す。OPEN-06）。表記「イメージ」はカード側で付ける。
 export function productImage(category: string): string | null {
   const c = CATEGORIES.find((x) => x.name === category);
   return c ? `/products/${c.slug}.svg` : null;

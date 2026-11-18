@@ -4,7 +4,7 @@
 .qty input { width: 4.5em; min-height: 44px; padding: 4px 8px; border: 1px solid var(--bd2); border-radius: var(--rm); font: inherit; text-align: right; }
 .unavail { width: 100%; padding: 0 10px; border-radius: 999px; background: #3a3331; color: #fff; font-size: 13px; font-weight: 700; }
 .total { margin: 12px 0 8px; font-size: 16px; }
-.order { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid #8f321e; border-radius: var(--rm); background: #b8422a; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.order { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--s-ink); border-radius: var(--rm); background: var(--paper); color: var(--s-ink); font: inherit; font-weight: 700; cursor: pointer; }
 .nobuy { margin: 12px 0 4px; font-size: 14px; font-weight: 700; }
 .order:disabled { opacity: 0.45; cursor: not-allowed; }
 .cont { display: block; margin-top: 12px; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: #fff; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }

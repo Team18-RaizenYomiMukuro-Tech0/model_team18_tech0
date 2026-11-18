@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Icon } from "./icons";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
 import { SHEET_MAX_WIDTH } from "@/lib/mobileLayout";
@@ -138,7 +139,7 @@ function Foot({ p, like }: Readonly<{ p: ProductDetail; like?: DetailLike }>) {
             </span>
           )}
           <button type="button" className={styles.footbtn} data-primary="true" aria-pressed={like.view.liked} onClick={like.onToggle}>
-            {likeLabel(like.view.liked)} {like.view.count}
+            <Icon name={like.view.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(like.view.liked)} {like.view.count}
           </button>
         </>
       ) : out ? (

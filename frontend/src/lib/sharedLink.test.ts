@@ -67,9 +67,9 @@ function ctl(items: SharedItem[], results: LikeResult[], storage: ReturnType<typ
 }
 const ok = (id: string, n: number, capped = false): LikeResult => ({ status: "ok", product_id: id, like_count: n, capped });
 
-test("likes S-87: 文言。数は like_count（無ければ 0）。押すと +1・「♥ いいねした」・印を保存、もう一度押すと取り消し（-1・印を消す）", async () => {
-  assert.equal(likeLabel(false), "♡ いいね");
-  assert.equal(likeLabel(true), "♥ いいねした");
+test("likes S-87: 文言。数は like_count（無ければ 0）。押すと +1・「いいねした」・印を保存、もう一度押すと取り消し（-1・印を消す）", async () => {
+  assert.equal(likeLabel(false), "いいね");
+  assert.equal(likeLabel(true), "いいねした");
   const { c, calls, storage } = ctl([mk("G1"), mk("G2", 4)], [ok("G1", 1), ok("G1", 0)]);
   assert.deepEqual(c.snapshot.G1, { count: 0, liked: false, failed: false });
   assert.equal(c.snapshot.G2.count, 4);

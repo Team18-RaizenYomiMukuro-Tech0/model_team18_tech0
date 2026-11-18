@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Icon } from "./icons";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/formatPrice";
@@ -114,7 +115,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
                 </button>
               )}
               <button type="button" className={styles.like} aria-pressed={v.liked} onClick={() => void c.toggle(it.product_id)}>
-                {likeLabel(v.liked)} {v.count}
+                <Icon name={v.liked ? "heart-filled" : "heart"} size={20} /> {likeLabel(v.liked)} {v.count}
               </button>
             </div>
             {v.failed && (
