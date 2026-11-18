@@ -71,6 +71,30 @@ export function likeGifs(count: number): { shown: number; more: number } {
   const n = Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
   return { shown: Math.min(n, LIKE_GIF_MAX), more: Math.max(0, n - LIKE_GIF_MAX) };
 }
+
+// SP-28 D-09 7 個目の演出「B リーチからの大当たり」（PM 11/19）。値は設計 D-09「7 個目の演出」の表。API・DB・計測は変えない
+export const SEVEN_REACH = {
+  threshold: 7,
+  totalMs: 4700,
+  reducedMs: 2000,
+  reels: 3,
+  symbols: ["7", "akabu", "♥"],
+  ringCount: 14,
+  bigPx: 220,
+  ringPx: 44,
+  reach: "リーチ！",
+  win: "7 人がいいね！",
+  mark: "7 7 7",
+  hint: "押すと閉じます",
+} as const;
+// 演出を出すか（U-100）。押した（on）・上限で止まっていない・押した後に画面が見せる数がちょうど 7。印は持たない（7 になるたびに出す）
+export function shouldPlaySevenReach({ on, capped, countAfter }: { on: boolean; capped: boolean; countAfter: unknown }): boolean {
+  return on === true && capped === false && typeof countAfter === "number" && countAfter === SEVEN_REACH.threshold;
+}
+// 動きを減らす設定・動きの API が無い環境は、層を出さず「7 7 7」の印だけ（U-101）
+export function sevenReachMode({ reducedMotion, canAnimate }: { reducedMotion: boolean; canAnimate: boolean }): "overlay" | "mark" {
+  return reducedMotion || !canAnimate ? "mark" : "overlay";
+}
 export const likeLabel = (liked: boolean): string => (liked ? "いいねした" : "いいね");
 export const likesKey = (shareId: string): string => `giftia:likes:${shareId}`; // 値は押した商品 ID の配列（D-47）
 
@@ -114,21 +138,25 @@ export class LikeController {
     return this.view;
   }
 
-  async toggle(productId: string): Promise<void> {
+  // 戻り値: 7 個目の演出を出すか（成功して、画面が見せる数がちょうど 7 になったとき。D-09）
+  async toggle(productId: string): Promise<boolean> {
     const cur = this.view[productId];
-    if (!cur || this.busy.has(productId)) return; // 応答待ちの間の連打は送らない
+    if (!cur || this.busy.has(productId)) return false; // 応答待ちの間の連打は送らない
     this.busy.add(productId);
     const on = !cur.liked;
     const r = await this.post(this.shareId, productId, on, this.abort.signal);
     this.busy.delete(productId);
-    if (this.abort.signal.aborted) return;
+    if (this.abort.signal.aborted) return false;
     if (r.status !== "ok") this.set(productId, { ...cur, failed: true });
     else if (r.capped) this.set(productId, { ...cur, failed: false }); // 上限: 印も数もそのまま・文言なし
     else {
-      this.set(productId, { count: Math.max(0, cur.count + (on ? 1 : -1)), liked: on, failed: false });
+      const countAfter = Math.max(0, cur.count + (on ? 1 : -1));
+      this.set(productId, { count: countAfter, liked: on, failed: false });
       this.saveMarks();
       if (on) this.tracker(8, { share_id: this.shareId }); // ⑧ 数が増えたときだけ。押した共有ページの share_id（SP-34・輪-2・3。取り消し・上限・失敗は送らない）
+      return shouldPlaySevenReach({ on, capped: false, countAfter }); // 数と段 8 を先に確定してから判定する（D-09 処理の流れ 2）
     }
+    return false;
   }
 
   dispose(): void {

@@ -1,6 +1,6 @@
 "use client";
 
-import { LIKE_GIF, LIKE_GIF_STILL, likeGifs, likeLabel, type LikeView } from "@/lib/sharedLink";
+import { LIKE_GIF, LIKE_GIF_STILL, likeGifs, likeLabel, SEVEN_REACH, type LikeView } from "@/lib/sharedLink";
 import styles from "./shared.module.css";
 
 // 共有一覧と、共有ページの上で開く詳細パネルで同じ（PM 11/18 1B）。
@@ -15,17 +15,23 @@ export function LikeGif({ size, alt = "" }: Readonly<{ size: number; alt?: strin
   );
 }
 
-export function LikeRow({ v, onToggle, buttonClass, primary }: Readonly<{ v: LikeView; onToggle: () => void; buttonClass?: string; primary?: boolean }>) {
+// mark: 動きを減らす設定のときの「7 7 7」の印（数の横・金色の枠・読み上げない。D-09）。onToggle は押した「いいね」のボタンを受け取る（閉じたあとの焦点の戻し先）
+export function LikeRow({ v, onToggle, buttonClass, primary, mark = false }: Readonly<{ v: LikeView; onToggle: (button: HTMLButtonElement) => void; buttonClass?: string; primary?: boolean; mark?: boolean }>) {
   const g = likeGifs(v.count);
   return (
     <span className={styles.likerow}>
-      <button type="button" className={buttonClass ?? styles.like} data-primary={primary ? "true" : undefined} aria-label="いいね" aria-pressed={v.liked} onClick={onToggle}>
+      <button type="button" className={buttonClass ?? styles.like} data-primary={primary ? "true" : undefined} aria-label="いいね" aria-pressed={v.liked} onClick={(e) => onToggle(e.currentTarget)}>
         <LikeGif size={28} alt="いいね" /> {likeLabel(v.liked)}
       </button>
       <span className={styles.likecount}>
         <span className={styles.vh}>いいねの数 </span>
         {v.count}
       </span>
+      {mark && (
+        <span className={styles.sevenmark} aria-hidden="true">
+          {SEVEN_REACH.mark}
+        </span>
+      )}
       {g.shown > 0 && (
         <span className={styles.gifs} aria-hidden="true">
           {Array.from({ length: g.shown }, (_, i) => (
