@@ -1,0 +1,6 @@
+{
+ "mock.html_375": "{\"options\":[\"おすすめ順\",\"安い順\",\"評価順\",\"早く届く順\"],\"values\":[\"recommend\",\"price_asc\",\"rating_desc\",\"delivery_asc\"],\"selected\":\"おすすめ順\"}",
+ "mock.html_1280": "{\"options\":[\"おすすめ順\",\"安い順\",\"評価順\",\"早く届く順\"],\"values\":[\"recommend\",\"price_asc\",\"rating_desc\",\"delivery_asc\"],\"selected\":\"おすすめ順\"}",
+ "mock-wave2.html_375": "{\"options\":[\"おすすめ順\",\"安い順\",\"評価順\",\"早く届く順\"],\"values\":[\"recommend\",\"price_asc\",\"rating_desc\",\"delivery_asc\"],\"selected\":\"おすすめ順\"}",
+ "mock-wave2.html_1280": "{\"options\":[\"おすすめ順\",\"安い順\",\"評価順\",\"早く届く順\"],\"values\":[\"recommend\",\"price_asc\",\"rating_desc\",\"delivery_asc\"],\"selected\":\"おすすめ順\"}"
+}
