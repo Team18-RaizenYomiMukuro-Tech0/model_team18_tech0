@@ -1,5 +1,5 @@
 # events.py — POST /api/events（設計.md D-40・D-41、仕様 SP-34、要件 N-13・N-16・N-09）
-# 画面から匿名の計測（どの段まで進んだか）を 1 件受けて usage_events に 1 行だけ書く。名前・メール・IP・ブラウザの情報・商品 ID・検索語は受けない・持たない。
+# 画面から匿名の計測（どの段まで進んだか）を 1 件受けて usage_events に 1 行だけ書く。共有リンクの識別子（share_id）と開いた詳細の数（detail_count）は持つ。名前・メール・IP・ブラウザの情報・商品 ID・検索語は受けない・持たない。
 #  - 1 訪問 × 1 段で 1 行（UNIQUE (visit_id, step)。INSERT IGNORE）。重複は 204 のまま、重複かどうかを返さない。
 #  - 本文は 1KB まで。形が合わない・知らない項目は 422 invalid_event（理由は返さない）。本文の is_test は無視する。
 #  - テストの印（K-5）: 本文の test_key が環境変数 GIFTIA_TEST_KEY と一致したときだけ is_test=1。未設定・空の間は常に 0。
@@ -26,12 +26,13 @@ ID_RE = re.compile(r"[A-Za-z0-9_-]{22}", re.ASCII)  # visit_id・visitor_id（16
 SCENES = ("お礼", "誕生日", "送別")
 ENTRIES = ("top", "search", "detail", "share", "cart", "favorites", "other")
 ZERO_CONDS = ("price", "category", "both", "scene_only")
-STEPS = range(1, 8)  # 1〜6 は漏斗の段、7＝検索が 0 件
-KNOWN = {"visit_id", "visitor_id", "step", "scene", "has_voice", "entry", "zero_cond", "test_key"}
+STEPS = range(1, 9)  # 1〜6 は漏斗の段、7＝検索が 0 件、8＝共有ページでいいねを押した（漏斗の外。D-40・11/18）
+DETAIL_COUNT_MAX = 65535  # SMALLINT UNSIGNED
+KNOWN = {"visit_id", "visitor_id", "step", "scene", "has_voice", "entry", "zero_cond", "share_id", "detail_count", "test_key"}
 
 INSERT_EVENT = (
-    "INSERT IGNORE INTO usage_events (visit_id, visitor_id, step, occurred_at, scene, has_voice, entry, zero_cond, is_test) "
-    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "INSERT IGNORE INTO usage_events (visit_id, visitor_id, step, occurred_at, scene, has_voice, entry, zero_cond, share_id, detail_count, is_test) "
+    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 )
 
 
@@ -70,6 +71,11 @@ def parse_event(raw: bytes) -> dict[str, Any] | None:
         return None
     if voice is not None and (not isinstance(voice, int) or isinstance(voice, bool) or voice not in (0, 1)):  # 0／1 だけ（設計 D-40。true／false は 422。画面 #306 も 0／1 で送る）
         return None
+    share_id, detail = body.get("share_id"), body.get("detail_count")
+    if share_id is not None and (not isinstance(share_id, str) or ID_RE.fullmatch(share_id) is None):  # 22 文字の [A-Za-z0-9_-]。share_links に在るかは確かめない（D-40）
+        return None
+    if detail is not None and (isinstance(detail, bool) or not isinstance(detail, int) or not 0 <= detail <= DETAIL_COUNT_MAX):
+        return None
     test_key = body.get("test_key")
     if test_key is not None and (not isinstance(test_key, str) or len(test_key) > SETTINGS.TEST_KEY_MAX_LENGTH):
         return None
@@ -81,6 +87,8 @@ def parse_event(raw: bytes) -> dict[str, Any] | None:
         "has_voice": (None if voice is None else int(voice)) if step == 3 else None,  # 段 3 だけ
         "entry": entry if step == 1 else None,  # 段 1 だけ
         "zero_cond": zero if step == 7 else None,  # 段 7 だけ
+        "share_id": None if step == 7 else share_id,  # 段 1〜6・8 だけ（段 7 は捨てる。輪-4）
+        "detail_count": detail if step == 5 else None,  # 段 5 だけ
         "test_key": test_key,
     }
 
@@ -121,7 +129,7 @@ async def post_event(
     occurred = clock.now().replace(microsecond=0, tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")  # UTC。ブラウザの時計は使わない
     params = (
         event["visit_id"], event["visitor_id"], event["step"], occurred,
-        event["scene"], event["has_voice"], event["entry"], event["zero_cond"],
+        event["scene"], event["has_voice"], event["entry"], event["zero_cond"], event["share_id"], event["detail_count"],
         1 if is_test_key(event["test_key"]) else 0,
     )  # fmt: skip
     await run_in_threadpool(db.write, INSERT_EVENT, params)

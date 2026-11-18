@@ -1,4 +1,4 @@
-# Issue #283（D6）: POST /api/events（計測を受ける）。テスト設計 I-56〜I-58・NF-50・NF-52・NF-53（サーバー側）、U-81 のサーバーが守る部分。
+# Issue #283（D6）・共有リンクの輪の計測（ADR-017。輪1）: POST /api/events（計測を受ける）。テスト設計 I-56〜I-58・NF-50・NF-52・NF-53（サーバー側）、U-81 のサーバーが守る部分。
 # DB は使わない（偽の DB。メモリ上の SQLite）。合言葉の値はテストの中だけの仮の文字列（本物の GIFTIA_TEST_KEY ではない）。
 import json
 from collections.abc import Iterator
@@ -22,7 +22,7 @@ NOW = datetime(2026, 11, 15, 3, 4, 5, 678901, tzinfo=UTC)
 
 SCHEMA = (
     "CREATE TABLE usage_events (event_id INTEGER PRIMARY KEY AUTOINCREMENT, visit_id TEXT NOT NULL, visitor_id TEXT NOT NULL, "
-    "step INTEGER NOT NULL, occurred_at TEXT NOT NULL, scene TEXT, has_voice INTEGER, entry TEXT, zero_cond TEXT, "
+    "step INTEGER NOT NULL, occurred_at TEXT NOT NULL, scene TEXT, has_voice INTEGER, entry TEXT, zero_cond TEXT, share_id TEXT, detail_count INTEGER, "
     "is_test INTEGER NOT NULL DEFAULT 0, UNIQUE (visit_id, step))"
 )
 
@@ -51,7 +51,7 @@ class EventDb(CandidateDb):
         super().write(sql, params)
 
     def rows(self) -> list[dict[str, Any]]:
-        cur = self.raw.execute("SELECT visit_id, visitor_id, step, occurred_at, scene, has_voice, entry, zero_cond, is_test FROM usage_events ORDER BY event_id")
+        cur = self.raw.execute("SELECT visit_id, visitor_id, step, occurred_at, scene, has_voice, entry, zero_cond, share_id, detail_count, is_test FROM usage_events ORDER BY event_id")
         names = [d[0] for d in cur.description]
         return [dict(zip(names, r, strict=True)) for r in cur.fetchall()]
 
@@ -131,7 +131,7 @@ def test_test_mark_only_when_key_matches(client: TestClient, db: EventDb, monkey
 def test_invalid_bodies(client: TestClient, db: EventDb, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GIFTIA_TEST_KEY", KEY)
     bad: list[Any] = [
-        body(0), body(8), body(-1), body(1.5), body(True), body("1"), {**body(1), "step": None},
+        body(0), body(9), body(-1), body(1.5), body(True), body("1"), {**body(1), "step": None},
         {k: v for k, v in body(1).items() if k != "visit_id"}, {k: v for k, v in body(1).items() if k != "step"},
         {**body(1), "visit_id": "short"}, {**body(1), "visit_id": "A" * 23}, {**body(1), "visit_id": "A" * 21 + "="},
         {**body(1), "visitor_id": "あ" * 22}, {**body(1), "visit_id": 123},
@@ -220,3 +220,73 @@ def test_get_and_other_methods_not_allowed(client: TestClient) -> None:
 
 def test_db_class_has_write(db: EventDb) -> None:
     assert isinstance(db, Db) and callable(db.write)
+
+
+SID = "S" * 21 + "1"  # 22 文字の仮の共有リンク識別子（テストの中だけ）
+SID2 = "T" * 21 + "2"
+
+
+# I-64 ①〜⑤（D-40・SP-34）: share_id は段 1〜6・8、detail_count は段 5 だけ。段 7 の share_id は捨てる。2 回目の段 5 は残らない
+def test_share_id_and_detail_count_per_step(client: TestClient, db: EventDb, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GIFTIA_TEST_KEY", raising=False)
+    sent = [
+        body(1, entry="share", share_id=SID), body(2, scene="お礼", share_id=SID), body(3, has_voice=1, scene="お礼", share_id=SID), body(4, share_id=SID),
+        body(5, share_id=SID, detail_count=3), body(6, share_id=SID), body(7, zero_cond="price", share_id=SID), body(8, share_id=SID2),
+    ]  # fmt: skip
+    for b in sent:
+        assert post(client, b).status_code == 204
+    rows = {r["step"]: r for r in db.rows()}
+    assert sorted(rows) == [1, 2, 3, 4, 5, 6, 7, 8]
+    assert [rows[s]["share_id"] for s in (1, 2, 3, 4, 5, 6, 8)] == [SID] * 6 + [SID2]  # 段 8 は押したページの値
+    assert rows[7]["share_id"] is None and rows[7]["zero_cond"] == "price"  # ② 段 7 の share_id は NULL（輪-4）
+    assert rows[5]["detail_count"] == 3 and all(rows[s]["detail_count"] is None for s in (1, 2, 3, 4, 6, 7, 8))
+    # ③ 段 3 に detail_count を付けても捨てる（NULL）
+    assert post(client, {**body(3, detail_count=9, share_id=SID), "visit_id": "C" * 22}).status_code == 204
+    assert db.rows()[-1]["detail_count"] is None and db.rows()[-1]["share_id"] == SID
+    # ④ 同じ訪問の段 5 の 2 回目（別の share_id・別の detail_count）は残らない
+    assert post(client, body(5, share_id=SID2, detail_count=7)).status_code == 204
+    assert [(r["share_id"], r["detail_count"]) for r in db.rows() if r["visit_id"] == VISIT and r["step"] == 5] == [(SID, 3)]
+    # ⑤ 付けない段 5・段 8 は NULL で入る
+    assert post(client, {**body(5), "visit_id": "D" * 22}).status_code == 204
+    assert post(client, {**body(8), "visit_id": "D" * 22}).status_code == 204
+    tail = db.rows()[-2:]
+    assert [(r["step"], r["share_id"], r["detail_count"]) for r in tail] == [(5, None, None), (8, None, None)]
+    # null も「付けない」と同じ。0 と 65535 は受ける。share_links に無い識別子も受ける（存在は確かめない）
+    for i, b in enumerate((body(5, share_id=None, detail_count=None), body(5, detail_count=0), body(5, detail_count=65535), body(8, share_id="-" * 22))):
+        assert post(client, {**b, "visit_id": chr(69 + i) * 22}).status_code == 204
+    assert [r["detail_count"] for r in db.rows()[-4:]] == [None, 0, 65535, None]
+    assert db.rows()[-1]["share_id"] == "-" * 22
+
+
+# I-64 ⑥: test_key が合えば段 8 も is_test=1、合わなければ 0（share_id・detail_count は is_test に関係しない）。値はログに出ない（NF-50 ③）
+def test_step8_test_mark_and_log(client: TestClient, db: EventDb, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setenv("GIFTIA_TEST_KEY", KEY)
+    assert post(client, {**body(8, share_id=SID), "test_key": KEY}).status_code == 204
+    assert post(client, {**body(8, share_id=SID), "visit_id": "C" * 22, "test_key": "ちがう値"}).status_code == 204
+    assert post(client, {**body(5, share_id=SID2, detail_count=12345), "visit_id": "D" * 22}).status_code == 204
+    assert [r["is_test"] for r in db.rows()] == [1, 0, 0]
+    out = capsys.readouterr().out
+    assert SID not in out and SID2 not in out and "12345" not in out and KEY not in out  # ログは時刻・API・結果だけ
+
+
+# I-65・NF-53: share_id・detail_count・step の不正は 422 invalid_event。行は増えず、SQL の文は変わらない
+def test_invalid_share_id_detail_count(client: TestClient, db: EventDb, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GIFTIA_TEST_KEY", KEY)
+    bad: list[Any] = [
+        body(1, share_id="a" * 21), body(1, share_id="a" * 23), body(1, share_id="a" * 21 + "!"), body(1, share_id="あ" * 22),
+        body(1, share_id="a" * 10 + " " + "a" * 11), body(1, share_id="a" * 21 + "/"), body(1, share_id="a" * 21 + "\n"), body(1, share_id=""),
+        body(1, share_id=123), body(1, share_id=True), body(1, share_id=["a" * 22]), body(1, share_id={"a": 1}),
+        body(1, share_id="'; DROP TABLE usage_events;--"), body(8, share_id="' OR 1=1 OR '1'='1xx"),
+        body(5, detail_count=-1), body(5, detail_count=1.5), body(5, detail_count="3"), body(5, detail_count=True), body(5, detail_count=False),
+        body(5, detail_count=65536), body(5, detail_count=[3]), body(5, detail_count=3.0), body(3, detail_count=-1),
+        body(9), body(0), body(8.0 + 0.5),
+    ]  # fmt: skip
+    for b in bad:
+        r = post(client, b)
+        assert r.status_code == 422 and r.json() == {"error": {"code": "invalid_event", "message": "計測の形が正しくありません"}}, b
+    assert db.rows() == [] and db.writes == []
+    # 受ける形の書き込みは、いつも同じ 1 本の位置指定の文（値は文に入らない）
+    assert post(client, body(5, share_id=SID, detail_count=2)).status_code == 204
+    assert post(client, {**body(8, share_id=SID2), "visit_id": "C" * 22}).status_code == 204
+    assert len(set(db.writes)) == 1 and all(w.startswith("INSERT IGNORE INTO usage_events") for w in db.writes)
+    assert not any(SID in w or SID2 in w for w in db.writes)
