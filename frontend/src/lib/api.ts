@@ -203,7 +203,7 @@ export class ShareLinkRunner {
         if (!res.ok) throw new Error("bad status");
         const body = await res.json();
         if (!isShareLink(body)) throw new Error("bad body");
-        this.tracker(5); // ⑤ 共有リンクの作成に成功したとき（API が成功を返したあと。SP-34・D-40）
+        this.tracker(5, { share_id: body.share_id }); // 作ったリンクの share_id（輪-1）。 ⑤ 共有リンクの作成に成功したとき（API が成功を返したあと。SP-34・D-40）
         finish({ status: "success", link: body });
       })
       .catch(() => finish({ status: "error", link: this.link }));

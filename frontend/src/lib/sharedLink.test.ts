@@ -174,3 +174,66 @@ test("sharedLink S-86: 画像は category で選ぶ。無い・知らないカ�
   const badRes = (async () => ({ ok: true, status: 200, json: async () => ({ items: [{ ...withCat[0], category: 5 }] }) }) as Response) as typeof fetch;
   assert.equal((await fetchShared("A".repeat(22), undefined, badRes)).status, "error");
 });
+
+// ---- U-95（11/18）段 8 を送る条件: いいねの API が 200・on＝true・capped＝false のときだけ。share_id は押した共有ページの値 ----
+type T8 = [number, { share_id?: string } | undefined];
+const run8 = async (post: (s: string, id: string, on: boolean) => Promise<LikeResult>, steps: Array<[string, boolean?]>, storage = mem()) => {
+  const calls: T8[] = [];
+  const c = new LikeController(SID, [mk("G1", 0), mk("G2", 0)], storage, () => {}, async (s, id, on) => post(s, id, on), (step, extra) => void calls.push([step, extra]));
+  for (const [id] of steps) await c.toggle(id);
+  return { calls, c };
+};
+
+test("U-95 ① 200・on＝true・capped＝false だけ段8。share_id は押した共有ページの値で、scene・entry・zero_cond・detail_count は入らない", async () => {
+  const { calls } = await run8(async (_s, id) => ok(id, 1), [["G1"]]);
+  assert.deepEqual(calls, [[8, { share_id: SID }]]);
+});
+
+test("U-95 ② capped＝true・③ 取り消し（on＝false）・④ 500／通信エラー／応答しない は段8を作らず、画面にも出さない・再試行しない", async () => {
+  const capped = await run8(async (_s, id) => ok(id, 30, true), [["G1"]]);
+  assert.equal(capped.calls.length, 0);
+  // ③ 押してから取り消す: 8 は最初の「いいね」の 1 回だけ（取り消しでは送らない）
+  const undo = await run8(async (_s, id, on) => ok(id, on ? 1 : 0), [["G1"], ["G1"]]);
+  assert.equal(undo.calls.length, 1);
+  const err = await run8(async () => ({ status: "error" }), [["G1"]]);
+  assert.equal(err.calls.length, 0);
+  const thrown = await run8(async () => ({ status: "expired" }), [["G1"]]);
+  assert.equal(thrown.calls.length, 0);
+});
+
+test("U-95 ⑤ 別の商品にも繰り返す: 画面は押すたびに段8を渡すが、1 訪問 1 行は受け口の UNIQUE（track 側は訪問ごと同じ share_id）", async () => {
+  const { calls } = await run8(async (_s, id) => ok(id, 1), [["G1"], ["G2"]]);
+  assert.deepEqual(calls.map((c) => c[0]), [8, 8]);
+  assert.ok(calls.every((c) => c[1]?.share_id === SID));
+});
+
+test("U-95 ⑥ 保存が使えない: track が送信しない（本物の track・保存なし）。いいね自体は押せる", async () => {
+  const sent: Record<string, unknown>[] = [];
+  const { track: realTrack } = await import("./tracking.ts");
+  const c = new LikeController(SID, [mk("G1", 0)], null, () => {}, async (_s, id) => ok(id, 1), (step, extra) => void realTrack(step, extra, { local: null, session: null, send: (b) => void sent.push(b) }));
+  await c.toggle("G1");
+  assert.equal(c.snapshot.G1!.liked, true);
+  assert.equal(sent.length, 0);
+});
+
+test("U-95 ⑦⑧ 本物の track: トップから始まった訪問で共有ページ L を押す → share_id＝L。L1 から始まった訪問で L2 を押す → 段8 は L2、段1 は L1", async () => {
+  const { track: realTrack } = await import("./tracking.ts");
+  const L = "L".repeat(22);
+  const L2 = "M".repeat(22);
+  const store = new Map<string, string>();
+  const local = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) };
+  const sent: Record<string, unknown>[] = [];
+  const mkTrack = (path: string): import("./tracking.ts").Tracker => (step, extra) => void realTrack(step, extra, { local, session: null, send: (b) => void sent.push(b), loc: { pathname: path, search: "" } });
+  // ⑦ トップから始まる（段 1）
+  realTrack(1, { entry: "top" }, { local, session: null, send: (b) => void sent.push(b), loc: { pathname: "/", search: "" } });
+  await new LikeController(L, [mk("G1", 0)], null, () => {}, async (_s, id) => ok(id, 1), mkTrack(`/s/${L}`)).toggle("G1");
+  assert.equal(sent.find((b) => b.step === 1)!.share_id, undefined);
+  assert.equal(sent.find((b) => b.step === 8)!.share_id, L);
+  // ⑧ L1 から始まった訪問（新しい保存）で L2 を押す
+  store.clear();
+  sent.length = 0;
+  realTrack(1, { entry: "share" }, { local, session: null, send: (b) => void sent.push(b), loc: { pathname: `/s/${L}`, search: "" } });
+  await new LikeController(L2, [mk("G1", 0)], null, () => {}, async (_s, id) => ok(id, 1), mkTrack(`/s/${L2}`)).toggle("G1");
+  assert.equal(sent.find((b) => b.step === 1)!.share_id, L);
+  assert.equal(sent.find((b) => b.step === 8)!.share_id, L2);
+});
