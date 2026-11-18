@@ -1,6 +1,5 @@
 "use client";
 
-import { markFoldOpen } from "@/lib/foldHint";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -31,10 +30,7 @@ export function CategoryTiles() {
       </h2>
       <div id="catlist" className={`${styles.cats} ${open ? "" : styles.shut}`}>
         {CATEGORIES.map((c, i) => (
-          <button key={c.slug} type="button" className={`${styles.cat} ${i >= CATEGORY_FIRST_COUNT ? styles.more : ""}`} onClick={() => {
-              markFoldOpen();
-              router.push(buildSearchHref({ category: c.name }));
-            }}>
+          <button key={c.slug} type="button" className={`${styles.cat} ${i >= CATEGORY_FIRST_COUNT ? styles.more : ""}`} onClick={() => router.push(buildSearchHref({ category: c.name }))}>
             <Image src={categoryIcon(c.name) ?? ""} alt="" width={28} height={28} unoptimized />
             {c.name}
           </button>

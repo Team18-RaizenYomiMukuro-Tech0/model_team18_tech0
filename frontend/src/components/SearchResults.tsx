@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { clearFoldOpen, foldOpenOnArrival } from "@/lib/foldHint";
 import { COLLAPSE_MAX_WIDTH, conditionSummary, SHEET_MAX_WIDTH, shouldFocusListBand } from "@/lib/mobileLayout";
 import { emptyMessageR02, type Fetched, type ProductList } from "@/lib/products";
 import { ProductRunner } from "@/lib/searchRequest";
@@ -64,11 +63,10 @@ export function SearchResults() {
   );
 }
 
-// SP-31: 480px 以下は条件の欄を 1 行の要約ボタン（aria-expanded）にたたむ。押すと 1 段目シーン・2 段目価格・3 段目からカテゴリーを開く。最初は閉じている（トップから来たときだけ、最初から開いている）。
+// SP-31: 480px 以下は条件の欄を 1 行の要約ボタン（aria-expanded）にたたむ。押すと 1 段目シーン・2 段目価格・3 段目からカテゴリーを開く。最初は開いている（入り方によらない。PM 11/18）。閉じたあとは同じ画面の中で開き直さない。
 function ConditionsFold({ q }: Readonly<{ q: SearchQuery }>) {
   const small = useMediaQuery(`(max-width: ${COLLAPSE_MAX_WIDTH}px)`);
-  const [open, setOpen] = useState(foldOpenOnArrival); // SP-31: トップから移ったときだけ開いて始める。直接 /search を開いたときは閉じている
-  useEffect(() => clearFoldOpen(), []);
+  const [open, setOpen] = useState(true); // SP-31: 入り方によらず開いて始める（閉じたら、同じ画面の中では閉じたまま）
   if (!small) return <SearchConditions q={q} />;
   return (
     <div className={styles.fold}>
