@@ -95,6 +95,12 @@ export function ratingText(r: number): string {
   return Number.isInteger(r) ? r.toFixed(1) : String(r);
 }
 
+/** SP-15 SP-11 D-01: R-01 の候補カードの「★ 4.7（120件）」。評価・件数のどちらかが無い（null・省略）ときは null（行ごと出さない。値を作らない・空の「★」も出さない） */
+export function candidateRatingLine(rating: number | null | undefined, reviewCount: number | null | undefined): string | null {
+  if (rating == null || reviewCount == null) return null;
+  return `★ ${ratingText(rating)}（${reviewCount}件）`;
+}
+
 export const isVoiceList = (v: unknown): v is VoiceList =>
   typeof v === "object" &&
   v !== null &&

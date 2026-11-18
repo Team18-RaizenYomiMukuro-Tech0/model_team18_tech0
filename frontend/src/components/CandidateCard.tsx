@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/formatPrice";
-import { ratingText } from "@/lib/products";
+import { candidateRatingLine } from "@/lib/products";
 import { productImage } from "@/lib/images";
 import type { CandidateItem } from "@/lib/api";
 import { CartButton } from "./CardButtons";
@@ -22,6 +22,7 @@ export function CandidateCard({
   selected = false,
 }: Readonly<{ item: CandidateItem; picked: boolean; onToggle: () => void; href?: string; selected?: boolean }>) {
   const img = productImage(item.category);
+  const ratingLine = candidateRatingLine(item.rating, item.review_count); // U-96: 評価・件数のどちらかが無ければ null（行を出さない）
   return (
     <li className={`${styles.card} ${g.wrap}`} data-picked={picked} data-selected={selected}>
       <div className={g.grid}>
@@ -52,11 +53,7 @@ export function CandidateCard({
           </span>
         )}
         <span className={`${styles.price} ${g.price}`}>{formatPrice(item.price)}</span>
-        {item.rating != null && item.review_count != null && (
-          <span className={`${styles.meta} ${g.meta}`}>
-            ★ {ratingText(item.rating)}（{item.review_count}件）
-          </span>
-        )}
+        {ratingLine && <span className={`${styles.meta} ${g.meta}`}>{ratingLine}</span>}
         <div className={g.chips}>
           <DecisionChips arrivesOn={item.arrives_on} wrapping={item.wrapping} inStock sceneCount={item.scene_count} />
         </div>

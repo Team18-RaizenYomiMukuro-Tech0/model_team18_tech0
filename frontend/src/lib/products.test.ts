@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  emptyMessageR02, fetchJson, fetchSimilar, fetchVoices, isProductList, productUrl, productsUrl, ratingText, similarUrl, voicesUrl,
+  emptyMessageR02, fetchJson, fetchSimilar, fetchVoices, isProductList, productUrl, productsUrl, candidateRatingLine, ratingText, similarUrl, voicesUrl,
 } from "./products.ts";
 
 // D-28 SP-11 S-27 #55-2 #56-4: 取得の URL・0件の文言・評価の表示
@@ -21,6 +21,26 @@ test("products S-27: 評価はデータの値のまま。丸めない", () => {
   assert.equal(ratingText(4.5), "4.5");
   assert.equal(ratingText(4.7), "4.7");
   assert.equal(ratingText(4), "4.0");
+});
+test("U-96 ①: 評価 4.7・120 件 →「★ 4.7（120件）」", () => {
+  assert.equal(candidateRatingLine(4.7, 120), "★ 4.7（120件）");
+});
+test("U-96 ②: 評価 4.0・30 件 →「★ 4.0（30件）」（「4」ではない）", () => {
+  assert.equal(candidateRatingLine(4.0, 30), "★ 4.0（30件）");
+  assert.notEqual(candidateRatingLine(4.0, 30), "★ 4（30件）");
+});
+test("U-96 ③: 評価 4.49・20 件 →「★ 4.49（20件）」（丸めない）", () => {
+  assert.equal(candidateRatingLine(4.49, 20), "★ 4.49（20件）");
+});
+test("U-96 ④: 評価なし（null）・件数 0 → 行を出さない（空の「★」も作らない）", () => {
+  assert.equal(candidateRatingLine(null, 0), null);
+});
+test("U-96 ⑤: 評価・件数のどちらかが無い（null・省略）→ 行を出さない（値を作らない）", () => {
+  assert.equal(candidateRatingLine(4.7, null), null);
+  assert.equal(candidateRatingLine(null, 120), null);
+  assert.equal(candidateRatingLine(undefined, undefined), null);
+  assert.equal(candidateRatingLine(4.7, undefined), null);
+  assert.equal(candidateRatingLine(undefined, 120), null);
 });
 test("products: 取得は 404 → notfound、HTTP 失敗・通信失敗・形の違う応答 → error、成功 → ok", async () => {
   const r = (status: number, body: unknown) => async () => ({ status, ok: status < 400, json: async () => body }) as unknown as Response;
