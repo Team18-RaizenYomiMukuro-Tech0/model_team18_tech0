@@ -43,11 +43,13 @@ export function CandidateCard({
         </div>
         {item.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
         {href ? (
-          <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
-            {item.name}
+          <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={item.name}>
+            <span className={g.clamp}>{item.name}</span>
           </Link>
         ) : (
-          <span className={`${styles.name} ${g.name}`}>{item.name}</span>
+          <span className={`${styles.name} ${g.name}`} title={item.name}>
+            <span className={g.clamp}>{item.name}</span>
+          </span>
         )}
         <span className={`${styles.price} ${g.price}`}>{formatPrice(item.price)}</span>
         {item.rating != null && item.review_count != null && (

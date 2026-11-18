@@ -32,8 +32,8 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
           </span>
         </div>
         {p.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
-        <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined}>
-          {p.name}
+        <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={p.name}>
+          <span className={g.clamp}>{p.name}</span>
         </Link>
         <span className={`${styles.price} ${g.price}`}>{formatPrice(p.price)}</span>
         {p.rating != null && p.review_count != null && (
