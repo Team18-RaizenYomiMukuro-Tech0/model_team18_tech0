@@ -20,11 +20,11 @@ export function LikeGif({ size, alt = "" }: Readonly<{ size: number; alt?: strin
 export function LikeRow({ v, onToggle, buttonClass, primary, mark = false, tmark = false, onReset }: Readonly<{ v: LikeView; onToggle: (button: HTMLButtonElement) => void; buttonClass?: string; primary?: boolean; mark?: boolean; tmark?: boolean; onReset?: () => void }>) {
   const g = likeGifs(v.count);
   return (
-    <span className={styles.likerow} data-likerow>
+    <span className={styles.likerow}>
       <button type="button" className={buttonClass ?? styles.like} data-primary={primary ? "true" : undefined} aria-label="いいね" aria-pressed={v.liked} onClick={(e) => onToggle(e.currentTarget)}>
         <LikeGif size={28} alt="いいね" /> {likeLabel(v.liked)}
       </button>
-      <span className={styles.likecount} data-likecount>
+      <span className={styles.likecount}>
         <span className={styles.vh}>いいねの数 </span>
         {v.count}
       </span>
