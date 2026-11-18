@@ -136,6 +136,8 @@ def test_item_fields_and_reason() -> None:
             "price",
             "category",
             "high_rating",
+            "rating",
+            "review_count",
             "delivery_days",
             "wrapping",
             "arrives_on",
@@ -144,6 +146,11 @@ def test_item_fields_and_reason() -> None:
         }
         assert by["P01"]["high_rating"] is True and by["P02"]["high_rating"] is False
         assert by["P03"]["high_rating"] is False  # 評価なし
+        # SP-15 / D-01: 評価と件数を数値のまま返す（4.49 は 4.49。評価なしは null・件数 0）
+        assert (by["P01"]["rating"], by["P01"]["review_count"]) == (4.5, 20)
+        assert (by["P02"]["rating"], by["P02"]["review_count"]) == (4.49, 20)
+        assert (by["P03"]["rating"], by["P03"]["review_count"]) == (None, 0)
+        assert (by["P09"]["rating"], by["P09"]["review_count"]) == (4.6, 120)
         assert (
             by["P09"]["reason"]
             == "職場の送別で48回選ばれていて、評価も4.6（120件）と高めです。2日で届き、ラッピングもできます。"
