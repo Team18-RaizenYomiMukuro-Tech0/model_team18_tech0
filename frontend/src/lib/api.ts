@@ -24,6 +24,9 @@ export type CandidateItem = {
   price: number;
   category: string;
   high_rating: boolean;
+  // SP-11 と同じ形（「★ 4.7（120件）」）。API（D-01）が rating・review_count を返すまでは来ないので省略可。どちらかが無い・null なら出さない
+  rating?: number | null;
+  review_count?: number | null;
   reason: string;
   delivery_days?: number | null;
   wrapping?: boolean | null;
