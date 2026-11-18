@@ -104,6 +104,9 @@ header.top {
   font-size: 10px;
   font-weight: 700;
 }
+/* #484 SP-08: ログイン（準備中）を押したときの知らせ。ヘッダーのすぐ下に出す（header.top は sticky なので top: 100% の基準になる）。空のときは出さない */
+.loginnote { position: absolute; top: 100%; right: max(16px, calc((100% - 1200px) / 2)); z-index: 25; max-width: calc(100% - 32px); padding: 8px 12px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font-size: 14px; font-weight: 700; box-shadow: 0 4px 8px rgba(58, 51, 49, .15); }
+.loginnote:empty { display: none; }
 /* SP-08: 480px 以下のヘッダーは 1 段。ロゴ左、右にお気に入り・ログイン・カート（アイコンの下に 10px の文字。数の丸はアイコンの右上） */
 @media (max-width: 480px) {
   header.top { flex-wrap: nowrap; padding: 6px 16px; gap: 0; }
@@ -112,7 +115,7 @@ header.top {
   .hbtn { flex-direction: column; justify-content: center; gap: 0; min-width: 44px; min-height: 44px; padding: 2px 4px; }
   .hbtn .t { font-size: 10px; line-height: 1.2; }
   .hbtn .cnt { position: absolute; top: 0; left: calc(50% + 4px); margin: 0; }
-  .hbtn .tag { display: none; }
+  .hbtn .tag { position: absolute; top: 0; left: calc(50% + 4px); margin: 0; padding: 0 4px; font-size: 9px; line-height: 14px; }
   .hbtn[aria-disabled="true"] .ico { opacity: .5; }
   .hsearch { display: none; }
   /* D-25 SP-35: 虫めがね（アイコン・文字は他の 3 つと同じ）。開いた（data-open="true"）ときは、入力欄をヘッダーの下に出す */

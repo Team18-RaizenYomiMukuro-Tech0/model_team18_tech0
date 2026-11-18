@@ -18,6 +18,7 @@ import { RelaxHelp } from "./RelaxHelp";
 import { SearchConditions } from "./SearchConditions";
 import { Searching } from "./Searching";
 import { SelectedList } from "./SelectedList";
+import { Sheet } from "./Sheet";
 import { SortSelect } from "./SortSelect";
 import cond from "./conditions.module.css";
 import { useMediaQuery } from "./useMediaQuery";
@@ -56,9 +57,9 @@ export function SearchResults() {
       {isR01 ? (
         <CandidateResults q={q} narrow={narrow} listOpen={listShown} onCloseList={closeList} onCloseDetail={closeDetail} />
       ) : (
-        <ProductResults q={q} onCloseDetail={closeDetail} />
+        <ProductResults q={q} narrow={narrow} listOpen={listShown} onCloseList={closeList} onCloseDetail={closeDetail} />
       )}
-      {bar && <BottomBar isR01={isR01} picked={picked.length} onOpenList={() => setListOpen(true)} />}
+      {bar && <BottomBar picked={picked.length} onOpenList={() => setListOpen(true)} />}
     </>
   );
 }
@@ -80,7 +81,7 @@ function ConditionsFold({ q }: Readonly<{ q: SearchQuery }>) {
   );
 }
 
-function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onCloseDetail: () => void }>) {
+function ProductResults({ q, narrow, listOpen, onCloseList, onCloseDetail }: Readonly<{ q: SearchQuery; narrow: boolean; listOpen: boolean; onCloseList: () => void; onCloseDetail: () => void }>) {
   const { url } = searchMode(q);
   const [res, setRes] = useState<{ url: string; r: Fetched<ProductList> | null }>({ url: "", r: null });
   const [last, setLast] = useState<ProductList | null>(null); // 直前に出た結果（検索中に薄く残す。SP-33）
@@ -167,7 +168,16 @@ function ProductResults({ q, onCloseDetail }: Readonly<{ q: SearchQuery; onClose
           </>
         )}
         <RecentViewed q={q} />
-        <SelectedList />
+        {/* #488: 899px 以下は R-01 と同じく、欄はページの下ではなく帯から開く下からのシートに置く */}
+        {narrow ? (
+          <Sheet open={listOpen} label="共有リスト" onClose={onCloseList}>
+            <div className={styles.listpad}>
+              <SelectedList />
+            </div>
+          </Sheet>
+        ) : (
+          <SelectedList />
+        )}
       </section>
       {detailId != null && <DetailPanel productId={detailId} onClose={onCloseDetail} />}
     </div>

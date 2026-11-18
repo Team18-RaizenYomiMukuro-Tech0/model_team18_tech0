@@ -9,6 +9,7 @@ import { fetchJson, isProductDetail, productUrl, type Fetched, type ProductDetai
 import { buildSearchHref } from "@/lib/topPage";
 import { cartStore } from "@/state/cart";
 import { FAVORITES_KEY, loadFavorites, useFavorites } from "@/state/favorites";
+import { BodyPortal } from "./BodyPortal";
 import { Icon } from "./icons";
 import styles from "./favorites.module.css";
 
@@ -35,14 +36,17 @@ export function FavoritesButton() {
         <span className="ico"><Icon name="heart" /></span> <span className="t">お気に入り</span>
         {ids.length > 0 && <span className={`${styles.count} cnt`}>{ids.length}</span>}
       </button>
-      {open && (
-        <FavoritesPanel
-          onClose={() => {
-            setOpen(false);
-            btn.current?.focus();
-          }}
-        />
-      )}
+      {/* #485: ヘッダーの重なり（z-index 20）の外（body 直下）に出し、詳細のシート・暗幕より手前に見せる */}
+      <BodyPortal>
+        {open && (
+          <FavoritesPanel
+            onClose={() => {
+              setOpen(false);
+              btn.current?.focus();
+            }}
+          />
+        )}
+      </BodyPortal>
     </>
   );
 }
