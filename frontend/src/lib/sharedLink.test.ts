@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { LIKE_FAILED_MESSAGE, LikeController, likeLabel, likesKey, loadLikedIds, type LikeView, type SharedItem } from "./sharedLink.ts";
+import { LIKE_FAILED_MESSAGE, LikeController, likeGifs, likeLabel, likesKey, loadLikedIds, type LikeView, type SharedItem } from "./sharedLink.ts";
 import type { LikeResult } from "./api.ts";
 import { canShowDetail, itemImage, detailHref, DETAIL_LABEL, fetchShared, itemNote, OTHERS_HREF, OTHERS_LABEL, SHARED_GUIDE, sharedUrl } from "./sharedLink.ts";
 
@@ -237,4 +237,14 @@ test("U-95 ⑦⑧ 本物の track: トップから始まった訪問で共有ペ
   await new LikeController(L2, [mk("G1", 0)], null, () => {}, async (_s, id) => ok(id, 1), mkTrack(`/s/${L2}`)).toggle("G1");
   assert.equal(sent.find((b) => b.step === 1)!.share_id, L);
   assert.equal(sent.find((b) => b.step === 8)!.share_id, L2);
+});
+
+test("likes U-97: いいねの数だけ画像を並べる。5 個まで・6 個目からは「＋N」（0・1・5・6・20 件。数でない値は 0）", () => {
+  assert.deepEqual(likeGifs(0), { shown: 0, more: 0 });
+  assert.deepEqual(likeGifs(1), { shown: 1, more: 0 });
+  assert.deepEqual(likeGifs(5), { shown: 5, more: 0 });
+  assert.deepEqual(likeGifs(6), { shown: 5, more: 1 });
+  assert.deepEqual(likeGifs(20), { shown: 5, more: 15 });
+  assert.deepEqual(likeGifs(-3), { shown: 0, more: 0 });
+  assert.deepEqual(likeGifs(Number.NaN), { shown: 0, more: 0 });
 });
