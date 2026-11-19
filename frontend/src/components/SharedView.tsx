@@ -119,8 +119,8 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
     markTimers.current.add(t);
   };
   const press = async (id: string, button: HTMLElement) => {
-    const effect = await c.toggleEffect(id);
-    if (!effect) return; // 成功して数が 7（大当たり）か 8〜30（ツッコミ）になったときだけ（数と段 8 は toggleEffect の中で先に確定している）
+    const effect = await c.add(id);
+    if (!effect) return; // 成功して応答の合計が 7（大当たり）か 8〜30（ツッコミ）になったときだけ（数と段 8 は add の中で先に確定している）
     const mode = sevenReachMode({ reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches, canAnimate: typeof Element.prototype.animate === "function" });
     if (mode === "mark") {
       if (effect === "seven") showMark(marksRef, setMarks, id, SEVEN_REACH.reducedMs);
@@ -143,7 +143,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
     <ol className={styles.list}>
       {items.map((it) => {
         const note = itemNote(it.status);
-        const v = view[it.product_id] ?? { count: it.like_count ?? 0, liked: false, failed: false };
+        const v = view[it.product_id] ?? { count: it.like_count ?? 0, own: 0, failed: false };
         return (
           <li key={it.product_id} className={styles.item}>
             {itemImage(it) && (
@@ -162,7 +162,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
                   {DETAIL_LABEL}
                 </button>
               )}
-              <LikeRow v={v} mark={markOf(it.product_id)} tmark={tmarkOf(it.product_id)} onReset={() => c.reset(it.product_id)} onToggle={(b) => void press(it.product_id, b)} />
+              <LikeRow v={v} mark={markOf(it.product_id)} tmark={tmarkOf(it.product_id)} onReset={() => c.reset(it.product_id)} onAdd={(b) => void press(it.product_id, b)} onRemove={() => void c.remove(it.product_id)} />
             </div>
             {v.failed && (
               <p role="alert" className={styles.likeErr}>
@@ -173,7 +173,7 @@ function SharedList({ shareId, items }: Readonly<{ shareId: string; items: reado
         );
       })}
     </ol>
-    {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, mark: markOf(openId), tmark: tmarkOf(openId), onReset: () => c.reset(openId), onToggle: (b) => void press(openId, b) }} />}
+    {openId && openView && <DetailPanel key={openId} productId={openId} onClose={() => setOpenId(null)} like={{ view: openView, mark: markOf(openId), tmark: tmarkOf(openId), onReset: () => c.reset(openId), onAdd: (b) => void press(openId, b), onRemove: () => void c.remove(openId) }} />}
     {reach?.kind === "seven" && <SevenReach onClose={closeReach} />}
     {reach?.kind === "tsukkomi" && <Tsukkomi count={reach.count} onClose={closeReach} />}
     </>

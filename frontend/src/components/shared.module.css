@@ -33,6 +33,13 @@
 .like { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .like[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; }
 .likeErr { margin: 0; font-size: 14px; color: #7a1812; }
+/* #502 SP-28 D-09: 1 人 5 個まで。「いいね」と「−」を同じ高さで並べ、押せない理由をボタンのすぐ下に小さく出す。「−」は丸い 44px 以上のボタン */
+.likecol { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.likebtns { display: inline-flex; align-items: center; gap: 6px; }
+.like:disabled { opacity: .5; cursor: not-allowed; }
+.minus { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--bd2); border-radius: 50%; background: var(--paper); color: var(--ink); font: inherit; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; }
+.limit { font-size: 12px; color: #5c514d; }
+.own { font-size: 12px; color: #5c514d; white-space: nowrap; }
 .others { justify-self: start; margin-top: 8px; }
 .msg .others { margin-top: 12px; }
 .img { position: relative; width: 100%; max-width: 200px; aspect-ratio: 1; background: var(--peach); border-radius: var(--rm); overflow: hidden; }
