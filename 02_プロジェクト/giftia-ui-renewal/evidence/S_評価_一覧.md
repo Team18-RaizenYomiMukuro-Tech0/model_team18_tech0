@@ -32,3 +32,16 @@
 | S-69 | ○ | `285f836` | 偽 API（空の DB） | `evidence/S-69.md` |
 | S-70 | ○ | `285f836` | 偽 API（FD-10） | `evidence/S-70.md` |
 | S-82 | ○ | `285f836` | 本番の読み取り（中継）。375・320・1280px は iframe。実キー入力 | `evidence/S-82.md` |
+
+## 追加分（3 回目）
+
+| テストID | 判定 | 回した版 | 場所・データ | 証拠 |
+| --- | --- | --- | --- | --- |
+| S-22 | ○ | `285f836` | 偽 API（FD-1）。1280px の iframe | `evidence/S-22.md` |
+| S-23 | ○ | `285f836` | 偽 API（FD-1）。1280px の iframe | `evidence/S-23.md` |
+| S-24 | ○ | `285f836` | 偽 API（FD-1）＋S-36・S-60 の記録 | `evidence/S-24.md` |
+| S-26 | ○ | `285f836` | 本番 API の読み取り（中継） | `evidence/S-26.md` |
+| S-57 | ○ | `285f836` | 偽 API（FD-1）。1280px の iframe | `evidence/S-57.md` |
+| S-65 | ○ | `285f836` | 本番 API の読み取り（中継）。1280px の iframe | `evidence/S-65.md` |
+
+S の ○ は計 33 行（27＋6）。
