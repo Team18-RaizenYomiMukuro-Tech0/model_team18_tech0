@@ -19,3 +19,16 @@
 | S-53 | ○ | `285f836` | 偽 API（FD-1） | `evidence/S-53.md` |
 | S-60 | ○ | `285f836` | 偽 API（FD-9） | `evidence/S-60.md` |
 | S-66 | ○ | `285f836` | 偽 API（FD-9） | `evidence/S-66.md` |
+
+## 追加分（2 回目。偽 API の FD-0・FD-4・FD-10 を追加）
+
+| テストID | 判定 | 回した版 | 場所・データ | 証拠 |
+| --- | --- | --- | --- | --- |
+| S-35 | ○ | `285f836` | 偽 API（FD-4） | `evidence/S-35.md` |
+| S-36 | ○ | `285f836` | 偽 API（FD-1） | `evidence/S-36.md` |
+| S-55 | ○ | `285f836` | 偽 API（FD-10） | `evidence/S-55.md` |
+| S-58 | ○ | `285f836` | 偽 API（FD-10） | `evidence/S-58.md` |
+| S-64 | ○ | `285f836` | 偽 API（空の DB・FD-1）。遅延・500 は中継 | `evidence/S-64.md` |
+| S-69 | ○ | `285f836` | 偽 API（空の DB） | `evidence/S-69.md` |
+| S-70 | ○ | `285f836` | 偽 API（FD-10） | `evidence/S-70.md` |
+| S-82 | ○ | `285f836` | 本番の読み取り（中継）。375・320・1280px は iframe。実キー入力 | `evidence/S-82.md` |
