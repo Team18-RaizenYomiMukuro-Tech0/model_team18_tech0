@@ -53,3 +53,43 @@
 ## NF-47 の並び替え（2026-11-20）
 
 標準の `<select>` に、フォーカスを当てて ArrowDown（と Space → ArrowDown → Enter、先頭の文字の入力）を実キーで送ったが、値が変わらなかった（自動操作ではブラウザのメニューが再現できない）。**NF-47 の並び替えは「人が行う」に回す。** 読み上げ（VoiceOver）も人が行う分。
+
+## 追加（2026-11-20・5 回目。「今回の対象外」だった 33 行の判定）
+
+| テストID | 判定 | 場所・データ | 証拠 |
+| --- | --- | --- | --- |
+| NF-05 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-05.md` |
+| NF-06 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-06.md` |
+| NF-07 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-07.md` |
+| NF-08 | ○ | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-08.md` |
+| NF-09 | ○ | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-09.md` |
+| NF-12 | ○ | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-12.md` |
+| NF-13 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-13.md` |
+| NF-14 | ○ | 手元ビルド（画面）・偽 API・公開サイトの読み取り（`curl`。`GET` と、`Origi | `evidence/NF-14.md` |
+| NF-15 | ○ | 公開 API の読み取り（`curl`。`GET /api/products?page=1` と | `evidence/NF-15.md` |
+| NF-16 | ○ | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-16.md` |
+| NF-28 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-28.md` |
+| NF-34 | ○ | 手元ビルドの HTML（`curl`） | `evidence/NF-34.md` |
+| NF-35 | ○ | 偽 API のログ（評価の間に出た全行。uvicorn の標準のアクセスログは止めて起動する設計 | `evidence/NF-35.md` |
+| NF-44 | ○ | コードの検索と手元ビルド | `evidence/NF-44.md` |
+| NF-45 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-45.md` |
+| NF-51 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-51.md` |
+| NF-53 | ○ | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-53.md` |
+| NF-32 | × | 手元の評価用フォルダ。eslint 9.39.5・tsc・ruff 0.17.5・mypy 2. | `evidence/NF-32.md` |
+| NF-56 | × | 手元ビルド（偽 API。FD-9）。幅 375・480・481・1280px の iframe | `evidence/NF-56.md` |
+| NF-31 | 判定なし（文書の範囲が不明） | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-31.md` |
+| NF-41 | 判定なし（NF-52 に読み替え） | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-41.md` |
+| NF-52 | 判定なし（文書内の食い違いの疑い） | 偽 API（汎用）: backend `285f836` の本物のアプリに backend/te | `evidence/NF-52.md` |
+| NF-42 | 公開サイトの設定待ち（①②は ○） | 評価用フォルダの `backend/startup.sh` と偽 API のログ | `evidence/NF-42.md` |
+| NF-43 | 公開サイトの設定待ち（リポジトリ側は ○） | 評価用フォルダ（`git rev-parse HEAD` ＝ `285f836…`）のソースの検 | `evidence/NF-43.md` |
+| NF-10 | DB 待ち（②③は手元で確認済み） | 手元の自動テスト | `evidence/NF-10.md` |
+| NF-18 | DB 待ち | 班の DB（配られたアカウントで手で。`DB管理手順.md`「確かめ B」） | - |
+| NF-19 | DB 待ち | 班の DB（同「確かめ A・C」。公開を止めてアプリを前のコミットへ戻す。`DROP TABLE share_links` を流す） | - |
+| NF-50 | DB 待ち | 班の DB の `share_likes`・`usage_events` の列と行（S-101・S-87 の後） | - |
+| NF-58 | DB 待ち | 班の DB（PM が `ALTER` を手で流す。Kurosu は SELECT） | - |
+| NF-20 | 人が行う | 実データが無いことと、外部公開の承認の状態（運営の承認の確認） | - |
+| NF-30 | 人が行う | 授業の外に出していないことと、外部公開の承認の状態 | - |
+| NF-21 | 人が判定 | 合否の集計（りゅうちゃん。NF-21 の基準は結果を見て変えない） | - |
+| NF-17 | 欠番 | （廃止。テスト設計に「回さない」と書かれている） | - |
+
+**今回の 33 行の集計**: ○ 17（NF-05・06・07・08・09・12・13・14・15・16・28・34・35・44・45・51・53）、× 2（NF-32・NF-56）、判定なし 3（NF-31・41・52）、公開サイトの設定待ち 2（NF-42・43）、DB 待ち 5（NF-10・18・19・50・58）、人が行う 3（NF-20・21・30）、欠番 1（NF-17）。
