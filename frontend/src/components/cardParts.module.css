@@ -8,7 +8,9 @@
 .badge { order: 3; align-self: flex-start; }
 /* #437 札が無いカードも札 1 行ぶんの高さを空け、商品名の位置を同じ行のほかのカードとそろえる（見た目だけ。読み上げには出さない） */
 .badgeph { visibility: hidden; }
-.name { order: 4; }
+/* S-118・NF-56: 商品名のリンクの押せる高さを 44px 以上に（見た目の行数・位置は変えず、余白と負の margin で押せる範囲だけ広げる。39.2px + 6px） */
+.name { order: 4; padding-block: 3px; margin-block: -3px; }
+button.name { padding-block: 3px; margin-block: -3px; } /* トップのおすすめは button（.openbtn の padding: 0 に勝つ） */
 /* PM 11/18 SP-30 D-37: 商品名は 2 行まで、はみ出す分は「…」。1 行の名前でも 2 行分の高さを取り、同じ行のカードの金額の高さをそろえる（全文は DOM に残り、読み上げ・title・詳細で読める）。リンクの押せる範囲（padding）は外側の .name のまま */
 .clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.4; height: 2.8em; overflow-wrap: anywhere; }
 .price { order: 5; }
