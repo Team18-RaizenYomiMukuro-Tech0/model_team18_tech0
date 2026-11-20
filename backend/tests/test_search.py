@@ -152,12 +152,12 @@ def test_q_is_text_not_sql(client: TestClient, db: SearchDb) -> None:
         seen.append(sql + repr(params))
         return orig(sql, params)
 
-    db.fetch_all = spy  # type: ignore[method-assign]
+    db.fetch_all = spy  # type: ignore[method-assign]  # 呼び出しを数えるため、メソッドをテスト用の関数に差し替える
     writes: list[str] = []
     def spy_write(sql: str, params: tuple[Any, ...] = ()) -> None:
         writes.append(sql)
 
-    db.write = spy_write  # type: ignore[method-assign]
+    db.write = spy_write  # type: ignore[method-assign]  # 書き込みを数えるため、メソッドをテスト用の関数に差し替える
     before = db.row_count()
     try:
         r = get(client, "q=' OR 1=1 --")
@@ -165,7 +165,7 @@ def test_q_is_text_not_sql(client: TestClient, db: SearchDb) -> None:
         r = get(client, "q=1'; DROP TABLE products;--")
         assert r.status_code == 200
     finally:
-        db.fetch_all = orig  # type: ignore[method-assign]
+        db.fetch_all = orig  # type: ignore[method-assign]  # 差し替えたメソッドを元に戻すため
         del db.write
     assert db.row_count() == before  # DB は壊れない
     assert writes == []  # 書き込みなし（usage_events にも share_links にも書かない）

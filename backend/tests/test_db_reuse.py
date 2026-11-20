@@ -1,7 +1,7 @@
 # Issue #256: 本番の接続を使い回す（db.py の _take_idle / _give_back）。偽の接続だけを使い、班の DB には繋がない。
-from typing import Any
+from typing import Any, Self
 
-import pymysql  # type: ignore[import-untyped]
+import pymysql  # type: ignore[import-untyped]  # PyMySQL は型情報を配っていないため
 import pytest
 
 import db as dbmod
@@ -12,7 +12,7 @@ class Cur:
     def __init__(self, conn: "Conn") -> None:
         self.conn = conn
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *a: object) -> None:
@@ -206,4 +206,4 @@ def test_main_calls_warm_up_at_import() -> None:
     assert len(calls) == 1
     import main
 
-    assert main.warm_up is dbmod.warm_up
+    assert vars(main)["warm_up"] is dbmod.warm_up

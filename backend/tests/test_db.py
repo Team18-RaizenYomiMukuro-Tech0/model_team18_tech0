@@ -123,7 +123,7 @@ def test_write_allow_list_wave2() -> None:
     for s in ok:
         check_sql(s, write=True)
         conn = FakeConn(log)
-        Db(lambda c=conn: c).write(s, ("a",))  # type: ignore[misc]
+        Db(lambda c=conn: c).write(s, ("a",))  # type: ignore[misc]  # 引数の型が FakeConn のため。接続を差し替えるテスト用の呼び方
         assert conn.committed and conn.closed
     assert [x[0] for x in log] == ok
     bad = [

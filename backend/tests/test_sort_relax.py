@@ -1,5 +1,7 @@
 # Issue #282（D3）: 並び替え sort（D-43）と 0 件の助け舟 relax（D-44）。テスト設計 U-71・I-48〜I-50（U-77 は画面）。
 # DB は使わない（偽の DB。SQL は本物と同じ文）。
+from typing import Any
+
 from candidates_support import CandidateDb, client_for, product
 from fastapi.testclient import TestClient
 
@@ -12,7 +14,7 @@ def ids(client: TestClient, query: str) -> list[str]:
     return [i["product_id"] for i in r.json()["items"]]
 
 
-def data() -> list[dict]:
+def data() -> list[dict[str, Any]]:
     """価格・評価・件数・配送日数が違う商品に、評価なし・配送日数なし・同じ値の商品を混ぜる"""
     return [
         product("A1", "送別", 1, 3000, 4.0, 10, days=3),
@@ -68,7 +70,7 @@ def test_invalid_sort_and_candidates_ignore_sort() -> None:
         assert client.get("/api/candidates?scene=送別&sort=").json() == client.get("/api/candidates?scene=送別").json()
 
 
-def relax_data() -> list[dict]:
+def relax_data() -> list[dict[str, Any]]:
     return [
         product("R1", "送別", 1, 2000, 4.0, 10, category="食品"),
         product("R2", "送別", 1, 2500, 4.0, 10, category="食品"),
