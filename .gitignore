@@ -25,3 +25,6 @@ hive/
 roster.json
 roster.json.*.bak
 roster-backups/
+
+# 作業用の一時置き場（SessionStart で作る）
+.work/
