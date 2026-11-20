@@ -50,7 +50,7 @@ def test_u02_later_fixes_counts_only_later_exact_number():
 def test_u03_row_counts():
     row = pc.build_row(PR, FakeGh([PR]), FakeGh([]).all_prs(), {})
     assert (row["review_comments"], row["fix_commits"], row["ci_runs"], row["later_fixes"]) == (5, 1, 4, 1)
-    assert row["tokens"] == "?"
+    assert row["issue_tokens"] == "?" and row["issue"] == 557
 
 
 def test_u04_no_review_means_zero_fix_commits():
@@ -86,3 +86,37 @@ def test_u07_idempotent_csv(tmp_path):
     assert pc.run("a", "b", out, tmp_path / "none.jsonl", g, tmp_path) == []
     rows = list(csv.DictReader(open(out, encoding="utf-8")))
     assert len(rows) == 1 and list(rows[0].keys()) == pc.COLUMNS
+
+
+def test_u08_second_row_of_same_issue_has_blank_tokens():
+    a = {"issue": 240, "issue_tokens": 100}
+    b = {"issue": 240, "issue_tokens": 100}
+    c = {"issue": "?", "issue_tokens": "?"}
+    d = {"issue": "?", "issue_tokens": "?"}
+    seen = set()
+    pc.blank_repeated_issues([a, b, c, d], seen)
+    assert (a["issue_tokens"], b["issue_tokens"]) == (100, "")
+    assert (c["issue_tokens"], d["issue_tokens"]) == ("?", "?")
+
+
+def test_u09_second_row_blank_through_run_and_rerun(tmp_path):
+    pr2 = {**PR, "number": 11, "mergedAt": "2026-11-19T00:00:00Z"}
+    out = tmp_path / "pr-cost.csv"
+    g = FakeGh([PR, pr2])
+    pc.run("a", "b", out, tmp_path / "none.jsonl", g, tmp_path)
+    rows = list(csv.DictReader(open(out, encoding="utf-8")))
+    assert [r["issue"] for r in rows] == ["557", "557"]
+    assert [r["issue_tokens"] for r in rows] == ["?", ""]
+    pr3 = {**PR, "number": 12, "mergedAt": "2026-11-20T00:00:00Z"}
+    pc.run("a", "b", out, tmp_path / "none.jsonl", FakeGh([PR, pr2, pr3]), tmp_path)
+    rows = list(csv.DictReader(open(out, encoding="utf-8")))
+    assert rows[2]["issue_tokens"] == ""
+
+
+def test_u10_conversation_comments_counted_and_first_review():
+    d = {"reviews": [], "comments": [{"createdAt": "2026-11-17T01:00:00Z"}],
+         "commits": [{"committedDate": "2026-11-17T00:00:00Z"},
+                     {"committedDate": "2026-11-17T02:00:00Z"}]}
+    row = pc.build_row(PR, FakeGh([PR], {10: d}), [], {})
+    assert row["review_comments"] == 1 + 3
+    assert row["fix_commits"] == 1

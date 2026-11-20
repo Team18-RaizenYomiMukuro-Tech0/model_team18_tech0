@@ -3,7 +3,9 @@
 
 使い方: python3 scripts/pr-cost.py --since 2026-11-14 --until 2026-11-21
 - gh で期間内にマージした PR を集める。
-- tokens は reports.jsonl（issue と session の対応）と ~/.claude/projects の usage 合計。
+- issue はブランチ名かタイトルの Issue 番号（取れなければ '?'）。
+- issue_tokens は Issue 単位の合計（reports.jsonl と ~/.claude/projects の usage）。
+  合計しても重ならないよう、その Issue が CSV に最初に出る行だけに書き、2 行目以降は空欄。
   結びつかない時は '?'（推測しない）。会話の text は読まない・出さない。
 - 同じ pr の行が既に CSV にあれば足さない。
 - .command-center/ と ~/.claude/ は読むだけ。
@@ -18,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-COLUMNS = ["pr", "title", "merged_at", "branch", "tokens", "ci_runs",
+COLUMNS = ["pr", "title", "merged_at", "branch", "issue", "issue_tokens", "ci_runs",
            "review_comments", "fix_commits", "later_fixes"]
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CSV = ROOT / "01_ナレッジ" / "metrics" / "pr-cost.csv"
@@ -62,7 +64,7 @@ class Gh:
                         "--json", "number,body,createdAt"])
 
     def detail(self, number):
-        return gh_json(["pr", "view", str(number), "--json", "reviews,commits"])
+        return gh_json(["pr", "view", str(number), "--json", "reviews,commits,comments"])
 
     def line_comment_count(self, number):
         return gh_count_lines(["api", "--paginate",
@@ -150,7 +152,10 @@ def build_row(pr, gh, all_prs, roles_by_issue, projects=PROJECTS, usage=sum_usag
     n = pr["number"]
     detail = gh.detail(n)
     reviews = detail.get("reviews") or []
-    first = min((r["submittedAt"] for r in reviews if r.get("submittedAt")), default=None)
+    comments = detail.get("comments") or []
+    times = [r["submittedAt"] for r in reviews if r.get("submittedAt")]
+    times += [c["createdAt"] for c in comments if c.get("createdAt")]
+    first = min(times, default=None)
     fixes = 0
     if first:
         fixes = sum(1 for c in detail.get("commits") or [] if c["committedDate"] > first)
@@ -159,25 +164,37 @@ def build_row(pr, gh, all_prs, roles_by_issue, projects=PROJECTS, usage=sum_usag
         "title": pr["title"],
         "merged_at": pr["mergedAt"],
         "branch": pr["headRefName"],
-        "tokens": tokens_for(pr, roles_by_issue, projects, usage),
+        "issue": issue_of(pr) if issue_of(pr) is not None else "?",
+        "issue_tokens": tokens_for(pr, roles_by_issue, projects, usage),
         "ci_runs": gh.run_attempts(pr["headRefName"]),
-        "review_comments": len(reviews) + gh.line_comment_count(n),
+        "review_comments": len(reviews) + len(comments) + gh.line_comment_count(n),
         "fix_commits": fixes,
         "later_fixes": later_fixes(n, pr["mergedAt"], all_prs),
     }
 
 
 def existing_prs(csv_path):
+    """CSV にある (pr の集合, issue の集合)。"""
     p = Path(csv_path)
     if not p.exists():
-        return set()
+        return set(), set()
     with open(p, newline="", encoding="utf-8") as fh:
-        return {r["pr"] for r in csv.DictReader(fh)}
+        rows = list(csv.DictReader(fh))
+    return {r["pr"] for r in rows}, {r["issue"] for r in rows if r.get("issue")}
+
+
+def blank_repeated_issues(rows, seen):
+    """同じ Issue の 2 行目以降の issue_tokens を空欄にする（合計が重ならないように）。"""
+    for r in rows:
+        if r["issue"] != "?" and str(r["issue"]) in seen:
+            r["issue_tokens"] = ""
+        seen.add(str(r["issue"]))
+    return rows
 
 
 def run(since, until, csv_path, reports_path, gh=None, projects=PROJECTS, usage=sum_usage):
     gh = gh or Gh()
-    done = existing_prs(csv_path)
+    done, seen_issues = existing_prs(csv_path)
     prs = sorted(gh.merged_prs(since, until), key=lambda p: p["mergedAt"])
     todo = [p for p in prs if str(p["number"]) not in done]
     if not todo:
@@ -185,6 +202,7 @@ def run(since, until, csv_path, reports_path, gh=None, projects=PROJECTS, usage=
     all_prs = gh.all_prs()
     roles = load_roles(reports_path)
     rows = [build_row(p, gh, all_prs, roles, projects, usage) for p in todo]
+    blank_repeated_issues(rows, seen_issues)
     path = Path(csv_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     new = not path.exists() or path.stat().st_size == 0
@@ -204,8 +222,8 @@ def main(argv=None):
     ap.add_argument("--reports", default=os.environ.get("PR_COST_REPORTS", str(DEFAULT_REPORTS)))
     a = ap.parse_args(argv)
     rows = run(a.since, a.until, a.csv, a.reports)
-    unk = sum(1 for r in rows if r["tokens"] == "?")
-    print(f"追記 {len(rows)} 行（tokens が ? の行 {unk}）→ {a.csv}")
+    unk = sum(1 for r in rows if r["issue_tokens"] == "?")
+    print(f"追記 {len(rows)} 行（issue_tokens が ? の行 {unk}）→ {a.csv}")
     return 0
 
 
