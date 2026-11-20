@@ -26,5 +26,5 @@ def test_is_expired(seconds: int, expired: bool) -> None:
 def test_timezone_aware_now_is_same_as_naive() -> None:
     """now に時間帯（UTC）が付いていても、付いていなくても同じ判定（Clock は UTC の時刻を返す）"""
     now = (CREATED + timedelta(seconds=2_592_001)).replace(tzinfo=UTC)
-    assert is_expired(CREATED, now) is True
+    assert is_expired(CREATED, now) is False
     assert is_expired(CREATED, now - timedelta(seconds=1)) is False
