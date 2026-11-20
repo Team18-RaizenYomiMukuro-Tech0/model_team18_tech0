@@ -336,7 +336,7 @@ def test_step_d_report_has_no_connection_info(monkeypatch: pytest.MonkeyPatch) -
 def test_main_turns_autocommit_off(monkeypatch: pytest.MonkeyPatch) -> None:
     conn = DeleteConn()
     assert conn.autocommit_on  # 接続直後は API 用の autocommit=True
-    conn.close = lambda: None  # type: ignore[attr-defined]
+    conn.close = lambda: None  # type: ignore[attr-defined]  # close を何もしない関数に差し替えるため
     monkeypatch.setattr(database, "get_connection", lambda: conn)
     seen: list[bool] = []
     monkeypatch.setitem(db_admin.HANDLERS, "0", lambda c, rep: seen.append(c.autocommit_on))

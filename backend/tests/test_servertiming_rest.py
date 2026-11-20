@@ -64,7 +64,7 @@ def test_errors_have_no_timing(client: TestClient) -> None:
         assert "server-timing" not in r.headers, url
 
 
-def test_share_page_has_timing_only_on_200(fake: Backend) -> None:  # noqa: F811
+def test_share_page_has_timing_only_on_200(fake: Backend) -> None:  # noqa: F811  fake は import したフィクスチャを引数で受けるため、再定義に見える
     link = create(fake.ids[:2])["share_id"]
     r = get(link)
     assert r.status_code == 200

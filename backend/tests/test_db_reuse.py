@@ -1,7 +1,7 @@
 # Issue #256: 本番の接続を使い回す（db.py の _take_idle / _give_back）。偽の接続だけを使い、班の DB には繋がない。
 from typing import Any, Self
 
-import pymysql  # type: ignore[import-untyped]
+import pymysql  # type: ignore[import-untyped]  # PyMySQL は型情報を配っていないため
 import pytest
 
 import db as dbmod
