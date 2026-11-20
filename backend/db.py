@@ -219,7 +219,7 @@ def server_timing(db: Db, total_seconds: float) -> str:
     db_wait=残してある接続（または先に作っている接続）を待った、db_connect=新しく接続した、db_sql=問い合わせ、
     db_total=DB 呼び出しの合計、total=要求全体。conn は新しく作った回数・使い回した回数・作り直した回数"""
     def total_of(key: str) -> float:
-        return sum(t[key] for t in getattr(db, "timings", []))  # 偽の Db は持たないことがある
+        return float(sum(t[key] for t in getattr(db, "timings", [])))  # 偽の Db は持たないことがある
 
     parts = [f"db_{k};dur={total_of(k) * 1000:.1f}" for k in ("wait", "connect", "sql", "total")]
     parts.append(f"total;dur={total_seconds * 1000:.1f}")

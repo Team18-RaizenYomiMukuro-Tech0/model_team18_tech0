@@ -38,7 +38,8 @@ def test_is_within_boundary() -> None:
 
 
 def _md(name: str, values: list[float], statuses: list[int]) -> str:
-    return m.render_markdown(name, values, statuses, datetime(2026, 11, 14, 10, 0, 0))
+    md: str = m.render_markdown(name, values, statuses, datetime(2026, 11, 14, 10, 0, 0))
+    return md
 
 
 def test_render_pass() -> None:

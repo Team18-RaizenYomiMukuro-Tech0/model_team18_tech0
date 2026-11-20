@@ -9,8 +9,8 @@ import pytest
 from fastapi.testclient import TestClient
 from test_product_detail import DetailDb
 from test_products_filter import client_for, fd1
-from test_share_create import create
-from test_share_get import Backend, fake, get, set_clock  # noqa: F401  (fake はフィクスチャ)
+from test_share_create import Backend, create
+from test_share_get import fake, get, set_clock  # noqa: F401  (fake はフィクスチャ)
 from test_voices_similar import ExtrasDb
 
 METRICS = ("db_wait", "db_connect", "db_sql", "db_total", "total")

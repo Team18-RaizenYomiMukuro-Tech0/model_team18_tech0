@@ -194,7 +194,7 @@ def test_body_limit_stops_before_reading_all(client: TestClient, db: EventDb) ->
         seen.append(len(raw))
         return real(raw)
 
-    ev.parse_event = spy  # type: ignore[assignment]
+    ev.parse_event = spy
     try:
         big = json.dumps({**body(1), "pad": "x" * 5000}).encode()
         assert client.post(URL, content=big, headers={"Content-Type": "application/json"}).status_code == 422
@@ -209,7 +209,7 @@ def test_body_limit_stops_before_reading_all(client: TestClient, db: EventDb) ->
         client.post(URL, content=exact, headers={"Content-Type": "application/json"})
         assert seen == [1024]
     finally:
-        ev.parse_event = real  # type: ignore[assignment]
+        ev.parse_event = real
     assert db.rows() == []
 
 
