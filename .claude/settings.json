@@ -1,5 +1,8 @@
 {
   "effortLevel": "medium",
+  "env": {
+    "REPORT_TO_SESSION": "model-team18-tech0-rijicho"
+  },
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -80,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/guard-worktree-remove.py\"; fi; done; exit 0"
+            "command": "f=\"$CLAUDE_PROJECT_DIR/scripts/guard-worktree-remove.py\"; [ -f \"$f\" ] || exit 0; for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$f\"; fi; done; exit 0"
           }
         ]
       }
@@ -91,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/collect-mistake.py\"; fi; done; exit 0"
+            "command": "f=\"$CLAUDE_PROJECT_DIR/scripts/collect-mistake.py\"; [ -f \"$f\" ] || exit 0; for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$f\"; fi; done; exit 0"
           }
         ]
       }
@@ -101,7 +104,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/require-report-before-stop.py\"; fi; done; exit 0"
+            "command": "f=\"$CLAUDE_PROJECT_DIR/scripts/require-report-before-stop.py\"; [ -f \"$f\" ] || exit 0; for p in python3 python py; do if \"$p\" -c \"import sys\" >/dev/null 2>&1; then PYTHONUTF8=1 exec \"$p\" \"$f\"; fi; done; exit 0"
           }
         ]
       }
