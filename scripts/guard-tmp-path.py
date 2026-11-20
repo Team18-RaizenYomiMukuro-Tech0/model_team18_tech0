@@ -2,8 +2,9 @@
 """Claude Code PreToolUse hook（Bash）: 無い一時フォルダ・一時ファイルを使うコマンドを実行の前に止める（#557）。
 
 - 標準入力のフック JSON の tool_input.command から、/tmp/・/private/tmp/・$TMPDIR の下のパスを拾う。
-- 拾ったパスが存在しなければ exit 2 で止め、「.work/tmp を使ってください」を標準エラーに出す。
-- 存在するパスは通す。mkdir・mktemp を含むコマンド、`>` `>>` `tee` の書き込み先は通す（これから作るため）。
+- 止めるのは次の 2 つだけ（exit 2。「.work/tmp を使ってください」を標準エラーに出す）。
+  ①`cd` の行き先そのものが無い。②それ以外で、パス本体もその親のフォルダも無い（消えたフォルダの下を使っている）。
+- 親のフォルダがあるパス（これから作るファイル・フォルダ）は通す。存在するパスも通す。mkdir・mktemp を含むコマンド、`>` `>>` `tee` の書き込み先は通す（これから作るため）。
 - 判定できないとき（入力が壊れている、$TMPDIR が未設定、ほかの変数を含む）は通す（exit 0）。
 """
 import json
@@ -16,7 +17,8 @@ PREFIXES = ("/tmp/", "/private/tmp/")
 VAR = re.compile(r"^\$\{?TMPDIR\}?(/.*)$")
 
 
-def candidates(command: str) -> list[str]:
+def candidates(command: str) -> list[tuple[str, bool]]:
+    """(パス, cd の行き先か) を返す。"""
     try:
         tok = shlex.split(command.replace("\n", " ; "), posix=True)
     except ValueError:
@@ -34,7 +36,7 @@ def candidates(command: str) -> list[str]:
                 continue
             t = base + m.group(1)
         if t.startswith(PREFIXES) and "$" not in t and "*" not in t:
-            out.append(t)
+            out.append((t, prev in ("cd", "pushd")))
     return out
 
 
@@ -44,7 +46,12 @@ def main() -> int:
         command = data["tool_input"]["command"]
         if not isinstance(command, str) or re.search(r"\b(mkdir|mktemp)\b", command):
             return 0
-        missing = [p for p in candidates(command) if not os.path.exists(p)]
+        missing = []
+        for p, is_cd in candidates(command):
+            if os.path.exists(p):
+                continue
+            if is_cd or not os.path.exists(os.path.dirname(p.rstrip("/"))):
+                missing.append(p)
     except Exception:
         return 0
     if missing:

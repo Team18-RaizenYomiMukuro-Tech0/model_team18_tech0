@@ -40,7 +40,8 @@ class Tools(unittest.TestCase):
         return r
 
     def test_2_guard_blocks_missing(self):
-        for c in ("cd /tmp/claude-501/no-such-id-557", "cp /tmp/x-no-such-557 .", "cat $TMPDIR/no-such-557"):
+        for c in ("cd /tmp/claude-501/no-such-id-557", "cd /tmp/no-such-557", "cp /tmp/no-such-557/x .",
+                  "cat /tmp/no-such-557/no-such/f", "cat $TMPDIR/no-such-557/f"):
             env_cmd = c
             r = sh(["python3", os.path.join(D, "guard-tmp-path.py")],
                    input=json.dumps({"tool_input": {"command": env_cmd}}),
@@ -51,6 +52,9 @@ class Tools(unittest.TestCase):
     def test_2_guard_passes(self):
         with tempfile.TemporaryDirectory(dir="/tmp") as t:
             self.assertEqual(self.guard("cd " + t).returncode, 0)  # 存在するパス
+        with tempfile.TemporaryDirectory(dir="/tmp") as t:  # これから作るパス（親はある）
+            for c in ("cp a %s/new" % t, "git worktree add %s/new x" % t, "git clone u %s/new" % t):
+                self.assertEqual(self.guard(c).returncode, 0, c)
         self.assertEqual(self.guard("mkdir -p /tmp/claude-501/new-557").returncode, 0)
         self.assertEqual(self.guard("echo hi > /tmp/out-557").returncode, 0)
         self.assertEqual(self.guard("ls /usr/bin").returncode, 0)
