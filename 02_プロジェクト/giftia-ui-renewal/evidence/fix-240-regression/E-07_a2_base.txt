@@ -1,0 +1,25 @@
+.. S-20 ok top_375: 検索 お気に入り ログイン 準備中 カート
+.. S-20 ok R_375: 検索 お気に入り ログイン 準備中 カート
+.. S-20 ok top_1280: 検索 お気に入り ログイン 準備中 カート
+.. S-20 ok R_1280: 検索 お気に入り ログイン 準備中 カート
+.. S-21 ok top: 10件 アイコン付き10
+.. S-21 ok 結果: 10件 アイコン0
+.. S-22 ok {"sceneH":90,"priceH":90,"sceneBtn":79,"priceBtn":79,"catBtn":133}
+.. S-24 ok cards=12 total={"n":34,"a":1,"b":12}
+.. S-23 ok 帯のみ: 全31件 選択=true
+.. S-23 ok 価格帯は単一選択: 選択中 1、全2件
+.. S-23 ok カテゴリーは複数選択: ✓ 〜2,999円,✓ 食品,✓ 飲料
+.. S-28 ok 素早く 4 回押した最後は 3,000〜4,999円 → 全31件（31 が正）
+.. S-25 ok 375px: {"inView":true,"rect":[0,119,375,900],"hasCart":true,"hasFav":true,"price":true,"rating":true,"delivery":true,"wrap":true,"hscroll":false}
+.. S-61 ok 375px: 項目 価格true 評価true 配送true ラッピングtrue
+.. S-25 ok 1280px: {"inView":true,"rect":[880,118,1240,836],"hasCart":true,"hasFav":true,"price":true,"rating":true,"delivery":true,"wrap":true,"hscroll":false}
+.. S-61 ok 1280px: 項目 価格true 評価true 配送true ラッピングtrue
+.. S-26 ok 登録1 → 解除0 → 連打後1 → 再読込後1 押した状態true（保存形式 ["Z30"]）
+.. S-62 ok パネル: お気に入り（1件） 閉じる 比べる 比べる ：Z30の商品 Z30の商品 3,300円（税込） カートに入れる 外す
+.. S-62 ok 保存不可でハートを押す: 画面は残る、pageerror=0
+.. S-27 ok [{"n":"R47の商品","rate":"4.7","high":true},{"n":"R45の商品","rate":"4.5","high":true},{"n":"R00の商品","rate":null,"high":false},{"n":"R449の商品","rate":"4.49","high":false},{"n":"R43の商品","rate":"4.3","high":fa
+.. S-30 ok カート: カート（1件） 閉じる イメージ Z30の商品 3,300円（税込） 11/22までに届く（目安） − 数量 ＋ 削除 合計 6,600円（税込） 注文へ進む 買い物を続ける
+.. S-30 ok 数量の欄: {"label":"Z30の商品の数量","v":"2"}
+.. S-30 ok 注文へ進む → デモのため、注文はできません
+.. S-29 ok 1280px: ロゴ左 40 本文左 40（期待 40）A:
+.. S-29 ok 375px: ロゴ左 16 本文左 16（期待 16）A:
