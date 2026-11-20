@@ -12,16 +12,24 @@
 - 判定できないとき（入力が壊れている、会話の記録が読めない）は止めない（何も出さずに終わる）。作業を止めないため。
 """
 import json
+import os
 import sys
 
 WORKTREE_MARK = "/.command-center/worktrees/"
 NOTIFICATION = "<task-notification>"
-REASON = (
-    "止まる前に、りじちょー（model-team18-tech0-rijicho）へ SendMessage で 1 通送ってください。"
-    "終わったなら「完了」（PR の URL と要点）、待つなら「待ち」（何を待つか・終わる見込み）、"
-    "進めないなら「詰まり」（誰が何をすれば進むか）。「了解」の返事も 1 行で送ります。"
-    "画面に書いただけの文は届きません（.claude/agents/<担当>.md の「報告（止まる前に必ず送る）」）。"
-)
+REPORT_TO_ENV = "REPORT_TO_SESSION"  # 送り先の名前は `.claude/settings.json` の `env` に置く（#552）
+
+
+def build_reason() -> str:
+    """差し戻しの文。送り先の名前が設定にあれば添える。無ければ「りじちょー」宛ての案内だけ。"""
+    name = os.environ.get(REPORT_TO_ENV, "").strip()
+    target = f"りじちょー（{name}）" if name else "りじちょー"
+    return (
+        f"止まる前に、{target}へ SendMessage で 1 通送ってください。"
+        "終わったなら「完了」（PR の URL と要点）、待つなら「待ち」（何を待つか・終わる見込み）、"
+        "進めないなら「詰まり」（誰が何をすれば進むか）。「了解」の返事も 1 行で送ります。"
+        "画面に書いただけの文は届きません（.claude/agents/<担当>.md の「報告（止まる前に必ず送る）」）。"
+    )
 
 
 def is_input(entry: dict) -> bool:
@@ -80,7 +88,7 @@ def main() -> None:
     except OSError:
         return
     if needs_report(lines):
-        print(json.dumps({"decision": "block", "reason": REASON}, ensure_ascii=False))
+        print(json.dumps({"decision": "block", "reason": build_reason()}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
