@@ -1,4 +1,4 @@
-# Azure Functions 用のファイル（手順書 1.3）の確認。main.py は変えず、ローカルの uvicorn 起動は今までどおり。
+# D-33: Azure Functions 用のファイル（手順書 1.3）の確認。main.py は変えず、ローカルの uvicorn 起動は今までどおり。
 import json
 from pathlib import Path
 

@@ -1,4 +1,4 @@
-# Issue #67: backend/perf/measure.py の集計・判定（実 API・DB には繋がない）
+# D-17: Issue #67: backend/perf/measure.py の集計・判定（実 API・DB には繋がない）
 import importlib.util
 from datetime import datetime
 from pathlib import Path

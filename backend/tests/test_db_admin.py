@@ -1,4 +1,4 @@
-# test_db_admin.py — scripts/db_admin.py の SQL が DB管理手順.md と一字一句同じか照合する（DB には接続しない）
+# D-13: test_db_admin.py — scripts/db_admin.py の SQL が DB管理手順.md と一字一句同じか照合する（DB には接続しない）
 import os
 import re
 import subprocess
