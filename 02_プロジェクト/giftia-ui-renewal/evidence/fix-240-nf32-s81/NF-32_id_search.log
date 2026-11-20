@@ -1,0 +1,2 @@
+対象: git ls-files の frontend/src の ts・tsx と backend の py。対象外 3 ファイルは除く。正規表現 (SP|NF|AC|[RFNDUISEA])-?[0-9]+ が 1 つも無いファイル:
+(以上。空なら 0 件)
