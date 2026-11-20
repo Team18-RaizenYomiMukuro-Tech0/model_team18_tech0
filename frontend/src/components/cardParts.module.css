@@ -8,7 +8,9 @@
 .badge { order: 3; align-self: flex-start; }
 /* #437 札が無いカードも札 1 行ぶんの高さを空け、商品名の位置を同じ行のほかのカードとそろえる（見た目だけ。読み上げには出さない） */
 .badgeph { visibility: hidden; }
-.name { order: 4; }
+/* S-118・NF-56: 商品名のリンクの押せる高さを 44px 以上に（見た目の行数・位置は変えず、余白と負の margin で押せる範囲だけ広げる。39.2px + 6px） */
+.name { order: 4; padding-block: 3px; margin-block: -3px; }
+button.name { padding-block: 3px; margin-block: -3px; } /* トップのおすすめは button（.openbtn の padding: 0 に勝つ） */
 /* PM 11/18 SP-30 D-37: 商品名は 2 行まで、はみ出す分は「…」。1 行の名前でも 2 行分の高さを取り、同じ行のカードの金額の高さをそろえる（全文は DOM に残り、読み上げ・title・詳細で読める）。リンクの押せる範囲（padding）は外側の .name のまま */
 .clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.4; height: 2.8em; overflow-wrap: anywhere; }
 .price { order: 5; }
@@ -19,6 +21,8 @@
 .actions { order: 10; margin-top: auto; padding-top: 4px; display: flex; flex-direction: column; gap: 4px; }
 .heart { position: absolute; top: 4px; right: 4px; z-index: 1; }
 .cart { align-self: flex-start; }
+/* NF-56 SP-20 T7: 480px 以下は「カートに入れる」を横いっぱいに */
+@media (max-width: 480px) { .cart { align-self: stretch; } .cartbtn { width: 100%; } }
 .cartbtn { min-width: 44px; min-height: 44px; padding: 8px 6px; border: 1px solid var(--s-coral-ink); border-radius: var(--rm); background: var(--s-coral-ink); color: #fff; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
-.cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; font-weight: 400; }
+.cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: var(--c-sub-ink); cursor: not-allowed; font-weight: 400; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

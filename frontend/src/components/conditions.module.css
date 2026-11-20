@@ -11,9 +11,9 @@
 .btn:hover, .clear:hover:not(:disabled) { background: var(--peach); }
 /* SP-20 T3: 選んだボタンは --s-coral-ink の面・白文字 */
 .btn[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; font-weight: 700; }
-.clear:disabled { color: #5c514d; cursor: not-allowed; }
+.clear:disabled { color: var(--c-sub-ink); cursor: not-allowed; }
 .foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
-.note { margin: 0; font-size: 14px; color: #5c514d; }
+.note { margin: 0; font-size: 14px; color: var(--c-sub-ink); }
 .group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 /* R7 SP-21 並び替え・SP-24 0 件の助け舟 */
 .sortbar { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }

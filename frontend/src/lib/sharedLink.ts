@@ -138,12 +138,12 @@ export const HARISEN = {
   hub: [128, 45],
   pivot: [150, 45],
   panels: 14,
-  light: ["#FFFFFF", "#FBF5E6", "#E9DDBF"],
-  shade: ["#E9DCBA", "#D8C59A", "#BFA977"],
+  light: ["var(--s-paper)", "var(--c-hari-l2)", "var(--c-hari-l3)"],
+  shade: ["var(--c-hari-s1)", "var(--c-hari-s2)", "var(--c-hari-s3)"],
   mountLine: { color: "rgba(255,255,255,.95)", width: 1.4 },
   valleyLine: { color: "rgba(90,65,30,.55)", width: 1.1 },
-  edge: { color: "#2A2220", width: 2.6 },
-  grip: { color: "#D7261E", x: 102, y: 35, w: 48, h: 20, r: 6 },
+  edge: { color: "var(--c-dark)", width: 2.6 },
+  grip: { color: "var(--c-red)", x: 102, y: 35, w: 48, h: 20, r: 6 },
   tapes: [[110, 35, 116, 55], [124, 35, 130, 55], [138, 35, 144, 55]],
 } as const;
 /** どちらの演出か（D-09 処理の流れ 2）。大当たり＝7、ツッコミ＝8〜30 */

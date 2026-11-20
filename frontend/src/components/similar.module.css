@@ -8,4 +8,4 @@
 .body { display: grid; gap: 2px; min-width: 0; }
 .name { font-weight: 700; overflow-wrap: anywhere; }
 .price { font-weight: 700; }
-.meta { color: #5c514d; font-size: 12px; }
+.meta { color: var(--c-sub-ink); font-size: 12px; }

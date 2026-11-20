@@ -26,6 +26,16 @@ export function CandidateCard({
   return (
     <li className={`${styles.card} ${g.wrap}`} data-picked={picked} data-selected={selected}>
       <div className={g.grid}>
+        {/* S-118: Tab は商品名 → ハート → カートの順。名前を DOM の先頭に置き、見た目の並びは CSS の order のまま */}
+        {href ? (
+          <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={item.name}>
+            <span className={g.clamp}>{item.name}</span>
+          </Link>
+        ) : (
+          <span className={`${styles.name} ${g.name}`} title={item.name}>
+            <span className={g.clamp}>{item.name}</span>
+          </span>
+        )}
         <div className={g.picwrap}>
           {href ? (
             <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
@@ -43,15 +53,6 @@ export function CandidateCard({
           </span>
         </div>
         {item.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
-        {href ? (
-          <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={item.name}>
-            <span className={g.clamp}>{item.name}</span>
-          </Link>
-        ) : (
-          <span className={`${styles.name} ${g.name}`} title={item.name}>
-            <span className={g.clamp}>{item.name}</span>
-          </span>
-        )}
         <span className={`${styles.price} ${g.price}`}>{formatPrice(item.price)}</span>
         {ratingLine && <span className={`${styles.meta} ${g.meta}`}>{ratingLine}</span>}
         <div className={g.chips}>

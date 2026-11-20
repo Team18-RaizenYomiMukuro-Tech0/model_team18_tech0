@@ -22,6 +22,10 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
   return (
     <li className={`${styles.card} ${g.wrap}`} data-selected={selected}>
       <div className={g.grid}>
+        {/* S-118: Tab は商品名 → ハート → カートの順。名前を DOM の先頭に置き、見た目の並びは CSS の order のまま */}
+        <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={p.name}>
+          <span className={g.clamp}>{p.name}</span>
+        </Link>
         <div className={g.picwrap}>
           <Link href={href} scroll={false} className={`${styles.pic} ${g.pic}`} tabIndex={-1} aria-hidden="true">
             {img && <Image src={img} alt="" width={200} height={200} unoptimized />}
@@ -32,9 +36,6 @@ export function ProductCard({ p, href, selected }: Readonly<{ p: Product; href: 
           </span>
         </div>
         {p.high_rating ? <span className={`${styles.badge} ${g.badge}`}>高評価の商品</span> : <span className={`${styles.badge} ${g.badge} ${g.badgeph}`} aria-hidden="true">{"\u00a0"}</span>}
-        <Link href={href} scroll={false} className={`${styles.name} ${g.name}`} aria-current={selected ? "true" : undefined} title={p.name}>
-          <span className={g.clamp}>{p.name}</span>
-        </Link>
         <span className={`${styles.price} ${g.price}`}>{formatPrice(p.price)}</span>
         {p.rating != null && p.review_count != null && (
           <span className={`${styles.meta} ${g.meta}`}>
