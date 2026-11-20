@@ -8,7 +8,7 @@
 
 - **プロジェクト**: `Giftia UI/UX リニューアル`（リポジトリ `model_team18_tech0`）。
 - **5文書の置き場**: `02_プロジェクト/giftia-ui-renewal/`（`_template` を複製した雛形。要求→要件→仕様→設計→テスト設計の順に埋める）。
-- まずは要求定義から始める。中心の問いは案件開始時にユーザーと一緒に定める。
+- いまの段は `02_プロジェクト/giftia-ui-renewal/IMPLEMENTATION_PLAN.md` を見る。
 
 ## 登場人物
 
