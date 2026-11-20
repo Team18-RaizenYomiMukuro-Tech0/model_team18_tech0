@@ -22,7 +22,8 @@
 6. `CLAUDE.md` の `<!-- auto:mistakes start -->`〜`<!-- auto:mistakes end -->` を、**発生2回以上の型だけ**で更新（このブロックだけ書き換える。他は触らない）。
 7. `01_ナレッジ/log.md` に `## [YYYY-MM-DD] 還元 | 週1要約（新規N件→型M件）` を追記。
 8. 処理済みの `_inbox/mistakes.jsonl` を `_inbox/archive/mistakes-<日時>.jsonl` へ移動する（inbox を空にする）。
-9. 作業ブランチ（例 `chore/knowledge-digest-<日付>`）を切り、`01_ナレッジ/` と `CLAUDE.md` の変更だけを add → commit → PR を作る（main直push禁止）。`_inbox/` はコミットしない（.gitignore 済み）。
+9. マージ済み PR の費用と手戻りを表に足す: `python3 scripts/pr-cost.py --since <先週の月曜> --until <今日>`（結果は `01_ナレッジ/metrics/pr-cost.csv`。同じ PR の行は足されない）。
+10. 作業ブランチ（例 `chore/knowledge-digest-<日付>`）を切り、`01_ナレッジ/`（metrics を含む）と `CLAUDE.md` の変更だけを add → commit → PR を作る（main直push禁止）。`_inbox/` はコミットしない（.gitignore 済み）。
 
 ## 守ること
 - 生ログに秘匿情報が残っていたら、記事に写す前にマスクする。
