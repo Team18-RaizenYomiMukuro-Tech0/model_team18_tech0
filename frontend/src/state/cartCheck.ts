@@ -29,7 +29,7 @@ export class CartChecker {
   // 失敗した商品だけ、その商品だけ読み直す（ほかの商品は呼ばない）
   retry(id: string): void {
     if (this.found[id]?.status !== "error") return;
-    const { [id]: _, ...rest } = this.found; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { [id]: _, ...rest } = this.found; // eslint-disable-line @typescript-eslint/no-unused-vars -- 分割代入で id の項目を除くため、_ は使わない
     this.found = rest; // 読み込み中の表示に戻す
     this.started.delete(id);
     this.onChange(this.found);
