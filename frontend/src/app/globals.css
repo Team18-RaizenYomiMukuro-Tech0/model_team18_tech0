@@ -21,6 +21,31 @@
   --badge-bg: #fbe3d9;
   --badge-ink: #a2402a;
   --rm: 8px;
+  --c-hari-s3: #BFA977;
+  --c-hari-s2: #D8C59A;
+  --c-hari-s1: #E9DCBA;
+  --c-hari-l3: #E9DDBF;
+  --c-hari-l2: #FBF5E6;
+  /* NF-40: 部品の色もここにまとめる（値は元の直書きと同じ） */
+  --c-sub-ink: #5C514D;
+  --c-gold: #FFD34D;
+  --c-err-ink: #7A1812;
+  --c-err: #B3261E;
+  --c-err-bg: #FDECEA;
+  --c-red: #D7261E;
+  --c-dark: #2A2220;
+  --c-tip: #3A3331;
+  --c-off-bg: #F1ECE9;
+  --c-brown: #7A4A00;
+  --c-note-ink: #5C514C;
+  --c-cream: #FFF7EA;
+  --c-orange: #FF7A1A;
+  --c-pink: #FF5C9A;
+  --c-th-bg: #FAF7F5;
+  --c-hero: #EBBBA6;
+  --c-card-num: #B4442C;
+  --c-seven-bg: #3A2A14;
+  --c-reel-bg: #2A1D17;
 }
 * { box-sizing: border-box; }
 body {

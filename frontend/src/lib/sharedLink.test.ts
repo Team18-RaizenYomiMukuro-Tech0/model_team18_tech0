@@ -630,9 +630,9 @@ test("U-105 TSUKKOMI の定数・動きの切り替え・ハリセンの絵の�
   assert.notEqual(TSUKKOMI.totalMs, SEVEN_REACH.totalMs); // 7 個目の値と混ざらない
   // ハリセンの絵: 折り目の面 14・光と影の色・赤い持ち手・白いテープ 3 本・山折りは白・谷折りは茶
   assert.equal(HARISEN.panels, 14);
-  assert.deepEqual([...HARISEN.light], ["#FFFFFF", "#FBF5E6", "#E9DDBF"]);
-  assert.deepEqual([...HARISEN.shade], ["#E9DCBA", "#D8C59A", "#BFA977"]);
-  assert.equal(HARISEN.grip.color, "#D7261E");
+  assert.deepEqual([...HARISEN.light], ["var(--s-paper)", "var(--c-hari-l2)", "var(--c-hari-l3)"]);
+  assert.deepEqual([...HARISEN.shade], ["var(--c-hari-s1)", "var(--c-hari-s2)", "var(--c-hari-s3)"]);
+  assert.equal(HARISEN.grip.color, "var(--c-red)");
   assert.equal(HARISEN.tapes.length, 3);
   assert.equal(HARISEN.mountLine.color, "rgba(255,255,255,.95)");
   assert.equal(HARISEN.valleyLine.color, "rgba(90,65,30,.55)");

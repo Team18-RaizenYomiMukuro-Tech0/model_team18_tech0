@@ -19,6 +19,8 @@
 .actions { order: 10; margin-top: auto; padding-top: 4px; display: flex; flex-direction: column; gap: 4px; }
 .heart { position: absolute; top: 4px; right: 4px; z-index: 1; }
 .cart { align-self: flex-start; }
+/* NF-56 SP-20 T7: 480px 以下は「カートに入れる」を横いっぱいに */
+@media (max-width: 480px) { .cart { align-self: stretch; } .cartbtn { width: 100%; } }
 .cartbtn { min-width: 44px; min-height: 44px; padding: 8px 6px; border: 1px solid var(--s-coral-ink); border-radius: var(--rm); background: var(--s-coral-ink); color: #fff; font: inherit; font-weight: 700; white-space: nowrap; cursor: pointer; }
-.cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: #5c514d; cursor: not-allowed; font-weight: 400; }
+.cartbtn:disabled { background: var(--paper); border-color: var(--bd2); color: var(--c-sub-ink); cursor: not-allowed; font-weight: 400; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

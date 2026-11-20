@@ -18,14 +18,14 @@ export function Harisen({ uid }: Readonly<{ uid: string }>) {
     <svg width={H.width} height={H.height} viewBox={`0 0 ${H.width} ${H.height}`} style={{ display: "block", overflow: "visible" }} data-testid="harisen">
       <defs>
         <linearGradient id={`hl${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor={H.light[0]} />
-          <stop offset=".7" stopColor={H.light[1]} />
-          <stop offset="1" stopColor={H.light[2]} />
+          <stop offset="0" style={{ stopColor: H.light[0] }} />
+          <stop offset=".7" style={{ stopColor: H.light[1] }} />
+          <stop offset="1" style={{ stopColor: H.light[2] }} />
         </linearGradient>
         <linearGradient id={`hd${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor={H.shade[0]} />
-          <stop offset=".7" stopColor={H.shade[1]} />
-          <stop offset="1" stopColor={H.shade[2]} />
+          <stop offset="0" style={{ stopColor: H.shade[0] }} />
+          <stop offset=".7" style={{ stopColor: H.shade[1] }} />
+          <stop offset="1" style={{ stopColor: H.shade[2] }} />
         </linearGradient>
       </defs>
       {Array.from({ length: H.panels }, (_, i) => (
@@ -34,12 +34,12 @@ export function Harisen({ uid }: Readonly<{ uid: string }>) {
       {pts.slice(1, -1).map((p, k) => {
         const i = k + 1;
         const l = i % 2 ? H.valleyLine : H.mountLine; // 谷折りは茶、山折りは白
-        return <line key={i} x1={hx} y1={hy} x2={p.x} y2={p.y} stroke={l.color} strokeWidth={l.width} />;
+        return <line key={i} x1={hx} y1={hy} x2={p.x} y2={p.y} style={{ stroke: l.color }} strokeWidth={l.width} />;
       })}
-      <polygon points={`${hx},${hy} ${pts.map((p) => `${p.x},${p.y}`).join(" ")}`} fill="none" stroke={H.edge.color} strokeWidth={H.edge.width} strokeLinejoin="round" />
-      <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={g.r} fill={g.color} stroke={H.edge.color} strokeWidth={H.edge.width} />
-      <path d={H.tapes.map(([a, b, c, d]) => `M${a},${b} L${c},${d}`).join(" ")} stroke="#FFFFFF" strokeWidth={4} />
-      <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={g.r} fill="none" stroke={H.edge.color} strokeWidth={H.edge.width} />
+      <polygon points={`${hx},${hy} ${pts.map((p) => `${p.x},${p.y}`).join(" ")}`} fill="none" style={{ stroke: H.edge.color }} strokeWidth={H.edge.width} strokeLinejoin="round" />
+      <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={g.r} style={{ fill: g.color, stroke: H.edge.color }} strokeWidth={H.edge.width} />
+      <path d={H.tapes.map(([a, b, c, d]) => `M${a},${b} L${c},${d}`).join(" ")} style={{ stroke: "var(--s-paper)" }} strokeWidth={4} />
+      <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={g.r} fill="none" style={{ stroke: H.edge.color }} strokeWidth={H.edge.width} />
       <path d="M106,39 L146,39" stroke="rgba(255,255,255,.5)" strokeWidth={2} strokeLinecap="round" />
     </svg>
   );
