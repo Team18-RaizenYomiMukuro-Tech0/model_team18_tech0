@@ -2,3 +2,6 @@ node_modules/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+# Next.js が開発サーバーの起動時に自動で作る AI 向けの案内。担当の作業フォルダで未追跡のまま残り、
+# アプリの依頼が「未コミットの変更」で止まったため無視する（01_ナレッジ/mistakes/untracked-file-blocks-assign.md）
+AGENTS.md
