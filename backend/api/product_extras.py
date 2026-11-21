@@ -31,6 +31,29 @@ SELECT_VOICES = (
     "LIMIT %s"
 )
 
+# D-35: ほかのシーンの言葉の一覧（手で書く。本文にその言葉が含まれるかで見る部分一致。PM 決定 2026-11-22 声-4。
+# 「ありがとう」「感謝」「お祝い」「プレゼント」は、どのシーンの声にも出るので入れない）
+SCENE_WORDS: dict[str, tuple[str, ...]] = {
+    "お礼": ("お礼", "御礼"),
+    "誕生日": ("誕生日", "バースデー"),
+    "送別": ("送別", "退職", "異動", "転勤"),
+}
+_OTHER_SLOTS = max(len(sum((w for k, w in SCENE_WORDS.items() if k != s), ())) for s in SCENE_WORDS)  # 6
+
+# scene を付けたとき: 上の WHERE に「ほかのシーンの言葉を含まない」を足す（LIMIT の前に効く。絞った後も最大件数）。
+# 文は固定で、言葉は params（%言葉%）で渡す。足りない枠は先頭の言葉を繰り返す（同じ条件なので結果は変わらない）。
+SELECT_VOICES_SCENE = SELECT_VOICES.replace(
+    "AND TRIM(r.comment) <> '' ",
+    "AND TRIM(r.comment) <> '' " + "".join("AND r.comment NOT LIKE %s " for _ in range(_OTHER_SLOTS)),
+)
+
+
+def _other_scene_patterns(scene: str) -> tuple[str, ...]:
+    words = [w for k, ws in SCENE_WORDS.items() if k != scene for w in ws]
+    words += [words[0]] * (_OTHER_SLOTS - len(words))
+    return tuple(f"%{w}%" for w in words)
+
+
 # 開いている商品の価格（価格帯を決める。無ければ 404）
 SELECT_PRICE = "SELECT p.price FROM products p WHERE p.product_id = %s"
 
@@ -66,12 +89,22 @@ def _band_for(price: int) -> tuple[int, int]:
 
 # SP-17 D-35
 @router.get("/api/products/{product_id}/voices", response_model=None)
-def get_voices(product_id: str, response: Response, db: Annotated[Db, Depends(get_db)]) -> Any:
-    """贈った人の声。0〜2 件（0 件は []）。商品が無いときも 404 にせず []（404 は D-29 が返す）"""
+def get_voices(
+    product_id: str, request: Request, response: Response, db: Annotated[Db, Depends(get_db)]
+) -> Any:
+    """贈った人の声。0〜2 件（0 件は []）。商品が無いときも 404 にせず []（404 は D-29 が返す）。
+    scene（任意。お礼・誕生日・送別。省略・空は絞らない）を付けると、ほかのシーンの言葉を含む声を除いてから最大 2 件"""
     started = time.perf_counter()
     if PRODUCT_ID_RE.fullmatch(product_id) is None:
         return _invalid_product_id()
-    rows = db.fetch_all(SELECT_VOICES, (product_id, SETTINGS.VOICE_MIN_RATING, SETTINGS.VOICES_MAX))
+    scene = request.query_params.get("scene", "")
+    if scene != "" and scene not in SCENES:
+        return _error("invalid_scene", "scene は お礼・誕生日・送別 のどれかです")
+    if scene == "":
+        rows = db.fetch_all(SELECT_VOICES, (product_id, SETTINGS.VOICE_MIN_RATING, SETTINGS.VOICES_MAX))
+    else:
+        params = (product_id, SETTINGS.VOICE_MIN_RATING, *_other_scene_patterns(scene), SETTINGS.VOICES_MAX)
+        rows = db.fetch_all(SELECT_VOICES_SCENE, params)
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
     return {"voices": [{"text": r["text"], "rating": int(r["rating"])} for r in rows]}
 
