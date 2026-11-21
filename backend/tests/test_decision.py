@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 import main
 from clock import get_clock
 from db import get_db
-from decision import arrives_on, scene_counts, today_jst
+from decision import JST, arrives_on, scene_counts, today_jst
 from reasons import build_reason
 
 
@@ -34,7 +34,7 @@ def client_at(db: CandidateDb, now: datetime) -> Iterator[TestClient]:
         main.app.dependency_overrides.clear()
 
 
-NOV15 = datetime(2026, 11, 15, 3, 0, tzinfo=UTC)  # 日本時間 11/15 12:00
+NOV15 = datetime(2026, 11, 16, 1, 0, tzinfo=UTC)  # 日本時間 11/16（月）10:00（名前は昔のまま。11/15 は日曜で届く日が変わるので替えた。PM 決定 2026-11-22）
 
 
 def with_detail_columns(db: CandidateDb) -> CandidateDb:
@@ -49,19 +49,58 @@ def add_scenes(db: CandidateDb, pid: str, *scenes: str) -> None:
         db.raw.execute("INSERT INTO product_scenes VALUES (?,?)", (pid, s))
 
 
-# U-73 D-34: 届く日（日本時間の今日＋配送日数。月・年・うるう年をまたぐ）
+def jst(y: int, m: int, d: int, hh: int = 10, mm: int = 0, ss: int = 0) -> datetime:
+    """日本時間の時刻（Clock は UTC を返すので UTC に直して渡す）"""
+    return datetime(y, m, d, hh, mm, ss, tzinfo=JST).astimezone(UTC)
+
+
+# U-73 D-34 SP-26: 届く日（日本時間の 10:00 に注文。発送日から営業日で数える。月・年・うるう年をまたぐ）
 def test_arrives_on_dates() -> None:
     cases = [
-        (date(2026, 11, 15), 2, "2026-11-17"),
-        (date(2026, 11, 30), 2, "2026-12-02"),
-        (date(2026, 12, 31), 2, "2027-01-02"),
-        (date(2028, 2, 28), 2, "2028-03-01"),  # 2028 年はうるう年（2/29 を通る）
-        (date(2027, 2, 28), 2, "2027-03-02"),
-        (date(2026, 11, 15), 0, "2026-11-15"),
-        (date(2026, 11, 15), None, None),
+        (jst(2026, 11, 16), 2, "2026-11-18"),
+        (jst(2026, 11, 30), 2, "2026-12-02"),
+        (jst(2026, 12, 31), 2, "2027-01-06"),  # 年末年始の休みを越える
+        (jst(2027, 2, 26), 2, "2027-03-02"),  # 金曜 → 月曜が 1 日目
+        (jst(2026, 11, 16), 0, "2026-11-16"),
+        (jst(2026, 11, 16), None, None),
+        (datetime(2026, 11, 15, 15, 30, tzinfo=UTC), 2, "2026-11-18"),  # UTC 11-15 15:30＝日本時間 11-16（月）0:30
     ]
-    for today, days, want in cases:
-        assert arrives_on(today, days) == want
+    for now, days, want in cases:
+        assert arrives_on(now, days) == want
+
+
+# U-109 D-34 SP-26: 配送の暦（土日・祝日・年末年始・締め時刻 15:00 日本時間）。PM 決定 2026-11-22
+def test_arrives_on_delivery_calendar() -> None:
+    cases = [
+        (jst(2026, 11, 13, 14), 2, "2026-11-17"),  # ① 金曜の締め前 → 金曜に発送、火曜に届く
+        (jst(2026, 11, 13, 15, 1), 2, "2026-11-18"),  # ② 締め後 → 翌営業日（月）に発送
+        (jst(2026, 11, 14, 10), 2, "2026-11-18"),  # ③ 土曜
+        (jst(2026, 11, 15, 10), 2, "2026-11-18"),  # ③ 日曜
+        (jst(2026, 11, 23, 10), 2, "2026-11-26"),  # ④ 月曜・祝日 → 11-24 に発送
+        (jst(2026, 11, 20, 14), 2, "2026-11-25"),  # ⑤ 翌月曜が祝日
+        (jst(2026, 12, 28, 14), 2, "2027-01-05"),  # ⑥ 年末年始（12/29〜1/3）をまたぐ
+        (jst(2026, 11, 27, 14), 2, "2026-12-01"),  # ⑦ 月をまたぐ
+        (jst(2026, 11, 13, 14), 0, "2026-11-13"),  # ⑧ 配送日数 0 は発送日
+        (jst(2026, 11, 13, 16), 0, "2026-11-16"),  # ⑨ 締め後
+        (jst(2026, 11, 13, 14), None, None),  # ⑩
+        (datetime(2026, 11, 13, 5, 59, tzinfo=UTC), 2, "2026-11-17"),  # ⑪ 日本時間 金 14:59
+        (datetime(2026, 11, 13, 6, 1, tzinfo=UTC), 2, "2026-11-18"),  # ⑫ 日本時間 金 15:01
+        (datetime(2026, 11, 13, 15, 30, tzinfo=UTC), 2, "2026-11-18"),  # ⑬ 日本時間 土 0:30
+        (jst(2026, 11, 13, 15, 0, 0), 2, "2026-11-18"),  # ⑭ 15:00:00 ちょうどは締め後
+        (jst(2028, 1, 7, 14), 2, "2028-01-11"),  # ⑮ 一覧に無い年は土日と年末年始だけ休み（1-10 は営業日）
+    ]
+    for now, days, want in cases:
+        assert arrives_on(now, days) == want, (now, days)
+
+
+# U-109 D-34: 祝日は手で書いた一覧（外部サービスを呼ばない）。2026・2027 年の祝日と振替休日
+def test_holidays_are_a_hand_written_list() -> None:
+    from decision import HOLIDAYS
+
+    assert date(2026, 11, 23) in HOLIDAYS and date(2026, 5, 6) in HOLIDAYS  # 振替休日
+    assert date(2027, 3, 22) in HOLIDAYS and date(2026, 9, 22) in HOLIDAYS  # 振替・国民の休日
+    assert all(d.year in (2026, 2027) for d in HOLIDAYS)
+    assert len([d for d in HOLIDAYS if d.year == 2026]) == 18 and len([d for d in HOLIDAYS if d.year == 2027]) == 17
 
 
 def test_today_is_japan_time() -> None:
@@ -148,7 +187,7 @@ def test_candidates_decision_values_and_reason_head() -> None:
     q = by["お礼"]["Q"]
     assert (q["delivery_days"], q["wrapping"], q["arrives_on"], q["scene_count"]) == (None, False, None, {"scene": "お礼", "n": 0})
     p = by["お礼"]["P"]
-    assert (p["delivery_days"], p["wrapping"], p["arrives_on"]) == (2, True, "2026-11-17")
+    assert (p["delivery_days"], p["wrapping"], p["arrives_on"]) == (2, True, "2026-11-18")
 
 
 # I-42・I-43・I-45 D-28・D-29: 一覧は scene を付けたときだけ scene_count。詳細は任意の scene（空は無し・不正は 422）
@@ -166,9 +205,9 @@ def test_list_and_detail_scene_count() -> None:
         d_zero = client.get("/api/products/P01?scene=誕生日").json()
         bad = client.get("/api/products/P01?scene=誕生日会")
         out = client.get("/api/products/Z01?scene=お礼").json()
-    assert [(i["scene_count"], i["arrives_on"]) for i in plain] == [(None, "2026-11-18")]
+    assert [(i["scene_count"], i["arrives_on"]) for i in plain] == [(None, "2026-11-19")]
     assert [i["scene_count"] for i in scened] == [{"scene": "お礼", "n": 2}]
-    assert d_none["scene_count"] is None and d_empty == d_none and d_none["arrives_on"] == "2026-11-18"
+    assert d_none["scene_count"] is None and d_empty == d_none and d_none["arrives_on"] == "2026-11-19"
     assert d_scene["scene_count"] == {"scene": "お礼", "n": 2}  # 一覧と同じ値
     assert d_zero["scene_count"] == {"scene": "誕生日", "n": 0}
     assert bad.status_code == 422 and bad.json()["error"]["code"] == "invalid_scene"
@@ -176,7 +215,7 @@ def test_list_and_detail_scene_count() -> None:
 
 
 # I-59 SP-26: どの API でも同じ商品の arrives_on は同じ。今日を替えると変わる。DB に問い合わせる数は増えない（D-34）
-@pytest.mark.parametrize(("now", "want"), [(NOV15, "2026-11-17"), (datetime(2026, 11, 30, 3, 0, tzinfo=UTC), "2026-12-02"), (datetime(2026, 12, 31, 3, 0, tzinfo=UTC), "2027-01-02")])
+@pytest.mark.parametrize(("now", "want"), [(NOV15, "2026-11-18"), (datetime(2026, 11, 30, 3, 0, tzinfo=UTC), "2026-12-02"), (datetime(2026, 12, 31, 3, 0, tzinfo=UTC), "2027-01-06")])
 def test_arrives_on_is_the_same_everywhere(now: datetime, want: str) -> None:
     db = with_detail_columns(CandidateDb([product("P01", "送別", 1, 3500, 4.0, 10, days=2), product("N01", "送別", 1, 3500, 3.9, 10, days=None)]))
     for client in client_at(db, now):
