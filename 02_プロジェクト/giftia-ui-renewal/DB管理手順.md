@@ -411,9 +411,10 @@ SELECT COUNT(*) FROM share_links;   -- 実行前と同じ
 | --- | --- | --- |
 | `share_links` | `share_id`（22 文字） | 作ったリンクの URL `/s/<share_id>`。手順 3b と同じ |
 | `share_likes` | 控えた `share_id`（その共有リンクのいいねの行を消す） | 上と同じ。`share_likes` の主キーは（`share_id`, `product_id`） |
-| `usage_events` | `visitor_id`（22 文字。そのブラウザの計測の行を全部消す） | 評価に使うブラウザの開発者ツールの保存領域 `giftia:visitor`（S-103）。評価の前後で同じブラウザを使う |
+| `usage_events` | `visitor_id`（22 文字。**評価を始める前に**控える）と、評価で作った共有リンクの `share_id`（上と同じ。別の端末で開いた行を拾う） | `visitor_id` は評価に使うブラウザの開発者ツールの保存領域 `giftia:visitor`（S-103）。`share_id` は `usage_events.share_id`（手順 1d の列。共有ページから始まった訪問に入る） |
 
 - 順番: ① `share_likes` → ② `usage_events` → ③ `share_links`。3 つの表に外部キーは無い（設計 D-38・D-40）ので失敗はしないが、先に `share_links` を消すと、残った `share_likes` の行の持ち主が無くなる（手順 3d の (c)）。子にあたる `share_likes` を先に消す。
+- `usage_events` は**テストの印の付いた行だけ**を消す（`is_test = 1`。手順 3c と同じく、`is_test = 0` の本物の訪問・合言葉なしの確認の行は消さない。N-16）。評価の訪問には合言葉を付けて計測する（手順書 ④）ので、評価の行は `is_test = 1` になる。評価で作った共有リンクを別の端末（受け取る側）で開いた行は `visitor_id` が違うので、`share_id` で拾う。
 - 控えた ID 以外の行は消さない。`WHERE` のない `DELETE` は流さない。`'<控えた ID>'` の位置には、控えた件数だけ ID を入れる。`db_admin.py` の手順 D は `share_links` の分だけ。`share_likes`・`usage_events` は手で流す。
 
 **実行前の確認**（消す件数を数える。控えた件数・見込みと合うことが要）
@@ -421,7 +422,10 @@ SELECT COUNT(*) FROM share_links;   -- 実行前と同じ
 ```sql
 SELECT COUNT(*) FROM share_links  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');
 SELECT COUNT(*) FROM share_likes  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');
-SELECT COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>');
+SELECT COUNT(*) FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);
+SELECT is_test, COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') GROUP BY is_test;
 SELECT share_id, created_at, is_test FROM share_links WHERE share_id IN ('<控えた share_id>', '<控えた share_id>');
 SELECT COUNT(*) FROM share_links;
 SELECT COUNT(*) FROM share_likes;
@@ -430,7 +434,8 @@ SELECT COUNT(*) FROM usage_events;
 
 - `share_links` の件数が、控えた `share_id` の数と同じこと（多ければ ID の書き間違い。消さない）。
 - `share_likes`・`usage_events` の件数が、評価で押した・開いた数と大きくずれていないこと。多すぎるときは消さない。
-- 4 つ目の一覧に、控えていないリンクが混じっていないこと。
+- 4 つ目の `is_test` ごとの件数: `is_test = 0` の行が混じっていたら、その分は**消さない**（同じブラウザで合言葉なしに開いた訪問）。`is_test = 1` の件数が、評価で計測した数と合うこと。
+- 5 つ目の一覧に、控えていないリンクが混じっていないこと。
 - 最後の 3 つ（全体の件数）を控える。消した後に「全体の件数 − 消した件数」と合うかを見る。
 
 **実行**（表ごとに `START TRANSACTION` → `ROW_COUNT()` が実行前の件数と合う → `COMMIT`。合わなければ `ROLLBACK`）
@@ -445,7 +450,9 @@ COMMIT;
 -- ROLLBACK;
 
 START TRANSACTION;
-DELETE FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>');
+DELETE FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);
 SELECT ROW_COUNT();
 -- 実行前の usage_events の件数と合うなら:
 COMMIT;
@@ -465,7 +472,10 @@ COMMIT;
 
 ```sql
 SELECT COUNT(*) FROM share_likes  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');   -- 0
-SELECT COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>');   -- 0
+SELECT COUNT(*) FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);   -- 0
+SELECT is_test, COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') GROUP BY is_test;   -- 1 の行が無い。0 の件数は実行前と同じ
 SELECT COUNT(*) FROM share_links  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');   -- 0
 SELECT COUNT(*) FROM share_links;    -- 実行前の件数 − 消した件数
 SELECT COUNT(*) FROM share_likes;    -- 同じ
