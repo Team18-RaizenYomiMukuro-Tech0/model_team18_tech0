@@ -251,6 +251,8 @@ ALTER TABLE usage_events DROP COLUMN detail_count, DROP COLUMN share_id;
 
 ## 3. テスト行だけを消す
 
+> **評価の片づけには使わない**（`is_test = 1` を全部消すので、評価の行も直しのテストの行も消える。評価中・評価後は「3e. 評価の行を消す（控えた ID だけ）」を使う）。
+
 N-09:「テスト用の印の付いた行だけ」を配られたアカウントで消す。
 
 印は列 `is_test`（1 がテスト行）。印の付いた行だけを消し、印のない行（0）は消さない（設計.md N-09）。
@@ -313,6 +315,8 @@ SELECT COUNT(*) FROM share_links WHERE share_id IN ('<控えた ID>', '<控え�
 
 ### 3c. `usage_events` のテストの行だけを消す
 
+> **評価の片づけには使わない**（`is_test = 1` を全部消すので、評価の行も直しのテストの行も消える。評価中・評価後は「3e. 評価の行を消す（控えた ID だけ）」を使う）。
+
 - 対象: 要件 N-16、設計 D-40。印は列 `is_test`（1 がテストの行。計測の API が、サーバーの `GIFTIA_TEST_KEY` と本文の `test_key` が一致したときに付ける。設計 D-40）。`is_test = 0` の行（本物の訪問）は消さない。
 
 **実行前の確認**
@@ -347,6 +351,8 @@ SELECT is_test, COUNT(*) FROM usage_events GROUP BY is_test;   -- 1 の行が無
 ```
 
 ### 3d. `share_likes` のうち、テストの共有リンクの分と、期限切れの分を消す
+
+> **評価の片づけには使わない**（`is_test = 1` を全部消すので、評価の行も直しのテストの行も消える。評価中・評価後は「3e. 評価の行を消す（控えた ID だけ）」を使う）。
 
 - 対象: 要件 N-17、設計 D-38・D-39。`share_likes` には `is_test` が無い。次の 3 つのどれかに当てはまる行を消す。(a) `is_test=1` の共有リンクの分（テストで作ったリンクのいいね）、(b) 作成から 720 時間を過ぎた共有リンクの分、(c) 共有リンクの行がもう無い分。
 - **順番の注意**: 手順 3（`share_links` のテスト行の削除）の**前に**この手順を流す。先に `share_links` を消すと、(a) の印が失われ、(c) になる（その場合も (c) で消せるので、消し忘れは出ない）。
@@ -395,6 +401,88 @@ SELECT COUNT(*) FROM share_links;   -- 実行前と同じ
 ```
 
 - 期限切れのリンクの行そのものは、アプリの決定どおり消さない（`share_links` は手順 3・5 の対象）。
+
+### 3e. 評価の行を消す（控えた ID だけ）
+
+- 対象: #429 決定 1A（PM 決定 2026-11-21「Aで」）。評価で作った行は、**作るたびに ID を控え**、評価の最後に**控えた ID だけ**を消す。手順 3・3c・3d は `is_test = 1` の行を全部消すので、同じ時期に進む直しのテストの行も、評価の証拠の行も一緒に消える。評価中・評価後の片づけには、この手順 3e を使う。
+- 控える ID（接続情報は書かず、`evidence/db/<日付>_評価.md` に書く）:
+
+| 表 | 控える ID | どこで分かるか |
+| --- | --- | --- |
+| `share_links` | `share_id`（22 文字） | 作ったリンクの URL `/s/<share_id>`。手順 3b と同じ |
+| `share_likes` | 控えた `share_id`（その共有リンクのいいねの行を消す） | 上と同じ。`share_likes` の主キーは（`share_id`, `product_id`） |
+| `usage_events` | `visitor_id`（22 文字。**評価を始める前に**控える）と、評価で作った共有リンクの `share_id`（上と同じ。別の端末で開いた行を拾う） | `visitor_id` は評価に使うブラウザの開発者ツールの保存領域 `giftia:visitor`（S-103）。`share_id` は `usage_events.share_id`（手順 1d の列。共有ページから始まった訪問に入る） |
+
+- 順番: ① `share_likes` → ② `usage_events` → ③ `share_links`。3 つの表に外部キーは無い（設計 D-38・D-40）ので失敗はしないが、先に `share_links` を消すと、残った `share_likes` の行の持ち主が無くなる（手順 3d の (c)）。子にあたる `share_likes` を先に消す。
+- `usage_events` は**テストの印の付いた行だけ**を消す（`is_test = 1`。手順 3c と同じく、`is_test = 0` の本物の訪問・合言葉なしの確認の行は消さない。N-16）。評価の訪問には合言葉を付けて計測する（手順書 ④）ので、評価の行は `is_test = 1` になる。評価で作った共有リンクを別の端末（受け取る側）で開いた行は `visitor_id` が違うので、`share_id` で拾う。
+- 控えた ID 以外の行は消さない。`WHERE` のない `DELETE` は流さない。`'<控えた ID>'` の位置には、控えた件数だけ ID を入れる。`db_admin.py` の手順 D は `share_links` の分だけ。`share_likes`・`usage_events` は手で流す。
+
+**実行前の確認**（消す件数を数える。控えた件数・見込みと合うことが要）
+
+```sql
+SELECT COUNT(*) FROM share_links  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');
+SELECT COUNT(*) FROM share_likes  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');
+SELECT COUNT(*) FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);
+SELECT is_test, COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') GROUP BY is_test;
+SELECT share_id, created_at, is_test FROM share_links WHERE share_id IN ('<控えた share_id>', '<控えた share_id>');
+SELECT COUNT(*) FROM share_links;
+SELECT COUNT(*) FROM share_likes;
+SELECT COUNT(*) FROM usage_events;
+```
+
+- `share_links` の件数が、控えた `share_id` の数と同じこと（多ければ ID の書き間違い。消さない）。
+- `share_likes`・`usage_events` の件数が、評価で押した・開いた数と大きくずれていないこと。多すぎるときは消さない。
+- 4 つ目の `is_test` ごとの件数: `is_test = 0` の行が混じっていたら、その分は**消さない**（同じブラウザで合言葉なしに開いた訪問）。`is_test = 1` の件数が、評価で計測した数と合うこと。
+- 5 つ目の一覧に、控えていないリンクが混じっていないこと。
+- 最後の 3 つ（全体の件数）を控える。消した後に「全体の件数 − 消した件数」と合うかを見る。
+
+**実行**（表ごとに `START TRANSACTION` → `ROW_COUNT()` が実行前の件数と合う → `COMMIT`。合わなければ `ROLLBACK`）
+
+```sql
+START TRANSACTION;
+DELETE FROM share_likes WHERE share_id IN ('<控えた share_id>', '<控えた share_id>');
+SELECT ROW_COUNT();
+-- 実行前の share_likes の件数と合うなら:
+COMMIT;
+-- 合わないなら:
+-- ROLLBACK;
+
+START TRANSACTION;
+DELETE FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);
+SELECT ROW_COUNT();
+-- 実行前の usage_events の件数と合うなら:
+COMMIT;
+-- 合わないなら:
+-- ROLLBACK;
+
+START TRANSACTION;
+DELETE FROM share_links WHERE share_id IN ('<控えた share_id>', '<控えた share_id>');
+SELECT ROW_COUNT();
+-- 実行前の share_links の件数と合うなら:
+COMMIT;
+-- 合わないなら:
+-- ROLLBACK;
+```
+
+**実行後の確かめ方**（控えた ID の行が 0 件。それ以外の行は変わらない）
+
+```sql
+SELECT COUNT(*) FROM share_likes  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');   -- 0
+SELECT COUNT(*) FROM usage_events
+  WHERE (visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') AND is_test = 1)
+     OR (share_id   IN ('<控えた share_id>', '<控えた share_id>') AND is_test = 1);   -- 0
+SELECT is_test, COUNT(*) FROM usage_events WHERE visitor_id IN ('<控えた visitor_id>', '<控えた visitor_id>') GROUP BY is_test;   -- 1 の行が無い。0 の件数は実行前と同じ
+SELECT COUNT(*) FROM share_links  WHERE share_id   IN ('<控えた share_id>', '<控えた share_id>');   -- 0
+SELECT COUNT(*) FROM share_links;    -- 実行前の件数 − 消した件数
+SELECT COUNT(*) FROM share_likes;    -- 同じ
+SELECT COUNT(*) FROM usage_events;   -- 同じ
+```
+
+- 控えた ID を書いたファイルに、消した日時と、実行前後の件数を足す（接続情報は書かない）。
 
 ## 4. 元に戻す（DROP TABLE）
 
