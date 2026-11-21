@@ -110,7 +110,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   );
   if (sheet) {
     return (
-      <Sheet label="商品の詳細" side={!narrow} onClose={onClose}>
+      <Sheet label="商品の詳細" side={!narrow} belowHeader onClose={onClose}>
         {content}
       </Sheet>
     );
