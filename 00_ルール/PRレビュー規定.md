@@ -28,7 +28,7 @@ PR のレビュー・承認・マージの決まり。メンバー全員の Clau
 1. **5文書を変えている**: `02_プロジェクト/*/` の 要求・要件・仕様・設計・テスト設計。
 2. **5文書を変える必要があるのに変えていない**: 実装が仕様と食い違う、仕様に書かれていない動きを足している。
 3. **PM に確認すべき内容を含む**: I/F 契約の変更、受入基準の変更、新しいライブラリ・外部サービスの追加、スコープの増減。
-4. **ルールそのものを変える**: `CLAUDE.md`・`.claude/agents/`・`00_ルール/`・`.github/ISSUE_TEMPLATE/`・`.github/pull_request_template.md`・`.github/labeler.yml`・`scripts/scheduled/`（レビュー・週1要約の実行スクリプトと指示文。ルーチンが main のものを毎回読む）・`01_ナレッジ/weekly-digest-prompt.md`（週1要約の指示文）・`.github/workflows/`（`.github/workflows/dashboard-*.yml` を除く。例外の中身も、`permissions` に `write`（`write-all` を含む）がある・`permissions` の指定がないジョブがある・`pull_request_target` を使う・`secrets.GITHUB_TOKEN` 以外のシークレットを参照する（`secrets: inherit` を含む）ものは対象）。
+4. **ルールそのものを変える**: `CLAUDE.md`・`.claude/agents/`・`00_ルール/`・`.github/ISSUE_TEMPLATE/`・`.github/pull_request_template.md`・`.github/labeler.yml`・`.claude/settings.json`・`.githooks/`・フックが呼ぶ `scripts/*.py`（`guard-worktree-remove.py`・`collect-mistake.py`・`require-report-before-stop.py`）・`scripts/scheduled/`（レビュー・週1要約の実行スクリプトと指示文。ルーチンが main のものを毎回読む）・`01_ナレッジ/weekly-digest-prompt.md`（週1要約の指示文）・`.github/workflows/`（`.github/workflows/dashboard-*.yml` を除く。例外の中身も、`permissions` に `write`（`write-all` を含む）がある・`permissions` の指定がないジョブがある・`pull_request_target` を使う・`secrets.GITHUB_TOKEN` 以外のシークレットを参照する（`secrets: inherit` を含む）ものは対象）。
 5. **秘匿情報の疑い**: `.env`、キー・パスワードらしき文字列。
 
 ## 4. Claude が承認してよい条件
@@ -37,7 +37,8 @@ PR のレビュー・承認・マージの決まり。メンバー全員の Clau
 - PR の「対応する文書の ID」と「対応する Issue（Closes #）」が書かれている。
   - **Issue がない PR は Claude は承認しない**（判定する完了条件が0行になり、「すべての行が合格」が空振りで成り立ってしまうため）。理由が書かれていれば、`【要人レビュー】` でコメントし、ラベルは付けない（§5 の自分でマージしてよい範囲なら作成者がマージ、それ以外は人が承認）。理由が書かれていなければ、足りないものとして書く。
 - Issue の「完了条件」の表を**1行ずつ**判定し、すべての行が合格である。行ごとに、PR の「完了条件ごとの証拠」に同じ # の証拠があり、確認の種類に合う形で確かめられる。
-  - **テスト型**: 実行したコマンドと出力（またはCIのログ）が読め、合格の基準（件数・値）を満たしている。貼られた出力が差分（テストファイルの追加・変更）と食い違っていないことも見る。CI のチェックがあれば、その結果も使う。
+  - **テスト型**: 実行したコマンドと出力（またはCIのログ）が読め、合格の基準（件数・値）を満たしている。貼られた出力が差分（テストファイルの追加・変更）と食い違っていないことも見る。`gh pr checks <番号>` で `backend`・`frontend` のジョブが成功なら ○。本文の出力だけでは ○ にしない。
+  - 例外: CI で回せないもの（DB を使うテスト・画面・実機）は、いまどおり本文の証拠で判定する。
   - **画面型**: スクリーンショットで、手順の最後の状態が合格の基準（表示・文言・件数）を満たしている。画像が開けない・読めないときは承認せず、そのことをコメントに書いて人に回す。
   - **証拠のコマンドが、Issue の完了条件のコマンドと同じか、行ごとに比べる。** テストを飛ばす（skip）、環境変数を空にするなど、条件と違う形で通した証拠は ×。PM 判断の記録（PR・Issue のコメント）があるときだけ、その判断を引いて ○ にできる。
   - 1行でも、証拠がない・基準を満たさない・確認できない場合は承認しない。

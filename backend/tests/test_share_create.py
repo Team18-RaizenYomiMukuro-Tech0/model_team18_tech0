@@ -276,7 +276,7 @@ def test_invalid(fake: Backend) -> None:
     r = TestClient(main.app, raise_server_exceptions=False).post(URL, content=b"{not json")
     assert (r.status_code, r.json()["error"]["code"]) == (422, "invalid_product_ids")
     assert fake.count() == 0
-    assert fake.db.writes == []  # type: ignore[attr-defined]
+    assert fake.db.writes == []  # type: ignore[attr-defined]  # fake.db は FakeShareDb だが、型は共通の Db 扱いのため
 
 
 # SP-05 D-05 D-15 I-18 I-19 E-13
@@ -301,7 +301,7 @@ def test_timeout(backend: Backend) -> None:
 def test_write_scope(fake: Backend) -> None:
     create(fake.ids)
     post({"product_ids": ["ZZZ"]})
-    db: FakeShareDb = fake.db  # type: ignore[assignment]
+    db: FakeShareDb = fake.db  # type: ignore[assignment]  # fake.db を FakeShareDb として使うため、型を絞り込む
     assert len(db.writes) == 1  # 書き込みは 1 回だけ
     sql = db.writes[0]
     assert re.match(r"^INSERT INTO share_links \(", sql)

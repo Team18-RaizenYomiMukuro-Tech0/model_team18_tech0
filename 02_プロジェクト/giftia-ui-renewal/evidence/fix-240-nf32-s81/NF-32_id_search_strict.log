@@ -1,0 +1,3 @@
+厳しめ（前後が英数字でない。ハイフンは省略可）(^|[^A-Za-z0-9])(SP|NF|AC|[RFNDUISE])-?[0-9]{1,3}($|[^0-9]) で 1 つも無いファイル:
+backend/tests/candidates_support.py
+(以上)

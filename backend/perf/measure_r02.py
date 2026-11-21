@@ -17,6 +17,7 @@ import json
 import time
 import urllib.error
 import urllib.request
+from typing import Any
 from urllib.parse import quote
 
 RUNS = 10
@@ -27,7 +28,7 @@ CONDITIONS = [
 ]
 
 
-def call(url: str) -> tuple[float, int, dict | None]:
+def call(url: str) -> tuple[float, int, dict[str, Any] | None]:
     t0 = time.perf_counter()
     try:
         with urllib.request.urlopen(url, timeout=30) as r:

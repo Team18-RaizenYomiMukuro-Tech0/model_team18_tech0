@@ -9,7 +9,7 @@ import styles from "./sevenReach.module.css";
 
 // SP-28 D-09 7 個目の演出「B リーチからの大当たり」。画面全体を覆う層（aria-hidden）。押す・Esc・時間が来るで閉じる。
 // 動きは Web Animations API。時間（setTimeout）は 1 つで、閉じる・外れるときに必ず消す。音・計測は無い。
-const GOLD = "#FFD34D";
+const GOLD = "var(--c-gold)";
 const REEL_H = 84;
 const SYMBOL_ORDER = ["akabu", "♥", "7"] as const; // 各リールは 3 つの絵柄の繰り返しで、最後（止まる所）が 7
 

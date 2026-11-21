@@ -65,6 +65,9 @@ export function Recommended() {
           return (
             <li key={p.product_id} className={`${styles.card} ${g.wrap}`}>
               <div className={g.grid}>
+                <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`} title={p.name}>
+                  <span className={g.clamp}>{p.name}</span>
+                </button>
                 <div className={g.picwrap}>
                   <button type="button" tabIndex={-1} aria-hidden="true" onClick={open} className={`${styles.pic} ${styles.openbtn} ${g.pic}`}>
                     <Image src={productImage(p.category) ?? ""} alt="" width={200} height={200} unoptimized />
@@ -74,9 +77,6 @@ export function Recommended() {
                     <HeartButton productId={p.product_id} name={p.name} />
                   </span>
                 </div>
-                <button type="button" onClick={open} className={`${styles.name} ${styles.openbtn} ${g.name}`} title={p.name}>
-                  <span className={g.clamp}>{p.name}</span>
-                </button>
                 <span className={`${styles.price} ${g.price}`}>{formatPrice(p.price)}</span>
                 {p.rating != null && p.review_count != null && (
                   <span className={`${styles.rating} ${g.meta}`}>

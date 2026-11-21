@@ -1,0 +1,30 @@
+backend/database.py:8:import pymysql  # type: ignore[import-untyped]  # PyMySQL は型情報を配っていないため
+backend/database.py:9:import pymysql.cursors  # type: ignore[import-untyped]  # 同上
+backend/db.py:18:import pymysql  # type: ignore[import-untyped]  # PyMySQL は型情報を配っていないため
+backend/db.py:81:        except BaseException:  # noqa: BLE001  失敗しても起動は止めない（原因は最初の要求の失敗として出る）
+backend/db.py:198:            except BaseException as ex:  # noqa: BLE001  呼び出し側の 500 に変えるため、種類だけ持ち帰る
+backend/logging_setup.py:78:        except Exception as ex:  # noqa: BLE001  DbError も含め、詳細は返さず internal_error にする（D-01・D-05・D-06）
+backend/scripts/db_admin.py:508:    except Exception as e:  # noqa: BLE001  # DB のエラー文に接続情報が入ることがあるので、伏せて出す
+backend/tests/test_config.py:29:        SETTINGS.CANDIDATE_PAGE_SIZE = 99  # type: ignore[misc]  # 変更できないことを確かめるため、わざと代入する
+backend/tests/test_db.py:126:        Db(lambda c=conn: c).write(s, ("a",))  # type: ignore[misc]  # 引数の型が FakeConn のため。接続を差し替えるテスト用の呼び方
+backend/tests/test_db_admin.py:339:    conn.close = lambda: None  # type: ignore[attr-defined]  # close を何もしない関数に差し替えるため
+backend/tests/test_db_reuse.py:4:import pymysql  # type: ignore[import-untyped]  # PyMySQL は型情報を配っていないため
+backend/tests/test_likes.py:85:        except Exception as ex:  # noqa: BLE001  share_likes がまだ無い（手順書 1b 前）なら skip
+backend/tests/test_publish.py:42:    return r.headers.get("access-control-allow-origin")  # type: ignore[attr-defined,no-any-return]  # テスト用の簡易な取り出し
+backend/tests/test_search.py:155:    db.fetch_all = spy  # type: ignore[method-assign]  # 呼び出しを数えるため、メソッドをテスト用の関数に差し替える
+backend/tests/test_search.py:160:    db.write = spy_write  # type: ignore[method-assign]  # 書き込みを数えるため、メソッドをテスト用の関数に差し替える
+backend/tests/test_search.py:168:        db.fetch_all = orig  # type: ignore[method-assign]  # 差し替えたメソッドを元に戻すため
+backend/tests/test_servertiming_rest.py:13:from test_share_get import fake, get, set_clock  # noqa: F401  (fake はフィクスチャ)
+backend/tests/test_servertiming_rest.py:67:def test_share_page_has_timing_only_on_200(fake: Backend) -> None:  # noqa: F811  fake は import したフィクスチャを引数で受けるため、再定義に見える
+backend/tests/test_share_create.py:85:    except Exception as ex:  # noqa: BLE001  届かない・.env が無い・表が無いときは skip する
+backend/tests/test_share_create.py:279:    assert fake.db.writes == []  # type: ignore[attr-defined]  # fake.db は FakeShareDb だが、型は共通の Db 扱いのため
+backend/tests/test_share_create.py:304:    db: FakeShareDb = fake.db  # type: ignore[assignment]  # fake.db を FakeShareDb として使うため、型を絞り込む
+frontend/src/components/CandidateResults.tsx:41:  }, [url, tries]); // eslint-disable-line react-hooks/exhaustive-deps -- url が scene・価格帯・カテゴリーのすべてを含む
+frontend/src/components/CartPanel.tsx:111:  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- 開いたときの1回だけ
+frontend/src/components/CartPanel.tsx:115:  }, [ids.join("|")]); // eslint-disable-line react-hooks/exhaustive-deps -- ids の中身が変わったときだけ
+frontend/src/components/FavoritesPanel.tsx:79:    // eslint-disable-next-line react-hooks/exhaustive-deps -- found を入れると取得のたびに再実行して重複して取る
+frontend/src/components/FavoritesPanel.tsx:268:                      // eslint-disable-next-line @next/next/no-img-element -- カテゴリー共通の静的イラスト
+frontend/src/components/SevenReach.tsx:2:/* eslint-disable @next/next/no-img-element -- 動く gif と静止画をそのまま使う（Image の最適化は gif を止める。LikeRow と同じ） */
+frontend/src/components/Tsukkomi.tsx:2:/* eslint-disable @next/next/no-img-element -- 動く gif をそのまま使う（Image の最適化は gif を止める。SevenReach と同じ） */
+frontend/src/state/cart.ts:139:      const { [id]: _, ...rest } = current(); // eslint-disable-line @typescript-eslint/no-unused-vars -- 分割代入で id の項目を除くため、_ は使わない
+frontend/src/state/cartCheck.ts:32:    const { [id]: _, ...rest } = this.found; // eslint-disable-line @typescript-eslint/no-unused-vars -- 分割代入で id の項目を除くため、_ は使わない

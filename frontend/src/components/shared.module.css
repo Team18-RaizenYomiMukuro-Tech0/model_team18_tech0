@@ -8,13 +8,13 @@
 .name { margin: 0; font-size: 16px; line-height: 1.5; }
 .price { margin: 0; font-weight: 700; }
 .reason { margin: 0; }
-.note { margin: 0; font-weight: 700; color: #7a1812; }
-/* 注記（N-15）: 12px、文字と背景の差は WCAG AA の 4.5:1 以上（#5c514c は背景 #f4f1ee に対して約 7:1） */
-.public { margin: 0; font-size: 12px; line-height: 1.5; color: #5c514c; }
+.note { margin: 0; font-weight: 700; color: var(--c-err-ink); }
+/* 注記（N-15）: 12px、文字と背景の差は WCAG AA の 4.5:1 以上（--c-note-ink は背景色に対して約 7:1） */
+.public { margin: 0; font-size: 12px; line-height: 1.5; color: var(--c-note-ink); }
 .msg { padding: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--rm); }
 .msg p { margin: 0; }
 .msgmain { font-weight: 700; margin-bottom: 4px !important; }
-.err { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #b3261e; border-radius: var(--rm); background: #fdecea; color: #7a1812; }
+.err { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--c-err); border-radius: var(--rm); background: var(--c-err-bg); color: var(--c-err-ink); }
 .btn { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
 .link, .others { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; text-decoration: none; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -25,14 +25,21 @@
 .gifs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .gifmore { font-weight: 700; color: var(--ink); }
 /* D-09 動きを減らす設定の「7 7 7」の印（金色の枠。読み上げない） */
-.sevenmark { padding: 2px 10px; border: 2px solid #FFD34D; border-radius: 999px; background: #3a2a14; color: #FFD34D; font-weight: 700; font-size: 14px; line-height: 1.5; white-space: nowrap; }
-.tsukkomimark { padding: 0 6px; border: 2px solid #D7261E; border-radius: 8px; background: #fff; color: #D7261E; font-weight: 900; font-size: 13px; line-height: 1.5; white-space: nowrap; }
+.sevenmark { padding: 2px 10px; border: 2px solid var(--c-gold); border-radius: 999px; background: var(--c-seven-bg); color: var(--c-gold); font-weight: 700; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+.tsukkomimark { padding: 0 6px; border: 2px solid var(--c-red); border-radius: 8px; background: #fff; color: var(--c-red); font-weight: 900; font-size: 13px; line-height: 1.5; white-space: nowrap; }
 /* D-09「6 個に戻す」: 縦横 44px 以上（NF-46） */
 .reset { min-width: 44px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .like { min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--bd2); border-radius: var(--rm); background: var(--paper); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
 .like[aria-pressed="true"] { background: var(--s-coral-ink); border-color: var(--s-coral-ink); color: #fff; }
-.likeErr { margin: 0; font-size: 14px; color: #7a1812; }
+.likeErr { margin: 0; font-size: 14px; color: var(--c-err-ink); }
+/* #502 SP-28 D-09: 1 人 5 個まで。「いいね」と「−」を同じ高さで並べ、押せない理由をボタンのすぐ下に小さく出す。「−」は丸い 44px 以上のボタン */
+.likecol { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.likebtns { display: inline-flex; align-items: center; gap: 6px; }
+.like:disabled { opacity: .5; cursor: not-allowed; }
+.minus { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--bd2); border-radius: 50%; background: var(--paper); color: var(--ink); font: inherit; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; }
+.limit { font-size: 12px; color: var(--c-sub-ink); }
+.own { font-size: 12px; color: var(--c-sub-ink); white-space: nowrap; }
 .others { justify-self: start; margin-top: 8px; }
 .msg .others { margin-top: 12px; }
 .img { position: relative; width: 100%; max-width: 200px; aspect-ratio: 1; background: var(--peach); border-radius: var(--rm); overflow: hidden; }

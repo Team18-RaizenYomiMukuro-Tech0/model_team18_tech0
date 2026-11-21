@@ -1,4 +1,4 @@
-# #256: 候補取得の応答の Server-Timing（内訳は数値だけ）。DB は使わない（偽の接続・偽の DB）
+# D-17: #256: 候補取得の応答の Server-Timing（内訳は数値だけ）。DB は使わない（偽の接続・偽の DB）
 import re
 from typing import Any, Self
 

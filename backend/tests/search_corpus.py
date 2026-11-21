@@ -1,6 +1,7 @@
-# 試験用の「架空の商品」。本物の商品名は手元に無い（班の DB は読まない約束）ので、10 カテゴリー・約 7,766 件を規則で作る。
+# SP-35 D-49: 試験用の「架空の商品」。本物の商品名は手元に無い（班の DB は読まない約束）ので、10 カテゴリー・約 7,766 件を規則で作る。
 # 件数と 10 カテゴリーは backend/db_schema.md のとおり。名前の種は docs/mock と frontend のテストにある言葉（ガーゼタオル、ハーブティー 5種セット、入浴剤 ギフト、ドライフルーツ ギフト、果肉入りのゼリー、カタログギフト）。
 import random
+from typing import Any
 
 ITEMS = {
     "食品": ["焼き菓子", "クッキー", "フィナンシェ", "バウムクーヘン", "マカロン", "チョコレート", "ゼリー", "果肉入りのゼリー", "プリン", "どら焼き", "羊羹", "せんべい", "ドライフルーツ", "はちみつ", "ジャム", "海苔", "佃煮", "ラスク", "カステラ", "和菓子", "おかき", "ケーキ", "ハム", "カレー", "そうめん"],
@@ -21,10 +22,10 @@ SUFFIX = ["", " ギフト", " セット", " 詰め合わせ", " ミニ", " 高�
 COUNT = ["", "", "3個入り", "5種セット", "10個入り", "12本入り", "20包", "1箱", "2枚組"]
 
 
-def build(n_total: int = 7766, seed: int = 11) -> list[dict]:
+def build(n_total: int = 7766, seed: int = 11) -> list[dict[str, Any]]:
     rnd = random.Random(seed)
     scale = n_total / sum(SHARE.values())
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for cat, n in SHARE.items():
         for _ in range(round(n * scale)):
             base = rnd.choice(ITEMS[cat])

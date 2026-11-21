@@ -9,8 +9,8 @@ import pytest
 from fastapi.testclient import TestClient
 from test_product_detail import DetailDb
 from test_products_filter import client_for, fd1
-from test_share_create import create
-from test_share_get import Backend, fake, get, set_clock  # noqa: F401  (fake はフィクスチャ)
+from test_share_create import Backend, create
+from test_share_get import fake, get, set_clock  # noqa: F401  (fake はフィクスチャ)
 from test_voices_similar import ExtrasDb
 
 METRICS = ("db_wait", "db_connect", "db_sql", "db_total", "total")
@@ -64,7 +64,7 @@ def test_errors_have_no_timing(client: TestClient) -> None:
         assert "server-timing" not in r.headers, url
 
 
-def test_share_page_has_timing_only_on_200(fake: Backend) -> None:  # noqa: F811
+def test_share_page_has_timing_only_on_200(fake: Backend) -> None:  # noqa: F811  fake は import したフィクスチャを引数で受けるため、再定義に見える
     link = create(fake.ids[:2])["share_id"]
     r = get(link)
     assert r.status_code == 200

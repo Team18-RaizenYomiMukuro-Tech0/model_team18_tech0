@@ -14,13 +14,13 @@ if [ -n "$bad" ]; then
   exit 1
 fi
 
-# 2) キーらしき文字列（Supabase の JWT、OpenAI/Anthropic 形式、Postgres 接続文字列）
-pattern='eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|postgres(ql)?://[^ ]+:[^ ]+@'
+# 2) キーらしき文字列（Supabase の JWT、OpenAI/Anthropic 形式、Postgres 接続文字列、Azure の接続文字列、DB のパスワード）
+pattern='eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{20,}|sk-ant-[A-Za-z0-9_-]{20,}|postgres(ql)?://[^ ]+:[^ ]+@|AccountKe[y]=[A-Za-z0-9+/=]{8,}|(Passwor[d]|Pw[d])=[^ ;<>$"{}]+|GIFTIA_DB_PASSWOR[D]="?[^ "<$]'
 hit=$(git diff --cached -U0 -- $files | grep -E '^\+' | grep -Ev '^\+\+\+' | grep -E "$pattern")
 if [ -n "$hit" ]; then
   echo "[pre-commit] API キーや接続文字列らしき行が含まれています:"
   echo "$hit" | cut -c1-120
-  echo "  → 値を消して、環境変数（.env / Vercel / Render）に移してください"
+  echo "  → 値を消して、手元の .env か、本番の Azure のアプリ設定に移してください"
   exit 1
 fi
 # 3) 仕様の表に M-/SP- の行が増えたのに、図・モックを一緒に更新していないときの警告（止めない）

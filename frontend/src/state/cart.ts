@@ -136,7 +136,7 @@ export function createCartStore(getStorage: () => StoreLike | null, notice?: Not
     },
     remove: (id) => {
       if (!(id in current())) return;
-      const { [id]: _, ...rest } = current(); // eslint-disable-line @typescript-eslint/no-unused-vars
+      const { [id]: _, ...rest } = current(); // eslint-disable-line @typescript-eslint/no-unused-vars -- 分割代入で id の項目を除くため、_ は使わない
       set(rest);
     },
   };

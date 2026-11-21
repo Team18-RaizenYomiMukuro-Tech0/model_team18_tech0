@@ -6,14 +6,16 @@ import { createPortal } from "react-dom";
 import { LIKE_GIF, TSUKKOMI } from "@/lib/sharedLink";
 import { Harisen } from "./Harisen";
 import { closeOnLeave } from "@/lib/effectClose";
+import { tsukkomiLayout } from "@/lib/tsukkomiLayout";
 import styles from "./tsukkomi.module.css";
 
 // SP-28 D-09 8 個目以上のツッコミ「B1 ハリセンでスパーン」。画面全体を覆う層（aria-hidden）。押す・Esc・時間（2.45 秒）で閉じる。
 // 動きは Web Animations API。時間（setTimeout）は 1 つで、閉じる・外れるときに必ず消す。音・計測は無い。
-// anchor＝押した「いいね」のボタン。その行のいいねの数（[data-likecount]）へ振り下ろす
+// PM 11/20「全体を真ん中にする」: 層の中に「いいね N」の札を描いてたたく。札・あかぷさん・吹き出しは画面の中心から決める（tsukkomiLayout）。
+// ページの上の本物の数は測らない・たたかない・つぶさない。count＝押した後の数
 const FACE_BORDER = 4;
 
-export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | null; onClose: () => void }>) {
+export function Tsukkomi({ count, onClose }: Readonly<{ count: number; onClose: () => void }>) {
   const root = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   useEffect(() => {
@@ -24,14 +26,9 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
     const el = root.current;
     if (!el) return;
     const W = el.clientWidth;
-    const count = anchor?.closest("[data-likerow]")?.querySelector<HTMLElement>("[data-likecount]") ?? anchor;
-    const cr = count?.getBoundingClientRect();
-    const target = cr ? { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 } : { x: W / 2, y: el.clientHeight / 2 };
-    const FACE = TSUKKOMI.faceBigPx;
-    const faceTop = Math.max(70, target.y - 95);
-    const faceLeft = W - FACE - 12;
-    const hand = { x: faceLeft + 10, y: faceTop + 72 };
-    const rot = (Math.atan2(target.y - hand.y, target.x - hand.x) * 180) / Math.PI - 180; // 当てる角度
+    const lay = tsukkomiLayout(W, el.clientHeight);
+    const { target, faceLeft, faceTop, hand } = lay;
+    const rot = lay.rot;
     const R = (d: number) => `rotate(${(rot + d).toFixed(1)}deg)`;
 
     const anims: Animation[] = [];
@@ -43,6 +40,7 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
     const harisen = q("[data-a=harisen]");
     const impact = q("[data-a=impact]");
     const bubble = q("[data-a=bubble]");
+    const card = q("[data-a=card]");
     const lines = q("[data-a=lines]");
     if (harisen) {
       harisen.style.left = `${hand.x - 150}px`;
@@ -52,11 +50,18 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
       faces.style.left = `${faceLeft}px`;
       faces.style.top = `${faceTop}px`;
     }
-    if (impact) {
-      impact.style.left = `${Math.min(Math.max(0, W - 260), Math.max(0, target.x - 30 - 130))}px`;
-      impact.style.top = `${target.y - 100}px`;
+    if (card) {
+      card.style.left = `${lay.card.left}px`;
+      card.style.top = `${lay.card.top}px`;
     }
-    if (bubble) bubble.style.top = `${faceTop - 70}px`;
+    if (impact) {
+      impact.style.left = `${lay.impactLeft}px`;
+      impact.style.top = `${lay.impactTop}px`;
+    }
+    if (bubble) {
+      bubble.style.top = `${lay.bubbleTop}px`;
+      bubble.style.left = `${Math.max(4, lay.cx - bubble.offsetWidth / 2)}px`; // 左右の真ん中
+    }
     if (lines) lines.style.background = `repeating-conic-gradient(from 0deg at ${target.x}px ${target.y}px, rgba(255,255,255,0) 0deg 6deg, rgba(255,255,255,.45) 6deg 8deg)`;
 
     const T0 = 340; // 登場が終わる
@@ -66,6 +71,7 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
     const T4 = 2050; // 退場
     // 暗さ・案内
     a(q("[data-a=dim]"), [{ opacity: 0 }, { opacity: 1 }, { opacity: 1, offset: 0.9 }, { opacity: 0 }], { duration: TSUKKOMI.totalMs, easing: "linear" });
+    a(card, [{ opacity: 0 }, { opacity: 1 }, { opacity: 1, offset: 0.9 }, { opacity: 0 }], { duration: TSUKKOMI.totalMs, easing: "linear" });
     a(q("[data-a=hint]"), [{ opacity: 0 }, { opacity: 0.8, offset: 0.08 }, { opacity: 0.8, offset: 0.9 }, { opacity: 0 }], { duration: TSUKKOMI.totalMs, easing: "linear" });
     // あかぷさん
     const enter = ["translateX(200px)", "translateX(-8px)", "translateX(0)"];
@@ -87,8 +93,8 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
       g.style.top = `${hand.y - 45}px`;
       a(g, [{ opacity: 0, transform: R(125) }, { opacity: 0.32 - i * 0.14, transform: R(30 + i * 22), offset: 0.7 }, { opacity: 0, transform: R(2 + i * 6) }], { duration: 170 + i * 30, delay: T1 + 20 + i * 20, easing: "linear" });
     });
-    // 当たり: 数がつぶれる（値は変えない）・画面が揺れる・集中線・スパーン！
-    const squash = count?.animate([{ transform: "scale(1)" }, { transform: "scale(1.7,.45)" }, { transform: "scale(.85,1.3)" }, { transform: "scale(1)" }], { duration: 320, delay: T2 });
+    // 当たり: 札の数がつぶれる（本物の数は動かさない）・画面が揺れる・集中線・スパーン！
+    const squash = card?.animate([{ transform: "scale(1)" }, { transform: "scale(1.7,.45)" }, { transform: "scale(.85,1.3)" }, { transform: "scale(1)" }], { duration: 320, delay: T2 });
     if (squash) anims.push(squash);
     a(lines, [{ opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 0 }], { duration: 450, delay: T2 });
     a(impact, [{ opacity: 0, transform: "scale(2.4) rotate(-8deg)" }, { opacity: 1, transform: "scale(1) rotate(-8deg)", offset: 0.25 }, { opacity: 1, transform: "scale(1) rotate(-8deg)", offset: 0.8 }, { opacity: 0, transform: "scale(1.1) rotate(-8deg)" }], { duration: 800, delay: T2 });
@@ -122,7 +128,7 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
       document.body.style.overflow = prev;
       anims.forEach((x) => x.cancel());
     };
-  }, [anchor]);
+  }, [count]);
 
   // 層は body 直下に出し、ヘッダー・固定帯・詳細パネルも覆う。押した場所の下の操作は動かさない
   return createPortal(
@@ -136,6 +142,10 @@ export function Tsukkomi({ anchor, onClose }: Readonly<{ anchor: HTMLElement | n
       ))}
       <div className={styles.harisen} data-a="harisen">
         <Harisen uid="main" />
+      </div>
+      <div className={styles.card} data-a="card" data-testid="tsukkomi-card">
+        <img src={LIKE_GIF} alt="" width={36} height={36} className={styles.cardimg} />
+        <span className={styles.cardnum}>{count}</span>
       </div>
       <img src={LIKE_GIF} alt="" width={TSUKKOMI.faceBigPx} height={TSUKKOMI.faceBigPx} className={styles.face} data-a="face" style={{ borderWidth: FACE_BORDER }} />
       <div className={styles.impact} data-a="impact">
