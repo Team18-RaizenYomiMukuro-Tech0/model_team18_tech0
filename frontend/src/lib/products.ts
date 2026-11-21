@@ -48,8 +48,10 @@ export function productUrl(id: string, scene?: string | null): string {
   return apiUrl(`/api/products/${encodeURIComponent(id)}${q}`);
 }
 
-export function voicesUrl(id: string): string {
-  return apiUrl(`/api/products/${encodeURIComponent(id)}/voices`);
+// scene は詳細を開いたときにシーンが決まっているときだけ付ける（D-35・声-5。ほかのシーンの声を除く。決まっていなければ付けず、今と同じ）
+export function voicesUrl(id: string, scene?: string | null): string {
+  const q = scene ? `?scene=${encodeURIComponent(scene)}` : "";
+  return apiUrl(`/api/products/${encodeURIComponent(id)}/voices${q}`);
 }
 
 // scene は必須（D-42）。シーンを選んでいない詳細では画面がこの API を呼ばない
@@ -110,7 +112,7 @@ export const isSimilarList = (v: unknown): v is SimilarList =>
   typeof v === "object" && v !== null && Array.isArray((v as SimilarList).items);
 
 // 404 は notfound（声は商品が無くても 404 にならず [] が来る。似た商品は 404 もある）、そのほかの失敗は error。10秒で打ち切る
-export const fetchVoices = (id: string, signal?: AbortSignal, fetchImpl: typeof fetch = fetch): Promise<Fetched<VoiceList>> =>
-  fetchJson(voicesUrl(id), isVoiceList, signal, fetchImpl);
+export const fetchVoices = (id: string, signal?: AbortSignal, fetchImpl: typeof fetch = fetch, scene?: string | null): Promise<Fetched<VoiceList>> =>
+  fetchJson(voicesUrl(id, scene), isVoiceList, signal, fetchImpl);
 export const fetchSimilar = (id: string, scene: string, signal?: AbortSignal, fetchImpl: typeof fetch = fetch): Promise<Fetched<SimilarList>> =>
   fetchJson(similarUrl(id, scene), isSimilarList, signal, fetchImpl);
