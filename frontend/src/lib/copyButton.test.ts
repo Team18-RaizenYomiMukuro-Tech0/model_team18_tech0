@@ -1,6 +1,6 @@
 import test, { mock } from "node:test";
 import assert from "node:assert/strict";
-import { CopyController, COPIED_MESSAGE, COPY_FAILED_MESSAGE, type CopyStatus } from "./copyButton.ts";
+import { CopyController, COPIED_MESSAGE, COPY_FAILED_MESSAGE, shouldFocusCopy, type CopyStatus } from "./copyButton.ts";
 
 // S-32 S-33 S-41 #32-6: コピーボタン。偽のタイマーで時間を進める
 const flush = async () => {
@@ -70,4 +70,23 @@ test("copyButton S-41: 1.5秒の時点で押し直すと、コピーし直して
   mock.timers.tick(200);
   assert.equal(now(), "idle"); // 再押下から 2.1 秒
   mock.timers.reset();
+});
+
+// NF-27 #591（SP-05。PM 決定 2026-11-21 A-3・2026-11-22）: 作成に成功するたび「コピー」へフォーカスを移す。押し方によらない。作り直しも。失敗は動かさない
+test("NF-27 shouldFocusCopy: 新しいリンクができたときだけ true（初回・作り直し）。同じリンクの再描画・失敗（リンクが変わらない）・リンクなしは false", () => {
+  assert.equal(shouldFocusCopy(null, "A"), true); // 初めて作った
+  assert.equal(shouldFocusCopy("A", "B"), true); // 作り直した（別のリンク）
+  assert.equal(shouldFocusCopy("A", "A"), false); // 同じリンクのまま（再描画・コピーの結果の表示）
+  assert.equal(shouldFocusCopy("A", "A"), false); // 失敗してもリンクは変わらない
+  assert.equal(shouldFocusCopy("A", null), false); // 消えたとき
+  assert.equal(shouldFocusCopy(null, null), false);
+  assert.equal(shouldFocusCopy(undefined, undefined), false);
+});
+
+test("NF-27 ShareLinkResult は新しいリンクのとき「コピー」ボタンへ focus する（失敗の分岐では動かさない）", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../components/ShareLinkResult.tsx", import.meta.url), "utf8");
+  assert.match(src, /shouldFocusCopy\(/);
+  assert.match(src, /copyBtn\.current\?\.focus\(\)/);
+  assert.match(src, /ref=\{copyBtn\}/);
 });
