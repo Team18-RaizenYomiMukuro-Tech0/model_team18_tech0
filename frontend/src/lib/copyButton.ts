@@ -50,3 +50,9 @@ export class CopyController {
     this.timer = null;
   }
 }
+
+// NF-27 SP-05 #591: 共有リンクができたとき「コピー」へフォーカスを移すか。新しいリンク（初回・作り直し）のときだけ true。
+// 同じリンクの再描画・作成の失敗（リンクは変わらない）・リンクなしは false（動かさない。PM 決定 2026-11-21 A-3・2026-11-22）
+export function shouldFocusCopy(prevId: string | null | undefined, nextId: string | null | undefined): boolean {
+  return typeof nextId === "string" && nextId !== "" && nextId !== prevId;
+}

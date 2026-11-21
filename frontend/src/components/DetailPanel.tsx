@@ -41,7 +41,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   const sheet = narrow || like != null || overlay;
   const [state, setState] = useState<{ id: string; r: Fetched<ProductDetail> | null }>({ id: productId, r: null });
   const [tries, setTries] = useState(0);
-  const [voices, setVoices] = useState<{ id: string; v: VoiceList | null; done: boolean }>({ id: productId, v: null, done: false });
+  const [voices, setVoices] = useState<{ id: string; scene: string | null; v: VoiceList | null; done: boolean }>({ id: productId, scene: scene ?? null, v: null, done: false });
   const tracked = useRef("");
 
   useEffect(() => {
@@ -54,17 +54,18 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   // 声は別の API（D-35）。詳細の表示を待たせず、読めた分だけ出す（失敗・0 件は欄ごと出さない）
   useEffect(() => {
     const abort = new AbortController();
-    fetchVoices(productId, abort.signal).then((r) => {
-      if (!abort.signal.aborted) setVoices({ id: productId, v: r.status === "ok" ? r.data : null, done: true });
+    fetchVoices(productId, abort.signal, undefined, scene).then((r) => {
+      if (!abort.signal.aborted) setVoices({ id: productId, scene: scene ?? null, v: r.status === "ok" ? r.data : null, done: true });
     });
     return () => abort.abort();
-  }, [productId]);
+  }, [productId, scene]); // シーンが決まっているときは scene を付けて呼ぶ（SP-17・D-35・S-145）。シーンが変わったら取り直す
 
   // 別のカードを押した直後は、前の商品の中身を出さない
   const r = state.id === productId ? state.r : null;
   const okId = r?.status === "ok" ? productId : null;
-  const voicesDone = voices.id === productId && voices.done;
-  const hasVoice = voices.id === productId && voiceViews(voices.v?.voices).length > 0;
+  const voicesNow = voices.id === productId && voices.scene === (scene ?? null); // 商品もシーンも今のものだけ（シーンが変わった直後に、絞っていない声を出さない）
+  const voicesDone = voicesNow && voices.done;
+  const hasVoice = voicesNow && voiceViews(voices.v?.voices).length > 0;
   useEffect(() => {
     if (okId) {
       recentStore.add(okId); // 詳細に商品が出たとき（404・失敗は入れない。SP-22）
@@ -104,7 +105,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
           </button>
         </div>
       )}
-      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voices.id === productId ? voices.v : null} scene={scene} similarHref={similarHref} />}
+      {r?.status === "ok" && <Body p={r.data} focusName={sheet} focusKey={focusKey} voices={voicesNow ? voices.v : null} scene={scene} similarHref={similarHref} />}
       {r?.status === "ok" && <Foot p={r.data} like={like} />}
     </>
   );

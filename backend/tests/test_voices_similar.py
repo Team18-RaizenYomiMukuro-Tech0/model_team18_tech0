@@ -153,6 +153,54 @@ def test_voices_db_failure_is_500() -> None:
         assert (r.status_code, r.json()["error"]["code"]) == (500, "internal_error")
         assert "OperationalError" not in r.text
 
+# ---- 声をシーンで絞る（D-35・U-110・I-74。PM 決定 2026-11-22 声-4・声-5） ----
+
+V5: list[Review] = [
+    ("V1", 4, "義母への誕生日プレゼントに", "2026-01-05"),
+    ("V1", 5, "バースデーに贈りました", "2026-01-04"),
+    ("V1", 4, "退職する上司に", "2026-01-03"),
+    ("V1", 5, "お礼に渡しました", "2026-01-02"),
+    ("V1", 4, "とても良い品でした", "2026-01-01"),
+]
+
+
+def scene_voices(client: TestClient, query: str) -> list[str]:
+    r = client.get(f"/api/products/V1/voices{query}")
+    assert r.status_code == 200, r.text
+    return [v["text"] for v in r.json()["voices"]]
+
+
+# SP-17 D-35 U-110
+def test_voices_scene_filters_other_scene_words() -> None:
+    for client in serve(ExtrasDb([product("V1", "送別", 1, 3000, 4.0, 5)], V5)):
+        assert scene_voices(client, "?scene=送別") == ["退職する上司に", "とても良い品でした"]  # 絞った後も 2 件
+        assert scene_voices(client, "?scene=誕生日") == ["義母への誕生日プレゼントに", "バースデーに贈りました"]
+        assert scene_voices(client, "?scene=お礼") == ["お礼に渡しました", "とても良い品でした"]  # お礼の言葉は除かない
+        base = ["義母への誕生日プレゼントに", "バースデーに贈りました"]
+        assert scene_voices(client, "") == base == scene_voices(client, "?scene=")  # 省略・空は今と同じ
+
+
+# SP-17 D-35 U-110
+def test_voices_scene_invalid_is_422_without_db() -> None:
+    db = ExtrasDb([product("V1", "送別", 1, 3000, 4.0, 5)], V5)
+    for client in serve(db):
+        calls = len(db.sqls)
+        for bad in ("ギフト", "%27%20OR%201%3D1", "送別%20"):
+            r = client.get(f"/api/products/V1/voices?scene={bad}")
+            assert (r.status_code, r.json()["error"]["code"]) == (422, "invalid_scene"), bad
+        assert len(db.sqls) == calls
+
+
+# SP-17 D-35 U-110 N-04
+def test_voices_scene_sql_is_fixed_and_read_only() -> None:
+    db = ExtrasDb([product("V1", "送別", 1, 3000, 4.0, 5)], V5)
+    for client in serve(db):
+        scene_voices(client, "?scene=送別")
+        scene_voices(client, "?scene=誕生日")
+        a, b = db.sqls[-2:]
+        assert a == b and "NOT LIKE" in a and "user_id" not in a  # 言葉は params で渡す固定の文
+        assert not any(w in a for w in ("退職", "誕生日", "お礼"))
+
 
 # ---- 似た商品（D-42） ----
 

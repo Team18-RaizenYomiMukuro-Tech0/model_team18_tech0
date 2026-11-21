@@ -96,3 +96,26 @@ test("products D-34 D-44: arrives_on・scene_count・relax は来れば型どお
   assert.equal(body.items[0]!.arrives_on, "2026-11-18");
   assert.equal(body.items[0]!.scene_count?.n, 12);
 });
+
+// S-145・U-110・I-74 #590（SP-17・D-35。PM 決定 2026-11-22 声-5）: シーンが決まっている詳細は voices に scene を付けて呼ぶ。決まっていなければ付けない（今と同じ）
+test("products #590 D-35: voicesUrl は scene があるときだけ ?scene= を付ける（省略・null・空は付けない）。fetchVoices はその URL で呼ぶ", async () => {
+  assert.equal(voicesUrl("G0001", "送別"), "/api/products/G0001/voices?scene=%E9%80%81%E5%88%A5");
+  assert.equal(voicesUrl("G0001", "誕生日"), "/api/products/G0001/voices?scene=%E8%AA%95%E7%94%9F%E6%97%A5");
+  assert.equal(voicesUrl("G0001", null), "/api/products/G0001/voices");
+  assert.equal(voicesUrl("G0001", ""), "/api/products/G0001/voices");
+  assert.equal(voicesUrl("G0001", undefined), "/api/products/G0001/voices");
+  const urls: string[] = [];
+  const f = async (u: string | URL | Request) => {
+    urls.push(String(u));
+    return { status: 200, ok: true, json: async () => ({ voices: [] }) } as unknown as Response;
+  };
+  await fetchVoices("G0001", undefined, f as typeof fetch, "送別");
+  await fetchVoices("G0001", undefined, f as typeof fetch);
+  assert.deepEqual(urls, ["/api/products/G0001/voices?scene=%E9%80%81%E5%88%A5", "/api/products/G0001/voices"]);
+});
+
+test("products #590 S-145: DetailPanel は声を scene つきで取り、シーンが変わったら取り直す。絞った 0 件は欄ごと出さない（今のまま）", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../components/DetailPanel.tsx", import.meta.url), "utf8");
+  assert.match(src, /fetchVoices\(productId, abort\.signal, undefined, scene\)[\s\S]*?\}, \[productId, scene\]\)/);
+});

@@ -26,3 +26,10 @@ test("暗幕-1: 詳細のシート（DetailPanel）だけが暗幕をヘッダ�
   for (const f of ["CandidateResults.tsx", "SearchResults.tsx", "TopListBand.tsx"]) assert.doesNotMatch(read(`components/${f}`), /<Sheet [^>]*belowHeader/, f);
   assert.match(read("components/Sheet.tsx"), /belowHeader \? styles\.scrimLow : styles\.scrim/);
 });
+
+test("S-131 ⑥ 暗幕-2: 900px 以上の詳細パネル（.side）の上端はヘッダーの下端（top: var(--hh)）。画面の上端（0）から始めてヘッダーを覆わない", () => {
+  const r = read("components/results.module.css");
+  const side = r.match(/\.side\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.match(side, /top:\s*var\(--hh\)/);
+  assert.doesNotMatch(side, /top:\s*0[;\s]/);
+});

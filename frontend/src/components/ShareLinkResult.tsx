@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { shareFullUrl, SHARE_FAILED_MESSAGE, type ShareLink } from "@/lib/api";
 import { SHARE_CHANGED_MESSAGE } from "@/lib/selection";
-import { CopyController, COPIED_MESSAGE, COPY_FAILED_MESSAGE, type CopyStatus } from "@/lib/copyButton";
+import { CopyController, COPIED_MESSAGE, COPY_FAILED_MESSAGE, shouldFocusCopy, type CopyStatus } from "@/lib/copyButton";
 import styles from "./candidates.module.css";
 
 // F3 D-08 #32-6 #41-1: できたリンク（選べる文字）とコピーボタン、コピーの結果、作成の失敗と再試行。
@@ -18,6 +18,13 @@ export function ShareLinkResult({ link, failed, onRetry, changed = false }: Read
   }, []);
   const id = link?.share_id;
   useEffect(() => ctl.current?.reset(), [id]);
+  // NF-27 SP-05（#591）: 作成に成功したら（新しいリンクができたら。作り直しも）フォーカスを「コピー」へ移す。失敗ではリンクが変わらないので動かさない
+  const copyBtn = useRef<HTMLButtonElement>(null);
+  const prevId = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (shouldFocusCopy(prevId.current, id)) copyBtn.current?.focus();
+    prevId.current = id;
+  }, [id]);
 
   const url = link ? shareFullUrl(window.location.origin, link.path) : "";
   return (
@@ -40,7 +47,7 @@ export function ShareLinkResult({ link, failed, onRetry, changed = false }: Read
           <a className={styles.url} href={url}>
             {url}
           </a>
-          <button type="button" className={styles.remove} onClick={() => ctl.current?.copy(url)}>
+          <button ref={copyBtn} type="button" className={styles.remove} onClick={() => ctl.current?.copy(url)}>
             コピー
           </button>
           <span role="status" className={styles.copymsg}>

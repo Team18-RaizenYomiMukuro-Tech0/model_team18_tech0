@@ -215,6 +215,7 @@ export class LikeController {
   private view: Record<string, LikeView> = {};
   private readonly busy = new Set<string>();
   private readonly afterReset = new Set<string>(); // 「6 個に戻す」を押した商品（画面の中だけ。保存しない。5個-19 A）
+  private readonly kept: Record<string, number> = {}; // 「6 個に戻す」で画面から外した個数（保存には残す。5個-5 A・#589）
   private readonly abort = new AbortController();
 
   constructor(shareId: string, items: readonly SharedItem[], storage: LikeStorage | null, onChange: (v: Readonly<Record<string, LikeView>>) => void, post: PostLike = postLike, tracker: Tracker = track) {
@@ -236,6 +237,7 @@ export class LikeController {
   reset(productId: string): void {
     const cur = this.view[productId];
     if (cur && !this.busy.has(productId) && canResetLikes(cur.count)) {
+      this.kept[productId] = (this.kept[productId] ?? 0) + cur.own; // 保存は変えない（戻した後に押した分を足して書く）
       this.set(productId, resetLikeView(cur));
       this.afterReset.add(productId);
     }
@@ -299,7 +301,10 @@ export class LikeController {
   private saveOwn(): void {
     try {
       const own: Record<string, number> = {};
-      for (const [id, v] of Object.entries(this.view)) if (v.own > 0) own[id] = v.own; // 0 個の商品は書かない（D-47）
+      for (const [id, v] of Object.entries(this.view)) {
+        const n = Math.min(LIKE_PER_BROWSER, v.own + (this.kept[id] ?? 0)); // 戻した分は保存に残す。5 個を超えない（#589）
+        if (n > 0) own[id] = n; // 0 個の商品は書かない（D-47）
+      }
       this.storage?.setItem(likesKey(this.shareId), JSON.stringify(own));
     } catch {
       // 保存できなくても押せる（個数は画面を開いている間だけ数える。5個-6 A）

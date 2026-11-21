@@ -19,7 +19,7 @@ from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES, relax_
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
-from decision import arrives_on, scene_count_value, scene_counts, today_jst
+from decision import arrives_on, scene_count_value, scene_counts
 from ranking import (
     SCENE_COUNT_DESC,
     SORTS,
@@ -154,7 +154,7 @@ def list_candidates(
     chosen = ordered[start:end]
     if sort not in ("recommend", SCENE_COUNT_DESC):
         counts = scene_counts(db, scene, chosen)
-    today = today_jst(clock.now())
+    now = clock.now()
     items = []
     for pid in chosen:
         r = by_id[pid]
@@ -171,7 +171,7 @@ def list_candidates(
                 "review_count": r["review_count"],
                 "delivery_days": r["delivery_days"],
                 "wrapping": None if wrap is None else bool(wrap),
-                "arrives_on": arrives_on(today, r["delivery_days"]),
+                "arrives_on": arrives_on(now, r["delivery_days"]),
                 "scene_count": scene_count_value(scene, counts.get(pid, 0)),
                 "reason": build_reason(
                     counts.get(pid, 0),

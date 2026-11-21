@@ -5,7 +5,7 @@
 #  - SQL は固定の 1 本の文。値は %s と params で渡す（N-04）。形式が不正な ID は DB を呼ばずに 422。
 import re
 import time
-from datetime import date
+from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from api.products import SCENES, _item
 from clock import Clock, get_clock
 from db import Db, get_db, server_timing
-from decision import scene_params, today_jst
+from decision import scene_params
 
 router = APIRouter()
 
@@ -37,10 +37,10 @@ def _text_or_none(value: Any) -> str | None:
     return None if value is None or str(value).strip() == "" else str(value)
 
 
-def _detail(row: dict[str, Any], today: date, scene: str | None) -> dict[str, Any]:
+def _detail(row: dict[str, Any], now: datetime, scene: str | None) -> dict[str, Any]:
     stock = row["stock"]
     return {
-        **_item(row, today, scene, row["scene_n"]),
+        **_item(row, now, scene, row["scene_n"]),
         "status": "available" if stock is not None and stock >= 1 else "out_of_stock",
         "description": _text_or_none(row["description"]),
         "size": _text_or_none(row["size"]),
@@ -79,6 +79,6 @@ def get_product(
         return JSONResponse(
             {"error": {"code": "not_found", "message": "この商品は見つかりません"}}, status_code=404
         )
-    body = _detail(rows[0], today_jst(clock.now()), scene)
+    body = _detail(rows[0], clock.now(), scene)
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
     return body
