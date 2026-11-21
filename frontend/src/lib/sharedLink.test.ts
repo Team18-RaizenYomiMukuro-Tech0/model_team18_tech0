@@ -568,6 +568,35 @@ test("U-103 戻した後の 1 回（12A の例外・5個-16 B・5個-19 A）: �
   assert.equal(i.snapshot.Y.count, 9);
 });
 
+test("U-102・U-103 #589 5個-5 A: 戻すと画面は 0 個だが保存は変えない。戻した後に押した個数は保存へ足される（再読込で自分の個数が保存どおり）", async () => {
+  const key = likesKey(SID);
+  // ① 0 個から: 戻す（保存は書かない）→ 2 個押す → 保存は 2。再読込で 2
+  const st1 = mem();
+  const a = ctl([mk("X", 7)], [ok("X", 8), ok("X", 9)], st1).c;
+  a.reset("X");
+  assert.equal(st1.d.get(key), undefined);
+  await a.add("X");
+  await a.add("X");
+  assert.equal(a.snapshot.X.own, 2);
+  assert.deepEqual(JSON.parse(st1.d.get(key) ?? "null"), { X: 2 });
+  assert.equal(ctl([mk("X", 9)], [], st1).c.snapshot.X.own, 2);
+  // ② 保存が 3 個のとき: 戻す（保存は 3 のまま）→ 2 個押す → 保存は 5。再読込で 5
+  const st2 = mem();
+  st2.d.set(key, JSON.stringify({ X: 3 }));
+  const b = ctl([mk("X", 7)], [ok("X", 8), ok("X", 9), ok("X", 10)], st2).c;
+  b.reset("X");
+  assert.equal(b.snapshot.X.own, 0);
+  assert.deepEqual(JSON.parse(st2.d.get(key) ?? "null"), { X: 3 });
+  await b.add("X");
+  await b.add("X");
+  assert.equal(b.snapshot.X.own, 2); // 画面は 0 から数える
+  assert.deepEqual(JSON.parse(st2.d.get(key) ?? "null"), { X: 5 });
+  assert.equal(ctl([mk("X", 9)], [], st2).c.snapshot.X.own, 5);
+  // ③ さらに押しても保存は 5 を超えない
+  await b.add("X");
+  assert.deepEqual(JSON.parse(st2.d.get(key) ?? "null"), { X: 5 });
+});
+
 test("U-107 D-09 SP-28: 演出の判定は応答の合計だけで決まる（6・7・8・30）。2 人とも 7 を受け取れば 2 人とも 7 個目。文言は「ラッキー 7 いいね！」", async () => {
   for (const [n, want] of [[6, null], [7, "seven"], [8, "tsukkomi"], [30, "tsukkomi"]] as const) {
     assert.equal(likeEffect({ on: true, capped: false, countAfter: n }), want, String(n));
