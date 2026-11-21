@@ -3,8 +3,8 @@
 .h { margin: 0; font-size: 14px; }
 .list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); color: var(--ink); text-decoration: none; font-size: 13px; }
-.pic { flex: none; width: 48px; }
-.pic img { display: block; width: 48px; height: 48px; border-radius: 6px; }
+.pic { flex: none; width: 64px; }
+.pic img { display: block; width: 64px; height: 64px; border-radius: 6px; }
 .body { display: grid; gap: 2px; min-width: 0; }
 .name { font-weight: 700; overflow-wrap: anywhere; }
 .price { font-weight: 700; }
