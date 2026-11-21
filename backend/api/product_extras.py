@@ -14,7 +14,6 @@ from api.products import PRICE_BANDS, SCENES, _item
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
-from decision import today_jst
 
 router = APIRouter()
 
@@ -130,6 +129,6 @@ def get_similar(
         return _error("not_found", "この商品は見つかりません", 404)
     low, high = _band_for(int(opened[0]["price"]))
     rows = db.fetch_all(SELECT_SIMILAR, (product_id, scene, low, high, SIMILAR_MAX))
-    today = today_jst(clock.now())
+    now = clock.now()
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。一覧と同じ。NF-54・#256）
-    return {"items": [_item(r, today) for r in rows]}
+    return {"items": [_item(r, now) for r in rows]}
