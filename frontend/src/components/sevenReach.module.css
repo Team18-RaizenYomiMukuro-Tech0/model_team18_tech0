@@ -1,6 +1,6 @@
 /* SP-28 D-09 7 個目の演出。値は設計 D-09 の表（見本の B）。層は画面全体（ヘッダー・下の固定帯・詳細パネルも覆う） */
 .layer { position: fixed; inset: 0; z-index: 1000; overflow: hidden; cursor: pointer; touch-action: none; overscroll-behavior: contain; }
-.dim { position: absolute; inset: 0; background: rgba(28, 20, 18, .78); opacity: 0; }
+.dim { position: absolute; inset: 0; background: color-mix(in srgb, var(--c-scrim) 78%, transparent); opacity: 0; }
 .flash { position: absolute; inset: 0; background: var(--c-gold); opacity: 0; pointer-events: none; }
 .box { position: absolute; left: 50%; top: 42%; display: flex; gap: 10px; padding: 14px; background: var(--c-reel-bg); border-radius: 16px; opacity: 0; }
 .boxglow { position: absolute; inset: 0; border-radius: 16px; pointer-events: none; }

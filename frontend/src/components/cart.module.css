@@ -22,5 +22,5 @@
 .toastBox { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; max-width: calc(100vw - 32px); }
 /* SP-29 ⑤ D-46: 帯（下端 56px）がある検索結果では、通知を帯の上（下端から 72px）に出して帯のボタンを隠さない。パネルを開いている間・トップは 16px のまま。閉じたシート（hidden の中の dialog）は数えない（S-108） */
 :global(body[data-band="1"]):not(:has(:not([hidden]) > [role="dialog"])) .toastBox { bottom: 72px; }
-.toast { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--rm); background: var(--c-tip); color: #fff; font-size: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+.toast { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 12px; border-radius: var(--rm); background: var(--c-tip); color: #fff; font-size: 14px; box-shadow: 0 2px 10px color-mix(in srgb, var(--c-shadow) 30%, transparent); }
 .toastLink { border-color: #fff; background: transparent; color: #fff; }
