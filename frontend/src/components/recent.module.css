@@ -7,7 +7,7 @@
 .loading { align-items: center; justify-content: center; min-height: 180px; color: var(--c-sub-ink); }
 .pic { position: relative; display: block; }
 .pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
-.imgtag { position: absolute; right: 4px; bottom: 4px; padding: 0 6px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 10px; line-height: 1.6; }
+.imgtag { position: absolute; right: 4px; bottom: 4px; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--c-tip) 82%, transparent); color: #fff; font-size: 10px; line-height: 1.6; }
 .name { font-weight: 700; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .price { font-weight: 700; }
 .meta { color: var(--c-sub-ink); font-size: 12px; }

@@ -13,7 +13,7 @@ a.name { display: inline-block; min-width: 44px; padding: 11px 0; margin: -11px 
 .rank { align-self: flex-start; font-weight: 700; font-size: 15px; }
 .pic { position: relative; display: block; }
 .pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
-.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--c-tip) 82%, transparent); color: #fff; font-size: 11px; line-height: 1.7; }
 .badge { align-self: flex-start; padding: 0 8px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-ink); font-size: 12px; font-weight: 700; }
 .name { font-weight: 700; overflow-wrap: anywhere; }
 .price { font-weight: 700; }
