@@ -8,7 +8,7 @@
 .card[data-selected="true"] { border: 2px solid var(--s-coral-ink); }
 .pic { position: relative; display: block; }
 .pic img { display: block; width: 100%; height: auto; border-radius: 6px; }
-.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: rgba(58, 51, 49, .82); color: #fff; font-size: 11px; line-height: 1.7; }
+.imgtag { position: absolute; right: 6px; bottom: 6px; padding: 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--c-tip) 82%, transparent); color: #fff; font-size: 11px; line-height: 1.7; }
 .badge { align-self: flex-start; padding: 0 8px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-ink); font-size: 12px; font-weight: 700; }
 .name { font-weight: 700; }
 .price { font-weight: 700; }
@@ -42,10 +42,10 @@
 .favrow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
 
 /* R2 SP-29 D-46: 899px 以下のシート（詳細・共有リスト）と下端の帯。z-index は 帯 30 < シート 40 < カート・お気に入りのパネル 50 */
-.scrim { position: fixed; inset: 0; z-index: 39; background: rgba(58, 51, 49, .45); }
-.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; flex-direction: column; max-height: 88vh; border-radius: 12px 12px 0 0; background: var(--paper); box-shadow: 0 -4px 16px rgba(58, 51, 49, .25); outline: none; }
+.scrim { position: fixed; inset: 0; z-index: 39; background: color-mix(in srgb, var(--c-tip) 45%, transparent); }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; flex-direction: column; max-height: 88vh; border-radius: 12px 12px 0 0; background: var(--paper); box-shadow: 0 -4px 16px color-mix(in srgb, var(--c-tip) 25%, transparent); outline: none; }
 /* 900px 以上の詳細: 右から出るパネル（z-index はシートと同じ 40。暗幕 39 がヘッダー 20 も覆う） */
-.side { left: auto; top: 0; width: min(420px, 100%); max-height: none; border-radius: 0; box-shadow: -4px 0 16px rgba(58, 51, 49, .25); animation: sideIn .2s ease-out; }
+.side { left: auto; top: 0; width: min(420px, 100%); max-height: none; border-radius: 0; box-shadow: -4px 0 16px color-mix(in srgb, var(--c-tip) 25%, transparent); animation: sideIn .2s ease-out; }
 @keyframes sideIn { from { transform: translateX(100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .side { animation: none; } }
 .sheethead { display: flex; justify-content: flex-end; padding: 4px 8px 0; }

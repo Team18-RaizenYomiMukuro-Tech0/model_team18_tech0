@@ -10,8 +10,8 @@
 .sym7 { font-size: 54px; font-weight: 900; line-height: 1; color: var(--c-orange); text-shadow: 0 2px 0 var(--c-gold), 0 0 8px var(--c-gold); }
 .symheart { font-size: 44px; line-height: 1; color: var(--c-pink); }
 .symface { border-radius: 50%; display: block; }
-.reach { position: absolute; left: 50%; top: 18%; font-size: 38px; font-weight: 900; color: var(--c-gold); text-shadow: 0 2px 0 var(--c-brown), 0 0 14px rgba(255, 211, 77, .8); white-space: nowrap; opacity: 0; }
+.reach { position: absolute; left: 50%; top: 18%; font-size: 38px; font-weight: 900; color: var(--c-gold); text-shadow: 0 2px 0 var(--c-brown), 0 0 14px color-mix(in srgb, var(--c-gold) 80%, transparent); white-space: nowrap; opacity: 0; }
 .big { position: absolute; left: 50%; top: 45%; width: 220px; height: 220px; border-radius: 50%; box-shadow: 0 0 0 8px var(--c-gold), 0 0 40px 8px var(--c-gold); opacity: 0; }
 .ring { position: absolute; left: 50%; top: 45%; width: 44px; height: 44px; border-radius: 50%; opacity: 0; }
-.win { position: absolute; left: 50%; top: 78%; font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 var(--c-brown), 0 0 12px rgba(255, 211, 77, .9); white-space: nowrap; opacity: 0; }
+.win { position: absolute; left: 50%; top: 78%; font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 var(--c-brown), 0 0 12px color-mix(in srgb, var(--c-gold) 90%, transparent); white-space: nowrap; opacity: 0; }
 .hint { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-size: 12px; color: #fff; }
