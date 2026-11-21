@@ -23,3 +23,8 @@
 .helpbtn:hover { background: var(--peach); }
 .rhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .rtitle { margin: 0; font-size: 17px; }
+/* #592 S-146 SP-31: 価格帯の 3 つは 375px・393px で 1 行に収める（文字を小さくし、間も詰める。PM 決定 2026-11-22）。押せる大きさ 44px 以上（.btn の min-height）は変えない */
+@media (max-width: 480px) {
+  .pricegroup { flex-wrap: nowrap; gap: 4px; }
+  .pricegroup .btn { padding: 8px 8px; font-size: 14px; white-space: nowrap; }
+}

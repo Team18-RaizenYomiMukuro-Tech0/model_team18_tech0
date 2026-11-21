@@ -34,7 +34,7 @@ export function SearchConditions({ q }: Readonly<{ q: SearchQuery }>) {
           <b id="cond-price" className={styles.head}>
             {CONDITION_HEADINGS.price}
           </b>
-          <div className={styles.group} role="group" aria-labelledby="cond-price">
+          <div className={`${styles.group} ${styles.pricegroup}`} role="group" aria-labelledby="cond-price">
             {PRICE_BANDS.map((b) => (
               <button key={b.value} type="button" className={styles.btn} aria-pressed={q.priceBand === b.value} onClick={() => go(togglePrice(q, b.value))}>
                 {mark(q.priceBand === b.value)}
