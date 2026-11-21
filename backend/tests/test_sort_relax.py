@@ -30,7 +30,7 @@ def data() -> list[dict[str, Any]]:
 def test_sort_orders() -> None:
     for client in client_for(CandidateDb(data())):
         assert ids(client, "sort=price_asc") == ["A4", "A2", "A1", "A3", "A5", "A6"]
-        assert ids(client, "sort=rating_desc") == ["A5", "A6", "A2", "A1", "A4", "A3"]
+        assert ids(client, "sort=rating_desc") == ["A5", "A6", "A2", "A1", "A4", "A3"]  # 件数で割り引いても同じ順（U-108。C＝4.1）
         assert ids(client, "sort=delivery_asc") == ["A5", "A6", "A2", "A1", "A4", "A3"]
         rec = ids(client, "sort=recommend")
         assert rec == ids(client, "") == ids(client, "sort=")  # 省略・空は recommend と同じ（I-48）
@@ -113,3 +113,28 @@ def test_relax_matches_dropped_totals() -> None:
         before = db.calls
         client.get("/api/products?scene=誕生日")
         assert db.calls - before == 2  # 抽出 ＋ relax（0 件なので回数は数えない）
+
+
+# SP-21 D-43 D-02 U-108 I-48: 評価順も件数で割り引く（PM 決定 2026-11-21 A-6）。C は評価があり件数 1 以上の商品の平均
+def test_rating_desc_discounts_by_count() -> None:
+    items = [
+        product("B", "送別", 1, 3000, 4.8, 120),
+        product("A", "送別", 1, 3000, 5.0, 1),  # 件数 1 件の★5
+        product("G", "送別", 1, 3000, 4.0, 500),
+        product("F", "送別", 1, 3000, 4.0, 500),  # G と全部同じ（商品ID順で F が先）
+        product("D", "送別", 1, 3000, None, None),  # 評価なしは最後
+    ]
+    for client in client_for(CandidateDb(items)):
+        r = client.get("/api/candidates?scene=送別&sort=rating_desc").json()
+        assert [i["product_id"] for i in r["items"]] == ["B", "A", "F", "G", "D"]
+        assert r["total"] == 5
+        assert ids(client, "sort=recommend") == ids(client, "")  # おすすめ順は変わらない
+    # 関数でも同じ（C＝4.45。A の点数は約 4.48、B は 4.75）
+    tuples: list[tuple[str, int, float | None, int | None, int | None]] = [
+        ("B", 3000, 4.8, 120, 3),
+        ("A", 3000, 5.0, 1, 3),
+        ("G", 3000, 4.0, 500, 3),
+        ("F", 3000, 4.0, 500, 3),
+        ("D", 3000, None, None, 3),
+    ]
+    assert order_by_sort(tuples, "rating_desc") == ["B", "A", "F", "G", "D"]

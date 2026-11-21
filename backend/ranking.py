@@ -63,19 +63,21 @@ def order_by_sort(
     sort: str,
 ) -> list[str]:
     """(商品ID, 価格, 評価, レビュー件数, 配送日数) を D-43 の表のとおりに並べる。recommend はおすすめ順（D-02 の式）。
-    NULL は後ろ（評価の高い順・配送日数の小さい順のとき最後）。同じ値は表の次の項目、最後は商品ID順"""
+    NULL は後ろ（評価順・配送日数の小さい順のとき最後）。評価順は件数で割り引いた点数の高い順。同じ値は表の次の項目、最後は商品ID順"""
     if sort == "recommend":
         return order_by_score([(pid, rating, count) for pid, _, rating, count, _ in items])
 
     def rating_desc(rating: Decimal | float | None) -> tuple[int, Fraction]:
         return (1, Fraction(0)) if rating is None else (0, -_fraction(rating))  # 評価の高い順。なしは後ろ
 
+    # 評価順は件数で割り引いた点数（D-02 の式。C は渡された商品の中で求める。PM 決定 2026-11-21 A-6）
+    scores = score_products([(pid, rating, count) for pid, _, rating, count, _ in items]) if sort == "rating_desc" else {}
     keys: dict[str, tuple[object, ...]] = {}
     for pid, price, rating, count, days in items:
         if sort == "price_asc":
             keys[pid] = (price, rating_desc(rating), id_key(pid))
         elif sort == "rating_desc":
-            keys[pid] = (rating_desc(rating), -(count or 0), id_key(pid))
+            keys[pid] = ((1, Fraction(0)) if rating is None else (0, -scores[pid]), -(count or 0), id_key(pid))  # 評価なしは最後
         elif sort == "delivery_asc":
             keys[pid] = ((1, 0) if days is None else (0, days), rating_desc(rating), id_key(pid))
         else:
