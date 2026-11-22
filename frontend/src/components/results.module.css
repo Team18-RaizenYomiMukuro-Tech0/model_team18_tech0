@@ -28,6 +28,10 @@
 .detpad { padding: 14px; margin: 0; }
 /* #687 詳細の読み込み中: あかぷさんを中身の欄の縦横の真ん中に置く。縦は欄に高さが無いため最小 240px を付ける */
 .detloading { display: flex; align-items: center; justify-content: center; min-height: 240px; box-sizing: border-box; }
+/* #687 右から出るパネルは全高なので、読み込み中は中身の欄の残りの高さいっぱいに広げて真ん中に置く（読み込み後は中身の高さに戻る。パネルの高さは変わらない） */
+.side .sheetscroll { display: flex; flex-direction: column; }
+.side .sheetscroll > * { flex-shrink: 0; }
+.side .detloading { flex: 1 0 auto; }
 .detfoot { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--paper); }
 .footpick { flex: 1 0 100%; }
 .footprice { font-weight: 700; }
