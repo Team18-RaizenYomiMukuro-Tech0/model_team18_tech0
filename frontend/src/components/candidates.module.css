@@ -1,9 +1,11 @@
 /* F2 候補のカード・「選んだ候補」の欄。globals.css は触らない */
-.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-@media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
-/* PM 決定 1A: カード幅 154px 以上で「（税込）」とボタンが収まる。4 列は 1080px 以上、5 列は 1280px 以上 */
-@media (min-width: 1080px) { .cards { grid-template-columns: repeat(4, 1fr); } }
-@media (min-width: 1280px) { .cards { grid-template-columns: repeat(5, 1fr); } }
+/* #684: 列の数は画面の幅でなく一覧の幅で決める（右の欄 .rcol 360px の分だけ一覧が狭くなるため）。
+   境の幅 = n 列 × 154px + (n-1) × 12px（カード 1 枚 154px 以上・すき間 12px）: 3 列 486px・4 列 652px・5 列 818px */
+.cardsbox { container-type: inline-size; min-width: 0; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@container (min-width: 486px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@container (min-width: 652px) { .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container (min-width: 818px) { .cards { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .card { position: relative; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 14px; }
 a.name { color: inherit; }
 /* NF-46: 商品名リンクのタップ領域を縦 44px 以上に（padding を足し、同じだけ負の margin で戻すので、文字の大きさ・並びは変わらない） */
