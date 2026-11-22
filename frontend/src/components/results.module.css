@@ -26,6 +26,8 @@
 /* 詳細の欄（900px 以上）: 右に置き、画面内に収める。一番下の帯（.detfoot）は sticky で欄をスクロールしても見える（SP-29）。899px 以下は Sheet（下から出る） */
 .detail { padding: 0; border: 1px solid var(--line); border-radius: var(--rm); background: var(--paper); min-width: 0; position: sticky; top: calc(var(--hh) + 12px); max-height: calc(100vh - var(--hh) - 24px); overflow-y: auto; }
 .detpad { padding: 14px; margin: 0; }
+/* #687 詳細の読み込み中: あかぷさんを中身の欄の縦横の真ん中に置く。縦は欄に高さが無いため最小 240px を付ける */
+.detloading { display: flex; align-items: center; justify-content: center; min-height: 240px; box-sizing: border-box; }
 .detfoot { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--paper); }
 .footpick { flex: 1 0 100%; }
 .footprice { font-weight: 700; }
