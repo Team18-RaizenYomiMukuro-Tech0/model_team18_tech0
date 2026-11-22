@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { arrivesText, canCompare, canSelectMore, compareLabel, NOTFOUND_MESSAGE, pruneSelection, ratingCell, toggleSelect, UNDER_TWO_MESSAGE, wrappingText } from "@/lib/compare";
+import { arrivesText, canCompare, canSelectMore, compareLabel, NOTFOUND_MESSAGE, pruneSelection, ratingCell, removedIds, toggleSelect, UNDER_TWO_MESSAGE, visibleIds, wrappingText } from "@/lib/compare";
 import { formatPrice } from "@/lib/formatPrice";
 import { productImage } from "@/lib/images";
 import { fetchJson, isProductDetail, productUrl, type Fetched, type ProductDetail } from "@/lib/products";
@@ -61,6 +61,7 @@ function FavoritesPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   const [view, setView] = useState<"list" | "table">("list");
   const [cmp, setCmp] = useState<Record<string, Got | undefined>>({});
   const [gone, setGone] = useState<string[]>([]); // 表を開いている間に、ほかのタブで外れた商品
+  const [removed, setRemoved] = useState<string[]>([]); // ほかのタブで外れた商品（一覧からもすぐ消す。SP-23 ⑧・X-63）
   const wasTable = useRef(false);
   const closeBtn = useRef<HTMLButtonElement>(null);
   const cmpBtn = useRef<HTMLButtonElement>(null);
@@ -86,11 +87,12 @@ function FavoritesPanel({ onClose }: Readonly<{ onClose: () => void }>) {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== FAVORITES_KEY) return;
       const now = loadFavorites(window.localStorage);
+      setRemoved((r) => [...r, ...removedIds(ids, now).filter((x) => !r.includes(x))]);
       setGone((g) => [...g, ...selected.filter((x) => !now.includes(x) && !g.includes(x))]);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, [selected]);
+  }, [selected, ids]);
 
   const columns = selected.filter((id) => !gone.includes(id) && cmp[id]?.status !== "notfound");
   const loading = view === "table" && selected.some((id) => !cmp[id]);
@@ -172,7 +174,7 @@ function FavoritesPanel({ onClose }: Readonly<{ onClose: () => void }>) {
               {notice || (selected.length === 1 ? "2〜3件選ぶと比べられます" : "")}
             </p>
             <ul className={styles.list}>
-              {ids.map((id) => {
+              {visibleIds(ids, removed).map((id) => {
                 const r = found[id];
                 const p = r?.status === "ok" ? r.data : null;
                 const checked = selected.includes(id);
