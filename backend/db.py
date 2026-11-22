@@ -32,10 +32,12 @@ _WRITE_RES = (
     re.compile(r"^\s*INSERT\s+IGNORE\s+INTO\s+`?usage_events`?\s*[\s(]", re.IGNORECASE),
 )
 _USERS_RE = re.compile(r"\busers\b", re.IGNORECASE)  # users は読まない・書かない（#58-9）
-_OTHER_DB_RE = re.compile(r"\bgiftia_t\d+\b", re.IGNORECASE)  # 別の DB 名の修飾子（t502.… など）を書かない
+# 別の DB 名の修飾子（db.table の形。設計 D-45）を書かない。表名の位置（FROM・JOIN・INTO・UPDATE・TABLE の直後）の「名前.名前」を止める。
+# 別名の「p.id」（表.列）は表名の位置に来ないので止めない。information_schema は /api/health の構造の読み取りが使うので通す。
+_OTHER_DB_RE = re.compile(r"\b(?:FROM|JOIN|INTO|UPDATE|TABLE)\s+`?(?!information_schema\b)[\w$]+`?\s*\.", re.IGNORECASE)
 
 
-# 本番の接続（database.get_connection）は 1 本だけ手元に残して使い回す（#256）。暗号化つきの接続を作るのに 1 秒以上かかるため。
+# 本番の接続（database.get_connection）は、数本（D-45: 3〜4 本。SETTINGS.DB_IDLE_MAX）を手元に残して使い回す（#256）。暗号化つきの接続を作るのに 1 秒以上かかるため。
 #  - 使うとき、残してある接続を「取り出す」（無ければ新しく作る）。同時に 2 つの要求が同じ接続を使うことは無い。
 #  - 使い終わったら戻す。すでに IDLE_MAX 本（D-45: 3〜4 本。詳細の画面は 3 つの API を同時に呼ぶ）残っていれば、余った方は閉じる。失敗した接続は戻さずに閉じる。
 #  - 接続は autocommit（database.py）。読み取りが古い見え方（スナップショット）のまま残らない。

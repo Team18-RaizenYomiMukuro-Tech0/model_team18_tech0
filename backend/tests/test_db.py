@@ -100,6 +100,7 @@ def test_write_only_share_links_insert() -> None:
         "ALTER TABLE share_links ADD c INT", "CREATE TABLE t (a INT)", "GRANT ALL ON *.* TO x",
         "INSERT INTO share_links (a) VALUES ('直接の値')", "INSERT INTO share_links (a) VALUES (%s); DROP TABLE x",
         "INSERT INTO users (a) VALUES (%s)", "INSERT INTO giftia_t502.share_links (a) VALUES (%s)",
+        "INSERT INTO other_db.share_links (a) VALUES (%s)", "UPDATE other_db.share_likes SET a = %s WHERE b = %s",
     ]
     for s in bad_writes:
         with pytest.raises(DbNotAllowed):
@@ -151,10 +152,14 @@ def test_write_allow_list_wave2() -> None:
 
 def test_read_scope() -> None:
     for s in ["SELECT 1; SELECT 2", "SELECT * FROM users", "SELECT * FROM giftia_t502.products", "USE giftia_t502",
+              "SELECT * FROM mysql.user", "SELECT * FROM `mysql`.`user`", "SELECT * FROM products JOIN other_db.t ON 1=1",
               "SELECT 1 -- x", "SELECT 1 /* x */", "DELETE FROM products", "UPDATE products SET a = 1"]:
         with pytest.raises(DbNotAllowed):
             check_sql(s, write=False)
     check_sql("SELECT a FROM products WHERE b IN (%s, %s)", write=False)
+    # NF-09 の回帰: 今の SQL（別名 p.id・information_schema の構造の読み取り）は通る
+    check_sql("SELECT p.id, p.name FROM products p WHERE p.price > 1.5", write=False)
+    check_sql("SELECT DATABASE() AS db, COUNT(*) AS tables FROM information_schema.tables WHERE table_schema = DATABASE()", write=False)
 
 
 def test_fixed_target(monkeypatch: pytest.MonkeyPatch) -> None:
