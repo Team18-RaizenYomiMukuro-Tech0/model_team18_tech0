@@ -81,7 +81,7 @@ export function DetailPanel({ productId, onClose, scene = null, focusKey = null,
   const content = (
     <>
       {!r && (
-        <div className={styles.detpad}>
+        <div className={`${styles.detpad} ${styles.detloading}`}>
           <Searching />
         </div>
       )}
