@@ -11,6 +11,7 @@ import styles from "./candidates.module.css";
 export function CandidateList({ items, hrefFor, selectedId, scene = null }: Readonly<{ items: readonly CandidateItem[]; hrefFor?: (productId: string) => string; selectedId?: string | null; scene?: string | null }>) {
   const { isPicked, pick, unpick } = useAppState();
   return (
+    <div className={styles.cardsbox}>
     <ul className={styles.cards}>
       {items.map((it) => {
         const picked = isPicked(it.product_id);
@@ -19,5 +20,6 @@ export function CandidateList({ items, hrefFor, selectedId, scene = null }: Read
         );
       })}
     </ul>
+    </div>
   );
 }
