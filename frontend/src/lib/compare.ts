@@ -16,6 +16,9 @@ export const canSelectMore = (selected: readonly string[]): boolean => selected.
 export const canCompare = (n: number): boolean => n >= COMPARE_MIN && n <= COMPARE_MAX;
 // 一覧から外れた商品は選択からも外す
 export const pruneSelection = (selected: readonly string[], ids: readonly string[]): string[] => selected.filter((x) => ids.includes(x));
+// #664 SP-23 ⑧: ほかのタブで外れた商品（見ていた一覧のうち、いま保存に無いもの）と、一覧に出す商品（外れたものを除く）
+export const removedIds = (shown: readonly string[], now: readonly string[]): string[] => shown.filter((x) => !now.includes(x));
+export const visibleIds = (shown: readonly string[], removed: readonly string[]): string[] => shown.filter((x) => !removed.includes(x));
 export const compareLabel = (n: number): string => (n > 0 ? `比べる（${n}件選択中）` : "比べる");
 
 // 「{M}/{D}までに届く（目安）」（SP-26）。YYYY-MM-DD 以外・無いときは「—」
