@@ -673,6 +673,10 @@ SELECT share_id FROM share_links WHERE share_id = 'AAAAAAAAAAAAAAAAAAAAAA';   --
 
 記録: `evidence/NF-58.md`。
 
+## 公開前に確かめること
+
+- 実機・スクリーンリーダーの確認は、評価では確かめていない。次の版で行う（設計 D-46。X-60・#673。PM 決定（レージ・2026-11-22、りじちょー代筆。https://github.com/Team18-RaizenYomiMukuro-Tech0/model_team18_tech0/pull/681#issuecomment-7071275865））。
+
 ## 実行の記録
 
 実行したら `evidence/db/<YYYY-MM-DD>_<手順番号>.md` を作る（例 `evidence/db/2026-11-08_3.md`）。書くこと:
