@@ -17,20 +17,27 @@
 
 ## ミスの型（週1要約が更新。発生回数の多い順）
 
-- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 128回。記録のノイズの可能性（要確認）
-- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 15回
-- [使い捨ての Python スクリプトが失敗する](mistakes/python-adhoc-script-errors.md) — 15回（新規 2026-11-16）
-- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 14回
-- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 10回
+- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 137回。記録のノイズの可能性（要確認）
+- [使い捨ての Python スクリプトが失敗する](mistakes/python-adhoc-script-errors.md) — 24回（Node の使い捨てスクリプトも含む）
+- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 19回
+- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 15回（Azure の DB への接続のタイムアウトを含む）
+- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 11回
+- [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 11回
 - [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 9回
-- [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 8回
-- [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 7回
-- [シェルからの書き込みが拒否される（メモリ・一時領域）](mistakes/protected-path-write-denied.md) — 7回（新規 2026-11-16）
+- [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 9回
+- [シェルからの書き込みが拒否される（メモリ・一時領域）](mistakes/protected-path-write-denied.md) — 7回
 - [git 管理外のディレクトリで git/gh を実行している](mistakes/non-git-dir-command.md) — 4回
-- [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
+- [担当が報告を送らずに止まり、アプリに催促される](mistakes/stopped-without-report.md) — 4回（2026-11-20。手書き）。担当の定義に「止まる前に SendMessage」を足した
+- [今いる場所を思い違えて、無いパスを指定する](mistakes/wrong-relative-path.md) — 3回（新規 2026-11-23）
 - [証拠が完了条件と違うのに ○ にする・Draft で止める・パスを書き違える](mistakes/evidence-and-review-slips.md) — 3回（2026-11-11〜12。手書き）
+- [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
 - [Python のモジュールが無い（PIL）](mistakes/python-module-missing.md) — 2回
-- [担当が報告を送らずに止まり、アプリに催促される](mistakes/stopped-without-report.md) — 2回（新規 2026-11-20）。担当の定義に「止まる前に SendMessage」を足した
+- [利用者の判断を、質問の道具でなく返事の文章で聞いて止まる](mistakes/question-in-text-not-asked.md) — 2回（2026-11-23。手書き）
+- [GitHub 側の一時的なエラー（502）で gh が失敗する](mistakes/github-transient-5xx.md) — 1回（新規 2026-11-23）
+- [画面確認で押したいボタンが別の要素に隠れていて押せない](mistakes/browser-element-covered.md) — 1回（新規 2026-11-23）
+- [入っていないコマンド（az など）を呼んでしまう](mistakes/cli-tool-not-installed.md) — 1回（新規 2026-11-23）
+- [担当の作業フォルダに自動で作られたファイルが残り、依頼が止まる](mistakes/untracked-file-blocks-assign.md) — 1回（2026-11-20。手書き）
+- [作業フォルダの強制削除で、未コミットの記録が消える](mistakes/worktree-force-remove-loses-uncommitted.md) — 1回（2026-11-13。手書き）
 
 ## 画面・運用の決まり
 

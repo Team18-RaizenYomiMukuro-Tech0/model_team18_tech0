@@ -4,13 +4,13 @@ type: knowledge
 origin: internal
 tags: [mistake]
 created: 2026-11-09
-updated: 2026-11-16
+updated: 2026-11-23
 ---
 
 # 一時ディレクトリのパスが無くなっている
 
-- 発生回数: 15（〜2026-11-08 に 9、2026-11-09〜11-15 の収集分で +6）
-- 最終発生日: 2026-11-15
+- 発生回数: 19（〜2026-11-08 に 9、2026-11-09〜11-15 の収集分で +6、2026-11-16〜11-22 の収集分で +4）
+- 最終発生日: 2026-11-21
 - 収集源: claude-bash
 - デプロイ系: いいえ
 
@@ -18,6 +18,11 @@ updated: 2026-11-16
 
 - `cd $TMPDIR/wt/docs` や `cp /tmp/claude-501/r7.png ...`、`ls $TMPDIR/ps` が `No such file or directory`。
 - 今週も同じ型: `cd /private/tmp/claude-501/…/<セッションID>…` が `no such file or directory`、`ls /tmp/claude-501/hs`、`cut -c1-260 $TMPDIR/d5.txt`、`wc …/scratchpad/…`、`mv x.json ../x.held.json`（移動先が無い）。
+- 2026-11-23 の要約（4件）:
+  - `cd $TMPDIR && python3 - <<'EOF' … open("new.json")` → `FileNotFoundError: 'new.json'`（`$TMPDIR` に前のファイルが無い）
+  - `S=/private/tmp/claude-501/…/<セッションID>; … sed -i '' … $S/gift.mjs` → `No such file or directory`（直前と直後のコマンドは `…/<セッションID>/scratchpad`。`/scratchpad` を書き落とした）
+  - `…/scratchpad/venv-e09/bin/python` → 終了コード 127 `no such file or directory`（前に作った仮想環境が無い）
+  - `cd …/scratchpad && …` の中で `sheet.swift`・`qsheet.jpg` が `No such file or directory`
 
 ## 原因
 
@@ -28,3 +33,5 @@ updated: 2026-11-16
 - 一時ファイルは使う直前に `mkdir -p` で作り、同じコマンド内で完結させる。
 - `$TMPDIR` を持ち越さず、絶対パスで書く。
 - `cd` の前に `test -d` で存在を確認する。
+- 長いパスは変数（`S=…`）に入れたら、後のコマンドでも同じ変数を使い、手で書き直さない（2026-11-23 の `/scratchpad` 書き落とし）。
+- 仮想環境や作業用ファイルは scratchpad に置いたままにせず、次のセッションでも使うなら消えない決まった場所（例: 既にある `backend/.venv`）を使う（推定。要確認）。

@@ -4,13 +4,13 @@ type: knowledge
 origin: internal
 tags: [mistake]
 created: 2026-11-09
-updated: 2026-11-20
+updated: 2026-11-23
 ---
 
 # gh の使い方違い・ラベル不在・ブランチ保護でマージできない
 
-- 発生回数: 10（〜2026-11-08 に 3、2026-11-09〜11-15 の収集分で +5、2026-11-20 に +2）
-- 最終発生日: 2026-11-20
+- 発生回数: 11（〜2026-11-08 に 3、2026-11-09〜11-15 の収集分で +5、2026-11-20 に +2（手書き）、2026-11-16〜11-22 の収集分で +1）
+- 最終発生日: 2026-11-21
 - 収集源: claude-bash
 - デプロイ系: いいえ
 
@@ -20,6 +20,7 @@ updated: 2026-11-20
 - `gh issue create --label task` → `could not add label: 'task' not found`
 - `gh pr view 147 --comments --json comments` → `specify only one of --comments or --json`
 - 今週: `gh issue view 206 --comments --json` で同じ指定違い 1 回。`gh pr checks 262/264/267` が終了コード 8（チェックが未完了・保留中。出力は正常）4 回。
+- 2026-11-23 の要約（1件）: レージさん向けの Issue（テストで見つけた不具合と改善点）を作る `gh issue create … --label task` → `could not add label: 'task' not found`。11/08 以前と同じ、存在しないラベル名。
 
 ## 原因
 
