@@ -33,6 +33,14 @@ const PATHS = {
       <path d="M32 30l-9 24M32 30l9 24" />
     </>
   ),
+  share: (
+    <>
+      <circle cx="46" cy="14" r="7" />
+      <circle cx="18" cy="32" r="7" />
+      <circle cx="46" cy="50" r="7" />
+      <path d="M24 29l16-11M24 35l16 11" />
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof PATHS | "heart-filled";

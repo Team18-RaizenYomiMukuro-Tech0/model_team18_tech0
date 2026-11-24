@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { DETAIL_HINT, LIST_EMPTY_HINT, RIGHT_COLUMN_LABEL, RIGHT_TABS, nextTab, pickedAnnouncement, tabLabel, type RightTab } from "@/lib/rightColumn";
+import { DETAIL_HINT, LIST_EMPTY_HINT, RIGHT_COLUMN_LABEL, RIGHT_TABS, nextTab, pickedAnnouncement, showTabBadge, tabLabel, tabText, type RightTab } from "@/lib/rightColumn";
 import { DetailPanel } from "./DetailPanel";
 import { SelectedList } from "./SelectedList";
+import { Icon } from "./icons";
+import fav from "./favorites.module.css";
 import styles from "./results.module.css";
 
-// R5 SP-29 D-46 F-38: PC（900px 以上）の R-01 の右の列。上に「詳細」（左）「共有リスト（N件）」（右）のタブ、下に選んだタブの中身。
+// R5 SP-29 D-46 F-38: PC（900px 以上）の R-01 の右の列。上に「詳細」（左）「共有リスト」（右。1 件以上のときは前に共有のアイコン、後ろにカートと同じ数の丸）のタブ、下に選んだタブの中身。
 // role=tablist／tab／tabpanel。選んでいるタブだけ tabindex=0（Tab はこの列の中で 1 回だけ止まる）。← → で隣へ移ると同時に切り替わり、Home・End で先頭・末尾。
 // 2 つの中身は両方描いたまま使わない側を hidden にする（作った共有リンクや選択が切り替えで消えない）。切り替えたら中身のスクロールは先頭へ戻す。
 // タブの状態は URL に入れない。最初はいつも詳細（持ち主は CandidateResults）。件数が変わったら見えない role=status で読み上げる。
@@ -62,12 +64,23 @@ export function RightColumn({
             type="button"
             role="tab"
             className={styles.tab}
+            aria-label={tabLabel(t, picked)}
             aria-selected={tab === t}
             aria-controls={panelId(t)}
             tabIndex={tab === t ? 0 : -1}
             onClick={() => select(t, false)}
           >
-            {tabLabel(t, picked)}
+            {showTabBadge(t, picked) && (
+              <span className={styles.tabico}>
+                <Icon name="share" size={18} />
+              </span>
+            )}
+            {tabText(t)}
+            {showTabBadge(t, picked) && (
+              <span className={`${fav.count} ${styles.tabcnt}`} aria-hidden="true">
+                {picked}
+              </span>
+            )}
           </button>
         ))}
       </div>
