@@ -6,7 +6,8 @@ origin: internal ／ 根拠: Issue #721（Terao の調査。コードは未修�
 
 - 詳しい情報の API（`/api/products/<ID>`）が、最初の 1 回だけ画面側で約 3.3〜3.6 秒かかった。
 - 同じ呼び出しの `Server-Timing` の `total` は 0.42〜0.51 秒。差の約 2.9 秒は API の外。
-- DB を使わない `/api/health` も 3.3〜3.6 秒。応答の `proc` は `nth=1`・`up≒1.2s`（起動直後の新しいプロセスの最初の応答）。数分後は同じ詳細が 0.614 秒（`nth=2`）。
+- DB に軽い SELECT を 1 本だけ投げる `/api/health` も 3.3〜3.6 秒。
+- 注: #721 の調査では「DB を使わない」と書かれていたが、コード（`backend/main.py` 41〜48 行）は `information_schema.tables` に SELECT を 1 本投げる（11/25 にりじちょーが確認）。応答の `proc` は `nth=1`・`up≒1.2s`（起動直後の新しいプロセスの最初の応答）。数分後は同じ詳細が 0.614 秒（`nth=2`）。
 - 詳細の SELECT は 1 本。メモリの `catalog`（D-50）は使っていない（D-04 の対象外）。
 
 ## 2. 見立て（意見）
