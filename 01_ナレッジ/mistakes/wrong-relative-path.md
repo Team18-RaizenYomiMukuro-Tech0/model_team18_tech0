@@ -4,12 +4,12 @@ type: knowledge
 origin: internal
 tags: [mistake]
 created: 2026-11-23
-updated: 2026-11-23
+updated: 2026-11-26
 ---
 
 # 今いる場所を思い違えて、無いパスを指定する
 
-- 発生回数: 9（2026-11-16〜11-22 の収集分で 3、Windows 機の収集分 2026-11-07〜11-17 で +6）
+- 発生回数: 10（2026-11-16〜11-22 の収集分で 3、Windows 機の収集分 2026-11-07〜11-17 で +6、2026-11-26 の収集分で +1）
 - 最終発生日: 2026-11-21
 - 収集源: claude-bash
 - デプロイ系: いいえ
@@ -25,6 +25,8 @@ updated: 2026-11-23
   - `git -C ../../../wt-r5-291` → `cannot change to … No such file or directory`（`hive/agents/mi-rin-…` から数えた `../` の数が合っていない）
   - `cd ../wt-shots-437` → `No such file or directory`（作っていない作業フォルダ）
   - `cd model_team18_tech0` → 無い、`../wt-m414` → `is not a working tree`（`Tech0/` から見た相対パスを、別の場所で使った）
+
+- 2026-11-26 の要約（1件。2026-11-20）: `git status -sb && sed -n 18p .githooks/pre-commit | cut -c1-60; ls scripts/test_pre_commit_secrets.sh` → `ls: scripts/test_pre_commit_secrets.sh: No such file or directory`（作業ブランチに、そのテストのファイルがまだ無かった。名前を決め打ちで書いた。推定。要確認）
 
 ## 原因
 
