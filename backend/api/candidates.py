@@ -9,6 +9,7 @@
 import math
 import re
 import time
+from collections.abc import Sequence
 from decimal import Decimal
 from typing import Annotated, Any
 
@@ -16,6 +17,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from api.products import CATEGORIES, NO_PRICE_LIMIT, PRICE_BANDS, SCENES, relax_counts
+from catalog import Catalog, get_catalog
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
@@ -66,6 +68,7 @@ def list_candidates(
     response: Response,
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
+    catalog: Annotated[Catalog, Depends(get_catalog)],
 ) -> Any:
     """候補の取得。不正な値は 422（invalid_price_band / invalid_scene / invalid_category）"""
     started = time.perf_counter()
@@ -120,7 +123,12 @@ def list_candidates(
         1 if categories else 0,
         *slots,
     )
-    rows = db.fetch_all(SELECT_CANDIDATES, params)
+    snap = catalog.current(db, clock)  # メモリが使えれば SQL は 0 本。空の間は今の道（D-50。入力の検証のあとなので、不正な入力では読み込みも始めない）
+    rows = snap.select(scene, price_range, categories) if snap is not None else db.fetch_all(SELECT_CANDIDATES, params)
+
+    def count_of(ids: Sequence[str]) -> dict[str, int]:
+        return snap.scene_counts(scene, ids) if snap is not None else scene_counts(db, scene, ids)
+
     by_id = {str(r["product_id"]): r for r in rows}
 
     scores = score_products(
@@ -136,11 +144,11 @@ def list_candidates(
     start, end = (page - 1) * size, page * size
 
     if sort == SCENE_COUNT_DESC:  # 回数順は全候補の回数が要る（1 回の集計。D-04）
-        counts = scene_counts(db, scene, list(scores))
+        counts = count_of(list(scores))
         ordered = order_by_scene_count(scores, counts)
     elif sort == "recommend":  # 表示するページまでと、その境目と同点の商品だけ数える（D-04）
         pool = candidate_pool(scores, min(end, total))
-        counts = scene_counts(db, scene, pool)  # 1 回の集計
+        counts = count_of(pool)  # 1 回の集計
         ordered = top_by_score_then_count(scores, counts, pool, end)
     else:  # 価格・評価・配送日数の順（D-43。同じ値は商品ID順）。回数は表示する分だけ数える
         ordered = order_by_sort(
@@ -153,7 +161,7 @@ def list_candidates(
         counts = {}
     chosen = ordered[start:end]
     if sort not in ("recommend", SCENE_COUNT_DESC):
-        counts = scene_counts(db, scene, chosen)
+        counts = count_of(chosen)
     now = clock.now()
     items = []
     for pid in chosen:
@@ -185,6 +193,10 @@ def list_candidates(
         )
     body: dict[str, Any] = {"items": items, "count": len(items), "total": total, "page": page, "page_size": size}
     if total == 0:  # 0 件のときだけ助け舟の件数（D-44。同じ関数。シーンははずさない。+1 往復）
-        body["relax"] = relax_counts(db, scene, price_range if band != "" else None, categories)
+        body["relax"] = (
+            snap.relax_counts(scene, price_range if band != "" else None, categories)
+            if snap is not None
+            else relax_counts(db, scene, price_range if band != "" else None, categories)
+        )
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。#256）
     return body

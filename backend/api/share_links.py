@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse
 
 from api.product_detail import PRODUCT_ID_RE
 from api.products import SCENES
+from catalog import Catalog, get_catalog
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, DbError, get_db, server_timing
@@ -91,7 +92,7 @@ def _parse_body(raw: bytes) -> tuple[list[str], str | None] | JSONResponse:
     return [str(i) for i in ids], scene
 
 
-def _create(ids: list[str], scene: str | None, db: Db, clock: Clock, mark: int) -> JSONResponse:
+def _create(ids: list[str], scene: str | None, db: Db, clock: Clock, mark: int, catalog: Catalog) -> JSONResponse:
     if len(ids) > SETTINGS.SHARE_REQUEST_MAX_LENGTH:  # 重複を除く前の長さ（H-23）
         return _error("too_many_items", "選べるのは10件までです")
     unique = list(dict.fromkeys(ids))  # 最初に出てきた順で重複を除く（H-23）
@@ -107,7 +108,11 @@ def _create(ids: list[str], scene: str | None, db: Db, clock: Clock, mark: int) 
         return _invalid()
 
     # 理由の文は作る時に選んでいたシーンに合わせる（SP-03・D-05）。シーンなしは回数を数えない
-    counts: dict[str, int] = {} if scene is None else scene_counts(db, scene, unique)
+    # 回数はメモリの値（空の間は今の道で数えた値。D-50・I-77・I-78）。商品の存在確認（上の SELECT）は DB のまま
+    counts: dict[str, int] = {}
+    if scene is not None:
+        snap = catalog.current(db, clock)
+        counts = snap.scene_counts(scene, unique) if snap is not None else scene_counts(db, scene, unique)
 
     items = []
     for pid in unique:
@@ -159,12 +164,13 @@ async def create_share_link(
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
     mark: Annotated[int, Depends(get_test_mark)],
+    catalog: Annotated[Catalog, Depends(get_catalog)],
 ) -> Any:
     """共有リンクを毎回新しく 1 件作る。DB の呼び出しは別スレッドで行い、待ち中も他の要求を止めない"""
     parsed = _parse_body(await request.body())
     if isinstance(parsed, JSONResponse):
         return parsed
-    return await run_in_threadpool(_create, parsed[0], parsed[1], db, clock, mark)
+    return await run_in_threadpool(_create, parsed[0], parsed[1], db, clock, mark, catalog)
 
 
 def _not_found() -> JSONResponse:

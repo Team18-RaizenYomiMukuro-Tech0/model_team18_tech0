@@ -1,0 +1,114 @@
+/private/tmp/claude-501/-Users-hiroki-asada-GitHub-model-team18-tech0--command-center-worktrees-d04-cache-impl-terao/b7703429-d906-40e9-b1ed-9718832aaed8/scratchpad/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+2026-11-25T07:19:14Z GET /api/candidates 成功 200
+2026-11-25T07:19:15Z GET /api/candidates 成功 200
+2026-11-25T07:19:18Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:20Z GET /api/candidates 成功 200
+2026-11-25T07:19:32Z GET /api/candidates 成功 200
+2026-11-25T07:19:34Z GET /api/candidates 成功 200
+2026-11-25T07:19:36Z GET /api/candidates 成功 200
+2026-11-25T07:19:38Z GET /api/candidates 成功 200
+2026-11-25T07:19:40Z GET /api/candidates 成功 200
+2026-11-25T07:19:43Z GET /api/candidates 成功 200
+2026-11-25T07:19:45Z GET /api/candidates 成功 200
+2026-11-25T07:19:45Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:46Z GET /api/candidates 成功 200
+2026-11-25T07:19:57Z GET /api/candidates 成功 200
+2026-11-25T07:20:01Z GET /api/products 成功 200
+2026-11-25T07:20:05Z GET /api/products 成功 200
+2026-11-25T07:20:08Z GET /api/products 成功 200
+2026-11-25T07:20:11Z GET /api/products 成功 200
+2026-11-25T07:20:11Z GET /api/products 成功 200
+2026-11-25T07:20:11Z GET /api/products 成功 200
+2026-11-25T07:20:11Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:12Z GET /api/products 成功 200
+2026-11-25T07:20:13Z GET /api/products 成功 200
+2026-11-25T07:20:13Z GET /api/products 成功 200
+2026-11-25T07:20:13Z GET /api/products 成功 200
+2026-11-25T07:20:13Z GET /api/products 成功 200
+2026-11-25T07:20:24Z GET /api/products 成功 200
+2026-11-25T07:20:25Z GET /api/products 成功 200
+2026-11-25T07:20:26Z GET /api/products 成功 200
+2026-11-25T07:20:28Z GET /api/products 成功 200
+2026-11-25T07:20:29Z GET /api/products 成功 200
+2026-11-25T07:20:30Z GET /api/products 成功 200
+2026-11-25T07:20:32Z GET /api/products 成功 200
+2026-11-25T07:20:34Z GET /api/products 成功 200
+2026-11-25T07:20:35Z GET /api/products 成功 200
+2026-11-25T07:20:37Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:38Z GET /api/products 成功 200
+2026-11-25T07:20:48Z GET /api/products 成功 200
+## ①候補（送別・3000to4999）  /api/candidates?scene=送別&price_band=3000to4999
+最初の 10 回: 4.204s[空（ nth=1 sel=2] / 1.569s[空（ nth=2 sel=2] / 2.421s[空（ nth=3 sel=2] / 1.850s[空（ nth=4 sel=2] / 0.033s[当た nth=5 sel=0] / 0.018s[当た nth=6 sel=0] / 0.016s[当た nth=7 sel=0] / 0.016s[当た nth=8 sel=0] / 0.016s[当た nth=9 sel=0] / 0.016s[当た nth=10 sel=0]
+当たった 10 回: 0.016 / 0.016 / 0.016 / 0.016 / 0.016 / 0.017 / 0.017 / 0.034 / 0.017 / 0.017
+期限切れ: 0.017s sel=0 読み直し完了まで 11.848s 入れ替わり=True
+読み直し後: 0.030s sel=0
+当たった遅い方から2番目=0.017  空の回 4 回 最大=4.204
+## ②候補（送別・価格帯なし）  /api/candidates?scene=送別
+最初の 10 回: 2.288s[空（ nth=23 sel=2] / 2.033s[空（ nth=24 sel=2] / 1.690s[空（ nth=25 sel=2] / 2.316s[空（ nth=26 sel=2] / 2.925s[空（ nth=27 sel=2] / 2.309s[空（ nth=28 sel=2] / 0.057s[当た nth=29 sel=0] / 0.044s[当た nth=30 sel=0] / 0.044s[当た nth=31 sel=0] / 0.044s[当た nth=32 sel=0]
+当たった 10 回: 0.044 / 0.115 / 0.049 / 0.045 / 0.048 / 0.044 / 0.043 / 0.046 / 0.069 / 0.068
+期限切れ: 0.050s sel=0 読み直し完了まで 11.085s 入れ替わり=True
+読み直し後: 0.046s sel=0
+当たった遅い方から2番目=0.069  空の回 6 回 最大=2.925
+## ③絞り込み（条件なし・12 件）  /api/products
+最初の 10 回: 3.968s[空（ nth=45 sel=1] / 3.574s[空（ nth=46 sel=1] / 3.145s[空（ nth=47 sel=1] / 3.152s[空（ nth=48 sel=1] / 0.116s[当た nth=49 sel=0] / 0.083s[当た nth=50 sel=0] / 0.105s[当た nth=51 sel=0] / 0.083s[当た nth=52 sel=0] / 0.105s[当た nth=53 sel=0] / 0.081s[当た nth=54 sel=0]
+当たった 10 回: 0.111 / 0.086 / 0.110 / 0.084 / 0.113 / 0.084 / 0.082 / 0.110 / 0.082 / 0.108
+期限切れ: 0.099s sel=0 読み直し完了まで 10.755s 入れ替わり=True
+読み直し後: 0.116s sel=0
+当たった遅い方から2番目=0.111  空の回 4 回 最大=3.968
+## ④絞り込み（送別＋3000to4999）  /api/products?scene=送別&price_band=3000to4999
+最初の 10 回: 1.496s[空（ nth=67 sel=2] / 1.243s[空（ nth=68 sel=2] / 1.498s[空（ nth=69 sel=2] / 1.332s[空（ nth=70 sel=2] / 1.358s[空（ nth=71 sel=2] / 1.726s[空（ nth=72 sel=2] / 1.431s[空（ nth=73 sel=2] / 1.824s[空（ nth=74 sel=2] / 1.179s[空（ nth=75 sel=2] / 1.179s[空（ nth=76 sel=2]
+当たった 10 回: 0.040 / 0.018 / 0.017 / 0.017 / 0.016 / 0.016 / 0.016 / 0.016 / 0.016 / 0.016
+期限切れ: 0.016s sel=0 読み直し完了まで 9.657s 入れ替わり=True
+読み直し後: 0.018s sel=0
+当たった遅い方から2番目=0.018  空の回 10 回 最大=1.824
