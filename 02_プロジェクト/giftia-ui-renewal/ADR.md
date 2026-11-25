@@ -460,6 +460,22 @@
 - 未決だった点（2026-11-25）: 画面の起動の形・Playwright の設定・CI のラベル名・差し替えの作り方・URL の形・証拠の置き場は、PM「おすすめで埋めてよい」（11/25）に従い、テスト設計 VE 節の 1〜7 に Kurosu のおすすめを書いた。VE 節の未決は 0。埋めた版は PM がまとめて確かめる
 - 追記の記録: 2026-11-25（Kurosu。「保留」を「決定」に書き換え。決めたのは運営の回答であり、Kurosu は決定していない）
 
+## ADR-026 — 画面の応答に守りのヘッダーを足す（N-07 の続き。HSTS・枠への埋め込み禁止・nosniff。`X-Powered-By` を消す）
+
+- 起点: PM 決定 11/25「画面の守りのヘッダー」。要件 N-07・設計 D-16
+- 目的: 本番の画面が、暗号化されない通信で開かされること、他のサイトの枠に入れられること、種類を推測されて想定外の動きをすることを、ブラウザ側で止める。使っている技術の名前を出さない
+- 判断基準: 画面の見た目・操作を変えないこと、費用 0 円・新しいサービスなし（N-08）、戻し方が設定 1 か所であること（N-09）、`curl -sI` で測れること
+- 確認した事実: 11/25 に本番トップの応答ヘッダーを確かめると、`X-Robots-Tag: noindex, nofollow` と `X-Powered-By: Next.js` だけで、`Strict-Transport-Security`・枠への埋め込みを禁じる指定・`X-Content-Type-Options` が無い。ヘッダーは `frontend/next.config.ts` の `headers()`（`/:path*` の 1 本）で付けている。API 側は `backend/publish.py` が CORS と noindex を付けている（今回は対象外）。`frontend` に外のサイトへのリンクは無い（`href`・`window.open` を grep。11/25）
+- 採用案: 画面だけに足す。①`Strict-Transport-Security: max-age=31536000` ②`X-Frame-Options: DENY` と `Content-Security-Policy: frame-ancestors 'none'` ③`X-Content-Type-Options: nosniff` ④`poweredByHeader: false` ⑤`Referrer-Policy: strict-origin-when-cross-origin`。値は下の 5 点のとおり決定。実装は `next.config.ts` の 1 か所
+- 他案の扱いと理由: CSP 全体を入れる案は、画面が動かなくなる危険と速さへの影響があり、今回は入れない（別の案件で Report-Only から）。HSTS の `includeSubDomains`・`preload` は効く先が無い・期間つき公開に合わないので付けない。API 側のヘッダー・書き込みの回数の制限・本文の上限・health は PM が選ばなかったので今回の対象外。Azure の設定（App Service の HTTPS のみ・TLS の最小版など）は触らない
+- 影響する文書・実装・テスト: 要件 N-20（新）、仕様 SP-36（新）、設計 D-53（新）・N-07 の対応表、テスト設計 U-119・I-80・I-81・NF-63（新）・穴 守り-1〜6、実装は `frontend/next.config.ts`（PM の「OK、進めて」の後）。変えないもの: N-07 の noindex・`robots.txt`・CORS、API の応答、画面の見た目
+- 決定者・日付: PM（Hiroki0023）11/25「画面の守りのヘッダー」（方針）。値の細部 5 点は PM 11/25「推奨案で決める」（おすすめモード。りじちょー経由。PM が後で確かめる）
+- 状態: 決定
+- 見直す条件: 画面に外のサイトへのリンクや埋め込みを足すとき（Referrer-Policy・frame の扱いを見直す）。全体の CSP を入れるとき（別の ADR）。Azure が同じヘッダーを重ねて付けると分かったとき（NF-63 の結果）
+- 決めた 5 点（推奨案どおり。設計 D-53 の表と同じ。未決は 0 件）: **守り-1** HSTS は `max-age=31536000`・`includeSubDomains`/`preload` なし。**守り-2** `X-Frame-Options: DENY` と `frame-ancestors 'none'` の両方。**守り-3** CSP は全体を入れず `frame-ancestors` だけ。**守り-4** `Referrer-Policy` は足す（`strict-origin-when-cross-origin`）。**守り-5** 運営への相談は要らない扱い
+- 戻し方: 設定 1 か所を戻して再デプロイ。HSTS だけは、ブラウザが 1 年覚えているので、`max-age=0` を返す版を出して戻す
+
+
 ## ADR-0XX — <論点>（雛形）
 
 - 起点: 個人回答 / 要求ID / 要件ID / 仕様ID / 指摘ID
