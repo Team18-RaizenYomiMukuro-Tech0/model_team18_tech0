@@ -73,7 +73,11 @@
       "Bash(git restore .)",
       "Bash(git restore . *)",
       "Bash(git restore -- .)",
-      "Bash(git restore -- . *)"
+      "Bash(git restore -- . *)",
+      "Bash(cat *.env*)",
+      "Bash(head *.env*)",
+      "Bash(tail *.env*)",
+      "Bash(less *.env*)"
     ]
   },
   "hooks": {

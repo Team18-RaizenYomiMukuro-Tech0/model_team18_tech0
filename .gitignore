@@ -28,3 +28,7 @@ roster-backups/
 
 # 作業用の一時置き場（SessionStart で作る）
 .work/
+
+# Daasa Muffin の作業フォルダと設定（記憶・画像・会話の記録・担当の作業フォルダ。公開リポジトリに載せない）
+.command-center/
+command-center.json
