@@ -15,6 +15,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
+from catalog import Catalog, Snapshot, get_catalog
 from clock import Clock, get_clock
 from config import SETTINGS
 from db import Db, get_db, server_timing
@@ -100,6 +101,7 @@ def _count_with_q(
     price_range: tuple[int, int],
     categories: list[str],
     slots: list[str],
+    snap: Snapshot | None = None,
 ) -> int:
     """助け舟（D-44）で、ある条件をはずしたうえで言葉にも合う商品の数（言葉はほかの条件と同じく残す）"""
     params: tuple[Any, ...] = (
@@ -110,7 +112,8 @@ def _count_with_q(
         1 if categories else 0,
         *slots,
     )
-    return len(match(words, db.fetch_all(SELECT_PRODUCTS, params)))
+    rows = snap.select(scene, price_range, categories) if snap is not None else db.fetch_all(SELECT_PRODUCTS, params)
+    return len(match(words, rows))
 
 
 def _error(code: str, message: str) -> JSONResponse:
@@ -153,6 +156,7 @@ def list_products(
     response: Response,
     db: Annotated[Db, Depends(get_db)],
     clock: Annotated[Clock, Depends(get_clock)],
+    catalog: Annotated[Catalog, Depends(get_catalog)],
 ) -> Any:
     """絞り込み。不正な値は 422（invalid_scene / invalid_price_band / invalid_category / invalid_page）"""
     started = time.perf_counter()
@@ -216,7 +220,8 @@ def list_products(
         1 if categories else 0,
         *slots,
     )
-    rows = db.fetch_all(SELECT_PRODUCTS, params)
+    snap = catalog.current(db, clock)  # メモリが使えれば SQL は 0 本（scene があっても +1 本にならない）。空の間は今の道（D-50）
+    rows = snap.select(scene, price_range, categories) if snap is not None else db.fetch_all(SELECT_PRODUCTS, params)
     conditions_total = len(rows)  # 言葉をはずしたときの件数（relax.no_q。D-49）
 
     matched: dict[str, tuple[int, float]] = {}
@@ -243,7 +248,7 @@ def list_products(
         page = 1
     chosen = ordered[(page - 1) * PAGE_SIZE : page * PAGE_SIZE]
     now = clock.now()
-    counts = scene_counts(db, scene, chosen) if scene is not None else {}  # シーンがあるとき 12 件分を 1 本で数える（D-34）
+    counts = (snap.scene_counts(scene, chosen) if snap is not None else scene_counts(db, scene, chosen)) if scene is not None else {}  # シーンがあるとき 12 件分を 1 本で数える（D-34）
     items = [_item(by_id[pid], now, scene, counts.get(pid, 0)) for pid in chosen]
     body: dict[str, Any] = {
         "items": items,
@@ -253,12 +258,16 @@ def list_products(
         "page_size": PAGE_SIZE,
     }
     if total == 0:  # 0 件のときだけ助け舟の件数を足す（D-44。+1 往復）
-        relax = relax_counts(db, scene, price_range if band != "" else None, categories)
+        relax = (
+            snap.relax_counts(scene, price_range if band != "" else None, categories)
+            if snap is not None
+            else relax_counts(db, scene, price_range if band != "" else None, categories)
+        )
         if words is not None:  # 言葉があるときは、はずす条件以外に言葉も残して数える（D-44。言葉もほかの条件の 1 つ）
             if band != "":
-                relax["price_band"] = _count_with_q(db, words, scene, NO_PRICE_LIMIT, categories, slots)
+                relax["price_band"] = _count_with_q(db, words, scene, NO_PRICE_LIMIT, categories, slots, snap)
             if categories:
-                relax["category"] = _count_with_q(db, words, scene, price_range, [], [""] * _CATEGORY_SLOTS)
+                relax["category"] = _count_with_q(db, words, scene, price_range, [], [""] * _CATEGORY_SLOTS, snap)
             relax["no_q"] = conditions_total  # 言葉をはずしたときの件数（①の件数。D-49。言葉が無いときは付けない）
         body["relax"] = relax
     response.headers["Server-Timing"] = server_timing(db, time.perf_counter() - started)  # 内訳（数値だけ。候補取得と同じ。#256）

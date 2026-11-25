@@ -1,0 +1,184 @@
+{
+  "items": [
+    {
+      "product_id": "P13",
+      "name": "P13の贈りもの",
+      "price": 50000,
+      "category": "生活雑貨",
+      "high_rating": true,
+      "rating": 4.8,
+      "review_count": 100,
+      "reason": "P13の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 2
+      }
+    },
+    {
+      "product_id": "P09",
+      "name": "P09の贈りもの",
+      "price": 3800,
+      "category": "ビジネス小物",
+      "high_rating": true,
+      "rating": 4.6,
+      "review_count": 120,
+      "reason": "P09の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 48
+      }
+    },
+    {
+      "product_id": "P01",
+      "name": "P01の贈りもの",
+      "price": 4999,
+      "category": "食品",
+      "high_rating": true,
+      "rating": 4.5,
+      "review_count": 20,
+      "reason": "P01の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 12
+      }
+    },
+    {
+      "product_id": "P04",
+      "name": "P04の贈りもの",
+      "price": 2999,
+      "category": "フラワー",
+      "high_rating": true,
+      "rating": 4.5,
+      "review_count": 20,
+      "reason": "P04の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 9
+      }
+    },
+    {
+      "product_id": "P05",
+      "name": "P05の贈りもの",
+      "price": 5000,
+      "category": "コスメ",
+      "high_rating": true,
+      "rating": 4.5,
+      "review_count": 20,
+      "reason": "P05の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 9
+      }
+    },
+    {
+      "product_id": "P02",
+      "name": "P02の贈りもの",
+      "price": 3000,
+      "category": "飲料",
+      "high_rating": false,
+      "rating": 4.49,
+      "review_count": 20,
+      "reason": "P02の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 3,
+      "wrapping": false,
+      "scene_count": {
+        "scene": "送別",
+        "n": 5
+      }
+    },
+    {
+      "product_id": "P08",
+      "name": "P08の贈りもの",
+      "price": 3800,
+      "category": "家電",
+      "high_rating": false,
+      "rating": 4.9,
+      "review_count": 3,
+      "reason": "P08の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 0
+      }
+    },
+    {
+      "product_id": "P07",
+      "name": "P07の贈りもの",
+      "price": 4000,
+      "category": "インテリア",
+      "high_rating": false,
+      "rating": 4.5,
+      "review_count": 0,
+      "reason": "P07の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 7
+      }
+    },
+    {
+      "product_id": "P03",
+      "name": "P03の贈りもの",
+      "price": 4000,
+      "category": "生活雑貨",
+      "high_rating": false,
+      "rating": null,
+      "review_count": 0,
+      "reason": "P03の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 2,
+      "wrapping": true,
+      "scene_count": {
+        "scene": "送別",
+        "n": 3
+      }
+    },
+    {
+      "product_id": "P11",
+      "name": "P11の贈りもの",
+      "price": 3600,
+      "category": "食品",
+      "high_rating": false,
+      "rating": 3.2,
+      "review_count": 40,
+      "reason": "P11の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 3,
+      "wrapping": false,
+      "scene_count": {
+        "scene": "送別",
+        "n": 0
+      }
+    },
+    {
+      "product_id": "P10",
+      "name": "P10の贈りもの",
+      "price": 3600,
+      "category": "カタログギフト",
+      "high_rating": false,
+      "rating": 3,
+      "review_count": 50,
+      "reason": "P10の贈りものは、送別の贈りものとして選ばれています。",
+      "delivery_days": 3,
+      "wrapping": false,
+      "scene_count": {
+        "scene": "送別",
+        "n": 1
+      }
+    }
+  ],
+  "count": 11,
+  "total": 11,
+  "page": 1,
+  "page_size": 12
+}

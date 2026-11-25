@@ -1,0 +1,762 @@
+[
+ {
+  "name": "①候補（送別・3000to4999）",
+  "path": "/api/candidates?scene=送別&price_band=3000to4999",
+  "first10": [
+   {
+    "sec": 4.204,
+    "status": 200,
+    "nth": 1,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.569,
+    "status": 200,
+    "nth": 2,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 2.421,
+    "status": 200,
+    "nth": 3,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.85,
+    "status": 200,
+    "nth": 4,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 0.033,
+    "status": 200,
+    "nth": 5,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.018,
+    "status": 200,
+    "nth": 6,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 7,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 8,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 9,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 10,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   }
+  ],
+  "hit10": [
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 11,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 12,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 13,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 14,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 15,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 16,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 17,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.034,
+    "status": 200,
+    "nth": 18,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 19,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 20,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   }
+  ],
+  "stale": {
+   "sec": 0.017,
+   "status": 200,
+   "nth": 21,
+   "selects": 0,
+   "total": 1199,
+   "kind": "期限切れ（古い値で先に返す）",
+   "reload_done_sec": 11.848,
+   "snapshot_replaced": true
+  },
+  "after_reload": {
+   "sec": 0.03,
+   "status": 200,
+   "nth": 22,
+   "selects": 0,
+   "total": 1199
+  },
+  "hit_second_slowest": 0.017,
+  "hit_all_second_slowest": 0.033,
+  "empty_count": 4,
+  "empty_max": 4.204,
+  "empty_second_slowest": 2.421
+ },
+ {
+  "name": "②候補（送別・価格帯なし）",
+  "path": "/api/candidates?scene=送別",
+  "first10": [
+   {
+    "sec": 2.288,
+    "status": 200,
+    "nth": 23,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 2.033,
+    "status": 200,
+    "nth": 24,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.69,
+    "status": 200,
+    "nth": 25,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 2.316,
+    "status": 200,
+    "nth": 26,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 2.925,
+    "status": 200,
+    "nth": 27,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 2.309,
+    "status": 200,
+    "nth": 28,
+    "selects": 2,
+    "total": 3643,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 0.057,
+    "status": 200,
+    "nth": 29,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.044,
+    "status": 200,
+    "nth": 30,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.044,
+    "status": 200,
+    "nth": 31,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.044,
+    "status": 200,
+    "nth": 32,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   }
+  ],
+  "hit10": [
+   {
+    "sec": 0.044,
+    "status": 200,
+    "nth": 33,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.115,
+    "status": 200,
+    "nth": 34,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.049,
+    "status": 200,
+    "nth": 35,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.045,
+    "status": 200,
+    "nth": 36,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.048,
+    "status": 200,
+    "nth": 37,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.044,
+    "status": 200,
+    "nth": 38,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.043,
+    "status": 200,
+    "nth": 39,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.046,
+    "status": 200,
+    "nth": 40,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.069,
+    "status": 200,
+    "nth": 41,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.068,
+    "status": 200,
+    "nth": 42,
+    "selects": 0,
+    "total": 3643,
+    "kind": "当たった"
+   }
+  ],
+  "stale": {
+   "sec": 0.05,
+   "status": 200,
+   "nth": 43,
+   "selects": 0,
+   "total": 3643,
+   "kind": "期限切れ（古い値で先に返す）",
+   "reload_done_sec": 11.085,
+   "snapshot_replaced": true
+  },
+  "after_reload": {
+   "sec": 0.046,
+   "status": 200,
+   "nth": 44,
+   "selects": 0,
+   "total": 3643
+  },
+  "hit_second_slowest": 0.069,
+  "hit_all_second_slowest": 0.069,
+  "empty_count": 6,
+  "empty_max": 2.925,
+  "empty_second_slowest": 2.316
+ },
+ {
+  "name": "③絞り込み（条件なし・12 件）",
+  "path": "/api/products",
+  "first10": [
+   {
+    "sec": 3.968,
+    "status": 200,
+    "nth": 45,
+    "selects": 1,
+    "total": 7762,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 3.574,
+    "status": 200,
+    "nth": 46,
+    "selects": 1,
+    "total": 7762,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 3.145,
+    "status": 200,
+    "nth": 47,
+    "selects": 1,
+    "total": 7762,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 3.152,
+    "status": 200,
+    "nth": 48,
+    "selects": 1,
+    "total": 7762,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 0.116,
+    "status": 200,
+    "nth": 49,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.083,
+    "status": 200,
+    "nth": 50,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.105,
+    "status": 200,
+    "nth": 51,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.083,
+    "status": 200,
+    "nth": 52,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.105,
+    "status": 200,
+    "nth": 53,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.081,
+    "status": 200,
+    "nth": 54,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   }
+  ],
+  "hit10": [
+   {
+    "sec": 0.111,
+    "status": 200,
+    "nth": 55,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.086,
+    "status": 200,
+    "nth": 56,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.11,
+    "status": 200,
+    "nth": 57,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.084,
+    "status": 200,
+    "nth": 58,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.113,
+    "status": 200,
+    "nth": 59,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.084,
+    "status": 200,
+    "nth": 60,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.082,
+    "status": 200,
+    "nth": 61,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.11,
+    "status": 200,
+    "nth": 62,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.082,
+    "status": 200,
+    "nth": 63,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.108,
+    "status": 200,
+    "nth": 64,
+    "selects": 0,
+    "total": 7762,
+    "kind": "当たった"
+   }
+  ],
+  "stale": {
+   "sec": 0.099,
+   "status": 200,
+   "nth": 65,
+   "selects": 0,
+   "total": 7762,
+   "kind": "期限切れ（古い値で先に返す）",
+   "reload_done_sec": 10.755,
+   "snapshot_replaced": true
+  },
+  "after_reload": {
+   "sec": 0.116,
+   "status": 200,
+   "nth": 66,
+   "selects": 0,
+   "total": 7762
+  },
+  "hit_second_slowest": 0.111,
+  "hit_all_second_slowest": 0.113,
+  "empty_count": 4,
+  "empty_max": 3.968,
+  "empty_second_slowest": 3.574
+ },
+ {
+  "name": "④絞り込み（送別＋3000to4999）",
+  "path": "/api/products?scene=送別&price_band=3000to4999",
+  "first10": [
+   {
+    "sec": 1.496,
+    "status": 200,
+    "nth": 67,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.243,
+    "status": 200,
+    "nth": 68,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.498,
+    "status": 200,
+    "nth": 69,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.332,
+    "status": 200,
+    "nth": 70,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.358,
+    "status": 200,
+    "nth": 71,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.726,
+    "status": 200,
+    "nth": 72,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.431,
+    "status": 200,
+    "nth": 73,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.824,
+    "status": 200,
+    "nth": 74,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.179,
+    "status": 200,
+    "nth": 75,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   },
+   {
+    "sec": 1.179,
+    "status": 200,
+    "nth": 76,
+    "selects": 2,
+    "total": 1199,
+    "kind": "空（今の道）"
+   }
+  ],
+  "hit10": [
+   {
+    "sec": 0.04,
+    "status": 200,
+    "nth": 77,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.018,
+    "status": 200,
+    "nth": 78,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 79,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.017,
+    "status": 200,
+    "nth": 80,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 81,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 82,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 83,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 84,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 85,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   },
+   {
+    "sec": 0.016,
+    "status": 200,
+    "nth": 86,
+    "selects": 0,
+    "total": 1199,
+    "kind": "当たった"
+   }
+  ],
+  "stale": {
+   "sec": 0.016,
+   "status": 200,
+   "nth": 87,
+   "selects": 0,
+   "total": 1199,
+   "kind": "期限切れ（古い値で先に返す）",
+   "reload_done_sec": 9.657,
+   "snapshot_replaced": true
+  },
+  "after_reload": {
+   "sec": 0.018,
+   "status": 200,
+   "nth": 88,
+   "selects": 0,
+   "total": 1199
+  },
+  "hit_second_slowest": 0.018,
+  "hit_all_second_slowest": 0.018,
+  "empty_count": 10,
+  "empty_max": 1.824,
+  "empty_second_slowest": 1.726
+ }
+]
