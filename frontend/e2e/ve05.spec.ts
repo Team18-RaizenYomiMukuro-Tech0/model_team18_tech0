@@ -44,12 +44,19 @@ test("VE-05 S-26 S-62 お気に入りは、カード・詳細・パネルで同�
   await closePanel();
   await expect(topHeart).toHaveAttribute("aria-pressed", "false");
 
-  // ④ ハートは押すたびに登録・解除。登録 → 解除 → 登録しても、同じ商品は 1 件（重複しない）
-  await topHeart.click();
-  await topHeart.click();
-  await expect(topHeart).toHaveAttribute("aria-pressed", "false");
-  await topHeart.click();
-  await expect(topHeart).toHaveAttribute("aria-pressed", "true");
+  // ④ カードのハートで登録 → 同じ商品の詳細を開く → 詳細のハートが登録済みで出る。パネルの一覧は 1 件のまま（重複しない）。詳細のハートは押さない
+  await page.getByRole("group", { name: "シーン" }).getByRole("button", { name: "送別" }).click();
+  await expect(page.getByRole("heading", { name: "候補（11件）" })).toBeVisible();
+  await page.getByRole("button", { name: "3,000〜4,999円" }).click();
+  await expect(page.getByRole("heading", { name: "候補（8件）" })).toBeVisible();
+  const cardHeart = page.locator("li").getByRole("button", { name: heartLabel });
+  await expect(cardHeart).toHaveAttribute("aria-pressed", "false");
+  await cardHeart.click();
+  await expect(cardHeart).toHaveAttribute("aria-pressed", "true");
+  await page.locator("li").getByRole("link", { name: NAME }).click();
+  const detailHeart = page.getByRole("tabpanel").getByRole("button", { name: heartLabel });
+  await expect(detailHeart).toBeVisible();
+  await expect(detailHeart).toHaveAttribute("aria-pressed", "true");
   await openPanel();
   await expect(dialog.getByText("お気に入り（1件）")).toBeVisible();
   await expect(dialog.getByRole("link", { name: NAME })).toHaveCount(1);
@@ -57,7 +64,7 @@ test("VE-05 S-26 S-62 お気に入りは、カード・詳細・パネルで同�
 
   // ⑤ 再読込（page.reload()）しても残る
   await page.reload();
-  await expect(topHeart).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("tabpanel").getByRole("button", { name: heartLabel })).toHaveAttribute("aria-pressed", "true");
   await openPanel();
   await expect(dialog.getByText("お気に入り（1件）")).toBeVisible();
   await expect(dialog.getByRole("link", { name: NAME })).toBeVisible();
@@ -65,16 +72,7 @@ test("VE-05 S-26 S-62 お気に入りは、カード・詳細・パネルで同�
   await closePanel();
 
   // ⑥ 同じ商品を、カードと詳細の 2 か所のハートで見る。どちらを押しても、両方が同期する
-  await page.getByRole("group", { name: "シーン" }).getByRole("button", { name: "送別" }).click();
-  await expect(page.getByRole("heading", { name: "候補（11件）" })).toBeVisible();
-  await page.getByRole("button", { name: "3,000〜4,999円" }).click();
-  await expect(page.getByRole("heading", { name: "候補（8件）" })).toBeVisible();
-  const cardHeart = page.locator("li").getByRole("button", { name: heartLabel });
-  await expect(cardHeart).toHaveAttribute("aria-pressed", "true"); // 保存済みの登録が結果のカードにも出る
-  await page.locator("li").getByRole("link", { name: NAME }).click();
-  const detailHeart = page.getByRole("tabpanel").getByRole("button", { name: heartLabel });
-  await expect(detailHeart).toBeVisible();
-  await expect(detailHeart).toHaveAttribute("aria-pressed", "true");
+  await expect(cardHeart).toHaveAttribute("aria-pressed", "true");
   await detailHeart.click(); // 詳細で外す → カードも未登録
   await expect(detailHeart).toHaveAttribute("aria-pressed", "false");
   await expect(cardHeart).toHaveAttribute("aria-pressed", "false");
