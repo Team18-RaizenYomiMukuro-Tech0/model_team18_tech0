@@ -61,23 +61,24 @@
 <!-- auto:mistakes start -->
 ## よくあるミス（自動更新・手書き禁止）
 
-発生2回以上の型（2026-11-23 の週1要約。Windows 機の分を含む。詳細は `01_ナレッジ/mistakes/`）:
+発生2回以上の型（2026-11-26 の週1要約。Windows 機の分を含む。詳細は `01_ナレッジ/mistakes/`）:
 
 - 使い捨ての Python／Node スクリプトが失敗（39回）— 絶対パスで開く・置換は先に件数を数える・同じエラーで打ち直さない → `python-adhoc-script-errors.md`
-- 一時ディレクトリのパスが無くなっている（23回）— 使う直前に `mkdir -p`、絶対パスは変数のまま使う → `tmp-path-vanished.md`
+- 一時ディレクトリのパスが無くなっている（25回）— 使う直前に `mkdir -p`、絶対パスは変数のまま使う → `tmp-path-vanished.md`
 - 長い heredoc が Git Bash で「unexpected EOF」（20回）— 長い本文は Write ツールでファイルにしてから動かす → `bash-heredoc-unexpected-eof.md`
-- サンドボックスや証明書で外部通信が失敗（15回）— 許可ドメインの承認を取る・DB は先に `SELECT 1` → `sandbox-network-denied.md`
+- サンドボックスや証明書で外部通信が失敗（16回）— 許可ドメインの承認を取る・DB は先に `SELECT 1` → `sandbox-network-denied.md`
 - ブランチ状態を確認せず git を実行（15回）— 実行前に `git status`、`rev-parse --short` は 1 版ずつ、消えたブランチは `ls-remote` で確かめる → `git-branch-state-conflict.md`
 - gh の使い方違い・ブランチ保護（14回）— ラベルは `gh label list` で確認（`task` は無い）→ `gh-usage-and-branch-policy.md`
-- zsh の glob が一致せず止まる（11回）— glob・`?`・`[ ]` を含む引数はクォートする → `zsh-glob-no-match.md`
+- zsh の glob が一致せず止まる（14回）— glob・`?`・`[ ]` を含む引数はクォートする。`2>/dev/null` でも消えない → `zsh-glob-no-match.md`
 - Windows の Python が cp932 で落ちる（10回）— `python -X utf8`・`open(…, encoding="utf-8")`・`git -c core.quotepath=false` → `windows-cp932-encoding.md`
 - macOS(BSD) と GNU のコマンド差（9回）— `sed -i ''` を使う・ugrep の正規表現は分ける → `macos-bsd-command-diff.md`
-- 今いる場所を思い違えて無いパスを指定（9回）— `git worktree list`・`ls` で確かめてから書く。outbox は送ると `.sent/` に移る → `wrong-relative-path.md`
+- 今いる場所を思い違えて無いパスを指定（10回）— `git worktree list`・`ls` で確かめてから書く。outbox は送ると `.sent/` に移る → `wrong-relative-path.md`
 - git 管理外の場所で git/gh を実行（8回）— リポジトリのルートへ `cd` する・途中の失敗で止まるよう `&&` でつなぐ → `non-git-dir-command.md`
 - シェルからの書き込みが拒否される（7回）— メモリは Write/Edit ツールで書く → `protected-path-write-denied.md`
 - Git Bash と Windows のパスの混在（7回）— Windows の道具には `C:/Users/…` の形で渡す・`\` で書かない → `windows-path-style-mismatch.md`
 - 入っていないコマンドを呼ぶ（5回）— `command -v` で有無を見る（Windows 機に pandoc・soffice は無い）→ `cli-tool-not-installed.md`
 - コマンドの書き方違い（4回）— `grep -- "$k"`・jq は `,` でつなぐ → `command-option-misuse.md`
 - Python モジュールが無い（4回）— 実行前に import で確認 → `python-module-missing.md`
+- ディスクが満杯で git もコマンドも動かない（2回）— 大きく消す前に PM に伝える・終わった作業フォルダは未コミットを見てから消す → `disk-full-enospc.md`
 - 新しい worktree に node_modules・.venv が無い（2回）— 元の `.venv` を絶対パスで使う・`npx` の「will be installed」で止める → `worktree-missing-deps.md`
 <!-- auto:mistakes end -->

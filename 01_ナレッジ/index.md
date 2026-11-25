@@ -17,17 +17,17 @@
 
 ## ミスの型（週1要約が更新。発生回数の多い順）
 
-- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 151回。記録のノイズの可能性（要確認）
+- [出力は正常なのに終了コード 1 で記録される](mistakes/exit1-but-output-ok.md) — 153回。記録のノイズの可能性（要確認）
 - [使い捨ての Python スクリプトが失敗する](mistakes/python-adhoc-script-errors.md) — 39回（Node の使い捨てスクリプトも含む）
-- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 23回
+- [一時ディレクトリのパスが無くなっている](mistakes/tmp-path-vanished.md) — 25回
 - [長い heredoc が Git Bash で「unexpected EOF」になり、何も実行されない](mistakes/bash-heredoc-unexpected-eof.md) — 20回（新規 2026-11-23。Windows 機）
-- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 15回（Azure の DB への接続のタイムアウトを含む）
+- [サンドボックスや証明書のせいで外部通信が失敗する](mistakes/sandbox-network-denied.md) — 16回（Azure の DB への接続のタイムアウトを含む）
 - [ブランチの状態を確認せず git を実行して衝突する](mistakes/git-branch-state-conflict.md) — 15回
 - [gh の使い方違い・ラベル不在・ブランチ保護でマージできない](mistakes/gh-usage-and-branch-policy.md) — 14回
-- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 11回
+- [zsh の glob が一致せずコマンドが止まる](mistakes/zsh-glob-no-match.md) — 14回
 - [Windows の Python が cp932 で読み書きして、日本語や記号で落ちる](mistakes/windows-cp932-encoding.md) — 10回（新規 2026-11-23。Windows 機。週1要約のログの文字化けを含む）
 - [macOS(BSD) と GNU のコマンド差で失敗する](mistakes/macos-bsd-command-diff.md) — 9回
-- [今いる場所を思い違えて、無いパスを指定する](mistakes/wrong-relative-path.md) — 9回
+- [今いる場所を思い違えて、無いパスを指定する](mistakes/wrong-relative-path.md) — 10回
 - [git 管理外のディレクトリで git/gh を実行している](mistakes/non-git-dir-command.md) — 8回
 - [シェルからの書き込みが拒否される（メモリ・一時領域）](mistakes/protected-path-write-denied.md) — 7回
 - [Git Bash のパスと Windows のパスの書き方が混ざって失敗する](mistakes/windows-path-style-mismatch.md) — 7回（新規 2026-11-23。Windows 機）
@@ -35,6 +35,7 @@
 - [担当が報告を送らずに止まり、アプリに催促される](mistakes/stopped-without-report.md) — 4回（2026-11-20。手書き）。担当の定義に「止まる前に SendMessage」を足した
 - [コマンドの書き方違い（tail・grep・jq・git の無いオプション）](mistakes/command-option-misuse.md) — 4回（新規 2026-11-23。Windows 機）
 - [Python のモジュールが無い（PIL・certifi・fitz）](mistakes/python-module-missing.md) — 4回
+- [ディスクが満杯（No space left on device）で git もコマンドも動かない](mistakes/disk-full-enospc.md) — 2回（新規 2026-11-26。tags に security）
 - [証拠が完了条件と違うのに ○ にする・Draft で止める・パスを書き違える](mistakes/evidence-and-review-slips.md) — 3回（2026-11-11〜12。手書き）
 - [同じファイルを触る PR を並べる・他の PR の上に積んで衝突する](mistakes/parallel-pr-conflict.md) — 2回（2026-11-10。手書き）
 - [利用者の判断を、質問の道具でなく返事の文章で聞いて止まる](mistakes/question-in-text-not-asked.md) — 2回（2026-11-23。手書き）
