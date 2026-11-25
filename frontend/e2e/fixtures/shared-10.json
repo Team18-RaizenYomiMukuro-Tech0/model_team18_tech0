@@ -1,0 +1,94 @@
+{
+  "items": [
+    {
+      "product_id": "P01",
+      "status": "available",
+      "name": "P01の贈りもの",
+      "price": 3000,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "食品"
+    },
+    {
+      "product_id": "P02",
+      "status": "available",
+      "name": "P02の贈りもの",
+      "price": 3100,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "飲料"
+    },
+    {
+      "product_id": "P03",
+      "status": "available",
+      "name": "P03の贈りもの",
+      "price": 3200,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "生活雑貨"
+    },
+    {
+      "product_id": "P04",
+      "status": "available",
+      "name": "P04の贈りもの",
+      "price": 3300,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "フラワー"
+    },
+    {
+      "product_id": "P05",
+      "status": "available",
+      "name": "とても長い名前のついた送別の贈りものセット（個包装・のし付き・日持ちあり）",
+      "price": 3400,
+      "reason": "評価は4.6（120件）と高めで、職場の送別で48回選ばれています。個包装で配りやすく、日持ちもするので、お休みの方がいても後から渡せます。評価は4.6（120件）と高めで、職場の送別で48回選ばれています。個包装で配りやすく、日持ちもするので、お休みの方がいても後から渡せます。評価は4.6（120件）と高めで、職場の送別で48回選ばれています。個包装で配りやすく、日持ちもするので、お休みの方がいても後から渡せます。",
+      "like_count": 0,
+      "category": "コスメ"
+    },
+    {
+      "product_id": "P06",
+      "status": "available",
+      "name": "P06の贈りもの",
+      "price": 3500,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "酒類"
+    },
+    {
+      "product_id": "P07",
+      "status": "available",
+      "name": "P07の贈りもの",
+      "price": 3600,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "インテリア"
+    },
+    {
+      "product_id": "P08",
+      "status": "available",
+      "name": "P08の贈りもの",
+      "price": 3700,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "家電"
+    },
+    {
+      "product_id": "P09",
+      "status": "available",
+      "name": "P09の贈りもの",
+      "price": 3800,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "ビジネス小物"
+    },
+    {
+      "product_id": "P10",
+      "status": "available",
+      "name": "P10の贈りもの",
+      "price": 3900,
+      "reason": "送別の贈りものとして選ばれています。",
+      "like_count": 0,
+      "category": "カタログギフト"
+    }
+  ]
+}

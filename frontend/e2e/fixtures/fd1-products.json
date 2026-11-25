@@ -1,0 +1,145 @@
+[
+  {
+    "product_id": "P01",
+    "name": "P01の贈りもの",
+    "price": 4999,
+    "category": "食品",
+    "rating": 4.5,
+    "review_count": 20,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  },
+  {
+    "product_id": "P02",
+    "name": "P02の贈りもの",
+    "price": 3000,
+    "category": "飲料",
+    "rating": 4.49,
+    "review_count": 20,
+    "delivery_days": 3,
+    "wrapping": false,
+    "high_rating": false
+  },
+  {
+    "product_id": "P03",
+    "name": "P03の贈りもの",
+    "price": 4000,
+    "category": "生活雑貨",
+    "rating": null,
+    "review_count": 0,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": false
+  },
+  {
+    "product_id": "P04",
+    "name": "P04の贈りもの",
+    "price": 2999,
+    "category": "フラワー",
+    "rating": 4.5,
+    "review_count": 20,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  },
+  {
+    "product_id": "P05",
+    "name": "P05の贈りもの",
+    "price": 5000,
+    "category": "コスメ",
+    "rating": 4.5,
+    "review_count": 20,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  },
+  {
+    "product_id": "P06",
+    "name": "P06の贈りもの",
+    "price": 4000,
+    "category": "酒類",
+    "rating": 4.8,
+    "review_count": 50,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  },
+  {
+    "product_id": "P07",
+    "name": "P07の贈りもの",
+    "price": 4000,
+    "category": "インテリア",
+    "rating": 4.5,
+    "review_count": 0,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": false
+  },
+  {
+    "product_id": "P08",
+    "name": "P08の贈りもの",
+    "price": 3800,
+    "category": "家電",
+    "rating": 4.9,
+    "review_count": 3,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": false
+  },
+  {
+    "product_id": "P09",
+    "name": "P09の贈りもの",
+    "price": 3800,
+    "category": "ビジネス小物",
+    "rating": 4.6,
+    "review_count": 120,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  },
+  {
+    "product_id": "P10",
+    "name": "P10の贈りもの",
+    "price": 3600,
+    "category": "カタログギフト",
+    "rating": 3,
+    "review_count": 50,
+    "delivery_days": 3,
+    "wrapping": false,
+    "high_rating": false
+  },
+  {
+    "product_id": "P11",
+    "name": "P11の贈りもの",
+    "price": 3600,
+    "category": "食品",
+    "rating": 3.2,
+    "review_count": 40,
+    "delivery_days": 3,
+    "wrapping": false,
+    "high_rating": false
+  },
+  {
+    "product_id": "P12",
+    "name": "P12の贈りもの",
+    "price": 4000,
+    "category": "飲料",
+    "rating": 1,
+    "review_count": 80,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": false
+  },
+  {
+    "product_id": "P13",
+    "name": "P13の贈りもの",
+    "price": 50000,
+    "category": "生活雑貨",
+    "rating": 4.8,
+    "review_count": 100,
+    "delivery_days": 2,
+    "wrapping": true,
+    "high_rating": true
+  }
+]

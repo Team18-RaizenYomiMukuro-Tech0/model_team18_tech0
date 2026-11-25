@@ -1,12 +1,15 @@
 # PR ごとのテストと型の確認（NF-32・テスト設計 E-09）。#554
 #  - backend: pytest・mypy --strict・ruff check
 #  - frontend: npm test・eslint・tsc
+#  - e2e: 画面の通しの確認 VE-01〜VE-06（Playwright。テスト設計 VE 節・ADR-024）。ラベル `e2e` が付いた PR だけ動かす
 #  - 秘密（Secrets）は使わない。DB につながない（GIFTIA_DB_* を設定しないので、DB のテストは skipped になる）
 #  - pull_request（PR の変更を動かす）。pull_request_target は使わない
 name: PR テスト
 
 on:
   pull_request:
+    # labeled: ラベル `e2e` を付けたときに e2e ジョブを動かすため（ほかのジョブも付けた時に動き直す）
+    types: [opened, synchronize, reopened, labeled]
 
 concurrency:
   group: pr-tests-${{ github.ref }}
@@ -77,3 +80,45 @@ jobs:
 
       - name: frontend tsc
         run: npx tsc --noEmit
+
+  # 画面の通しの確認（Playwright。VE-01〜VE-06）。ラベル `e2e` の付いた PR だけ。権限は contents: read、秘密なし、キャッシュなし。
+  # 画面は本番ビルド（next build ＋ next start -p 3100）。/api/* は Playwright で全部差し替えるので、DB・Azure にはつながない。
+  # ブラウザ（Chromium）は Playwright の配布元から取る（運営が承認。ADR-024）。
+  e2e:
+    name: e2e
+    if: contains(github.event.pull_request.labels.*.name, 'e2e')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: 依存を入れる
+        run: npm ci
+
+      - name: Chromium を入れる
+        run: npx playwright install --with-deps chromium
+
+      - name: 画面の通しの確認（VE-01〜VE-06）
+        run: npm run test:e2e
+
+      - name: レポートを残す（14 日）
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e2e-report
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          retention-days: 14
+          if-no-files-found: ignore
