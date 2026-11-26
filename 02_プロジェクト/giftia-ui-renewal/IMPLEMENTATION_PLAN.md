@@ -386,3 +386,52 @@ H1（S・1 点）を入れた場合: だーあさ 16（約 37%）・レージ 18
 - [2026-11-26] PM がおすすめモードで「計画を書いてもらう」を選んだ。この節を書いた（Takahiro）。承認待ち。
 - [2026-11-26] U-119 の置き場を決定として書いた（PM が「node:test に置く」を選んだ。`frontend/src/lib/securityHeaders.test.ts`、`cd frontend && npm test -- securityHeaders`）。5 文書は変えていない（Takahiro）。
 - [2026-11-26] 承認：PM、11/26、Daasa Muffin の画面で OK、進めて（377a245・4239217）。守1 を Mi-rin に渡した（#731）。
+
+## 書き込みの API の上限と health（11/26。ADR-027。承認待ち）
+
+- 目的: 書き込みの 3 つの API（`POST /api/share-links`・`POST /api/share-links/{share_id}/likes`・`POST /api/events`）に、回数の上限と本文の大きさの上限を付け、`GET /api/health` が返す DB 名と表の数をやめる（セキュリティのレビューの 1 番・3 番）。N-06 の「作成回数の制限は作らない（#73）」を変える。画面は変えない。
+- 根拠: 要件 N-21・N-22、仕様 SP-37・SP-38、設計 D-54（N-21 の節。書込-1〜10 は決定。見直す条件つき）・D-55（N-22 の節。health-1〜3 は決定）、テスト設計 U-120〜U-123・I-82〜I-86・NF-64・穴 書込-11、ADR-027（決定。PM 11/26）。
+- 対象版: 5 文書・ADR @ この計画を足した PR（#737）のマージ後のコミット ID（マージ後に、ここに書く）。
+- 実装開始の承認: **未承認**。PM が「OK、進めて」と、対象版のコミット ID を明示してから、書1 を渡す（作業ルール §1）。承認日時と承認者は、承認が出たらここに書く。
+- 運営への相談: 要らない扱い（PM 11/26「書込-9」。コードで数える案。新しいサービス・費用・認証・実データ・外部公開の範囲の変更のどれにも当たらない）。この線引きは参加者・AI では決めていない（PM の決定をそのまま写した）。Azure 側の回数制限・最大台数の設定・IP ごとの数えは、この計画に入れない（相談が要る）。
+- Issue: まだ作っていない。承認の後に、下の書1・書2・書3 の 3 件を作る（トークンを使う AI の作業なので、assignee は Hiroki0023）。
+
+### 割り振り
+
+| 単位 | 担当 | 変えるファイルの見込み | 根拠 | 完了の条件（テスト ID と期待結果） |
+| --- | --- | --- | --- | --- |
+| 書1 | Terao | `backend/config.py`（窓・3 つの回数・2 つの本文の上限を足す）、`backend/rate_limit.py`（新。API の名前だけをキーに、窓の始まりと通した数をメモリに持つ。`Clock` を受け取る。IP・ヘッダーは受けない）、`backend/api/share_links.py`・`backend/api/events.py`（入口で回数 → 本文の大きさ → 今の検査の順。本文の読み取りは `read_limited` の共通版）、`backend/main.py`（health を `SELECT 1` と `{"status":"ok"}` に）、`backend/db.py`（`information_schema` の許可を外す。health-3）。U-120〜U-123 の自動テストを `backend/tests/` に足す | D-54・D-55、N-21・N-22、SP-37・SP-38 | **U-120〜U-123 が通る**。`cd backend && pytest -q`・`ruff check .`・`mypy --strict .` が通る。**書込-11（完了の条件）**: 既存の結合・システムのテストが、1 分のうちに share-links を 30 回・likes を 120 回・events を 600 回より多く呼んでいないかを調べ、PR に結果を書く（超える呼び出しが 0 件なら「0 件」、あれば一覧と、窓を広げた版に差した方法）。これを書かずに完了としない。本番のコードに上書きの入口を作らない（`test_no_override_entry` が通る）。値は設計 D-54 の表と一致（U-120） |
+| 書2 | Kurosu | 確かめ（コードは変えない。証拠は `evidence/`） | テスト設計 | **I-82・I-83・I-84**（回数。手元・`is_test`＝1・固定の時計。上限ちょうど通り、次の 1 回が 429 `rate_limited`＋`Retry-After`。書き込みと SELECT が増えない。ログに IP が無い）。**I-85**（本文の上限。ちょうどは通り、+1 バイト・偽の `Content-Length`・分割送り・1MB は 413 `payload_too_large`。events は今のまま 422）。**I-86**（health は 200 と `{"status":"ok"}` だけ。DB の障害は 500。`test_no_override_entry.py`・`test_publish.py`・`test_function_app.py` が今のまま通る）。流した後、作った `is_test`＝1 の行を手順で消す（N-11）。書込-11 の調べ（書1 の PR の記述）を読み合わせる |
+| 書3 | Kurosu（流す）・PM（マージ・Azure の確認） | 本番の確かめ。証拠は `evidence/NF-64.md`。あわせて `evidence/303-prod-check.md` の 2 行目（health の期待値）に、11/26 以降の期待値を**添える** | NF-64 | **NF-64**（API のデプロイの後。書き込みを伴わない確認だけ）: ①`/api/health` が 200・`{"status":"ok"}` だけ ②share-links・likes に上限超えの本文を送り 413（`share_links` の件数が前後で同じ）③ヘッダー（noindex・CORS）と NF-14 が今のまま。回数の 429 は本番で超えさせない（負荷の確かめはしない）。**303-prod-check の直し**: 元の行（`{"status":"ok","db":"<DB 名>","tables":10}`）は消さず、「11/26 以降の期待値は `{"status":"ok"}`。表の数（10）は `DB管理手順.md` の `SELECT COUNT(*) FROM information_schema.tables …` を PM の手で見る」を添える。PM は Azure のポータルにヘルスチェック・監視の設定があるかを確かめて知らせる（私が見えない所。設計 D-55 の一覧の最後の行） |
+
+### 出す順番と、確かめ方
+
+- 順番：書1（PR）→ 書2（PR の上で I-82〜I-86 を流す）→ PM がマージ → API のデプロイが自動で動く（`.github/workflows/main_func-gen13-step3-5181.yml`。`backend/**` の変更で main に入ると動く）→ 書3（NF-64）。画面のデプロイは要らない（`frontend/` を変えない）。
+- 本番の確かめ方（NF-64）の例：
+
+  ```
+  A=<API のホスト>
+  curl -s -w "\n%{http_code}\n" https://$A/api/health
+  python3 -c 'print("{\"product_ids\":[]}" + " "*2100)' > /tmp/big.json
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data-binary @/tmp/big.json https://$A/api/share-links
+  ```
+
+  期待は、1 つ目が `{"status":"ok"}` と `200`、2 つ目が `413`。`/tmp` はその場の手元の置き場（作業用の一時ファイル）。
+- 戻し方（N-09）：`rate_limit.py` と各 API の入口の呼び出しを外して再デプロイ（コードだけ。DB は変えない）。health は前の版に戻す。眠ると数えは消える。
+- 見直す条件：設計 D-54「見直す条件（書込-3）」のとおり（本番で 429 が 1 回でも出たら、PM が Azure のログで前後 10 分の成功の行数を数え、最大が上限の 50% を超えていれば値を 2 倍に直す、など）。
+- ファイルの持ち主：`backend/api/share_links.py`・`backend/api/events.py`・`backend/main.py`・`backend/db.py`・`backend/config.py`・`backend/rate_limit.py` は Terao だけが触る（この件の間は、同じファイルに別の PR を開かない）。
+
+### やらないこと
+
+- 仕様にないこと：Azure 側の回数制限（API Management・Front Door・WAF）・最大台数の設定・IP ごとの数え・画面の文言の追加・events の本文超過の 422 を 413 に変えること・DB の表と列の変更・health への回数の上限（いずれも D-54・D-55 で決めていない／採らなかった）。
+- 5 文書の決定（書込-1〜10・health-1〜3）は、この計画で変えない。作る人はテストを変えない（開発フロー §3）。PM の答えに無いこと・文書に無いことは決めずに PR に書く。
+
+### 文書に書かれていないこと（Terao は決めずに PR に書く）
+
+- 数えの部品の細かい形（クラスか関数か・ファイル名）：設計 D-54 は「案: `rate_limit.py`・API の名前だけがキー」まで。形は Terao が決めてよいが、IP・ヘッダーを渡さないこと（U-121 ⑥）と、待ち（`await`）を挟まずに数えることは変えない。
+- 429 の `message` の文言：設計 D-54 に「しばらく待ってからもう一度お試しください」と書いた。変えるなら PR に書く。
+- 本番で `Retry-After` が Azure を通って届くか：測定（穴 書込-11 の後半）で見る。
+
+### 進捗メモ（書き込みの上限と health）
+
+- [2026-11-26] PM の答え（書込-10・書込-2・書込-3 は本人の答え、残りは「推奨案で決める」）を決定に書き直し、この節を書いた（Takahiro）。承認待ち。
