@@ -345,7 +345,7 @@ H1（S・1 点）を入れた場合: だーあさ 16（約 37%）・レージ 18
 
 | 単位 | 担当 | 変えるファイルの見込み | 根拠 | 完了の条件（テスト ID と期待結果） |
 | --- | --- | --- | --- | --- |
-| 守1 | Mi-rin | `frontend/next.config.ts` だけ（`headers()` の既存 1 本に 5 つのヘッダーを足す。最上位に `poweredByHeader: false`。値はファイル先頭の定数）。U-119 の自動テストを 1 本足す（置き場は下の「文書に無いこと」） | D-53、SP-36、N-20 | U-119 が通る（`source: "/:path*"` が 1 本。`X-Robots-Tag: noindex, nofollow` と 5 つのヘッダーが 1 つずつ。値は D-53 の表と完全一致。`includeSubDomains`・`preload` を含まない。CSP は `frame-ancestors 'none'` だけ。`poweredByHeader` が `false`）。PR の差分が `next.config.ts` とテストだけで、`backend/` が 0 行 |
+| 守1 | Mi-rin | `frontend/next.config.ts` だけ（`headers()` の既存 1 本に 5 つのヘッダーを足す。最上位に `poweredByHeader: false`。値はファイル先頭の定数）。U-119 の自動テストを 1 本足す（置き場は下の「決定した置き場」。`frontend/src/lib/securityHeaders.test.ts`） | D-53、SP-36、N-20 | U-119 が通る（`source: "/:path*"` が 1 本。`X-Robots-Tag: noindex, nofollow` と 5 つのヘッダーが 1 つずつ。値は D-53 の表と完全一致。`includeSubDomains`・`preload` を含まない。CSP は `frame-ancestors 'none'` だけ。`poweredByHeader` が `false`）。PR の差分が `next.config.ts` とテストだけで、`backend/` が 0 行 |
 | 守2 | Kurosu | 確かめ（コードは変えない。証拠は `evidence/`） | テスト設計 | **I-80**：`cd frontend && npm run build && npm run start` で ①`/` ②`/search?scene=送別` ③`/s/<22 文字の存在しない id>` ④`/s/bad` ⑤`/no-such-page` の 5 つに 5 ヘッダーが U-119 と同じ値で付き、`X-Robots-Tag` が残り、`X-Powered-By` が無い。⑥`/robots.txt` ⑦`/_next/static/` 配下 1 ファイルは付くかを記録（付かなくても ○。付かなければ PM に見せる）。**I-81**：`git diff --stat -- backend/` が 0 行。API の `GET /api/products` と 404 に `X-Robots-Tag: noindex` があり、HSTS・`X-Frame-Options`・`Content-Security-Policy`・`Referrer-Policy` は付かない。回帰：VE-01〜VE-06（見た目と操作が今のまま。PR にラベル `e2e` を付けて CI で流す）・NF-14 の考え方（noindex・`robots.txt` 全拒否が残る） |
 | 守3 | Kurosu（流す）・PM（マージ） | 本番の確かめ。証拠は `evidence/NF-63.md` | NF-63 | **NF-63**：デプロイの後、本番の `/`・`/s/<22 文字の存在しない id>`・`/no-such-page` の 3 つで、5 ヘッダーが値まで一致し、`X-Robots-Tag: noindex, nofollow` が残り、`X-Powered-By` が無い。`/robots.txt` は記録だけ。Azure が同じヘッダーを 2 行重ねて付けたら ○ にせず PM に見せる（穴 守り-6）。続けて NF-14 と VE-01〜VE-06 が今のまま通る |
 
@@ -371,11 +371,17 @@ H1（S・1 点）を入れた場合: だーあさ 16（約 37%）・レージ 18
 - 仕様にないこと：全体の CSP・API 側のヘッダー・書き込みの回数の制限・本文の上限・`/api/health`・Azure の設定（HTTPS のみ・TLS の最小版）は触らない（ADR-026。PM が選ばなかった）。
 - 5 文書の決定（守り-1〜5）は、この計画で変えない。作る人はテストを変えない（開発フロー §3）。
 
+### 決定した置き場（U-119。PM が 11/26 に「node:test に置く」を選んだ）
+
+- U-119 の自動テストの置き場：`frontend/src/lib/securityHeaders.test.ts`（見込み。ファイル名は Mi-rin が変えてよい。`.test.ts` で `frontend/src/` の下に置くこと）。`frontend/scripts/run-tests.mjs` が `src/` の下の `*.test.ts` を node:test（`--experimental-strip-types`）で流す。`next.config.ts` は `../../next.config.ts` から読み込み、サーバーは起動しない。vitest（`*.test.tsx`）には置かない。
+- 走らせるコマンド：`cd frontend && npm test -- securityHeaders`（名前に `securityHeaders` を含むファイルだけ流す）。全体は `cd frontend && npm test`。
+- 書き込みは Mi-rin の実装で行い、読み込みが通らないとき（`next.config.ts` の取り込み方）は PR に書く。
+
 ### 文書に書かれていないこと（Mi-rin は決めずに PR に書く）
 
-- U-119 の自動テストの置き場と走らせ方：テスト設計は「`next.config.ts` を読み込み、サーバーは起動しない」とだけ書く。`frontend/vitest.config.ts` は `src/**/*.test.tsx` だけを見て、`*.test.ts` は `scripts/run-tests.mjs`（node:test）が流すので、どちらに置くかは文書で決まっていない。
 - 本番の `next start` の起動方法（Azure 側の起動コマンド）：ワークフローにも文書にも無い。`poweredByHeader: false` が本番で効くかは NF-63 の測定で見る。
 
 ### 進捗メモ（守りのヘッダー）
 
 - [2026-11-26] PM がおすすめモードで「計画を書いてもらう」を選んだ。この節を書いた（Takahiro）。承認待ち。
+- [2026-11-26] U-119 の置き場を決定として書いた（PM が「node:test に置く」を選んだ。`frontend/src/lib/securityHeaders.test.ts`、`cd frontend && npm test -- securityHeaders`）。5 文書は変えていない（Takahiro）。
