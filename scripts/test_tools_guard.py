@@ -24,7 +24,7 @@ PY = sys.executable
 def base_env(**extra):
     """最小の環境変数。Windows の Python は SYSTEMROOT が無いと起動できないので残す。"""
     env = {"PATH": os.environ["PATH"], "PYTHONUTF8": "1"}
-    for k in ("SYSTEMROOT", "SystemRoot", "TEMP", "TMP", "LOCALAPPDATA", "USERPROFILE"):
+    for k in ("SYSTEMROOT", "SystemRoot", "SYSTEMDRIVE", "SystemDrive", "TEMP", "TMP", "LOCALAPPDATA", "USERPROFILE"):
         if k in os.environ:
             env[k] = os.environ[k]
     env.update(extra)
