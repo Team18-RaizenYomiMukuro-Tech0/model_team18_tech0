@@ -9,9 +9,19 @@ export const DETAIL_HINT = "カードを押すと、ここに詳細が出ます"
 /** 0 件の共有リストのタブの案内 */
 export const LIST_EMPTY_HINT = "候補の『共有リストに入れる』を押すと、ここに並びます";
 
-/** タブの名前。件数は共有リストのタブの名前に含める（詳細を見ている間も件数が見える。F-38） */
+/** タブの読み上げの名前（aria-label）。件数は共有リストのタブの名前に含める（詳細を見ている間も件数が見える。F-38） */
 export function tabLabel(tab: RightTab, picked: number): string {
-  return tab === "detail" ? "詳細" : `共有リスト（${picked}件）`;
+  return tab === "detail" ? "詳細" : `共有リスト ${picked}件`;
+}
+
+/** タブの見える文字。共有リストは「共有リスト」だけ（件数は 1 件以上のとき、アイコンと数の丸で見せる） */
+export function tabText(tab: RightTab): string {
+  return tab === "detail" ? "詳細" : "共有リスト";
+}
+
+/** 共有リストのタブに、共有のアイコンと数の丸を出すか（1 件以上のとき） */
+export function showTabBadge(tab: RightTab, picked: number): boolean {
+  return tab === "list" && picked > 0;
 }
 
 /** ← → で隣へ（端は反対側へ回る）。Home で先頭、End で末尾。それ以外のキーは null（何もしない） */
