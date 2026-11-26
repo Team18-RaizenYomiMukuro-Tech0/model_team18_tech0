@@ -3,6 +3,8 @@
 
 - 失敗したツール呼び出しは PostToolUse ではなく PostToolUseFailure で届く。
 - 出力の文字列では判定しない（成功したコマンドの出力に「No such file」等が含まれると誤検知するため）。
+- ただし「終了コード 1 で、エラーらしい文が 1 つも無い」記録は書かない（grep の一致なし・`[ -x ]` で無い側・`ls` で無いことの確認など。
+  実害の無いノイズで、記録の半分近くを占めていた。01_ナレッジ/mistakes/exit1-but-output-ok.md）。終了コード 2 以上はすべて書く。
 
 - 秘匿情報（APIキー・トークン・DB資格情報・ユーザー名パス）はマスクしてから書く。
 - 何があっても作業を止めない（常に exit 0。例外は握りつぶす）。
@@ -42,6 +44,26 @@ def mask(text):
     return s
 
 
+EXIT_RE = re.compile(r"^\s*Exit code (\d+)")
+ERROR_WORDS = re.compile(
+    r"(?i)error|fatal|traceback|exception|denied|not found|no such|cannot|can't|unable|failed|failure|invalid|"
+    r"unknown|unexpected|refused|timed? ?out|not permitted|is not a|not recognized|syntax|usage:|"
+    r"エラー|失敗|見つかりません|ありません|拒否|無効"
+)
+
+
+def is_noise(exit_code, text):
+    """終了コード 1 で、エラーらしい文が無い記録か（書かない）。終了コードが分からないときは書く。"""
+    text = str(text or "")
+    m = EXIT_RE.match(text)
+    if exit_code is None and m:
+        exit_code = int(m.group(1))
+    if exit_code != 1:
+        return False
+    body = EXIT_RE.sub("", text, count=1)
+    return not ERROR_WORDS.search(body)
+
+
 def main():
     try:
         raw = sys.stdin.read()
@@ -76,6 +98,8 @@ def main():
         return
     if isinstance(err_text, (dict, list)):
         err_text = json.dumps(err_text, ensure_ascii=False)
+    if is_noise(exit_code, err_text):
+        return
 
     proj = os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     rec = {
