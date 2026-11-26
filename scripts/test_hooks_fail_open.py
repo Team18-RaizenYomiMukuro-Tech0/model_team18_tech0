@@ -15,6 +15,22 @@ STOP_SCRIPT = os.path.join(D, "require-report-before-stop.py")
 with open(os.path.join(ROOT, ".claude", "settings.json"), encoding="utf-8") as f:
     SETTINGS = json.load(f)
 
+import shutil
+
+# Windows（Git Bash）でも動かすための道具。Mac・Linux では今までと同じ動き。
+SH = "/bin/sh" if os.path.exists("/bin/sh") else (shutil.which("sh") or "sh")
+PY = sys.executable
+
+
+def base_env(**extra):
+    """最小の環境変数。Windows の Python は SYSTEMROOT が無いと起動できないので残す。"""
+    env = {"PATH": os.environ["PATH"], "PYTHONUTF8": "1"}
+    for k in ("SYSTEMROOT", "SystemRoot", "TEMP", "TMP", "LOCALAPPDATA", "USERPROFILE"):
+        if k in os.environ:
+            env[k] = os.environ[k]
+    env.update(extra)
+    return env
+
 HOOKS = {
     "guard-worktree-remove": SETTINGS["hooks"]["PreToolUse"][0]["hooks"][0]["command"],
     "collect-mistake": SETTINGS["hooks"]["PostToolUseFailure"][0]["hooks"][0]["command"],
@@ -23,8 +39,10 @@ HOOKS = {
 
 
 def run_command(command, project_dir, stdin="{}", path=None):
-    env = {"CLAUDE_PROJECT_DIR": project_dir, "PATH": path if path is not None else os.environ["PATH"]}
-    return subprocess.run(["/bin/sh", "-c", command], input=stdin, capture_output=True, text=True,
+    env = base_env(CLAUDE_PROJECT_DIR=project_dir)
+    if path is not None:
+        env["PATH"] = path
+    return subprocess.run([SH, "-c", command], input=stdin, capture_output=True, text=True,
                           encoding="utf-8", env=env)
 
 
@@ -59,6 +77,7 @@ class ReportTarget(unittest.TestCase):
             with open(tr, "w", encoding="utf-8") as f:
                 f.write(json.dumps({"type": "user", "message": {"content": "依頼"}}) + "\n")
             env = {k: v for k, v in os.environ.items() if k != "REPORT_TO_SESSION"}
+            env["PYTHONUTF8"] = "1"
             if env_value is not None:
                 env["REPORT_TO_SESSION"] = env_value
             r = subprocess.run([sys.executable, STOP_SCRIPT], capture_output=True, text=True, encoding="utf-8", env=env,
@@ -89,7 +108,7 @@ class Stop546(unittest.TestCase):
                     f.write("\n".join(json.dumps(x) for x in lines) + "\n")
             data = dict(data, transcript_path=tr)
             r = subprocess.run([sys.executable, STOP_SCRIPT], input=data if isinstance(data, str) else json.dumps(data),
-                               capture_output=True, text=True, encoding="utf-8")
+                               capture_output=True, text=True, encoding="utf-8", env=base_env())
         self.assertEqual(r.returncode, 0)
         return r.stdout
 
