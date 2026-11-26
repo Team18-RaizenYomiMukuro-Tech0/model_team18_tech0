@@ -385,3 +385,4 @@ H1（S・1 点）を入れた場合: だーあさ 16（約 37%）・レージ 18
 
 - [2026-11-26] PM がおすすめモードで「計画を書いてもらう」を選んだ。この節を書いた（Takahiro）。承認待ち。
 - [2026-11-26] U-119 の置き場を決定として書いた（PM が「node:test に置く」を選んだ。`frontend/src/lib/securityHeaders.test.ts`、`cd frontend && npm test -- securityHeaders`）。5 文書は変えていない（Takahiro）。
+- [2026-11-26] 承認：PM、11/26、Daasa Muffin の画面で OK、進めて（377a245・4239217）。守1 を Mi-rin に渡した（#731）。
