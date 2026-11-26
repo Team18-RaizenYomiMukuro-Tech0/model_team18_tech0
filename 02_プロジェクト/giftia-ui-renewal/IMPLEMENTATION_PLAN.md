@@ -331,3 +331,57 @@ H1（S・1 点）を入れた場合: だーあさ 16（約 37%）・レージ 18
 
 - 輪0 の ALTER（`DB管理手順.md` 1d）。
 - 初回提出版のコミット ID を、上の「初回提出版」に書く（今夜 11/18）。
+
+## 画面の守りのヘッダー（11/26。ADR-026。承認待ち）
+
+- 目的: 本番の画面の応答に、HSTS・枠への埋め込み禁止・種類の推測の禁止・`Referrer-Policy` を付け、`X-Powered-By` を消す（N-07 の続き）。画面だけが対象。API・見た目・操作は変えない。
+- 根拠: 要件 N-20、仕様 SP-36、設計 D-53（N-20 の節。守り-1〜5 は決定済みで未決 0 件）、テスト設計 U-119・I-80・I-81・NF-63・穴 守り-6、ADR-026。
+- 対象版: 5 文書・ADR @ `377a245`（main。PR #725 のマージ後）。実装計画（この節）は、この PR のマージ後のコミット ID。
+- 実装開始の承認: **未承認**。PM が「OK、進めて」と、上の 2 つのコミット ID を明示してから、守1 を渡す（作業ルール §1）。承認日時と承認者は、承認が出たらここに書く。
+- 運営への相談: 要らない扱い（PM 決定 11/25「守り-5」。認証・実データ・追加の外部サービス・費用のどれにも当たらない）。この線引きは参加者・AI では決めていない（PM の決定をそのまま写した）。
+- Issue: まだ作っていない。承認の後に、下の守1・守2・守3 の 3 件を作る（トークンを使う AI の作業なので、assignee は Hiroki0023）。
+
+### 割り振り
+
+| 単位 | 担当 | 変えるファイルの見込み | 根拠 | 完了の条件（テスト ID と期待結果） |
+| --- | --- | --- | --- | --- |
+| 守1 | Mi-rin | `frontend/next.config.ts` だけ（`headers()` の既存 1 本に 5 つのヘッダーを足す。最上位に `poweredByHeader: false`。値はファイル先頭の定数）。U-119 の自動テストを 1 本足す（置き場は下の「決定した置き場」。`frontend/src/lib/securityHeaders.test.ts`） | D-53、SP-36、N-20 | U-119 が通る（`source: "/:path*"` が 1 本。`X-Robots-Tag: noindex, nofollow` と 5 つのヘッダーが 1 つずつ。値は D-53 の表と完全一致。`includeSubDomains`・`preload` を含まない。CSP は `frame-ancestors 'none'` だけ。`poweredByHeader` が `false`）。PR の差分が `next.config.ts` とテストだけで、`backend/` が 0 行 |
+| 守2 | Kurosu | 確かめ（コードは変えない。証拠は `evidence/`） | テスト設計 | **I-80**：`cd frontend && npm run build && npm run start` で ①`/` ②`/search?scene=送別` ③`/s/<22 文字の存在しない id>` ④`/s/bad` ⑤`/no-such-page` の 5 つに 5 ヘッダーが U-119 と同じ値で付き、`X-Robots-Tag` が残り、`X-Powered-By` が無い。⑥`/robots.txt` ⑦`/_next/static/` 配下 1 ファイルは付くかを記録（付かなくても ○。付かなければ PM に見せる）。**I-81**：`git diff --stat -- backend/` が 0 行。API の `GET /api/products` と 404 に `X-Robots-Tag: noindex` があり、HSTS・`X-Frame-Options`・`Content-Security-Policy`・`Referrer-Policy` は付かない。回帰：VE-01〜VE-06（見た目と操作が今のまま。PR にラベル `e2e` を付けて CI で流す）・NF-14 の考え方（noindex・`robots.txt` 全拒否が残る） |
+| 守3 | Kurosu（流す）・PM（マージ） | 本番の確かめ。証拠は `evidence/NF-63.md` | NF-63 | **NF-63**：デプロイの後、本番の `/`・`/s/<22 文字の存在しない id>`・`/no-such-page` の 3 つで、5 ヘッダーが値まで一致し、`X-Robots-Tag: noindex, nofollow` が残り、`X-Powered-By` が無い。`/robots.txt` は記録だけ。Azure が同じヘッダーを 2 行重ねて付けたら ○ にせず PM に見せる（穴 守り-6）。続けて NF-14 と VE-01〜VE-06 が今のまま通る |
+
+### 出す順番と、確かめ方
+
+- 順番：守1（PR）→ 守2（PR の上で I-80・I-81・VE を流す）→ PM がマージ → 画面のデプロイが自動で動く（`.github/workflows/main_gen13-app-step3-1-5181-fe.yml`。`frontend/**` の変更で main に入ると動く）→ 守3（NF-63）。API のデプロイは要らない（`backend/` を変えない）。
+- 本番の応答ヘッダーの確かめ方（NF-63。書き込みを作らないため、画面は開かず `curl` だけ）：
+
+  ```
+  H=gen13-app-step3-1-5181-fe-gufkevefgbfja0au.japaneast-01.azurewebsites.net
+  curl -sI https://$H/
+  curl -sI https://$H/s/AAAAAAAAAAAAAAAAAAAAAA
+  curl -sI https://$H/no-such-page
+  curl -sI https://$H/robots.txt
+  ```
+
+  `/s/` の id は形式が正しい 22 文字なら何でもよい（枠の応答は id によらない）。HEAD で出ない項目があれば `curl -s -D - -o /dev/null <URL>` でも控える。合格の見方は、守3 の「完了の条件」と NF-63 の期待結果のとおり。
+- 戻し方（N-09）：`next.config.ts` の 1 か所を戻して再デプロイする。HSTS だけは、ブラウザが約 1 年覚えているので、消しただけでは戻らない。戻すときは `max-age=0` を返す版を出す。画面のホストは 12/12 の後に講師が片付ける。
+- ファイルの持ち主：`frontend/next.config.ts` は Mi-rin だけが触る（この件の間は、同じファイルに別の PR を開かない）。
+
+### やらないこと
+
+- 仕様にないこと：全体の CSP・API 側のヘッダー・書き込みの回数の制限・本文の上限・`/api/health`・Azure の設定（HTTPS のみ・TLS の最小版）は触らない（ADR-026。PM が選ばなかった）。
+- 5 文書の決定（守り-1〜5）は、この計画で変えない。作る人はテストを変えない（開発フロー §3）。
+
+### 決定した置き場（U-119。PM が 11/26 に「node:test に置く」を選んだ）
+
+- U-119 の自動テストの置き場：`frontend/src/lib/securityHeaders.test.ts`（見込み。ファイル名は Mi-rin が変えてよい。`.test.ts` で `frontend/src/` の下に置くこと）。`frontend/scripts/run-tests.mjs` が `src/` の下の `*.test.ts` を node:test（`--experimental-strip-types`）で流す。`next.config.ts` は `../../next.config.ts` から読み込み、サーバーは起動しない。vitest（`*.test.tsx`）には置かない。
+- 走らせるコマンド：`cd frontend && npm test -- securityHeaders`（名前に `securityHeaders` を含むファイルだけ流す）。全体は `cd frontend && npm test`。
+- 書き込みは Mi-rin の実装で行い、読み込みが通らないとき（`next.config.ts` の取り込み方）は PR に書く。
+
+### 文書に書かれていないこと（Mi-rin は決めずに PR に書く）
+
+- 本番の `next start` の起動方法（Azure 側の起動コマンド）：ワークフローにも文書にも無い。`poweredByHeader: false` が本番で効くかは NF-63 の測定で見る。
+
+### 進捗メモ（守りのヘッダー）
+
+- [2026-11-26] PM がおすすめモードで「計画を書いてもらう」を選んだ。この節を書いた（Takahiro）。承認待ち。
+- [2026-11-26] U-119 の置き場を決定として書いた（PM が「node:test に置く」を選んだ。`frontend/src/lib/securityHeaders.test.ts`、`cd frontend && npm test -- securityHeaders`）。5 文書は変えていない（Takahiro）。
