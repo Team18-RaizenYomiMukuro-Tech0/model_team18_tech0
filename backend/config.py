@@ -24,6 +24,7 @@ class Settings:
     SEARCH_MIN_SCORE: int = 85  # D-49 決定 17 近さの下限（rapidfuzz partial_ratio。決定（I-62 で決めた。D-49））
     VOICES_MAX: int = 2  # SP-17・D-35 贈った人の声の最大件数
     VOICE_MIN_RATING: int = 4  # SP-17・D-35 声に使う星の下限（4 以上）
+    CATALOG_TTL_SECONDS: int = 1800  # N-14・D-50 商品と回数をメモリに置く期限（TTL。30 分。PM 決定 2026-11-25）
     SHARE_REQUEST_MAX_LENGTH: int = 50  # N-06 重複込みの配列の長さの上限（決定。キックオフ記録 76）
 
 
