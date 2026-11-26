@@ -3,7 +3,7 @@
 # 使い方: scripts/pyrun <file.py> [引数...]
 f="$1"
 if [ -z "$f" ]; then echo "使い方: scripts/pyrun <file.py> [引数...]" >&2; exit 2; fi
-case "$f" in /*) abs="$f" ;; *) abs="$PWD/$f" ;; esac
+case "$f" in /*|[A-Za-z]:*) abs="$f" ;; *) abs="$PWD/$f" ;; esac
 if [ ! -f "$f" ]; then echo "ファイルがありません: $abs" >&2; exit 2; fi
 py=
 for p in python3 python py; do if "$p" -c "import sys" >/dev/null 2>&1; then py="$p"; break; fi; done

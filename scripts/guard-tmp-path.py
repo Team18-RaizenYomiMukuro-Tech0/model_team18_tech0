@@ -12,6 +12,7 @@ import os
 import re
 import shlex
 import sys
+import tempfile
 
 PREFIXES = ("/tmp/", "/private/tmp/")
 VAR = re.compile(r"^\$\{?TMPDIR\}?(/.*)$")
@@ -40,6 +41,13 @@ def candidates(command: str) -> list[tuple[str, bool]]:
     return out
 
 
+def local(p: str) -> str:
+    """Windows の Python は /tmp を C:/tmp と読むので、Git Bash の /tmp（一時フォルダ）に直す。"""
+    if os.name == "nt" and (p == "/tmp" or p.startswith("/tmp/")):
+        return tempfile.gettempdir() + p[len("/tmp"):]
+    return p
+
+
 def main() -> int:
     try:
         data = json.load(sys.stdin)
@@ -48,9 +56,9 @@ def main() -> int:
             return 0
         missing = []
         for p, is_cd in candidates(command):
-            if os.path.exists(p):
+            if os.path.exists(local(p)):
                 continue
-            if is_cd or not os.path.exists(os.path.dirname(p.rstrip("/"))):
+            if is_cd or not os.path.exists(local(os.path.dirname(p.rstrip("/")))):
                 missing.append(p)
     except Exception:
         return 0
